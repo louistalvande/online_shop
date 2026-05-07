@@ -22,8 +22,8 @@
 ---
 
 == 🇫🇷 Français [[français]]
-Le projet consiste à créer une application web de boutique en ligne, en commençant par rédiger un document d'architecture et en s'aidant d'une IA pour générer les livrables.
-L'execution du projet va se faire en plusieurs grandes étapes :
+Le projet a pour objectif de développer une application web de boutique en ligne. Il débutera par la rédaction d'un document d'architecture, les différents livrables étant produits avec l'assistance d'une IA.
+La réalisation du projet s'articulera autour de plusieurs grandes étapes, abordées de façon itérative. L'ensemble de ces étapes sera appliqué intégralement pour chaque User Story.
 
 === I. Génération du document d'architecture avec la méthodologie MBSE ARCADIA [[i-génération-du-document-darchitecture-avec-la-méthodologie-mbse-arcadia]]
 La méthode ARCADIA sera suivie en s'appuyant uniquement sur le language de modélisation UML. Le document sera manipulé avec Asciidoc, et les diagrammes seront manipulés avec la notation textuelle de PlantUML, puis générés sous forme visuelle dans le document final.
