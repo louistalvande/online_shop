@@ -178,12 +178,198 @@ node "Stripe API"
 
 === II. Génération l'infrastructure de la solution [[ii-génération-de-la-solution]]
 
-Une fois la solution documentée en détails, l'infrastructure de l'application sera généré puis déployée pour être testée. 
+Une fois la solution documentée en détail, l'infrastructure de l'application sera développée et déployée dans un environnement de test.
+Cette phase comprend la configuration des environnements (développement, staging, production), la mise en place des outils CI/CD, ainsi que la définition et le provisionnement des ressources nécessaires (serveurs, bases de données, services cloud, etc.). L'infrastructure sera validée par une série de tests techniques visant à garantir la stabilité, la disponibilité et la sécurité de la plateforme avant le début du développement fonctionnel.
 
 === III. Développment des cas d'utilisation de manière itérative
 
-Les cas d'utilisation seront développés jusqu'aux tests end2end les uns après les autres. 
+Les cas d'utilisation seront implémentés de manière itérative, l'un après l'autre, en suivant un cycle de développement structuré et reproductible.
+Pour chaque User Story, le cycle suivant sera appliqué dans son intégralité :
+
+Analyse & conception — prise en compte des exigences fonctionnelles définies dans le document d'architecture et en cas de doute ou d'incohérence, mise au point avec l'utilisateur.
+Développement — implémentation du code source, assistée par IA, en respectant l'architecture définie.
+Tests unitaires & d'intégration — vérification du bon fonctionnement de chaque composant, isolément puis en interaction avec le reste du système.
+Tests end-to-end (E2E) — validation du parcours utilisateur complet, de bout en bout, afin de s'assurer que la fonctionnalité répond aux attentes définies.
+Revue & intégration — validation finale et fusion dans la branche principale, avant de passer à la User Story suivante.
+
+Cette approche garantit une livraison progressive et maîtrisée, tout en limitant les risques de régression au fil des itérations.
 
 === IV. Génération de la documentation utilisateur [[iiii-génération-de-la-documentation-utilisateur]]
 
+Une fois l'ensemble des cas d'utilisation développés et validés, la documentation destinée aux utilisateurs finaux sera produite avec l'assistance de l'IA, sur la base des fonctionnalités implémentées.
+Cette documentation comprendra notamment :
+
+un guide utilisateur décrivant les principales fonctionnalités de la boutique en ligne (navigation, recherche de produits, gestion du panier, tunnel d'achat, suivi de commande, etc.) ;
+des guides pas à pas illustrant les parcours utilisateurs clés ;
+le cas échéant, une documentation administrateur à destination des gestionnaires de la boutique (gestion du catalogue, des commandes, des utilisateurs, etc.).
+L'objectif est de fournir une documentation claire, accessible et maintainable, cohérente avec l'état final de l'application livrée.
+
 == 🇬🇧 English [[english]]
+
+The project aims to develop an online shop web application. It will begin with the writing of an architecture document, with the various deliverables produced with the assistance of an AI.
+The project will be structured around several major phases, approached iteratively. Each of these phases will be applied in full for every User Story.
+=== I. Generating the Architecture Document Using the MBSE ARCADIA Methodology [[i-generating-the-architecture-document-using-the-mbse-arcadia-methodology]]
+The ARCADIA method will be followed using exclusively UML modelling language. The document will be written in AsciiDoc, and diagrams will be expressed using PlantUML textual notation, then rendered visually in the final document.
+
+==== Needs Analysis [[needs-analysis]]
+
+===== 1. Operational Analysis (OA) [[1-operational-analysis-oa]]
+What do users do, and why?
+This phase models the actors (operators, external systems), their operational activities, and the exchanges between them, independently of any system to be built. It describes the real business context.
+
+[cols="2", options="header"]
+|===
+| Diagram | Purpose in OA
+| Use Case Diagram | Identifies actors and their operational goals
+| Activity Diagram | Models operational workflows and decision-making
+| Sequence Diagram | Represents timed exchanges between actors
+| Communication Diagram | Highlights interactions between groups of actors
+|===
+OA Diagram Example — Operational Use Case:
+[plantuml, oa-use-case, svg]
+!define FONTSIZE 8
+skinparam fontSize FONTSIZE
+actor Client
+actor Magasinier
+actor Fournisseur
+Client --> (Consulter catalogue)
+Client --> (Commander)
+Client --> (Payer)
+Magasinier --> (Recevoir commande)
+Magasinier --> (Préparer livraison)
+Magasinier --> (Expédier)
+Fournisseur --> (Approvisionner stock)
+Magasinier --> (Approvisionner stock)
+
+===== 2. System Need Analysis (SA) [[2-system-need-analysis-sa]]
+
+What must the system do to satisfy this need?
+This phase defines the system's functions as seen from the outside (what it must accomplish), its interfaces with actors, and the usage scenarios. The internal architecture is deliberately left unspecified at this stage. Requirements are derived from this functional analysis, not the other way around.
+[cols="2", options="header"]
+|===
+| Diagram | Purpose in SA
+| Use Case Diagram | Defines the system functions exposed to actors
+| Sequence Diagram | Describes usage scenarios (nominal and alternative flows)
+| State Machine Diagram | Models system states as seen from the outside (e.g. order lifecycle)
+| Activity Diagram | Details functional flows triggered by actors
+| Context Diagram (system boundary) | Represents the system as a black box with all its interfaces
+|===
+
+SA Diagram Example — System Context:
+[plantuml, sa-context, svg]
+!define FONTSIZE 8
+skinparam fontSize FONTSIZE
+actor Client
+actor "Système de Paiement" as Payment
+rectangle "Online Shop System" {
+usecase (Browse)
+usecase (AddCart)
+usecase (Checkout)
+usecase (Process Payment)
+usecase (Confirm Order)
+}
+Client --> (Browse)
+Client --> (AddCart)
+Client --> (Checkout)
+(Process Payment) --> Payment
+Payment --> (Confirm Order)
+
+
+==== System Analysis [[system-analysis]]
+
+===== 3. Logical Architecture (LA) [[3-logical-architecture-la]]
+
+How should functions be organised into logical components?
+The system is broken down into logical components (without assuming any specific technology) and functions are allocated to those components. Internal exchange flows are defined, the decomposition is checked for consistency, and initial architectural decisions are made. This is the core of system design.
+
+[cols="2", options="header"]
+|===
+| Diagram | Purpose in LA
+| Component Diagram | Decomposes the system into logical components and their interfaces
+| Sequence Diagram | Represents internal exchanges between logical components
+| Class Diagram | Models logical data structures and their relationships
+| Activity Diagram | Allocates functional flows to logical components
+| State Machine Diagram | Models the internal lifecycle of key entities (Order, Cart, Payment…)
+| Composite Structure Diagram | Represents internal ports and connectors between components
+|===
+
+LA Diagram Example — Logical Component Architecture:
+[plantuml, la-components, svg]
+!define FONTSIZE 8
+skinparam fontSize FONTSIZE
+component [UI Controller]
+component [Catalog Service]
+component [Cart Service]
+component [Order Service]
+component [Payment Service]
+component [Notification Service]
+[UI Controller] --> [Catalog Service]
+[UI Controller] --> [Cart Service]
+[UI Controller] --> [Order Service]
+[Cart Service] --> [Catalog Service]
+[Order Service] --> [Cart Service]
+[Order Service] --> [Payment Service]
+[Order Service] --> [Notification Service]
+
+
+===== 4. Physical Architecture (PA) [[4-physical-architecture-pa]]
+Which concrete solutions implement the logical architecture?
+Logical components are mapped onto real physical components (hardware, software, networks). Deployment, performance, and redundancy constraints are addressed, and the division of work between stakeholders is defined.
+
+[cols="2", options="header"]
+|===
+| Diagram | Purpose in PA
+| Deployment Diagram | Maps components onto physical nodes (servers, containers, cloud…)
+| Component Diagram | Represents physical modules, libraries, and their dependencies
+| Package Diagram | Organises code into deployable units
+| Sequence Diagram | Validates end-to-end technical flows (e.g. payment with Stripe)
+| Network Diagram (UML node notation) | Describes infrastructure topology and communication protocols
+|===
+
+PA Diagram Example — Deployment Architecture:
+[plantuml, pa-deployment, svg]
+!define FONTSIZE 8
+skinparam fontSize FONTSIZE
+node "Client Browser"
+node "Load Balancer"
+node "Web Server 1"
+node "Web Server 2"
+node "API Server"
+node "PostgreSQL DB"
+node "Redis Cache"
+node "Stripe API"
+"Client Browser" --> "Load Balancer"
+"Load Balancer" --> "Web Server 1"
+"Load Balancer" --> "Web Server 2"
+"Web Server 1" --> "API Server"
+"Web Server 2" --> "API Server"
+"API Server" --> "PostgreSQL DB"
+"API Server" --> "Redis Cache"
+"API Server" --> "Stripe API"
+
+=== II. Generating the Solution Infrastructure [[ii-generating-the-solution-infrastructure]]
+
+Once the solution has been documented in detail, the application infrastructure will be built and deployed in a test environment.
+This phase covers the configuration of environments (development, staging, production), the setup of CI/CD tooling, and the provisioning of the required resources (servers, databases, cloud services, etc.). The infrastructure will be validated through a series of technical tests to ensure the platform's stability, availability, and security prior to the start of functional development.
+
+=== III. Iterative Development of Use Cases [[iii-iterative-development-of-use-cases]]
+
+Use cases will be implemented one by one in an iterative manner, following a structured and repeatable development cycle.
+For each User Story, the following cycle will be applied in full:
+Analysis & Design — review of the functional requirements defined in the architecture document; any ambiguity or inconsistency is clarified with the stakeholder before proceeding.
+Development — AI-assisted implementation of the source code, in compliance with the defined architecture.
+Unit & Integration Testing — verification that each component functions correctly in isolation and in interaction with the rest of the system.
+End-to-End (E2E) Testing — full validation of the user journey from start to finish, ensuring the feature meets the defined acceptance criteria.
+Review & Integration — final validation and merge into the main branch, before moving on to the next User Story.
+This approach ensures progressive, controlled delivery while minimising the risk of regression across iterations.
+
+=== IV. Generating the User Documentation [[iv-generating-the-user-documentation]]
+
+Once all use cases have been developed and validated, end-user documentation will be produced with AI assistance, based on the implemented features.
+This documentation will include in particular:
+
+a user guide describing the main features of the online shop (browsing, product search, cart management, checkout flow, order tracking, etc.);
+step-by-step guides illustrating key user journeys;
+where applicable, an administrator guide intended for shop managers (catalogue management, order processing, user administration, etc.).
+
+The goal is to deliver documentation that is clear, accessible, and maintainable, consistent with the final state of the delivered application.
