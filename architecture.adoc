@@ -1,1 +1,308 @@
 
+
+= Analyse du Besoin Opérationnel (OA — Operational Analysis)
+:doctype: article
+:toc: left
+:toclevels: 3
+:sectnums:
+:icons: font
+:source-highlighter: rouge
+:imagesdir: images
+:plantuml-server-url: http://www.plantuml.com/plantuml
+
+== Contexte et objectif
+
+L'Analyse du Besoin Opérationnel (OA) décrit le contexte métier réel d'une boutique en ligne, indépendamment de tout système à construire. Elle identifie les acteurs impliqués, leurs activités opérationnelles et les échanges entre eux.
+
+=== Acteurs opérationnels
+
+[cols="1,1,3", options="header"]
+|===
+| Acteur | Rôle | Responsabilités principales
+
+| *Administrateur*
+| Gestionnaire de la plateforme
+| Gérer les utilisateurs, superviser les commandes, configurer la plateforme, gérer les litiges, produire des rapports d'activité
+
+| *Vendeur*
+| Marchand de produits
+| Publier et gérer le catalogue produits, suivre les stocks, traiter les commandes reçues, gérer les expéditions, consulter les revenus
+
+| *Acheteur*
+| Client de la boutique
+| Parcourir le catalogue, sélectionner des produits, passer des commandes, effectuer les paiements, suivre et réceptionner les livraisons
+|===
+
+== Diagramme de cas d'utilisation opérationnel
+
+Ce diagramme identifie les objectifs opérationnels de chaque acteur dans le contexte métier de la boutique en ligne.
+
+[plantuml, oa-use-case, svg]
+----
+!define FONTSIZE 9
+skinparam fontSize FONTSIZE
+skinparam actorStyle awesome
+skinparam usecase {
+  BackgroundColor #FEFEFE
+  BorderColor #2E75B6
+  ArrowColor #2E75B6
+}
+skinparam actor {
+  BackgroundColor #E8F4FD
+  BorderColor #2E75B6
+}
+
+left to right direction
+
+actor Administrateur as Admin
+actor Vendeur as Vendor
+actor Acheteur as Buyer
+
+rectangle "Boutique en ligne — Contexte Opérationnel" {
+
+  package "Gestion de la plateforme" {
+    usecase (Gérer les utilisateurs) as UC_ADMIN1
+    usecase (Configurer la plateforme) as UC_ADMIN2
+    usecase (Superviser les commandes) as UC_ADMIN3
+    usecase (Gérer les litiges) as UC_ADMIN4
+    usecase (Produire des rapports\nd'activité) as UC_ADMIN5
+  }
+
+  package "Gestion des ventes" {
+    usecase (Publier des produits) as UC_VENDOR1
+    usecase (Gérer le stock) as UC_VENDOR2
+    usecase (Traiter les commandes\nreçues) as UC_VENDOR3
+    usecase (Gérer les expéditions) as UC_VENDOR4
+    usecase (Consulter les revenus) as UC_VENDOR5
+  }
+
+  package "Expérience d'achat" {
+    usecase (Parcourir le catalogue) as UC_BUYER1
+    usecase (Sélectionner des produits\net gérer le panier) as UC_BUYER2
+    usecase (Passer une commande) as UC_BUYER3
+    usecase (Effectuer un paiement) as UC_BUYER4
+    usecase (Suivre la livraison) as UC_BUYER5
+    usecase (Laisser un avis) as UC_BUYER6
+  }
+}
+
+Admin --> UC_ADMIN1
+Admin --> UC_ADMIN2
+Admin --> UC_ADMIN3
+Admin --> UC_ADMIN4
+Admin --> UC_ADMIN5
+
+Vendor --> UC_VENDOR1
+Vendor --> UC_VENDOR2
+Vendor --> UC_VENDOR3
+Vendor --> UC_VENDOR4
+Vendor --> UC_VENDOR5
+
+Buyer --> UC_BUYER1
+Buyer --> UC_BUYER2
+Buyer --> UC_BUYER3
+Buyer --> UC_BUYER4
+Buyer --> UC_BUYER5
+Buyer --> UC_BUYER6
+----
+
+== Diagramme d'activité opérationnel — Flux d'achat
+
+Ce diagramme modélise le flux de travail opérationnel complet, depuis la navigation de l'acheteur jusqu'à la clôture de la commande par le vendeur et la supervision de l'administrateur.
+
+[plantuml, oa-activity, svg]
+----
+skinparam activityBackgroundColor #FEFEFE
+skinparam activityBorderColor #2E75B6
+skinparam arrowColor #2E75B6
+skinparam swimlaneBorderColor #AAAAAA
+
+|Acheteur|
+start
+:Parcourir le catalogue;
+:Sélectionner des produits;
+:Ajouter au panier;
+:Valider le panier;
+:Saisir les informations\nde livraison;
+:Effectuer le paiement;
+
+if (Paiement accepté ?) then (oui)
+  :Recevoir confirmation\nde commande;
+else (non)
+  :Recevoir notification\nd'échec;
+  stop
+endif
+
+|Vendeur|
+:Recevoir notification\nde nouvelle commande;
+:Vérifier disponibilité\ndu stock;
+
+if (Stock disponible ?) then (oui)
+  :Préparer la commande;
+  :Expédier le colis;
+  :Mettre à jour le statut\nde livraison;
+else (non)
+  :Notifier l'acheteur\ndu délai;
+  :Réapprovisionner\nle stock;
+  :Préparer la commande;
+  :Expédier le colis;
+  :Mettre à jour le statut\nde livraison;
+endif
+
+|Acheteur|
+:Suivre la livraison;
+:Réceptionner le colis;
+:Laisser un avis produit;
+
+|Administrateur|
+:Superviser les commandes\nen cours;
+:Générer les rapports\nd'activité;
+
+stop
+----
+
+== Diagramme de séquence opérationnel — Passation de commande
+
+Ce diagramme représente les échanges chronologiques entre les acteurs lors du processus de commande.
+
+[plantuml, oa-sequence, svg]
+----
+skinparam sequenceArrowColor #2E75B6
+skinparam sequenceParticipantBackgroundColor #E8F4FD
+skinparam sequenceParticipantBorderColor #2E75B6
+skinparam sequenceLifeLineBorderColor #2E75B6
+skinparam noteBorderColor #F0A500
+skinparam noteBackgroundColor #FFFBE6
+
+actor Acheteur as Buyer
+participant "Boutique\nen ligne" as Shop
+actor Vendeur as Vendor
+actor Administrateur as Admin
+
+Buyer -> Shop : Parcourir le catalogue
+Shop --> Buyer : Afficher les produits disponibles
+
+Buyer -> Shop : Ajouter produit au panier
+Shop --> Buyer : Mettre à jour le panier
+
+Buyer -> Shop : Valider la commande\n(adresse + paiement)
+Shop -> Shop : Vérifier le paiement
+
+alt Paiement accepté
+  Shop --> Buyer : Confirmer la commande
+  Shop -> Vendor : Notifier nouvelle commande
+  Vendor -> Shop : Accuser réception
+  Vendor -> Shop : Mettre à jour le statut (en préparation)
+  Shop --> Buyer : Notifier mise en préparation
+
+  Vendor -> Shop : Déclarer expédition + n° suivi
+  Shop --> Buyer : Notifier expédition avec n° suivi
+
+  Buyer -> Shop : Confirmer réception
+  Shop --> Vendor : Notifier réception confirmée
+  Shop -> Admin : Enregistrer transaction clôturée
+
+  Buyer -> Shop : Déposer un avis produit
+  Shop --> Vendor : Notifier nouvel avis
+
+else Paiement refusé
+  Shop --> Buyer : Notifier échec du paiement
+  note right : L'acheteur peut\nretenter ou annuler
+end
+
+Admin -> Shop : Consulter tableau de bord
+Shop --> Admin : Afficher statistiques et alertes
+----
+
+== Diagramme de communication opérationnel — Interactions entre acteurs
+
+Ce diagramme met en évidence les canaux d'interaction opérationnelle entre les trois acteurs.
+
+[plantuml, oa-communication, svg]
+----
+skinparam actorStyle awesome
+skinparam actorBackgroundColor #E8F4FD
+skinparam actorBorderColor #2E75B6
+skinparam arrowColor #2E75B6
+skinparam noteBackgroundColor #FFFBE6
+skinparam noteBorderColor #F0A500
+
+actor Administrateur as Admin
+actor Vendeur as Vendor
+actor Acheteur as Buyer
+
+Admin <--> Vendor : 1. Gestion des comptes vendeurs\n2. Validation des catalogues\n3. Résolution des litiges vendeur
+Admin <--> Buyer : 4. Gestion des comptes acheteurs\n5. Traitement des réclamations\n6. Support client escaladé
+Vendor <--> Buyer : 7. Confirmation de commande\n8. Mise à jour expédition\n9. Échange sur les avis produits
+----
+
+== Synthèse des activités opérationnelles
+
+=== Administrateur
+
+[cols="1,3", options="header"]
+|===
+| Activité | Description
+
+| Gérer les utilisateurs
+| Créer, modifier, suspendre ou supprimer les comptes vendeurs et acheteurs
+
+| Configurer la plateforme
+| Paramétrer les catégories, les modes de paiement, les règles de livraison
+
+| Superviser les commandes
+| Consulter l'ensemble des commandes, détecter les anomalies, intervenir si nécessaire
+
+| Gérer les litiges
+| Arbitrer les conflits entre acheteurs et vendeurs, décider des remboursements
+
+| Produire des rapports
+| Générer des tableaux de bord sur les ventes, les performances vendeurs, la satisfaction acheteurs
+|===
+
+=== Vendeur
+
+[cols="1,3", options="header"]
+|===
+| Activité | Description
+
+| Publier des produits
+| Créer et mettre à jour les fiches produits (photos, descriptions, prix, catégories)
+
+| Gérer le stock
+| Suivre les niveaux de stock, déclencher les réapprovisionnements, gérer les alertes de rupture
+
+| Traiter les commandes
+| Prendre en charge les commandes reçues, préparer les colis, mettre à jour les statuts
+
+| Gérer les expéditions
+| Choisir les transporteurs, générer les étiquettes, saisir les numéros de suivi
+
+| Consulter les revenus
+| Accéder aux rapports de ventes, aux commissions, aux historiques de paiements reçus
+|===
+
+=== Acheteur
+
+[cols="1,3", options="header"]
+|===
+| Activité | Description
+
+| Parcourir le catalogue
+| Rechercher, filtrer et consulter les produits disponibles
+
+| Gérer le panier
+| Ajouter, modifier la quantité ou retirer des produits du panier
+
+| Passer une commande
+| Saisir l'adresse de livraison, choisir le mode de livraison, valider la commande
+
+| Effectuer un paiement
+| Régler la commande par carte bancaire ou autre moyen de paiement disponible
+
+| Suivre la livraison
+| Consulter le statut d'expédition et le numéro de suivi du colis
+
+| Laisser un avis
+| Évaluer les produits achetés et rédiger des commentaires après réception
+|===
