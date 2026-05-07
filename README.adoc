@@ -176,10 +176,14 @@ node "Stripe API"
 "API Server" --> "Stripe API"
 ----
 
-=== II. Génération de la solution [[ii-génération-de-la-solution]]
+=== II. Génération l'infrastructure de la solution [[ii-génération-de-la-solution]]
 
-=== III. Génération des tests end2end [[iii-génération-des-tests-end2end]]
+Une fois la solution documentée en détails, l'infrastructure de l'application sera généré puis déployée pour être testée. 
 
-=== IIII. Génération de la documentation utilisateur [[iiii-génération-de-la-documentation-utilisateur]]
+=== III. Développment des cas d'utilisation de manière itérative
+
+Les cas d'utilisation seront développés jusqu'aux tests end2end les uns après les autres. 
+
+=== IV. Génération de la documentation utilisateur [[iiii-génération-de-la-documentation-utilisateur]]
 
 == 🇬🇧 English [[english]]
