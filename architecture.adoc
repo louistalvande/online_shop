@@ -1,5 +1,3 @@
-
-
 = Analyse du Besoin Opérationnel (OA — Operational Analysis)
 :doctype: article
 :toc: left
@@ -14,6 +12,8 @@
 
 L'Analyse du Besoin Opérationnel (OA) décrit le contexte métier réel d'une boutique en ligne, indépendamment de tout système à construire. Elle identifie les acteurs impliqués, leurs activités opérationnelles et les échanges entre eux.
 
+La boutique repose sur trois acteurs distincts. L'**administrateur** est l'unique responsable de la gestion des comptes utilisateurs. Le **vendeur** (propriétaire du site) prend en charge l'ensemble des opérations commerciales : catalogue, stocks, commandes et expéditions. L'**acheteur** est le client final qui navigue et passe commande. La boutique propose une livraison à destination de l'ensemble des pays de l'**Union Européenne**, via un ou plusieurs services de transport externes. Les paiements sont traités par un **prestataire de paiement externe** et acceptés par **carte bancaire** ou **virement bancaire**.
+
 === Acteurs opérationnels
 
 [cols="1,1,3", options="header"]
@@ -21,16 +21,45 @@ L'Analyse du Besoin Opérationnel (OA) décrit le contexte métier réel d'une b
 | Acteur | Rôle | Responsabilités principales
 
 | *Administrateur*
-| Gestionnaire de la plateforme
-| Gérer les utilisateurs, superviser les commandes, configurer la plateforme, gérer les litiges, produire des rapports d'activité
+| Gestionnaire des comptes et des transporteurs
+| Créer, suspendre et supprimer les comptes vendeur et acheteurs ; gérer les droits d'accès à la plateforme ; ajouter et gérer les transporteurs disponibles
 
 | *Vendeur*
-| Marchand de produits
-| Publier et gérer le catalogue produits, suivre les stocks, traiter les commandes reçues, gérer les expéditions, consulter les revenus
+| Propriétaire et exploitant de la boutique
+| Mettre à jour ses données de compte, gérer le catalogue produits, administrer les stocks, traiter les commandes reçues, gérer les expéditions vers les pays de l'UE, consulter les rapports de ventes, traiter les litiges et réclamations
 
 | *Acheteur*
-| Client de la boutique
-| Parcourir le catalogue, sélectionner des produits, passer des commandes, effectuer les paiements, suivre et réceptionner les livraisons
+| Client de la boutique (résidant dans l'UE)
+| S'inscrire, mettre à jour ses données de compte, parcourir le catalogue, sélectionner des produits, gérer et sauvegarder son panier, passer des commandes, effectuer les paiements (carte ou virement), choisir le mode de livraison, suivre et réceptionner les livraisons
+
+| *Transporteur*
+| Système externe de livraison
+| Prendre en charge les colis expédiés par le vendeur, assurer la livraison dans les pays de l'UE, fournir un numéro de suivi et mettre à jour le statut de livraison
+
+| *Prestataire de paiement*
+| Système externe de traitement des paiements
+| Recevoir les demandes de paiement, autoriser ou refuser les transactions, confirmer le règlement au vendeur, gérer les remboursements
+|===
+
+=== Contraintes opérationnelles
+
+Les contraintes suivantes sont issues du contexte d'usage réel des acteurs et s'imposent indépendamment de toute décision d'architecture.
+
+[cols="1,1,3", options="header"]
+|===
+| Identifiant | Contrainte | Description
+
+| COp-01
+| Interface responsive (PC / smartphone)
+| Les acteurs interagissent avec la boutique depuis des environnements variés. L'acheteur utilise principalement un smartphone pour naviguer et passer commande. Le vendeur et l'administrateur opèrent depuis un ordinateur de bureau ou un ordinateur portable. L'interface doit s'adapter à toutes ces résolutions sans dégradation de l'expérience utilisateur.
+
+| COp-02
+| Modes de paiement acceptés
+| L'acheteur doit pouvoir régler ses commandes par **carte bancaire** ou par **virement bancaire**. Ces deux modes de paiement doivent être proposés lors du tunnel d'achat et traités via le prestataire de paiement externe.
+
+| COp-03
+| Persistance du panier entre sessions
+| Le panier d'un acheteur authentifié est automatiquement sauvegardé sur son compte. À la reconnexion, le contenu du panier est restauré tel qu'il avait été laissé lors de la session précédente.
 |===
 
 == Diagramme de cas d'utilisation opérationnel
@@ -54,61 +83,96 @@ skinparam actor {
 
 left to right direction
 
-actor Administrateur as Admin
-actor Vendeur as Vendor
-actor Acheteur as Buyer
+actor "Administrateur" as Admin
+actor "Vendeur" as Vendor
+actor "Acheteur" as Buyer
+actor "Transporteur\n(système externe)" as Carrier
+actor "Prestataire\nde paiement" as Payment
 
 rectangle "Boutique en ligne — Contexte Opérationnel" {
 
-  package "Gestion de la plateforme" {
-    usecase (Gérer les utilisateurs) as UC_ADMIN1
-    usecase (Configurer la plateforme) as UC_ADMIN2
-    usecase (Superviser les commandes) as UC_ADMIN3
-    usecase (Gérer les litiges) as UC_ADMIN4
-    usecase (Produire des rapports\nd'activité) as UC_ADMIN5
+  package "Gestion des comptes" {
+    usecase (Gérer les comptes\nutilisateurs) as UC_A1
+    usecase (Gérer les\ntransporteurs) as UC_A2
   }
 
-  package "Gestion des ventes" {
-    usecase (Publier des produits) as UC_VENDOR1
-    usecase (Gérer le stock) as UC_VENDOR2
-    usecase (Traiter les commandes\nreçues) as UC_VENDOR3
-    usecase (Gérer les expéditions) as UC_VENDOR4
-    usecase (Consulter les revenus) as UC_VENDOR5
+  package "Gestion de la boutique" {
+    usecase (Mettre à jour\nson compte) as UC_V0
+    usecase (Gérer le catalogue\nproduits) as UC_V1
+    usecase (Gérer les stocks) as UC_V2
+    usecase (Traiter les commandes\nreçues) as UC_V3
+    usecase (Expédier vers\nl'UE) as UC_V4
+    usecase (Traiter les litiges\net réclamations) as UC_V5
+    usecase (Consulter les rapports\nde ventes) as UC_V6
+    usecase (Traiter une annulation\nde commande) as UC_V7
   }
 
   package "Expérience d'achat" {
-    usecase (Parcourir le catalogue) as UC_BUYER1
-    usecase (Sélectionner des produits\net gérer le panier) as UC_BUYER2
-    usecase (Passer une commande) as UC_BUYER3
-    usecase (Effectuer un paiement) as UC_BUYER4
-    usecase (Suivre la livraison) as UC_BUYER5
-    usecase (Laisser un avis) as UC_BUYER6
+    usecase (S'inscrire /\nSe connecter) as UC_B0
+    usecase (Mettre à jour\nson compte) as UC_B_ACC
+    usecase (Parcourir le catalogue) as UC_B1
+    usecase (Gérer le panier) as UC_B2
+    usecase (Sauvegarder / restaurer\nle panier) as UC_B2B
+    usecase (Passer une commande) as UC_B3
+    usecase (Effectuer un paiement\n(carte ou virement)) as UC_B4
+    usecase (Choisir le mode\nde livraison) as UC_B4B
+    usecase (Suivre la livraison) as UC_B5
+    usecase (Annuler une commande\n(avant expédition)) as UC_B6
+  }
+
+  package "Paiement" {
+    usecase (Autoriser\nla transaction) as UC_P1
+    usecase (Confirmer\nle règlement) as UC_P2
+    usecase (Traiter\nun remboursement) as UC_P3
+  }
+
+  package "Livraison UE" {
+    usecase (Prendre en charge\nle colis) as UC_C1
+    usecase (Livrer dans\nl'UE) as UC_C2
+    usecase (Mettre à jour\nle statut de livraison) as UC_C3
   }
 }
 
-Admin --> UC_ADMIN1
-Admin --> UC_ADMIN2
-Admin --> UC_ADMIN3
-Admin --> UC_ADMIN4
-Admin --> UC_ADMIN5
+Admin --> UC_A1
+Admin --> UC_A2
 
-Vendor --> UC_VENDOR1
-Vendor --> UC_VENDOR2
-Vendor --> UC_VENDOR3
-Vendor --> UC_VENDOR4
-Vendor --> UC_VENDOR5
+Vendor --> UC_V0
+Vendor --> UC_V1
+Vendor --> UC_V2
+Vendor --> UC_V3
+Vendor --> UC_V4
+Vendor --> UC_V5
+Vendor --> UC_V6
+Vendor --> UC_V7
+UC_V4 --> UC_C1
+UC_B6 --> UC_V7
 
-Buyer --> UC_BUYER1
-Buyer --> UC_BUYER2
-Buyer --> UC_BUYER3
-Buyer --> UC_BUYER4
-Buyer --> UC_BUYER5
-Buyer --> UC_BUYER6
+Buyer --> UC_B0
+Buyer --> UC_B_ACC
+Buyer --> UC_B1
+Buyer --> UC_B2
+Buyer --> UC_B2B
+Buyer --> UC_B3
+Buyer --> UC_B4
+Buyer --> UC_B4B
+Buyer --> UC_B5
+Buyer --> UC_B6
+UC_B4 --> UC_P1
+
+Carrier --> UC_C1
+Carrier --> UC_C2
+Carrier --> UC_C3
+UC_C3 --> UC_B5
+
+Payment --> UC_P1
+Payment --> UC_P2
+Payment --> UC_P3
+UC_P2 --> UC_V3
 ----
 
-== Diagramme d'activité opérationnel — Flux d'achat
+== Diagramme d'activité opérationnel — Flux d'achat et de traitement
 
-Ce diagramme modélise le flux de travail opérationnel complet, depuis la navigation de l'acheteur jusqu'à la clôture de la commande par le vendeur et la supervision de l'administrateur.
+Ce diagramme modélise le flux de travail opérationnel complet, depuis la navigation de l'acheteur jusqu'à la clôture de la commande par l'administrateur-propriétaire.
 
 [plantuml, oa-activity, svg]
 ----
@@ -119,18 +183,54 @@ skinparam swimlaneBorderColor #AAAAAA
 
 |Acheteur|
 start
+:S'inscrire / Se connecter;
+
+|Administrateur|
+:Valider le compte\nde l'acheteur;
+
+|Acheteur|
 :Parcourir le catalogue;
 :Sélectionner des produits;
 :Ajouter au panier;
 :Valider le panier;
 :Saisir les informations\nde livraison;
-:Effectuer le paiement;
+:Soumettre le paiement;
 
+|Prestataire de paiement|
+:Recevoir la demande\nde paiement;
+
+if (Transaction autorisée ?) then (oui)
+  :Confirmer le règlement;
+else (non)
+  :Refuser la transaction;
+endif
+
+|Acheteur|
 if (Paiement accepté ?) then (oui)
   :Recevoir confirmation\nde commande;
 else (non)
   :Recevoir notification\nd'échec;
   stop
+endif
+
+if (Annulation souhaitée ?) then (oui)
+  :Demander l'annulation\nde la commande;
+
+  |Vendeur|
+  :Recevoir demande\nd'annulation;
+  if (Commande déjà expédiée ?) then (oui)
+    :Refuser l'annulation;
+    |Acheteur|
+    :Recevoir notification\nde refus;
+  else (non)
+    :Accepter l'annulation;
+    |Prestataire de paiement|
+    :Traiter le remboursement;
+    |Acheteur|
+    :Recevoir confirmation\nd'annulation et remboursement;
+    stop
+  endif
+else (non)
 endif
 
 |Vendeur|
@@ -139,31 +239,33 @@ endif
 
 if (Stock disponible ?) then (oui)
   :Préparer la commande;
-  :Expédier le colis;
-  :Mettre à jour le statut\nde livraison;
 else (non)
   :Notifier l'acheteur\ndu délai;
   :Réapprovisionner\nle stock;
   :Préparer la commande;
-  :Expédier le colis;
-  :Mettre à jour le statut\nde livraison;
 endif
+
+:Expédier le colis\nvers l'UE;
+:Transmettre au\ntransporteur;
+
+|Transporteur|
+:Prendre en charge\nle colis;
+:Mettre à jour\nle statut de livraison;
+:Livrer dans le pays\nde l'acheteur (UE);
 
 |Acheteur|
 :Suivre la livraison;
 :Réceptionner le colis;
-:Laisser un avis produit;
 
-|Administrateur|
-:Superviser les commandes\nen cours;
-:Générer les rapports\nd'activité;
+|Vendeur|
+:Mettre à jour les\nrapports de ventes;
 
 stop
 ----
 
 == Diagramme de séquence opérationnel — Passation de commande
 
-Ce diagramme représente les échanges chronologiques entre les acteurs lors du processus de commande.
+Ce diagramme représente les échanges chronologiques entre l'acheteur et l'administrateur-propriétaire lors du processus de commande.
 
 [plantuml, oa-sequence, svg]
 ----
@@ -178,7 +280,16 @@ actor Acheteur as Buyer
 participant "Boutique\nen ligne" as Shop
 actor Vendeur as Vendor
 actor Administrateur as Admin
+participant "Transporteur\n(UE)" as Carrier
+participant "Prestataire\nde paiement" as Payment
 
+== Inscription ==
+Buyer -> Shop : S'inscrire
+Shop -> Admin : Notifier nouvelle inscription
+Admin -> Shop : Valider / activer le compte
+Shop --> Buyer : Confirmer l'activation du compte
+
+== Navigation et commande ==
 Buyer -> Shop : Parcourir le catalogue
 Shop --> Buyer : Afficher les produits disponibles
 
@@ -186,37 +297,53 @@ Buyer -> Shop : Ajouter produit au panier
 Shop --> Buyer : Mettre à jour le panier
 
 Buyer -> Shop : Valider la commande\n(adresse + paiement)
-Shop -> Shop : Vérifier le paiement
+Shop -> Payment : Soumettre la demande de paiement
 
 alt Paiement accepté
+  Payment --> Shop : Confirmer la transaction
   Shop --> Buyer : Confirmer la commande
   Shop -> Vendor : Notifier nouvelle commande
-  Vendor -> Shop : Accuser réception
+
+  Vendor -> Shop : Vérifier le stock
   Vendor -> Shop : Mettre à jour le statut (en préparation)
   Shop --> Buyer : Notifier mise en préparation
 
-  Vendor -> Shop : Déclarer expédition + n° suivi
-  Shop --> Buyer : Notifier expédition avec n° suivi
+  opt Annulation demandée avant expédition
+    Buyer -> Shop : Demander l'annulation
+    Shop -> Vendor : Transmettre la demande d'annulation
+    alt Commande non encore expédiée
+      Vendor -> Shop : Accepter l'annulation
+      Shop -> Payment : Déclencher le remboursement
+      Payment --> Shop : Confirmer le remboursement
+      Shop --> Buyer : Notifier annulation et remboursement
+    else Commande déjà expédiée
+      Vendor -> Shop : Refuser l'annulation
+      Shop --> Buyer : Notifier refus d'annulation
+    end
+  end
+
+  Vendor -> Shop : Déclarer expédition (pays UE destination)
+  Vendor -> Carrier : Remettre le colis
+  Carrier -> Carrier : Acheminer vers le pays de l'acheteur
+  Carrier -> Shop : Mettre à jour le statut de livraison
+  Shop --> Buyer : Notifier expédition avec n° de suivi
 
   Buyer -> Shop : Confirmer réception
   Shop --> Vendor : Notifier réception confirmée
-  Shop -> Admin : Enregistrer transaction clôturée
 
-  Buyer -> Shop : Déposer un avis produit
-  Shop --> Vendor : Notifier nouvel avis
+  Vendor -> Shop : Consulter les rapports de ventes
+  Shop --> Vendor : Afficher statistiques et historique
 
 else Paiement refusé
+  Payment --> Shop : Refuser la transaction
   Shop --> Buyer : Notifier échec du paiement
   note right : L'acheteur peut\nretenter ou annuler
 end
-
-Admin -> Shop : Consulter tableau de bord
-Shop --> Admin : Afficher statistiques et alertes
 ----
 
 == Diagramme de communication opérationnel — Interactions entre acteurs
 
-Ce diagramme met en évidence les canaux d'interaction opérationnelle entre les trois acteurs.
+Ce diagramme met en évidence les échanges opérationnels directs entre l'administrateur-propriétaire et l'acheteur.
 
 [plantuml, oa-communication, svg]
 ----
@@ -230,10 +357,18 @@ skinparam noteBorderColor #F0A500
 actor Administrateur as Admin
 actor Vendeur as Vendor
 actor Acheteur as Buyer
+participant "Transporteur\n(UE)" as Carrier
+participant "Prestataire\nde paiement" as Payment
 
-Admin <--> Vendor : 1. Gestion des comptes vendeurs\n2. Validation des catalogues\n3. Résolution des litiges vendeur
-Admin <--> Buyer : 4. Gestion des comptes acheteurs\n5. Traitement des réclamations\n6. Support client escaladé
-Vendor <--> Buyer : 7. Confirmation de commande\n8. Mise à jour expédition\n9. Échange sur les avis produits
+Admin <--> Buyer : 1. Validation du compte acheteur\n2. Suspension / suppression de compte
+Admin <--> Vendor : 3. Gestion du compte vendeur\n4. Accès back-office
+Admin --> Carrier : 5. Ajout / gestion des transporteurs disponibles
+Vendor <--> Buyer : 6. Confirmation de commande\n7. Mise à jour statut expédition\n8. Traitement des réclamations
+Vendor --> Carrier : 9. Remise des colis à expédier\n10. Instructions de livraison UE
+Carrier --> Buyer : 11. Mise à jour du statut de livraison\n12. Livraison du colis
+Buyer --> Payment : 13. Soumission du paiement
+Payment --> Buyer : 14. Confirmation / refus de transaction
+Payment --> Vendor : 15. Confirmation du règlement\n16. Traitement des remboursements
 ----
 
 == Synthèse des activités opérationnelles
@@ -244,20 +379,11 @@ Vendor <--> Buyer : 7. Confirmation de commande\n8. Mise à jour expédition\n9.
 |===
 | Activité | Description
 
-| Gérer les utilisateurs
-| Créer, modifier, suspendre ou supprimer les comptes vendeurs et acheteurs
+| Gérer les comptes utilisateurs
+| Créer, suspendre et supprimer les comptes du vendeur et des acheteurs ; gérer les droits d'accès à la plateforme
 
-| Configurer la plateforme
-| Paramétrer les catégories, les modes de paiement, les règles de livraison
-
-| Superviser les commandes
-| Consulter l'ensemble des commandes, détecter les anomalies, intervenir si nécessaire
-
-| Gérer les litiges
-| Arbitrer les conflits entre acheteurs et vendeurs, décider des remboursements
-
-| Produire des rapports
-| Générer des tableaux de bord sur les ventes, les performances vendeurs, la satisfaction acheteurs
+| Gérer les transporteurs
+| Ajouter, modifier et supprimer les transporteurs disponibles sur la plateforme pour les expéditions UE
 |===
 
 === Vendeur
@@ -266,20 +392,29 @@ Vendor <--> Buyer : 7. Confirmation de commande\n8. Mise à jour expédition\n9.
 |===
 | Activité | Description
 
-| Publier des produits
-| Créer et mettre à jour les fiches produits (photos, descriptions, prix, catégories)
+| Mettre à jour son compte
+| Modifier ses informations personnelles (nom, adresse, mot de passe, coordonnées)
 
-| Gérer le stock
-| Suivre les niveaux de stock, déclencher les réapprovisionnements, gérer les alertes de rupture
+| Gérer le catalogue produits
+| Créer, modifier et supprimer les fiches produits (photos, descriptions, prix, catégories)
+
+| Gérer les stocks
+| Suivre les niveaux de stock, anticiper les ruptures, effectuer les réapprovisionnements
 
 | Traiter les commandes
-| Prendre en charge les commandes reçues, préparer les colis, mettre à jour les statuts
+| Prendre en charge les commandes reçues, vérifier le stock, préparer les colis
 
-| Gérer les expéditions
-| Choisir les transporteurs, générer les étiquettes, saisir les numéros de suivi
+| Gérer les expéditions vers l'UE
+| Choisir le transporteur, préparer les colis, générer les étiquettes, remettre les colis au transporteur
 
-| Consulter les revenus
-| Accéder aux rapports de ventes, aux commissions, aux historiques de paiements reçus
+| Traiter les litiges et réclamations
+| Répondre aux demandes de remboursement, gérer les retours produits
+
+| Traiter une annulation de commande
+| Vérifier si la commande est encore en préparation (non expédiée) ; accepter l'annulation et déclencher le remboursement, ou la refuser si le colis a déjà été remis au transporteur
+
+| Consulter les rapports de ventes
+| Analyser les performances commerciales, le chiffre d'affaires, les produits les plus vendus
 |===
 
 === Acheteur
@@ -288,21 +423,61 @@ Vendor <--> Buyer : 7. Confirmation de commande\n8. Mise à jour expédition\n9.
 |===
 | Activité | Description
 
+| S'inscrire / Se connecter
+| Créer un compte (activé par l'administrateur) ou s'authentifier pour accéder aux fonctionnalités d'achat
+
+| Mettre à jour son compte
+| Modifier ses informations personnelles (adresse de livraison, mot de passe, coordonnées)
+
 | Parcourir le catalogue
 | Rechercher, filtrer et consulter les produits disponibles
 
 | Gérer le panier
 | Ajouter, modifier la quantité ou retirer des produits du panier
 
+| Sauvegarder / restaurer le panier
+| Le panier est automatiquement sauvegardé sur le compte de l'acheteur ; à la reconnexion, son contenu est restauré tel quel
+
 | Passer une commande
-| Saisir l'adresse de livraison, choisir le mode de livraison, valider la commande
+| Saisir l'adresse de livraison dans un pays de l'UE, choisir le mode de livraison, valider la commande
 
 | Effectuer un paiement
-| Régler la commande par carte bancaire ou autre moyen de paiement disponible
+| Régler la commande par **carte bancaire** ou par **virement bancaire** via le prestataire de paiement
 
 | Suivre la livraison
 | Consulter le statut d'expédition et le numéro de suivi du colis
 
-| Laisser un avis
-| Évaluer les produits achetés et rédiger des commentaires après réception
+| Annuler une commande
+| Demander l'annulation d'une commande tant que le colis n'a pas encore été remis au transporteur
+|===
+
+=== Transporteur (système externe)
+[cols="1,3", options="header"]
+|===
+| Activité | Description
+
+| Prendre en charge le colis
+| Réceptionner les colis remis par le vendeur pour expédition vers un pays de l'UE
+
+| Acheminer et livrer dans l'UE
+| Assurer le transport et la livraison du colis à l'adresse de l'acheteur dans le pays de destination
+
+| Mettre à jour le statut de livraison
+| Fournir un numéro de suivi et publier les mises à jour d'acheminement consultables par l'acheteur
+|===
+
+=== Prestataire de paiement (système externe)
+
+[cols="1,3", options="header"]
+|===
+| Activité | Description
+
+| Autoriser la transaction
+| Recevoir la demande de paiement, vérifier les données bancaires et autoriser ou refuser la transaction
+
+| Confirmer le règlement
+| Notifier la boutique et le vendeur de la bonne réception des fonds
+
+| Traiter un remboursement
+| Reverser tout ou partie du montant à l'acheteur en cas de litige, retour ou annulation de commande
 |===
