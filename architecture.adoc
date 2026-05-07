@@ -12,7 +12,7 @@
 
 L'Analyse du Besoin Opérationnel (OA) décrit le contexte métier réel d'une boutique en ligne, indépendamment de tout système à construire. Elle identifie les acteurs impliqués, leurs activités opérationnelles et les échanges entre eux.
 
-La boutique repose sur trois acteurs distincts. L'**administrateur** est l'unique responsable de la gestion des comptes utilisateurs. Le **vendeur** (propriétaire du site) prend en charge l'ensemble des opérations commerciales : catalogue, stocks, commandes et expéditions. L'**acheteur** est le client final qui navigue et passe commande. La boutique propose une livraison à destination de l'ensemble des pays de l'**Union Européenne**, via un ou plusieurs services de transport externes. Les paiements sont traités par un **prestataire de paiement externe** (ex. Stripe, PayPal).
+La boutique repose sur trois acteurs distincts. L'**administrateur** est l'unique responsable de la gestion des comptes utilisateurs. Le **vendeur** (propriétaire du site) prend en charge l'ensemble des opérations commerciales : catalogue, stocks, commandes et expéditions. L'**acheteur** est le client final qui navigue et passe commande. La boutique propose une livraison à destination de l'ensemble des pays de l'**Union Européenne**, via un ou plusieurs services de transport externes. Les paiements sont traités par un **prestataire de paiement externe** et acceptés par **carte bancaire** ou **virement bancaire**.
 
 === Acteurs opérationnels
 
@@ -30,7 +30,7 @@ La boutique repose sur trois acteurs distincts. L'**administrateur** est l'uniqu
 
 | *Acheteur*
 | Client de la boutique (résidant dans l'UE)
-| S'inscrire, mettre à jour ses données de compte, parcourir le catalogue, sélectionner des produits, passer des commandes, effectuer les paiements, choisir le mode de livraison, suivre et réceptionner les livraisons
+| S'inscrire, mettre à jour ses données de compte, parcourir le catalogue, sélectionner des produits, gérer et sauvegarder son panier, passer des commandes, effectuer les paiements (carte ou virement), choisir le mode de livraison, suivre et réceptionner les livraisons
 
 | *Transporteur*
 | Système externe de livraison
@@ -52,6 +52,14 @@ Les contraintes suivantes sont issues du contexte d'usage réel des acteurs et s
 | COp-01
 | Interface responsive (PC / smartphone)
 | Les acteurs interagissent avec la boutique depuis des environnements variés. L'acheteur utilise principalement un smartphone pour naviguer et passer commande. Le vendeur et l'administrateur opèrent depuis un ordinateur de bureau ou un ordinateur portable. L'interface doit s'adapter à toutes ces résolutions sans dégradation de l'expérience utilisateur.
+
+| COp-02
+| Modes de paiement acceptés
+| L'acheteur doit pouvoir régler ses commandes par **carte bancaire** ou par **virement bancaire**. Ces deux modes de paiement doivent être proposés lors du tunnel d'achat et traités via le prestataire de paiement externe.
+
+| COp-03
+| Persistance du panier entre sessions
+| Le panier d'un acheteur authentifié est automatiquement sauvegardé sur son compte. À la reconnexion, le contenu du panier est restauré tel qu'il avait été laissé lors de la session précédente.
 |===
 
 == Diagramme de cas d'utilisation opérationnel
@@ -104,8 +112,9 @@ rectangle "Boutique en ligne — Contexte Opérationnel" {
     usecase (Mettre à jour\nson compte) as UC_B_ACC
     usecase (Parcourir le catalogue) as UC_B1
     usecase (Gérer le panier) as UC_B2
+    usecase (Sauvegarder / restaurer\nle panier) as UC_B2B
     usecase (Passer une commande) as UC_B3
-    usecase (Effectuer un paiement) as UC_B4
+    usecase (Effectuer un paiement\n(carte ou virement)) as UC_B4
     usecase (Choisir le mode\nde livraison) as UC_B4B
     usecase (Suivre la livraison) as UC_B5
     usecase (Annuler une commande\n(avant expédition)) as UC_B6
@@ -142,6 +151,7 @@ Buyer --> UC_B0
 Buyer --> UC_B_ACC
 Buyer --> UC_B1
 Buyer --> UC_B2
+Buyer --> UC_B2B
 Buyer --> UC_B3
 Buyer --> UC_B4
 Buyer --> UC_B4B
@@ -425,11 +435,14 @@ Payment --> Vendor : 15. Confirmation du règlement\n16. Traitement des rembours
 | Gérer le panier
 | Ajouter, modifier la quantité ou retirer des produits du panier
 
+| Sauvegarder / restaurer le panier
+| Le panier est automatiquement sauvegardé sur le compte de l'acheteur ; à la reconnexion, son contenu est restauré tel quel
+
 | Passer une commande
 | Saisir l'adresse de livraison dans un pays de l'UE, choisir le mode de livraison, valider la commande
 
 | Effectuer un paiement
-| Régler la commande par carte bancaire ou autre moyen de paiement disponible
+| Régler la commande par **carte bancaire** ou par **virement bancaire** via le prestataire de paiement
 
 | Suivre la livraison
 | Consulter le statut d'expédition et le numéro de suivi du colis
