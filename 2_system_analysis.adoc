@@ -1,4 +1,3 @@
-
 = Analyse Système (SA — System Analysis)
 :doctype: article
 :toc: left
@@ -84,6 +83,10 @@ Les contraintes opérationnelles (COp) de l'OA sont traduites en contraintes sys
 | CS-06
 | Journalisation financière
 | Le système doit journaliser toutes les transactions financières (paiement, remboursement) à des fins d'audit.
+
+| CS-07
+| Activation de compte par email
+| À l'issue de l'inscription, le système doit envoyer automatiquement un email contenant un lien d'activation tokenisé à usage unique. Le compte est activé uniquement sur clic de ce lien. Le token doit avoir une durée de validité limitée (ex. 24 h) au-delà de laquelle un renvoi est possible.
 |===
 
 == Exigences fonctionnelles système
@@ -99,7 +102,6 @@ Les fonctions système (FS) sont dérivées des cas d'utilisation opérationnels
 | FS-A01 | Créer, suspendre et supprimer les comptes vendeur et acheteur | UC_A1
 | FS-A02 | Gérer les droits d'accès (rôles) sur la plateforme | UC_A1
 | FS-A03 | Ajouter, modifier et supprimer les transporteurs disponibles | UC_A2
-| FS-A04 | Valider et activer un nouveau compte acheteur après inscription | UC_B0
 |===
 
 === Gestion de la boutique (Vendeur)
@@ -124,7 +126,8 @@ Les fonctions système (FS) sont dérivées des cas d'utilisation opérationnels
 |===
 | ID | Fonction système | Origine UC (OA)
 
-| FS-B01 | Gérer l'inscription et l'authentification de l'acheteur | UC_B0
+| FS-B01 | Gérer l'inscription de l'acheteur et envoyer un email d'activation avec lien tokenisé | UC_B0
+| FS-B10 | Valider et activer le compte acheteur sur clic du lien d'activation (token à usage unique, expirant) | UC_B0
 | FS-B02 | Permettre à l'acheteur de mettre à jour ses données de compte | UC_B_ACC
 | FS-B03 | Afficher et filtrer le catalogue produits disponibles | UC_B1
 | FS-B04 | Gérer le panier (ajout, modification de quantité, suppression) | UC_B2
@@ -190,7 +193,7 @@ rectangle "Système — Boutique en ligne" {
   }
 
   package "Expérience d'achat" {
-    usecase (UCSA-01\nS'inscrire et activer\nun compte acheteur) as UC01
+    usecase (UCSA-01\nS'inscrire et activer\nson compte via email) as UC01
     usecase (UCSA-03\nParcourir et rechercher\nle catalogue) as UC03
     usecase (UCSA-04\nGérer le panier\net sa persistance) as UC04
     usecase (UCSA-05\nPasser une commande\n(tunnel d'achat)) as UC05
@@ -205,7 +208,6 @@ rectangle "Système — Boutique en ligne" {
 }
 
 Admin --> UC12
-Admin --> UC01 : valide le compte
 
 Vendor --> UC02
 Vendor --> UC10
@@ -232,6 +234,47 @@ Carrier --> UC_C
 ----
 
 == Cas d'utilisation système — Descriptions détaillées
+
+=== UCSA-01 : S'inscrire et activer son compte via email
+
+[cols="1,3", options="header"]
+|===
+| Champ | Description
+
+| *Identifiant*
+| UCSA-01
+
+| *Acteurs*
+| Acheteur (principal) ; Service de notification email — IFS-06 (secondaire)
+
+| *Préconditions*
+| Aucun compte existant avec cette adresse email
+
+| *Déclencheur*
+| L'acheteur soumet le formulaire d'inscription
+
+| *Scénario nominal*
+a|
+. L'acheteur saisit son email, son mot de passe et ses informations de compte.
+. Le système crée le compte avec le statut « en attente d'activation » (FS-B01).
+. Le système génère un token d'activation à usage unique avec une durée de validité de 24 h (CS-07).
+. Le système envoie un email contenant le lien d'activation tokenisé (IFS-06 / FS-B10).
+. L'acheteur clique sur le lien depuis sa messagerie.
+. Le système vérifie la validité du token (non expiré, non déjà utilisé).
+. Le système active le compte et redirige l'acheteur vers la page de connexion.
+
+| *Scénarios alternatifs*
+a|
+* *6a.* Le token est expiré (> 24 h) : le système retourne une erreur et propose un renvoi du lien.
+* *6b.* Le token a déjà été utilisé : le système affiche « compte déjà activé ».
+* *2a.* L'adresse email est déjà utilisée : le système retourne une erreur sans créer de doublon.
+
+| *Postconditions*
+| Compte acheteur actif ; l'acheteur peut s'authentifier et accéder aux fonctionnalités d'achat.
+
+| *Exigences liées*
+| FS-B01, FS-B10, CS-07, IFS-06
+|===
 
 === UCSA-05 : Passer une commande (tunnel d'achat)
 
@@ -325,6 +368,25 @@ skinparam swimlaneBorderColor #AAAAAA
 
 |Acheteur|
 start
+:S'inscrire (FS-B01);
+
+|Système|
+:Générer token d'activation (CS-07);
+:Envoyer email avec lien tokenisé\n(IFS-06 / FS-B10);
+
+|Acheteur|
+:Cliquer sur le lien d'activation;
+
+|Système|
+if (Token valide et non expiré ?) then (oui)
+  :Activer le compte (FS-B10);
+else (non)
+  :Notifier l'acheteur — token expiré;
+  :Proposer le renvoi du lien;
+  stop
+endif
+
+|Acheteur|
 :S'authentifier (FS-B01);
 
 |Système|
@@ -451,9 +513,15 @@ participant "IFS-04\nPrestataire paiement" as Payment
 
 == Inscription et activation de compte (UCSA-01) ==
 Buyer -> Sys : POST /register {email, mdp, adresse}
-Sys -> Admin : Notification : nouveau compte acheteur
-Admin -> Sys : PUT /accounts/{id}/activate
-Sys --> Buyer : 200 OK — compte activé (email de confirmation)
+Sys --> Buyer : 201 Created — compte créé, statut "en attente d'activation"
+Sys -> Sys : Générer token d'activation (UUID, TTL 24h)
+Sys --> Buyer : IFS-06 — Email : lien d'activation\nhttps://boutique/activate?token={uuid}
+note right : FS-B01 / FS-B10 / CS-07\nToken à usage unique, expire dans 24 h
+
+Buyer -> Sys : GET /activate?token={uuid}
+Sys -> Sys : Vérifier token (valide + non expiré)
+Sys --> Buyer : 200 OK — compte activé, redirection vers connexion
+note right : Si token expiré :\nSys --> Buyer : 410 Gone\nBuyer peut demander un renvoi
 
 == Navigation et gestion du panier (UCSA-03 / UCSA-04) ==
 Buyer -> Sys : GET /catalogue?filtre=...
@@ -762,7 +830,7 @@ La matrice ci-dessous assure la couverture complète de chaque besoin opération
 
 | UC_A1 | Gérer les comptes utilisateurs | FS-A01, FS-A02 | UCSA-12
 | UC_A2 | Gérer les transporteurs | FS-A03 | UCSA-12
-| UC_B0 | S'inscrire / Se connecter | FS-B01, FS-A04 | UCSA-01, UCSA-02
+| UC_B0 | S'inscrire / activer son compte via lien email | FS-B01, FS-B10, CS-07 | UCSA-01, UCSA-02
 | UC_B_ACC | Mettre à jour son compte (acheteur) | FS-B02 | UCSA-02
 | UC_B1 | Parcourir le catalogue | FS-B03 | UCSA-03
 | UC_B2 / UC_B2B | Gérer et persister le panier | FS-B04, FS-B05 | UCSA-04
@@ -780,4 +848,5 @@ La matrice ci-dessous assure la couverture complète de chaque besoin opération
 | COp-01 | Interface responsive | CS-01 | —
 | COp-02 | Modes de paiement carte / virement | CS-02, CS-06 | UCSA-05
 | COp-03 | Persistance du panier entre sessions | CS-03, FS-B05 | UCSA-04
+| — | Activation de compte par lien email | CS-07, FS-B01, FS-B10 | UCSA-01
 |===
