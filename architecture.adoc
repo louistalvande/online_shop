@@ -12,7 +12,7 @@
 
 L'Analyse du Besoin Opérationnel (OA) décrit le contexte métier réel d'une boutique en ligne, indépendamment de tout système à construire. Elle identifie les acteurs impliqués, leurs activités opérationnelles et les échanges entre eux.
 
-La boutique repose sur trois acteurs distincts. L'**administrateur** est l'unique responsable de la gestion des comptes utilisateurs. Le **vendeur** (propriétaire du site) prend en charge l'ensemble des opérations commerciales : catalogue, stocks, commandes et expéditions. L'**acheteur** est le client final qui navigue et passe commande.
+La boutique repose sur trois acteurs distincts. L'**administrateur** est l'unique responsable de la gestion des comptes utilisateurs. Le **vendeur** (propriétaire du site) prend en charge l'ensemble des opérations commerciales : catalogue, stocks, commandes et expéditions. L'**acheteur** est le client final qui navigue et passe commande. La boutique propose une livraison à destination de l'ensemble des pays de l'**Union Européenne**, via un ou plusieurs services de transport externes.
 
 === Acteurs opérationnels
 
@@ -26,11 +26,15 @@ La boutique repose sur trois acteurs distincts. L'**administrateur** est l'uniqu
 
 | *Vendeur*
 | Propriétaire et exploitant de la boutique
-| Mettre à jour ses données de compte, gérer le catalogue produits, administrer les stocks, traiter les commandes reçues, gérer les expéditions, consulter les rapports de ventes, traiter les litiges et réclamations
+| Mettre à jour ses données de compte, gérer le catalogue produits, administrer les stocks, traiter les commandes reçues, gérer les expéditions vers les pays de l'UE, consulter les rapports de ventes, traiter les litiges et réclamations
 
 | *Acheteur*
-| Client de la boutique
-| S'inscrire, mettre à jour ses données de compte, parcourir le catalogue, sélectionner des produits, passer des commandes, effectuer les paiements, suivre et réceptionner les livraisons, laisser des avis
+| Client de la boutique (résidant dans l'UE)
+| S'inscrire, mettre à jour ses données de compte, parcourir le catalogue, sélectionner des produits, passer des commandes, effectuer les paiements, choisir le mode de livraison, suivre et réceptionner les livraisons
+
+| *Transporteur*
+| Système externe de livraison
+| Prendre en charge les colis expédiés par le vendeur, assurer la livraison dans les pays de l'UE, fournir un numéro de suivi et mettre à jour le statut de livraison
 |===
 
 == Diagramme de cas d'utilisation opérationnel
@@ -57,6 +61,7 @@ left to right direction
 actor "Administrateur" as Admin
 actor "Vendeur" as Vendor
 actor "Acheteur" as Buyer
+actor "Transporteur\n(système externe)" as Carrier
 
 rectangle "Boutique en ligne — Contexte Opérationnel" {
 
@@ -69,7 +74,7 @@ rectangle "Boutique en ligne — Contexte Opérationnel" {
     usecase (Gérer le catalogue\nproduits) as UC_V1
     usecase (Gérer les stocks) as UC_V2
     usecase (Traiter les commandes\nreçues) as UC_V3
-    usecase (Gérer les expéditions) as UC_V4
+    usecase (Expédier vers\nl'UE) as UC_V4
     usecase (Traiter les litiges\net réclamations) as UC_V5
     usecase (Consulter les rapports\nde ventes) as UC_V6
   }
@@ -81,7 +86,14 @@ rectangle "Boutique en ligne — Contexte Opérationnel" {
     usecase (Gérer le panier) as UC_B2
     usecase (Passer une commande) as UC_B3
     usecase (Effectuer un paiement) as UC_B4
+    usecase (Choisir le mode\nde livraison) as UC_B4B
     usecase (Suivre la livraison) as UC_B5
+  }
+
+  package "Livraison UE" {
+    usecase (Prendre en charge\nle colis) as UC_C1
+    usecase (Livrer dans\nl'UE) as UC_C2
+    usecase (Mettre à jour\nle statut de livraison) as UC_C3
   }
 }
 
@@ -94,6 +106,7 @@ Vendor --> UC_V3
 Vendor --> UC_V4
 Vendor --> UC_V5
 Vendor --> UC_V6
+UC_V4 --> UC_C1
 
 Buyer --> UC_B0
 Buyer --> UC_B_ACC
@@ -101,7 +114,13 @@ Buyer --> UC_B1
 Buyer --> UC_B2
 Buyer --> UC_B3
 Buyer --> UC_B4
+Buyer --> UC_B4B
 Buyer --> UC_B5
+
+Carrier --> UC_C1
+Carrier --> UC_C2
+Carrier --> UC_C3
+UC_C3 --> UC_B5
 ----
 
 == Diagramme d'activité opérationnel — Flux d'achat et de traitement
@@ -149,8 +168,13 @@ else (non)
   :Préparer la commande;
 endif
 
-:Expédier le colis;
-:Saisir le numéro\nde suivi;
+:Expédier le colis\nvers l'UE;
+:Transmettre au\ntransporteur;
+
+|Transporteur|
+:Prendre en charge\nle colis;
+:Mettre à jour\nle statut de livraison;
+:Livrer dans le pays\nde l'acheteur (UE);
 
 |Acheteur|
 :Suivre la livraison;
@@ -179,6 +203,7 @@ actor Acheteur as Buyer
 participant "Boutique\nen ligne" as Shop
 actor Vendeur as Vendor
 actor Administrateur as Admin
+participant "Transporteur\n(UE)" as Carrier
 
 == Inscription ==
 Buyer -> Shop : S'inscrire
@@ -204,7 +229,10 @@ alt Paiement accepté
   Vendor -> Shop : Mettre à jour le statut (en préparation)
   Shop --> Buyer : Notifier mise en préparation
 
-  Vendor -> Shop : Déclarer expédition + n° de suivi
+  Vendor -> Shop : Déclarer expédition (pays UE destination)
+  Vendor -> Carrier : Remettre le colis
+  Carrier -> Carrier : Acheminer vers le pays de l'acheteur
+  Carrier -> Shop : Mettre à jour le statut de livraison
   Shop --> Buyer : Notifier expédition avec n° de suivi
 
   Buyer -> Shop : Confirmer réception
@@ -235,10 +263,13 @@ skinparam noteBorderColor #F0A500
 actor Administrateur as Admin
 actor Vendeur as Vendor
 actor Acheteur as Buyer
+participant "Transporteur\n(UE)" as Carrier
 
 Admin <--> Buyer : 1. Validation du compte acheteur\n2. Suspension / suppression de compte
 Admin <--> Vendor : 3. Gestion du compte vendeur\n4. Accès back-office
 Vendor <--> Buyer : 5. Confirmation de commande\n6. Mise à jour statut expédition\n7. Traitement des réclamations
+Vendor --> Carrier : 8. Remise des colis à expédier\n9. Instructions de livraison UE
+Carrier --> Buyer : 10. Mise à jour du statut de livraison\n11. Livraison du colis
 ----
 
 == Synthèse des activités opérationnelles
@@ -271,8 +302,8 @@ Vendor <--> Buyer : 5. Confirmation de commande\n6. Mise à jour statut expédit
 | Traiter les commandes
 | Prendre en charge les commandes reçues, vérifier le stock, préparer les colis
 
-| Gérer les expéditions
-| Choisir les transporteurs, générer les étiquettes, saisir les numéros de suivi
+| Gérer les expéditions vers l'UE
+| Choisir le transporteur, préparer les colis, générer les étiquettes, remettre les colis au transporteur
 
 | Traiter les litiges et réclamations
 | Répondre aux demandes de remboursement, gérer les retours produits
@@ -300,11 +331,27 @@ Vendor <--> Buyer : 5. Confirmation de commande\n6. Mise à jour statut expédit
 | Ajouter, modifier la quantité ou retirer des produits du panier
 
 | Passer une commande
-| Saisir l'adresse de livraison, choisir le mode de livraison, valider la commande
+| Saisir l'adresse de livraison dans un pays de l'UE, choisir le mode de livraison, valider la commande
 
 | Effectuer un paiement
 | Régler la commande par carte bancaire ou autre moyen de paiement disponible
 
 | Suivre la livraison
 | Consulter le statut d'expédition et le numéro de suivi du colis
+|===
+
+=== Transporteur (système externe)
+
+[cols="1,3", options="header"]
+|===
+| Activité | Description
+
+| Prendre en charge le colis
+| Réceptionner les colis remis par le vendeur pour expédition vers un pays de l'UE
+
+| Acheminer et livrer dans l'UE
+| Assurer le transport et la livraison du colis à l'adresse de l'acheteur dans le pays de destination
+
+| Mettre à jour le statut de livraison
+| Fournir un numéro de suivi et publier les mises à jour d'acheminement consultables par l'acheteur
 |===
