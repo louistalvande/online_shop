@@ -5,8 +5,7 @@
 :sectnums:
 :icons: font
 :source-highlighter: rouge
-:imagesdir: images
-:plantuml-server-url: http://www.plantuml.com/plantuml
+:imagesdir: diagrams
 
 == Contexte et objectif
 
@@ -124,10 +123,10 @@ rectangle "Boutique en ligne — Contexte Opérationnel" {
     usecase (Gérer le panier) as UC_B2
     usecase (Sauvegarder / restaurer\nle panier) as UC_B2B
     usecase (Passer une commande) as UC_B3
-    usecase (Effectuer un paiement\n(carte ou virement)) as UC_B4
+    usecase "Effectuer un paiement\n(carte ou virement)" as UC_B4
     usecase (Choisir le mode\nde livraison) as UC_B4B
     usecase (Suivre la livraison) as UC_B5
-    usecase (Annuler une commande\n(avant expédition)) as UC_B6
+    usecase "Annuler une commande\n(avant expédition)" as UC_B6
   }
 
   package "Messagerie" {

@@ -26,7 +26,10 @@ Le projet a pour objectif de développer une application web de boutique en lign
 La réalisation du projet s'articulera autour de plusieurs grandes étapes, abordées de façon itérative. L'ensemble de ces étapes sera appliqué intégralement pour chaque User Story.
 
 === I. Génération du document d'architecture avec la méthodologie MBSE ARCADIA [[i-génération-du-document-darchitecture-avec-la-méthodologie-mbse-arcadia]]
-La méthode ARCADIA sera suivie en s'appuyant uniquement sur le language de modélisation UML. Le document sera manipulé avec Asciidoc, et les diagrammes seront manipulés avec la notation textuelle de PlantUML, puis générés sous forme visuelle dans le document final.
+
+image::arcadia.png[ARCADIA, 600]
+
+La méthode ARCADIA sera suivie en s'appuyant uniquement sur le language de modélisation UML. Le document sera manipulé avec Asciidoc, et les diagrammes avec la notation textuelle de PlantUML, puis générés sous forme visuelle dans le document final.
 
 ==== Analyse du besoin [[analyse-du-besoin]]
 ===== 1. Analyse du Besoin Opérationnel (OA — Operational Analysis) [[1-analyse-du-besoin-opérationnel-oa--operational-analysis]]
@@ -209,6 +212,9 @@ L'objectif est de fournir une documentation claire, accessible et maintainable, 
 The project aims to develop an online shop web application. It will begin with the writing of an architecture document, with the various deliverables produced with the assistance of an AI.
 The project will be structured around several major phases, approached iteratively. Each of these phases will be applied in full for every User Story.
 === I. Generating the Architecture Document Using the MBSE ARCADIA Methodology [[i-generating-the-architecture-document-using-the-mbse-arcadia-methodology]]
+
+image::arcadia.png[ARCADIA, 600]
+
 The ARCADIA method will be followed using exclusively UML modelling language. The document will be written in AsciiDoc, and diagrams will be expressed using PlantUML textual notation, then rendered visually in the final document.
 
 ==== Needs Analysis [[needs-analysis]]

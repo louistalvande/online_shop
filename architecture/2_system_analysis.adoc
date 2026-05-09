@@ -5,8 +5,7 @@
 :sectnums:
 :icons: font
 :source-highlighter: rouge
-:imagesdir: images
-:plantuml-server-url: http://www.plantuml.com/plantuml
+:imagesdir: diagrams
 
 == Contexte et objectif
 
@@ -18,7 +17,7 @@ La SA repose sur les trois principes ARCADIA suivants :
 * Allouer chaque besoin opérationnel à une ou plusieurs fonctions système.
 * Identifier les échanges entre le système et les acteurs externes (flux, données, événements).
 
-NOTE: Le système couvre l'ensemble des interactions numériques entre les cinq acteurs de la boutique : Administrateur, Vendeur, Acheteur, Transporteur (externe) et Prestataire de paiement (externe). Les deux acteurs externes sont des systèmes tiers ; le système ne les implémente pas, mais définit les interfaces d'échange avec eux.
+NOTE: Le système couvre l'ensemble des interactions numériques entre les six acteurs de la boutique : Administrateur, Vendeur, Acheteur, Transporteur (externe), Prestataire de paiement (externe) et Service de messagerie (externe). Les trois acteurs externes sont des systèmes tiers ; le système ne les implémente pas, mais définit les interfaces d'échange avec eux.
 
 === Acteurs système et interfaces
 
@@ -50,6 +49,11 @@ NOTE: Le système couvre l'ensemble des interactions numériques entre les cinq 
 | Système externe
 | Autorisation et confirmation des transactions
 | API de paiement carte / virement (IFS-04)
+
+| *Service de messagerie*
+| Système externe
+| Acheminement des emails transactionnels (activation de compte, notifications)
+| SMTP / SMS Gateway — sortant (IFS-06)
 |===
 
 == Contraintes système
@@ -196,7 +200,7 @@ rectangle "Système — Boutique en ligne" {
     usecase (UCSA-01\nS'inscrire et activer\nson compte via email) as UC01
     usecase (UCSA-03\nParcourir et rechercher\nle catalogue) as UC03
     usecase (UCSA-04\nGérer le panier\net sa persistance) as UC04
-    usecase (UCSA-05\nPasser une commande\n(tunnel d'achat)) as UC05
+    usecase "UCSA-05\nPasser une commande\n(tunnel d'achat)" as UC05
     usecase (UCSA-06\nAnnuler une commande\navant expédition) as UC06
     usecase (UCSA-08\nSuivre la livraison\nd'un colis) as UC08
   }
@@ -353,6 +357,340 @@ a|
 
 | *Exigences liées*
 | FS-B09, FS-V08, FS-P03
+|===
+
+=== UCSA-02 : Gérer son compte
+
+[cols="1,3", options="header"]
+|===
+| Champ | Description
+
+| *Identifiant*
+| UCSA-02
+
+| *Acteurs*
+| Acheteur ou Vendeur (principal)
+
+| *Préconditions*
+| Utilisateur authentifié
+
+| *Déclencheur*
+| L'utilisateur accède à la section « Mon compte »
+
+| *Scénario nominal*
+a|
+. L'utilisateur accède au formulaire de mise à jour de son profil.
+. Il modifie les champs souhaités (nom, adresse, mot de passe, etc.).
+. Le système valide les données saisies (unicité de l'email, format du mot de passe).
+. Le système enregistre les modifications et confirme la mise à jour.
+
+| *Scénarios alternatifs*
+a|
+* *3a.* L'adresse email est déjà utilisée par un autre compte : le système retourne une erreur sans modifier le compte.
+* *3b.* Les données saisies sont invalides (format incorrect) : le système signale les champs en erreur.
+
+| *Postconditions*
+| Données du compte mises à jour en base.
+
+| *Exigences liées*
+| FS-V01, FS-B02
+|===
+
+=== UCSA-03 : Parcourir et rechercher le catalogue
+
+[cols="1,3", options="header"]
+|===
+| Champ | Description
+
+| *Identifiant*
+| UCSA-03
+
+| *Acteurs*
+| Acheteur (principal)
+
+| *Préconditions*
+| Aucune — accessible sans authentification
+
+| *Déclencheur*
+| L'acheteur accède à la page catalogue ou saisit un terme de recherche
+
+| *Scénario nominal*
+a|
+. Le système affiche le catalogue des produits disponibles (statut « publié »).
+. L'acheteur peut filtrer par catégorie, prix ou disponibilité.
+. L'acheteur peut saisir un terme de recherche textuelle.
+. Le système retourne la liste filtrée ou les résultats correspondants.
+. L'acheteur sélectionne un produit pour en consulter le détail.
+
+| *Scénarios alternatifs*
+a|
+* *4a.* Aucun produit ne correspond aux critères : le système affiche un message « aucun résultat » et propose de réinitialiser les filtres.
+
+| *Postconditions*
+| Liste de produits affichée ; l'acheteur peut ajouter un produit au panier.
+
+| *Exigences liées*
+| FS-B03
+|===
+
+=== UCSA-04 : Gérer le panier et sa persistance
+
+[cols="1,3", options="header"]
+|===
+| Champ | Description
+
+| *Identifiant*
+| UCSA-04
+
+| *Acteurs*
+| Acheteur (principal)
+
+| *Préconditions*
+| Acheteur authentifié
+
+| *Déclencheur*
+| L'acheteur ajoute, modifie ou supprime un produit du panier
+
+| *Scénario nominal*
+a|
+. L'acheteur ajoute un produit au panier depuis le catalogue (FS-B04).
+. Le système vérifie la disponibilité en stock.
+. Le système met à jour le panier et affiche le récapitulatif.
+. Le panier est automatiquement sauvegardé en base (FS-B05 / CS-03).
+. À la reconnexion, le système restaure intégralement le panier sauvegardé.
+
+| *Scénarios alternatifs*
+a|
+* *2a.* Le produit demandé est en rupture de stock : le système bloque l'ajout et informe l'acheteur.
+* *3a.* L'acheteur vide le panier : le système supprime toutes les lignes et conserve un panier vide en base.
+
+| *Postconditions*
+| Panier mis à jour et persisté en base ; restaurable à la prochaine session.
+
+| *Exigences liées*
+| FS-B04, FS-B05, CS-03
+|===
+
+=== UCSA-07 : Préparer et expédier une commande
+
+[cols="1,3", options="header"]
+|===
+| Champ | Description
+
+| *Identifiant*
+| UCSA-07
+
+| *Acteurs*
+| Vendeur (principal) ; Transporteur — IFS-05 (secondaire)
+
+| *Préconditions*
+| Commande confirmée et en état « en_préparation » ; au moins un transporteur configuré
+
+| *Déclencheur*
+| Le vendeur déclare la commande prête à l'expédition
+
+| *Scénario nominal*
+a|
+. Le vendeur consulte la commande dans le back-office et vérifie la disponibilité du stock (FS-V03).
+. Le vendeur prépare le colis et déclare l'expédition dans le système (FS-V05).
+. Le système transmet les données du colis au transporteur via l'API (FS-C01 / IFS-05).
+. Le transporteur confirme la prise en charge et retourne un numéro de suivi.
+. Le système enregistre le numéro de suivi et notifie l'acheteur (IFS-06).
+
+| *Scénarios alternatifs*
+a|
+* *1a.* Le stock est insuffisant : le vendeur alerte l'acheteur du délai de réapprovisionnement avant expédition.
+* *3a.* L'API transporteur est indisponible : le système retourne une erreur et invite le vendeur à réessayer ultérieurement.
+
+| *Postconditions*
+| Commande en état « expédiée » ; numéro de suivi enregistré ; acheteur notifié.
+
+| *Exigences liées*
+| FS-V03, FS-V04, FS-V05, FS-C01, IFS-05, CS-04
+|===
+
+=== UCSA-08 : Suivre la livraison d'un colis
+
+[cols="1,3", options="header"]
+|===
+| Champ | Description
+
+| *Identifiant*
+| UCSA-08
+
+| *Acteurs*
+| Acheteur (principal) ; Transporteur — IFS-05 (secondaire)
+
+| *Préconditions*
+| Commande en état « expédiée » ; numéro de suivi disponible
+
+| *Déclencheur*
+| L'acheteur consulte le suivi de sa commande, ou le transporteur envoie une mise à jour de statut
+
+| *Scénario nominal*
+a|
+. Le transporteur envoie une mise à jour de statut via webhook (FS-C02 / IFS-05).
+. Le système met à jour le statut d'acheminement en base.
+. Le système notifie l'acheteur du nouveau statut (IFS-06).
+. L'acheteur consulte le suivi depuis son espace commandes (FS-B08).
+. Le système affiche l'historique complet des statuts et la date de livraison estimée.
+
+| *Scénarios alternatifs*
+a|
+* *1a.* Aucune mise à jour du transporteur reçue depuis plus de 48 h : le système conserve le dernier statut connu sans erreur.
+
+| *Postconditions*
+| Statut de livraison à jour en base ; acheteur informé.
+
+| *Exigences liées*
+| FS-B08, FS-C02, IFS-05
+|===
+
+=== UCSA-09 : Traiter un litige ou une réclamation
+
+[cols="1,3", options="header"]
+|===
+| Champ | Description
+
+| *Identifiant*
+| UCSA-09
+
+| *Acteurs*
+| Acheteur (principal) ; Vendeur (secondaire) ; Prestataire de paiement (secondaire)
+
+| *Préconditions*
+| Commande livrée ou annulée ; réclamation non encore ouverte pour cette commande
+
+| *Déclencheur*
+| L'acheteur soumet une réclamation depuis son espace commandes
+
+| *Scénario nominal*
+a|
+. L'acheteur ouvre une réclamation en précisant le motif (non-réception, article défectueux, etc.).
+. Le système enregistre la réclamation (statut « ouverte ») et notifie le vendeur.
+. Le vendeur examine la réclamation et décide de l'issue (retour accepté, remboursement).
+. Si remboursement accordé : le système déclenche le remboursement via le prestataire (FS-P03 / IFS-04).
+. Le prestataire confirme le remboursement.
+. Le système clôture la réclamation et notifie l'acheteur.
+
+| *Scénarios alternatifs*
+a|
+* *3a.* Le vendeur rejette la réclamation : le système notifie l'acheteur du refus ; la réclamation passe en statut « clôturée ».
+
+| *Postconditions*
+| Réclamation clôturée ; remboursement déclenché si applicable.
+
+| *Exigences liées*
+| FS-V06, FS-P03, IFS-04
+|===
+
+=== UCSA-10 : Gérer le catalogue et les stocks
+
+[cols="1,3", options="header"]
+|===
+| Champ | Description
+
+| *Identifiant*
+| UCSA-10
+
+| *Acteurs*
+| Vendeur (principal)
+
+| *Préconditions*
+| Vendeur authentifié
+
+| *Déclencheur*
+| Le vendeur accède au back-office catalogue ou stocks
+
+| *Scénario nominal*
+a|
+. Le vendeur consulte la liste des produits existants.
+. Il peut créer un produit (nom, description, prix, photos, catégorie — FS-V02), le modifier ou l'archiver.
+. Il consulte les niveaux de stock de chaque produit (FS-V03).
+. Il met à jour les quantités disponibles et définit un seuil d'alerte.
+. Le système déclenche une alerte si le stock descend sous le seuil.
+
+| *Scénarios alternatifs*
+a|
+* *2a.* Le vendeur tente d'archiver un produit référencé dans une commande active : le système bloque l'archivage et affiche un avertissement.
+
+| *Postconditions*
+| Catalogue et stocks mis à jour ; les acheteurs voient le catalogue actualisé.
+
+| *Exigences liées*
+| FS-V02, FS-V03
+|===
+
+=== UCSA-11 : Consulter les rapports de ventes
+
+[cols="1,3", options="header"]
+|===
+| Champ | Description
+
+| *Identifiant*
+| UCSA-11
+
+| *Acteurs*
+| Vendeur (principal)
+
+| *Préconditions*
+| Vendeur authentifié
+
+| *Déclencheur*
+| Le vendeur accède à la section « Rapports » du back-office
+
+| *Scénario nominal*
+a|
+. Le vendeur sélectionne une période ou un filtre (produit, catégorie).
+. Le système calcule et affiche le chiffre d'affaires, le nombre de commandes et les produits les plus vendus (FS-V07).
+. Le vendeur peut consulter l'historique détaillé des commandes passées.
+
+| *Scénarios alternatifs*
+a|
+* *2a.* Aucune commande sur la période sélectionnée : le système affiche un tableau vide avec un message explicatif.
+
+| *Postconditions*
+| Rapport affiché ; aucune modification des données métier.
+
+| *Exigences liées*
+| FS-V07
+|===
+
+=== UCSA-12 : Gérer les comptes utilisateurs et transporteurs
+
+[cols="1,3", options="header"]
+|===
+| Champ | Description
+
+| *Identifiant*
+| UCSA-12
+
+| *Acteurs*
+| Administrateur (principal)
+
+| *Préconditions*
+| Administrateur authentifié
+
+| *Déclencheur*
+| L'administrateur accède à la console d'administration
+
+| *Scénario nominal*
+a|
+. L'administrateur consulte la liste des comptes utilisateurs (vendeurs et acheteurs).
+. Il peut créer, modifier, suspendre ou supprimer un compte (FS-A01), et ajuster les rôles (FS-A02).
+. Il accède à la liste des transporteurs configurés.
+. Il peut ajouter, modifier ou supprimer un transporteur (FS-A03).
+
+| *Scénarios alternatifs*
+a|
+* *2a.* L'adresse email du nouveau compte est déjà utilisée : le système retourne une erreur de duplication.
+* *4a.* Le transporteur est référencé dans des expéditions en cours : le système bloque la suppression et propose la désactivation.
+
+| *Postconditions*
+| Comptes et transporteurs mis à jour ; modifications effectives immédiatement.
+
+| *Exigences liées*
+| FS-A01, FS-A02, FS-A03
 |===
 
 == Diagramme d'activité système — Flux de commande complet

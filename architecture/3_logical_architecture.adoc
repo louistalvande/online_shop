@@ -5,8 +5,7 @@
 :sectnums:
 :icons: font
 :source-highlighter: rouge
-:imagesdir: images
-:plantuml-server-url: http://www.plantuml.com/plantuml
+:imagesdir: diagrams
 
 == Contexte et objectif
 
@@ -318,7 +317,7 @@ participant "Service\nCompte" as SvcAccount
 participant "Service\nNotification" as SvcNotif
 participant "Adaptateur\nMessagerie" as AdpMail
 participant "Référentiel\nde données" as DB
-component "Service de\nmessagerie" as ExtMail #D5E8F0
+participant "Service de\nmessagerie" as ExtMail #D5E8F0
 
 Buyer -> UI : Soumettre le formulaire d'inscription
 UI -> SvcAccount : IFL-01 — creerCompte(email, mdpHashé, profil)
@@ -374,7 +373,7 @@ participant "Service\nPaiement" as SvcPayment
 participant "Service\nNotification" as SvcNotif
 participant "Adaptateur\nPaiement" as AdpPayment
 participant "Référentiel\nde données" as DB
-component "Prestataire\nde paiement" as ExtPayment #D5E8F0
+participant "Prestataire\nde paiement" as ExtPayment #D5E8F0
 
 Buyer -> UI : Valider le panier
 UI -> SvcCart : IFL-03 — getPanier(acheteur_id)
@@ -439,7 +438,7 @@ participant "Service\nNotification" as SvcNotif
 participant "Adaptateur\nTransporteur" as AdpCarrier
 participant "Adaptateur\nMessagerie" as AdpMail
 participant "Référentiel\nde données" as DB
-component "Transporteur\n(UE)" as ExtCarrier #D5E8F0
+participant "Transporteur\n(UE)" as ExtCarrier #D5E8F0
 
 Vendor -> UI_V : Déclarer expédition (commande_id, transporteur_id, pays UE)
 UI_V -> SvcOrder : IFL-04 — mettreAJourStatut(commande_id, EN_PREPARATION)
