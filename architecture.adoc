@@ -1,6 +1,0 @@
-
-
-----
-include:1_operational_analysis.adoc[]
-include:2_system_analysis.adoc[]
-----

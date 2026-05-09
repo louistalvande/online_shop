@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(asciidoctor-pdf -r asciidoctor-diagram \"architecture/architecture.adoc\" -o \"architecture/architecture.pdf\")"
+    ]
+  }
+}
