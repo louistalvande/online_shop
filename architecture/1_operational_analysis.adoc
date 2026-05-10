@@ -445,38 +445,6 @@ else Paiement refusé
 end
 ----
 
-== Diagramme de communication opérationnel — Interactions entre acteurs
-
-Ce diagramme met en évidence les échanges opérationnels directs entre tous les acteurs, incluant le service de messagerie.
-
-[plantuml, oa-communication, svg]
-----
-skinparam actorStyle awesome
-skinparam actorBackgroundColor #E8F4FD
-skinparam actorBorderColor #2E75B6
-skinparam arrowColor #2E75B6
-skinparam noteBackgroundColor #FFFBE6
-skinparam noteBorderColor #F0A500
-
-actor Administrateur as Admin
-actor Vendeur as Vendor
-actor Acheteur as Buyer
-participant "Transporteur\n(UE)" as Carrier
-participant "Prestataire\nde paiement" as Payment
-participant "Service de\nmessagerie" as Mail
-
-Admin <--> Buyer : 1. Suspension / suppression de compte
-Admin <--> Vendor : 2. Gestion du compte vendeur\n3. Accès back-office
-Admin --> Carrier : 4. Ajout / gestion des transporteurs disponibles
-Vendor <--> Buyer : 5. Confirmation de commande\n6. Mise à jour statut expédition\n7. Traitement des réclamations
-Vendor --> Carrier : 8. Remise des colis à expédier\n9. Instructions de livraison UE
-Carrier --> Buyer : 10. Mise à jour du statut de livraison\n11. Livraison du colis
-Buyer --> Payment : 12. Soumission du paiement
-Payment --> Buyer : 13. Confirmation / refus de transaction
-Payment --> Vendor : 14. Confirmation du règlement\n15. Traitement des remboursements
-Mail --> Buyer : 16. Lien d'activation de compte\n17. Confirmations et notifications
-----
-
 == Synthèse des activités opérationnelles
 
 === Administrateur
