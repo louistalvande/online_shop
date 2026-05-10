@@ -25,11 +25,11 @@ La boutique repose sur trois acteurs distincts. L'**administrateur** est l'uniqu
 
 | *Vendeur*
 | Propriétaire et exploitant de la boutique
-| Mettre à jour ses données de compte, gérer le catalogue produits, administrer les stocks, traiter les commandes reçues, gérer les expéditions vers les pays de l'UE, consulter les rapports de ventes, traiter les litiges et réclamations
+| Mettre à jour ses données de compte, gérer le catalogue produits, administrer les stocks, traiter les commandes reçues, gérer les expéditions vers les pays de l'UE, consulter les rapports de ventes, traiter les litiges et réclamations, traiter les demandes de retour après expédition (accepter la demande, attendre la réception du colis renvoyé, déclencher le remboursement)
 
 | *Acheteur*
 | Client de la boutique (résidant dans l'UE)
-| S'inscrire, activer son compte via le lien reçu par email, mettre à jour ses données de compte, parcourir le catalogue, sélectionner des produits, gérer et sauvegarder son panier, passer des commandes, effectuer les paiements (carte ou virement), choisir le mode de livraison, suivre et réceptionner les livraisons
+| S'inscrire, activer son compte via le lien reçu par email, mettre à jour ses données de compte, parcourir le catalogue, sélectionner des produits, gérer et sauvegarder son panier, passer des commandes, effectuer les paiements (carte ou virement), choisir le mode de livraison, suivre et réceptionner les livraisons, annuler une commande en autonomie depuis son compte (avant expédition), demander un retour par email au vendeur (après expédition)
 
 | *Transporteur*
 | Système externe de livraison
@@ -143,11 +143,11 @@ rectangle "Boutique en ligne" {
   package "Commandes et expéditions" {
     usecase (Traiter les commandes\nreçues) as UC_V3
     usecase (Expédier vers\nl'UE) as UC_V4
-    usecase (Traiter une annulation\nde commande) as UC_V7
   }
   package "Service client et reporting" {
     usecase (Traiter les litiges\net réclamations) as UC_V5
     usecase (Consulter les rapports\nde ventes) as UC_V6
+    usecase (Traiter un retour\naprès expédition) as UC_V8
   }
 }
 
@@ -158,7 +158,7 @@ Vendor --> UC_V3
 Vendor --> UC_V4
 Vendor --> UC_V5
 Vendor --> UC_V6
-Vendor --> UC_V7
+Vendor --> UC_V8
 UC_V4 --> Carrier
 ----
 
@@ -199,10 +199,11 @@ rectangle "Boutique en ligne" {
     usecase (Passer une commande) as UC_B3
     usecase (Choisir le mode\nde livraison) as UC_B4B
     usecase "Effectuer un paiement\n(carte ou virement)" as UC_B4
-    usecase "Annuler une commande\n(avant expédition)" as UC_B6
+    usecase "Annuler une commande\n(avant expédition — autonome)" as UC_B6
   }
-  package "Livraison" {
+  package "Livraison et retour" {
     usecase (Suivre la livraison) as UC_B5
+    usecase "Demander un retour\naprès expédition\n(email au vendeur)" as UC_B7
   }
 }
 
@@ -217,12 +218,12 @@ Buyer --> UC_B4B
 Buyer --> UC_B4
 Buyer --> UC_B5
 Buyer --> UC_B6
+Buyer --> UC_B7
 
-UC_B0 --> Mail : demande d'activation
-Mail --> UC_B0B : lien d'activation
-UC_B4 --> Payment : soumet le paiement
-Payment --> Buyer : confirme / refuse
-Carrier --> UC_B5 : met à jour le statut
+UC_B0 --> Mail
+Mail --> UC_B0B
+UC_B4 --> Payment
+Carrier --> UC_B5
 ----
 
 == Diagramme d'activité opérationnel — Flux d'achat et de traitement
@@ -279,23 +280,15 @@ else (non)
   stop
 endif
 
-if (Annulation souhaitée ?) then (oui)
-  :Demander l'annulation\nde la commande;
+if (Annulation souhaitée\navant expédition ?) then (oui)
+  :Annuler la commande\ndepuis son compte;
 
-  |Vendeur|
-  :Recevoir demande\nd'annulation;
-  if (Commande déjà expédiée ?) then (oui)
-    :Refuser l'annulation;
-    |Acheteur|
-    :Recevoir notification\nde refus;
-  else (non)
-    :Accepter l'annulation;
-    |Prestataire de paiement|
-    :Traiter le remboursement;
-    |Acheteur|
-    :Recevoir confirmation\nd'annulation et remboursement;
-    stop
-  endif
+  |Prestataire de paiement|
+  :Traiter le remboursement\nautomatique;
+
+  |Acheteur|
+  :Recevoir confirmation\nd'annulation et remboursement;
+  stop
 else (non)
 endif
 
@@ -322,6 +315,35 @@ endif
 |Acheteur|
 :Suivre la livraison;
 :Réceptionner le colis;
+
+if (Retour souhaité\naprès réception ?) then (oui)
+  :Envoyer un email\nde demande de retour\nau vendeur;
+
+  |Vendeur|
+  :Recevoir la demande\nde retour par email;
+  if (Retour accepté ?) then (oui)
+    :Notifier l'acheteur\nde l'acceptation;
+
+    |Acheteur|
+    :Renvoyer le colis\nau vendeur;
+
+    |Vendeur|
+    :Réceptionner\nle colis renvoyé;
+    :Déclencher\nle remboursement;
+
+    |Prestataire de paiement|
+    :Traiter le remboursement;
+
+    |Acheteur|
+    :Recevoir confirmation\ndu remboursement;
+    stop
+  else (non)
+    :Notifier l'acheteur\ndu refus;
+    |Acheteur|
+    :Recevoir notification\nde refus;
+  endif
+else (non)
+endif
 
 |Vendeur|
 :Mettre à jour les\nrapports de ventes;
@@ -379,20 +401,12 @@ alt Paiement accepté
   Shop -> Mail : Transmettre la notification de préparation
   Mail --> Buyer : Notifier mise en préparation
 
-  opt Annulation demandée avant expédition
-    Buyer -> Shop : Demander l'annulation
-    Shop -> Vendor : Transmettre la demande d'annulation
-    alt Commande non encore expédiée
-      Vendor -> Shop : Accepter l'annulation
-      Shop -> Payment : Déclencher le remboursement
-      Payment --> Shop : Confirmer le remboursement
-      Shop -> Mail : Transmettre la notification d'annulation
-      Mail --> Buyer : Notifier annulation et remboursement
-    else Commande déjà expédiée
-      Vendor -> Shop : Refuser l'annulation
-      Shop -> Mail : Transmettre la notification de refus
-      Mail --> Buyer : Notifier refus d'annulation
-    end
+  opt Annulation avant expédition (autonome)
+    Buyer -> Shop : Annuler la commande depuis son compte
+    Shop -> Payment : Déclencher le remboursement automatique
+    Payment --> Shop : Confirmer le remboursement
+    Shop -> Mail : Transmettre la notification d'annulation
+    Mail --> Buyer : Notifier annulation et remboursement
   end
 
   Vendor -> Shop : Déclarer expédition (pays UE destination)
@@ -404,6 +418,20 @@ alt Paiement accepté
 
   Buyer -> Shop : Confirmer réception
   Shop --> Vendor : Notifier réception confirmée
+
+  opt Demande de retour après expédition
+    Buyer -> Vendor : Envoyer email de demande de retour
+    alt Retour accepté
+      Vendor -> Buyer : Accepter la demande par email
+      Buyer -> Carrier : Renvoyer le colis au vendeur
+      Carrier -> Vendor : Livrer le colis retourné
+      Vendor -> Payment : Déclencher le remboursement
+      Payment --> Vendor : Confirmer le remboursement
+      Vendor -> Buyer : Confirmer le remboursement par email
+    else Retour refusé
+      Vendor -> Buyer : Refuser la demande par email
+    end
+  end
 
   Vendor -> Shop : Consulter les rapports de ventes
   Shop --> Vendor : Afficher statistiques et historique
@@ -487,8 +515,8 @@ Mail --> Buyer : 16. Lien d'activation de compte\n17. Confirmations et notificat
 | Traiter les litiges et réclamations
 | Répondre aux demandes de remboursement, gérer les retours produits
 
-| Traiter une annulation de commande
-| Vérifier si la commande est encore en préparation (non expédiée) ; accepter l'annulation et déclencher le remboursement, ou la refuser si le colis a déjà été remis au transporteur
+| Traiter un retour après expédition
+| Recevoir la demande de retour envoyée par email par l'acheteur ; accepter ou refuser la demande ; une fois le colis renvoyé réceptionné, déclencher le remboursement via le prestataire de paiement
 
 | Consulter les rapports de ventes
 | Analyser les performances commerciales, le chiffre d'affaires, les produits les plus vendus
@@ -530,8 +558,11 @@ Mail --> Buyer : 16. Lien d'activation de compte\n17. Confirmations et notificat
 | Suivre la livraison
 | Consulter le statut d'expédition et le numéro de suivi du colis
 
-| Annuler une commande
-| Demander l'annulation d'une commande tant que le colis n'a pas encore été remis au transporteur
+| Annuler une commande (avant expédition)
+| Depuis son espace compte, annuler une commande tant que le colis n'a pas encore été remis au transporteur ; le remboursement est déclenché automatiquement, sans intervention du vendeur
+
+| Demander un retour après expédition
+| Envoyer un email au vendeur pour demander le retour d'une commande déjà expédiée ; renvoyer le colis après acceptation du vendeur ; le remboursement est déclenché par le vendeur après réception du colis renvoyé
 |===
 
 === Transporteur (système externe)
