@@ -69,14 +69,14 @@ Les contraintes suivantes sont issues du contexte d'usage réel des acteurs et s
 | L'acheteur doit activer son compte en consultant sa boîte mail et en cliquant sur le lien qui lui est adressé après inscription. Le compte n'est accessible qu'après cette activation.
 |===
 
-== Diagramme de cas d'utilisation opérationnel
+== Diagrammes de cas d'utilisation opérationnels
 
-Ce diagramme identifie les objectifs opérationnels de chaque acteur dans le contexte métier de la boutique en ligne.
+Les cas d'utilisation opérationnels sont répartis en trois vues focalisées, une par acteur principal de la boutique.
 
-[plantuml, oa-use-case, svg]
+=== Vue Administrateur
+
+[plantuml, oa-uc-admin, svg]
 ----
-!define FONTSIZE 9
-skinparam fontSize FONTSIZE
 skinparam actorStyle awesome
 skinparam usecase {
   BackgroundColor #FEFEFE
@@ -91,64 +91,65 @@ skinparam actor {
 left to right direction
 
 actor "Administrateur" as Admin
-actor "Vendeur" as Vendor
-actor "Acheteur" as Buyer
 actor "Transporteur\n(système externe)" as Carrier
-actor "Prestataire\nde paiement" as Payment
-actor "Service de\nmessagerie" as Mail
 
-rectangle "Boutique en ligne — Contexte Opérationnel" {
-
+rectangle "Boutique en ligne" {
   package "Gestion des comptes" {
-    usecase (Gérer les comptes\nutilisateurs) as UC_A1
-    usecase (Gérer les\ntransporteurs) as UC_A2
+    usecase (Créer / suspendre /\nsupprimer un compte\nacheteur ou vendeur) as UC_A1
+    usecase (Gérer les droits\nd'accès à la plateforme) as UC_A1b
   }
-
-  package "Gestion de la boutique" {
-    usecase (Mettre à jour\nson compte) as UC_V0
-    usecase (Gérer le catalogue\nproduits) as UC_V1
-    usecase (Gérer les stocks) as UC_V2
-    usecase (Traiter les commandes\nreçues) as UC_V3
-    usecase (Expédier vers\nl'UE) as UC_V4
-    usecase (Traiter les litiges\net réclamations) as UC_V5
-    usecase (Consulter les rapports\nde ventes) as UC_V6
-    usecase (Traiter une annulation\nde commande) as UC_V7
-  }
-
-  package "Expérience d'achat" {
-    usecase (S'inscrire) as UC_B0
-    usecase (Activer son compte\nvia email) as UC_B0B
-    usecase (Mettre à jour\nson compte) as UC_B_ACC
-    usecase (Parcourir le catalogue) as UC_B1
-    usecase (Gérer le panier) as UC_B2
-    usecase (Sauvegarder / restaurer\nle panier) as UC_B2B
-    usecase (Passer une commande) as UC_B3
-    usecase "Effectuer un paiement\n(carte ou virement)" as UC_B4
-    usecase (Choisir le mode\nde livraison) as UC_B4B
-    usecase (Suivre la livraison) as UC_B5
-    usecase "Annuler une commande\n(avant expédition)" as UC_B6
-  }
-
-  package "Messagerie" {
-    usecase (Acheminer le lien\nd'activation) as UC_M1
-    usecase (Acheminer les\nnotifications) as UC_M2
-  }
-
-  package "Paiement" {
-    usecase (Autoriser\nla transaction) as UC_P1
-    usecase (Confirmer\nle règlement) as UC_P2
-    usecase (Traiter\nun remboursement) as UC_P3
-  }
-
-  package "Livraison UE" {
-    usecase (Prendre en charge\nle colis) as UC_C1
-    usecase (Livrer dans\nl'UE) as UC_C2
-    usecase (Mettre à jour\nle statut de livraison) as UC_C3
+  package "Gestion des transporteurs" {
+    usecase (Ajouter un\ntransporteur) as UC_A2a
+    usecase (Modifier / supprimer\nun transporteur) as UC_A2b
   }
 }
 
 Admin --> UC_A1
-Admin --> UC_A2
+Admin --> UC_A1b
+Admin --> UC_A2a
+Admin --> UC_A2b
+UC_A2a --> Carrier
+UC_A2b --> Carrier
+----
+
+=== Vue Vendeur
+
+[plantuml, oa-uc-vendor, svg]
+----
+skinparam actorStyle awesome
+skinparam usecase {
+  BackgroundColor #FEFEFE
+  BorderColor #2E75B6
+  ArrowColor #2E75B6
+}
+skinparam actor {
+  BackgroundColor #E8F4FD
+  BorderColor #2E75B6
+}
+
+left to right direction
+
+actor "Vendeur" as Vendor
+actor "Transporteur\n(système externe)" as Carrier
+
+rectangle "Boutique en ligne" {
+  package "Gestion du compte" {
+    usecase (Mettre à jour\nson compte) as UC_V0
+  }
+  package "Catalogue et stocks" {
+    usecase (Gérer le catalogue\nproduits) as UC_V1
+    usecase (Gérer les stocks) as UC_V2
+  }
+  package "Commandes et expéditions" {
+    usecase (Traiter les commandes\nreçues) as UC_V3
+    usecase (Expédier vers\nl'UE) as UC_V4
+    usecase (Traiter une annulation\nde commande) as UC_V7
+  }
+  package "Service client et reporting" {
+    usecase (Traiter les litiges\net réclamations) as UC_V5
+    usecase (Consulter les rapports\nde ventes) as UC_V6
+  }
+}
 
 Vendor --> UC_V0
 Vendor --> UC_V1
@@ -158,8 +159,52 @@ Vendor --> UC_V4
 Vendor --> UC_V5
 Vendor --> UC_V6
 Vendor --> UC_V7
-UC_V4 --> UC_C1
-UC_B6 --> UC_V7
+UC_V4 --> Carrier
+----
+
+=== Vue Acheteur
+
+[plantuml, oa-uc-buyer, svg]
+----
+skinparam actorStyle awesome
+skinparam usecase {
+  BackgroundColor #FEFEFE
+  BorderColor #2E75B6
+  ArrowColor #2E75B6
+}
+skinparam actor {
+  BackgroundColor #E8F4FD
+  BorderColor #2E75B6
+}
+
+left to right direction
+
+actor "Acheteur" as Buyer
+actor "Service de\nmessagerie" as Mail
+actor "Prestataire\nde paiement" as Payment
+actor "Transporteur\n(système externe)" as Carrier
+
+rectangle "Boutique en ligne" {
+  package "Inscription et compte" {
+    usecase (S'inscrire) as UC_B0
+    usecase (Activer son compte\nvia email) as UC_B0B
+    usecase (Mettre à jour\nson compte) as UC_B_ACC
+  }
+  package "Navigation et panier" {
+    usecase (Parcourir le catalogue) as UC_B1
+    usecase (Gérer le panier) as UC_B2
+    usecase (Sauvegarder / restaurer\nle panier) as UC_B2B
+  }
+  package "Commande et paiement" {
+    usecase (Passer une commande) as UC_B3
+    usecase (Choisir le mode\nde livraison) as UC_B4B
+    usecase "Effectuer un paiement\n(carte ou virement)" as UC_B4
+    usecase "Annuler une commande\n(avant expédition)" as UC_B6
+  }
+  package "Livraison" {
+    usecase (Suivre la livraison) as UC_B5
+  }
+}
 
 Buyer --> UC_B0
 Buyer --> UC_B0B
@@ -168,27 +213,16 @@ Buyer --> UC_B1
 Buyer --> UC_B2
 Buyer --> UC_B2B
 Buyer --> UC_B3
-Buyer --> UC_B4
 Buyer --> UC_B4B
+Buyer --> UC_B4
 Buyer --> UC_B5
 Buyer --> UC_B6
-UC_B0 --> UC_M1
-UC_B0B --> UC_M1
-UC_B4 --> UC_P1
 
-Mail --> UC_M1
-Mail --> UC_M2
-UC_M1 --> UC_B0B
-
-Carrier --> UC_C1
-Carrier --> UC_C2
-Carrier --> UC_C3
-UC_C3 --> UC_B5
-
-Payment --> UC_P1
-Payment --> UC_P2
-Payment --> UC_P3
-UC_P2 --> UC_V3
+UC_B0 --> Mail : demande d'activation
+Mail --> UC_B0B : lien d'activation
+UC_B4 --> Payment : soumet le paiement
+Payment --> Buyer : confirme / refuse
+Carrier --> UC_B5 : met à jour le statut
 ----
 
 == Diagramme d'activité opérationnel — Flux d'achat et de traitement
