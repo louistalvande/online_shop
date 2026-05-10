@@ -341,6 +341,7 @@ if (Retour souhaité\naprès réception ?) then (oui)
     :Notifier l'acheteur\ndu refus;
     |Acheteur|
     :Recevoir notification\nde refus;
+    stop
   endif
 else (non)
 endif
