@@ -4,16 +4,6 @@
 
 === 🇫🇷 Français
 * <<français>>
-** <<i-génération-du-document-darchitecture-avec-la-méthodologie-mbse-arcadia,I. Génération du document d'architecture avec la méthodologie MBSE ARCADIA>>
-*** <<analyse-du-besoin,Analyse du besoin>>
-**** <<1-analyse-du-besoin-opérationnel-oa--operational-analysis,1. Analyse du Besoin Opérationnel (OA)>>
-**** <<2-analyse-du-besoin-système-sa--system-need-analysis,2. Analyse du Besoin Système (SA)>>
-*** <<analyse-du-système,Analyse du système>>
-**** <<3-architecture-logique-la--logical-architecture,3. Architecture Logique (LA)>>
-**** <<4-architecture-physique-pa--physical-architecture,4. Architecture Physique (PA)>>
-** <<ii-génération-de-la-solution,II. Génération de la solution>>
-** <<iii-génération-des-tests-end2end,III. Génération des tests end2end>>
-** <<iiii-génération-de-la-documentation-utilisateur,IIII. Génération de la documentation utilisateur>>
 
 === 🇬🇧 English
 * <<english>>
