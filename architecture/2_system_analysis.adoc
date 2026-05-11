@@ -1,119 +1,73 @@
 = Analyse Système (SA — System Analysis)
-:doctype: article
-:toc: left
+:toc:
+:toc-title: Table des matières
 :toclevels: 3
-:sectnums:
-:icons: font
-:source-highlighter: rouge
-:imagesdir: diagrams
 
-== Contexte et objectif
+== 1. Contexte et objectif
 
-L'Analyse Système (SA) décrit le système de boutique en ligne du point de vue des *fonctions que le logiciel doit remplir*, sans encore choisir de composants d'implémentation. Elle traduit les besoins opérationnels (OA) en exigences système, en identifiant les fonctions du système, leurs interfaces avec les acteurs externes et les contraintes techniques à respecter.
+L'Analyse Système (SA) décrit le système de boutique en ligne du point de vue des **fonctions que le logiciel doit remplir**, sans encore choisir de composants d'implémentation. Elle traduit les besoins opérationnels (OA) en exigences système, en identifiant les fonctions du système, leurs interfaces avec les acteurs externes et les contraintes techniques à respecter.
 
 La SA repose sur les trois principes ARCADIA suivants :
 
-* Décrire *ce que* le système fait, non *comment* il le fait.
+* Décrire **ce que** le système fait, non **comment** il le fait.
 * Allouer chaque besoin opérationnel à une ou plusieurs fonctions système.
 * Identifier les échanges entre le système et les acteurs externes (flux, données, événements).
 
-NOTE: Le système couvre l'ensemble des interactions numériques entre les six acteurs de la boutique : Administrateur, Vendeur, Acheteur, Transporteur (externe), Prestataire de paiement (externe) et Service de messagerie (externe). Les trois acteurs externes sont des systèmes tiers ; le système ne les implémente pas, mais définit les interfaces d'échange avec eux.
+[NOTE]
+====
+Le système couvre l'ensemble des interactions numériques entre les six acteurs de la boutique : Administrateur, Vendeur, Acheteur, Transporteur (externe), Prestataire de paiement (externe) et Service de messagerie (externe). Les trois acteurs externes sont des systèmes tiers ; le système ne les implémente pas, mais définit les interfaces d'échange avec eux.
+====
 
-=== Acteurs système et interfaces
+=== 1.1. Acteurs système et interfaces
 
 [cols="1,1,2,2", options="header"]
 |===
 | Acteur | Type | Rôle système | Interfaces principales
-
-| *Administrateur*
-| Humain — interne
-| Gestion des comptes et des transporteurs
-| Interface d'administration back-office (web)
-
-| *Vendeur*
-| Humain — interne
-| Exploitation commerciale de la boutique
-| Interface vendeur back-office (web)
-
-| *Acheteur*
-| Humain — externe
-| Navigation, achat, suivi de commande
-| Interface acheteur front-office (web responsive / mobile)
-
-| *Transporteur*
-| Système externe
-| Prise en charge et livraison des colis
-| API de suivi et de mise à jour de statut (IFS-05)
-
-| *Prestataire de paiement*
-| Système externe
-| Autorisation et confirmation des transactions
-| API de paiement carte / virement (IFS-04)
-
-| *Service de messagerie*
-| Système externe
-| Acheminement des emails transactionnels (activation de compte, notifications)
-| SMTP / SMS Gateway — sortant (IFS-06)
+| **Administrateur** | Humain — interne | Gestion des comptes et des transporteurs | Interface d'administration back-office (web)
+| **Vendeur** | Humain — interne | Exploitation commerciale de la boutique | Interface vendeur back-office (web)
+| **Acheteur** | Humain — externe | Navigation, achat, suivi de commande | Interface acheteur front-office (web responsive / mobile)
+| **Transporteur** | Système externe | Prise en charge et livraison des colis | API de suivi et de mise à jour de statut (IFS-05)
+| **Prestataire de paiement** | Système externe | Autorisation et confirmation des transactions | API de paiement carte / virement (IFS-04)
+| **Service de messagerie** | Système externe | Acheminement des emails transactionnels (activation de compte, notifications) | SMTP / SMS Gateway — sortant (IFS-06)
 |===
 
-== Contraintes système
+== 2. Contraintes système
 
 Les contraintes opérationnelles (COp) de l'OA sont traduites en contraintes système (CS) imposées au logiciel.
 
-[cols="1,1,3", options="header"]
+[cols="1,2,3", options="header"]
 |===
 | Identifiant | Contrainte système | Description
-
-| CS-01
-| Interface responsive
-| Le système doit fournir une interface adaptée aux résolutions desktop et mobile (min. 320 px) sans dégradation fonctionnelle — issu de COp-01.
-
-| CS-02
-| Modes de paiement
-| Le système doit proposer deux modes de paiement lors du tunnel d'achat : **carte bancaire** et **virement bancaire**, via l'API du prestataire externe — issu de COp-02.
-
-| CS-03
-| Persistance du panier
-| Le système doit persister le panier d'un acheteur authentifié en base et le restaurer intégralement à chaque reconnexion — issu de COp-03.
-
-| CS-04
-| Livraison UE uniquement
-| Le système doit restreindre la saisie d'adresse de livraison aux pays membres de l'Union Européenne.
-
-| CS-05
-| Intégration transporteur
-| Le système doit s'interfacer avec au moins un transporteur externe via une API de remise de colis et de suivi de statut.
-
-| CS-06
-| Journalisation financière
-| Le système doit journaliser toutes les transactions financières (paiement, remboursement) à des fins d'audit.
-
-| CS-07
-| Activation de compte par email
-| À l'issue de l'inscription, le système doit envoyer automatiquement un email contenant un lien d'activation tokenisé à usage unique. Le compte est activé uniquement sur clic de ce lien. Le token doit avoir une durée de validité limitée (ex. 24 h) au-delà de laquelle un renvoi est possible.
+| CS-01 | Interface responsive | Le système doit fournir une interface adaptée aux résolutions desktop et mobile (min. 320 px) sans dégradation fonctionnelle — issu de COp-01.
+| CS-02 | Modes de paiement | Le système doit proposer deux modes de paiement lors du tunnel d'achat : **carte bancaire** et **virement bancaire**, via l'API du prestataire externe — issu de COp-02.
+| CS-03 | Persistance du panier | Le système doit persister le panier d'un acheteur authentifié en base et le restaurer intégralement à chaque reconnexion — issu de COp-03.
+| CS-04 | Livraison UE uniquement | Le système doit restreindre la saisie d'adresse de livraison aux pays membres de l'Union Européenne.
+| CS-05 | Intégration transporteur | Le système doit s'interfacer avec au moins un transporteur externe via une API de remise de colis et de suivi de statut.
+| CS-06 | Journalisation financière | Le système doit journaliser toutes les transactions financières (paiement, remboursement) à des fins d'audit.
+| CS-07 | Activation de compte par email | À l'issue de l'inscription, le système doit envoyer automatiquement un email contenant un lien d'activation tokenisé à usage unique. Le compte est activé uniquement sur clic de ce lien. Le token doit avoir une durée de validité limitée (ex. 24 h) au-delà de laquelle un renvoi est possible.
+| CS-08 | Virement bancaire — attente de confirmation | Lorsque le mode de paiement choisi est le virement bancaire, la commande est placée en statut « en_attente_paiement_virement » jusqu'à confirmation manuelle de la réception du virement par le vendeur. La préparation ne peut démarrer qu'après cette confirmation.
+| CS-09 | Annulation après expédition — statut intermédiaire | En cas d'annulation d'une commande déjà expédiée, le système doit passer la commande au statut « en_attente_renvoi_colis » jusqu'à réception du retour par le vendeur, avant tout remboursement.
 |===
 
-== Exigences fonctionnelles système
+== 3. Exigences fonctionnelles système
 
 Les fonctions système (FS) sont dérivées des cas d'utilisation opérationnels de l'OA et allouées à chaque acteur.
 
-=== Gestion des comptes (Administrateur)
+=== 3.1. Gestion des comptes (Administrateur)
 
-[cols="1,3,1", options="header"]
+[cols="1,3,2", options="header"]
 |===
 | ID | Fonction système | Origine UC (OA)
-
 | FS-A01 | Créer, suspendre et supprimer les comptes vendeur et acheteur | UC_A1
 | FS-A02 | Gérer les droits d'accès (rôles) sur la plateforme | UC_A1
 | FS-A03 | Ajouter, modifier et supprimer les transporteurs disponibles | UC_A2
 |===
 
-=== Gestion de la boutique (Vendeur)
+=== 3.2. Gestion de la boutique (Vendeur)
 
-[cols="1,3,1", options="header"]
+[cols="1,3,2", options="header"]
 |===
 | ID | Fonction système | Origine UC (OA)
-
 | FS-V01 | Permettre au vendeur de mettre à jour ses données de compte | UC_V0
 | FS-V02 | Gérer le catalogue produits — CRUD : photos, descriptions, prix, catégories | UC_V1
 | FS-V03 | Gérer les niveaux de stock et alerter en cas de rupture imminente | UC_V2
@@ -122,14 +76,16 @@ Les fonctions système (FS) sont dérivées des cas d'utilisation opérationnels
 | FS-V06 | Traiter les litiges et réclamations (remboursement, retour) | UC_V5
 | FS-V07 | Consulter les rapports de ventes (CA, produits, historique) | UC_V6
 | FS-V08 | Accepter ou refuser une annulation de commande selon son statut d'expédition | UC_V7
+| FS-V09 | Saisir manuellement le numéro de suivi lors de la notification d'expédition | UC_V4
+| FS-V10 | Confirmer manuellement la réception d'un virement bancaire pour débloquer la préparation de la commande | UC_V3
+| FS-V11 | Choisir entre annulation avec condition de renvoi du colis ou annulation sans condition de renvoi lors d'une demande d'annulation après expédition | UC_V7
 |===
 
-=== Expérience d'achat (Acheteur)
+=== 3.3. Expérience d'achat (Acheteur)
 
-[cols="1,3,1", options="header"]
+[cols="1,3,2", options="header"]
 |===
 | ID | Fonction système | Origine UC (OA)
-
 | FS-B01 | Gérer l'inscription de l'acheteur et envoyer un email d'activation avec lien tokenisé | UC_B0
 | FS-B10 | Valider et activer le compte acheteur sur clic du lien d'activation (token à usage unique, expirant) | UC_B0
 | FS-B02 | Permettre à l'acheteur de mettre à jour ses données de compte | UC_B_ACC
@@ -139,15 +95,14 @@ Les fonctions système (FS) sont dérivées des cas d'utilisation opérationnels
 | FS-B06 | Orchestrer le tunnel d'achat (adresse, mode de livraison, validation) | UC_B3 / UC_B4B
 | FS-B07 | Soumettre le paiement au prestataire externe — carte ou virement (CS-02) | UC_B4
 | FS-B08 | Afficher le suivi de livraison en temps réel (numéro de suivi, statuts) | UC_B5 / UC_C3
-| FS-B09 | Permettre l'annulation d'une commande avant expédition | UC_B6
+| FS-B09 | Permettre l'annulation d'une commande avant ou après expédition | UC_B6
 |===
 
-=== Interfaces externes
+=== 3.4. Interfaces externes
 
-[cols="1,3,1", options="header"]
+[cols="1,3,2", options="header"]
 |===
 | ID | Fonction système | Origine UC (OA)
-
 | FS-P01 | Soumettre une demande d'autorisation de transaction au prestataire de paiement | UC_P1
 | FS-P02 | Recevoir la confirmation ou le refus de transaction et notifier les parties | UC_P2
 | FS-P03 | Déclencher et confirmer un remboursement via le prestataire | UC_P3
@@ -155,11 +110,11 @@ Les fonctions système (FS) sont dérivées des cas d'utilisation opérationnels
 | FS-C02 | Recevoir et afficher les mises à jour de statut de livraison du transporteur | UC_C2 / UC_C3
 |===
 
-== Diagramme de cas d'utilisation système
+== 4. Diagramme de cas d'utilisation système
 
 Ce diagramme présente les cas d'utilisation système (UCSA), dérivés des cas opérationnels, du point de vue des interactions avec le système logiciel.
 
-[plantuml, sa-use-case, svg]
+[plantuml]
 ----
 !define FONTSIZE 9
 skinparam fontSize FONTSIZE
@@ -194,6 +149,7 @@ rectangle "Système — Boutique en ligne" {
     usecase (UCSA-07\nPréparer et expédier\nune commande) as UC07
     usecase (UCSA-09\nTraiter un litige\nou une réclamation) as UC09
     usecase (UCSA-11\nConsulter les rapports\nde ventes) as UC11
+    usecase (UCSA-13\nConfirmer la réception\nd'un virement) as UC13
   }
 
   package "Expérience d'achat" {
@@ -201,7 +157,7 @@ rectangle "Système — Boutique en ligne" {
     usecase (UCSA-03\nParcourir et rechercher\nle catalogue) as UC03
     usecase (UCSA-04\nGérer le panier\net sa persistance) as UC04
     usecase "UCSA-05\nPasser une commande\n(tunnel d'achat)" as UC05
-    usecase (UCSA-06\nAnnuler une commande\navant expédition) as UC06
+    usecase (UCSA-06\nAnnuler une commande) as UC06
     usecase (UCSA-08\nSuivre la livraison\nd'un colis) as UC08
   }
 
@@ -218,7 +174,8 @@ Vendor --> UC10
 Vendor --> UC07
 Vendor --> UC09
 Vendor --> UC11
-Vendor --> UC06 : accepte/refuse
+Vendor --> UC06 : accepte/refuse/conditions
+Vendor --> UC13
 
 Buyer --> UC01
 Buyer --> UC02
@@ -237,467 +194,289 @@ Payment --> UC_P
 Carrier --> UC_C
 ----
 
-== Cas d'utilisation système — Descriptions détaillées
+== 5. Cas d'utilisation système — Descriptions détaillées
 
-=== UCSA-01 : S'inscrire et activer son compte via email
-
-[cols="1,3", options="header"]
-|===
-| Champ | Description
-
-| *Identifiant*
-| UCSA-01
-
-| *Acteurs*
-| Acheteur (principal) ; Service de notification email — IFS-06 (secondaire)
-
-| *Préconditions*
-| Aucun compte existant avec cette adresse email
-
-| *Déclencheur*
-| L'acheteur soumet le formulaire d'inscription
-
-| *Scénario nominal*
-a|
-. L'acheteur saisit son email, son mot de passe et ses informations de compte.
-. Le système crée le compte avec le statut « en attente d'activation » (FS-B01).
-. Le système génère un token d'activation à usage unique avec une durée de validité de 24 h (CS-07).
-. Le système envoie un email contenant le lien d'activation tokenisé (IFS-06 / FS-B10).
-. L'acheteur clique sur le lien depuis sa messagerie.
-. Le système vérifie la validité du token (non expiré, non déjà utilisé).
-. Le système active le compte et redirige l'acheteur vers la page de connexion.
-
-| *Scénarios alternatifs*
-a|
-* *6a.* Le token est expiré (> 24 h) : le système retourne une erreur et propose un renvoi du lien.
-* *6b.* Le token a déjà été utilisé : le système affiche « compte déjà activé ».
-* *2a.* L'adresse email est déjà utilisée : le système retourne une erreur sans créer de doublon.
-
-| *Postconditions*
-| Compte acheteur actif ; l'acheteur peut s'authentifier et accéder aux fonctionnalités d'achat.
-
-| *Exigences liées*
-| FS-B01, FS-B10, CS-07, IFS-06
-|===
-
-=== UCSA-05 : Passer une commande (tunnel d'achat)
+=== 5.1. UCSA-01 : S'inscrire et activer son compte via email
 
 [cols="1,3", options="header"]
 |===
 | Champ | Description
-
-| *Identifiant*
-| UCSA-05
-
-| *Acteurs*
-| Acheteur (principal) ; Prestataire de paiement (secondaire)
-
-| *Préconditions*
-| Acheteur authentifié ; panier non vide ; adresse de livraison dans un pays de l'UE
-
-| *Déclencheur*
-| L'acheteur clique sur « Valider le panier »
-
-| *Scénario nominal*
-a|
-. Le système affiche le récapitulatif du panier.
-. L'acheteur saisit ou sélectionne une adresse de livraison (pays UE — CS-04).
-. Le système affiche les modes de livraison disponibles et leurs tarifs.
-. L'acheteur choisit un mode de livraison.
-. L'acheteur saisit ses informations de paiement (carte ou virement — CS-02).
-. Le système soumet la demande au prestataire de paiement (IFS-04 / FS-P01).
-. Le prestataire autorise la transaction.
-. Le système confirme la commande, réserve le stock et notifie l'acheteur et le vendeur.
-
-| *Scénarios alternatifs*
-a|
-* *6a.* Le prestataire refuse la transaction : le système notifie l'acheteur et l'invite à réessayer ou à changer de mode de paiement.
-* *2a.* L'adresse de livraison est hors UE : le système affiche un message d'erreur et bloque la validation.
-
-| *Postconditions*
-| Commande créée en base ; paiement autorisé ; vendeur notifié ; stock réservé.
-
-| *Exigences liées*
-| FS-B06, FS-B07, FS-P01, FS-P02, CS-02, CS-04
+| **Identifiant** | UCSA-01
+| **Acteurs** | Acheteur (principal) ; Service de notification email — IFS-06 (secondaire)
+| **Préconditions** | Aucun compte existant avec cette adresse email
+| **Déclencheur** | L'acheteur soumet le formulaire d'inscription
+| **Scénario nominal** | 1. L'acheteur saisit son email, son mot de passe et ses informations de compte. +
+2. Le système crée le compte avec le statut « en attente d'activation » (FS-B01). +
+3. Le système génère un token d'activation à usage unique avec une durée de validité de 24 h (CS-07). +
+4. Le système envoie un email contenant le lien d'activation tokenisé (IFS-06 / FS-B10). +
+5. L'acheteur clique sur le lien depuis sa messagerie. +
+6. Le système vérifie la validité du token (non expiré, non déjà utilisé). +
+7. Le système active le compte et redirige l'acheteur vers la page de connexion.
+| **Scénarios alternatifs** | **6a.** Le token est expiré (> 24 h) : le système retourne une erreur et propose un renvoi du lien. +
+**6b.** Le token a déjà été utilisé : le système affiche « compte déjà activé ». +
+**2a.** L'adresse email est déjà utilisée : le système retourne une erreur sans créer de doublon.
+| **Postconditions** | Compte acheteur actif ; l'acheteur peut s'authentifier et accéder aux fonctionnalités d'achat.
+| **Exigences liées** | FS-B01, FS-B10, CS-07, IFS-06
 |===
 
-=== UCSA-06 : Annuler une commande avant expédition
+=== 5.2. UCSA-05 : Passer une commande (tunnel d'achat)
 
 [cols="1,3", options="header"]
 |===
 | Champ | Description
-
-| *Identifiant*
-| UCSA-06
-
-| *Acteurs*
-| Acheteur (principal) ; Vendeur (secondaire) ; Prestataire de paiement (secondaire)
-
-| *Préconditions*
-| Commande existante dans l'état « en préparation » (non encore remise au transporteur)
-
-| *Déclencheur*
-| L'acheteur soumet une demande d'annulation depuis son espace commandes
-
-| *Scénario nominal*
-a|
-. Le système transmet la demande d'annulation au vendeur.
-. Le vendeur vérifie que le colis n'a pas encore été remis au transporteur.
-. Le vendeur accepte l'annulation dans le système.
-. Le système déclenche un remboursement via le prestataire (IFS-04 / FS-P03).
-. Le prestataire confirme le remboursement.
-. Le système notifie l'acheteur de l'annulation et du remboursement.
-
-| *Scénarios alternatifs*
-a|
-* *2a.* Le colis est déjà remis au transporteur : le vendeur refuse l'annulation ; le système notifie l'acheteur du refus.
-
-| *Postconditions*
-| Commande annulée en base ; remboursement initié ; stock libéré.
-
-| *Exigences liées*
-| FS-B09, FS-V08, FS-P03
+| **Identifiant** | UCSA-05
+| **Acteurs** | Acheteur (principal) ; Prestataire de paiement (secondaire) ; Vendeur (secondaire pour virement)
+| **Préconditions** | Acheteur authentifié ; panier non vide ; adresse de livraison dans un pays de l'UE
+| **Déclencheur** | L'acheteur clique sur « Valider le panier »
+| **Scénario nominal (carte bancaire)** | 1. Le système affiche le récapitulatif du panier. +
+2. L'acheteur saisit ou sélectionne une adresse de livraison (pays UE — CS-04). +
+3. Le système affiche les modes de livraison disponibles et leurs tarifs. +
+4. L'acheteur choisit un mode de livraison. +
+5. L'acheteur choisit le paiement par **carte bancaire** et saisit ses informations. +
+6. Le système soumet la demande au prestataire de paiement (IFS-04 / FS-P01). +
+7. Le prestataire autorise la transaction. +
+8. Le système confirme la commande, réserve le stock, place la commande en statut « en_préparation » et notifie l'acheteur et le vendeur.
+| **Scénario alternatif — virement bancaire** | **5b.** L'acheteur choisit le paiement par **virement bancaire** (CS-02). +
+**6b.** Le système crée la commande en statut « en_attente_paiement_virement » et communique à l'acheteur les coordonnées bancaires et la référence de virement (CS-08). +
+**7b.** Le vendeur reçoit une notification et attend la réception du virement. +
+**8b.** Le vendeur confirme manuellement la réception du virement dans le back-office (FS-V10). +
+**9b.** Le système bascule la commande en statut « en_préparation » et notifie l'acheteur de la confirmation.
+| **Scénarios alternatifs** | **7a.** Le prestataire refuse la transaction carte : le système notifie l'acheteur et l'invite à réessayer ou à changer de mode de paiement. +
+**2a.** L'adresse de livraison est hors UE : le système affiche un message d'erreur et bloque la validation.
+| **Postconditions** | Commande créée en base ; paiement autorisé (carte) ou en attente de confirmation (virement) ; vendeur notifié ; stock réservé.
+| **Exigences liées** | FS-B06, FS-B07, FS-P01, FS-P02, FS-V10, CS-02, CS-04, CS-08
 |===
 
-=== UCSA-02 : Gérer son compte
+=== 5.3. UCSA-06 : Annuler une commande
 
 [cols="1,3", options="header"]
 |===
 | Champ | Description
-
-| *Identifiant*
-| UCSA-02
-
-| *Acteurs*
-| Acheteur ou Vendeur (principal)
-
-| *Préconditions*
-| Utilisateur authentifié
-
-| *Déclencheur*
-| L'utilisateur accède à la section « Mon compte »
-
-| *Scénario nominal*
-a|
-. L'utilisateur accède au formulaire de mise à jour de son profil.
-. Il modifie les champs souhaités (nom, adresse, mot de passe, etc.).
-. Le système valide les données saisies (unicité de l'email, format du mot de passe).
-. Le système enregistre les modifications et confirme la mise à jour.
-
-| *Scénarios alternatifs*
-a|
-* *3a.* L'adresse email est déjà utilisée par un autre compte : le système retourne une erreur sans modifier le compte.
-* *3b.* Les données saisies sont invalides (format incorrect) : le système signale les champs en erreur.
-
-| *Postconditions*
-| Données du compte mises à jour en base.
-
-| *Exigences liées*
-| FS-V01, FS-B02
+| **Identifiant** | UCSA-06
+| **Acteurs** | Acheteur (principal) ; Vendeur (secondaire) ; Prestataire de paiement (secondaire)
+| **Préconditions** | Commande existante dans un état annulable (avant livraison définitive)
+| **Déclencheur** | L'acheteur soumet une demande d'annulation depuis son espace commandes
+| **Scénario nominal — annulation avant expédition** | 1. Le système transmet la demande d'annulation au vendeur. +
+2. Le vendeur vérifie que le colis n'a pas encore été remis au transporteur. +
+3. Le vendeur accepte l'annulation dans le système. +
+4. Le système déclenche un remboursement via le prestataire (IFS-04 / FS-P03). +
+5. Le prestataire confirme le remboursement. +
+6. Le système notifie l'acheteur de l'annulation et du remboursement.
+| **Scénario alternatif — annulation après expédition avec condition de renvoi** | **2a.** Le colis a déjà été remis au transporteur. Le vendeur choisit l'option **« annulation sous condition de renvoi »** (FS-V11). +
+**3a.** Le système place la commande en statut « en_attente_renvoi_colis » et notifie l'acheteur qu'il doit renvoyer le colis (CS-09). +
+**4a.** L'acheteur renvoie le colis. +
+**5a.** Le vendeur confirme la réception du colis retourné dans le back-office. +
+**6a.** Le système déclenche le remboursement (FS-P03 / IFS-04). +
+**7a.** Le prestataire confirme le remboursement. +
+**8a.** Le système clôture la commande et notifie l'acheteur.
+| **Scénario alternatif — annulation après expédition sans condition de renvoi** | **2b.** Le colis a déjà été remis au transporteur. Le vendeur choisit l'option **« annulation sans condition de renvoi »** (FS-V11). +
+**3b.** Le système déclenche directement le remboursement sans attendre le retour du colis. +
+**4b.** Le prestataire confirme le remboursement. +
+**5b.** Le système notifie l'acheteur de l'annulation et du remboursement. La commande est clôturée.
+| **Scénario alternatif — refus d'annulation** | **2c.** Le vendeur refuse toute annulation (colis en transit, non retournable). Le système notifie l'acheteur du refus ; la commande conserve son statut courant.
+| **Postconditions** | Commande annulée ou en attente de renvoi ; remboursement initié si applicable ; stock libéré.
+| **Exigences liées** | FS-B09, FS-V08, FS-V11, FS-P03, CS-09
 |===
 
-=== UCSA-03 : Parcourir et rechercher le catalogue
+=== 5.4. UCSA-02 : Gérer son compte
 
 [cols="1,3", options="header"]
 |===
 | Champ | Description
-
-| *Identifiant*
-| UCSA-03
-
-| *Acteurs*
-| Acheteur (principal)
-
-| *Préconditions*
-| Aucune — accessible sans authentification
-
-| *Déclencheur*
-| L'acheteur accède à la page catalogue ou saisit un terme de recherche
-
-| *Scénario nominal*
-a|
-. Le système affiche le catalogue des produits disponibles (statut « publié »).
-. L'acheteur peut filtrer par catégorie, prix ou disponibilité.
-. L'acheteur peut saisir un terme de recherche textuelle.
-. Le système retourne la liste filtrée ou les résultats correspondants.
-. L'acheteur sélectionne un produit pour en consulter le détail.
-
-| *Scénarios alternatifs*
-a|
-* *4a.* Aucun produit ne correspond aux critères : le système affiche un message « aucun résultat » et propose de réinitialiser les filtres.
-
-| *Postconditions*
-| Liste de produits affichée ; l'acheteur peut ajouter un produit au panier.
-
-| *Exigences liées*
-| FS-B03
+| **Identifiant** | UCSA-02
+| **Acteurs** | Acheteur ou Vendeur (principal)
+| **Préconditions** | Utilisateur authentifié
+| **Déclencheur** | L'utilisateur accède à la section « Mon compte »
+| **Scénario nominal** | 1. L'utilisateur accède au formulaire de mise à jour de son profil. +
+2. Il modifie les champs souhaités (nom, adresse, mot de passe, etc.). +
+3. Le système valide les données saisies (unicité de l'email, format du mot de passe). +
+4. Le système enregistre les modifications et confirme la mise à jour.
+| **Scénarios alternatifs** | **3a.** L'adresse email est déjà utilisée par un autre compte : le système retourne une erreur sans modifier le compte. +
+**3b.** Les données saisies sont invalides (format incorrect) : le système signale les champs en erreur.
+| **Postconditions** | Données du compte mises à jour en base.
+| **Exigences liées** | FS-V01, FS-B02
 |===
 
-=== UCSA-04 : Gérer le panier et sa persistance
+=== 5.5. UCSA-03 : Parcourir et rechercher le catalogue
 
 [cols="1,3", options="header"]
 |===
 | Champ | Description
-
-| *Identifiant*
-| UCSA-04
-
-| *Acteurs*
-| Acheteur (principal)
-
-| *Préconditions*
-| Acheteur authentifié
-
-| *Déclencheur*
-| L'acheteur ajoute, modifie ou supprime un produit du panier
-
-| *Scénario nominal*
-a|
-. L'acheteur ajoute un produit au panier depuis le catalogue (FS-B04).
-. Le système vérifie la disponibilité en stock.
-. Le système met à jour le panier et affiche le récapitulatif.
-. Le panier est automatiquement sauvegardé en base (FS-B05 / CS-03).
-. À la reconnexion, le système restaure intégralement le panier sauvegardé.
-
-| *Scénarios alternatifs*
-a|
-* *2a.* Le produit demandé est en rupture de stock : le système bloque l'ajout et informe l'acheteur.
-* *3a.* L'acheteur vide le panier : le système supprime toutes les lignes et conserve un panier vide en base.
-
-| *Postconditions*
-| Panier mis à jour et persisté en base ; restaurable à la prochaine session.
-
-| *Exigences liées*
-| FS-B04, FS-B05, CS-03
+| **Identifiant** | UCSA-03
+| **Acteurs** | Acheteur (principal)
+| **Préconditions** | Aucune — accessible sans authentification
+| **Déclencheur** | L'acheteur accède à la page catalogue ou saisit un terme de recherche
+| **Scénario nominal** | 1. Le système affiche le catalogue des produits disponibles (statut « publié »). +
+2. L'acheteur peut filtrer par catégorie, prix ou disponibilité. +
+3. L'acheteur peut saisir un terme de recherche textuelle. +
+4. Le système retourne la liste filtrée ou les résultats correspondants. +
+5. L'acheteur sélectionne un produit pour en consulter le détail.
+| **Scénarios alternatifs** | **4a.** Aucun produit ne correspond aux critères : le système affiche un message « aucun résultat » et propose de réinitialiser les filtres.
+| **Postconditions** | Liste de produits affichée ; l'acheteur peut ajouter un produit au panier.
+| **Exigences liées** | FS-B03
 |===
 
-=== UCSA-07 : Préparer et expédier une commande
+=== 5.6. UCSA-04 : Gérer le panier et sa persistance
 
 [cols="1,3", options="header"]
 |===
 | Champ | Description
-
-| *Identifiant*
-| UCSA-07
-
-| *Acteurs*
-| Vendeur (principal) ; Transporteur — IFS-05 (secondaire)
-
-| *Préconditions*
-| Commande confirmée et en état « en_préparation » ; au moins un transporteur configuré
-
-| *Déclencheur*
-| Le vendeur déclare la commande prête à l'expédition
-
-| *Scénario nominal*
-a|
-. Le vendeur consulte la commande dans le back-office et vérifie la disponibilité du stock (FS-V03).
-. Le vendeur prépare le colis et déclare l'expédition dans le système (FS-V05).
-. Le système transmet les données du colis au transporteur via l'API (FS-C01 / IFS-05).
-. Le transporteur confirme la prise en charge et retourne un numéro de suivi.
-. Le système enregistre le numéro de suivi et notifie l'acheteur (IFS-06).
-
-| *Scénarios alternatifs*
-a|
-* *1a.* Le stock est insuffisant : le vendeur alerte l'acheteur du délai de réapprovisionnement avant expédition.
-* *3a.* L'API transporteur est indisponible : le système retourne une erreur et invite le vendeur à réessayer ultérieurement.
-
-| *Postconditions*
-| Commande en état « expédiée » ; numéro de suivi enregistré ; acheteur notifié.
-
-| *Exigences liées*
-| FS-V03, FS-V04, FS-V05, FS-C01, IFS-05, CS-04
+| **Identifiant** | UCSA-04
+| **Acteurs** | Acheteur (principal)
+| **Préconditions** | Acheteur authentifié
+| **Déclencheur** | L'acheteur ajoute, modifie ou supprime un produit du panier
+| **Scénario nominal** | 1. L'acheteur ajoute un produit au panier depuis le catalogue (FS-B04). +
+2. Le système vérifie la disponibilité en stock. +
+3. Le système met à jour le panier et affiche le récapitulatif. +
+4. Le panier est automatiquement sauvegardé en base (FS-B05 / CS-03). +
+5. À la reconnexion, le système restaure intégralement le panier sauvegardé.
+| **Scénarios alternatifs** | **2a.** Le produit demandé est en rupture de stock : le système bloque l'ajout et informe l'acheteur. +
+**3a.** L'acheteur vide le panier : le système supprime toutes les lignes et conserve un panier vide en base.
+| **Postconditions** | Panier mis à jour et persisté en base ; restaurable à la prochaine session.
+| **Exigences liées** | FS-B04, FS-B05, CS-03
 |===
 
-=== UCSA-08 : Suivre la livraison d'un colis
+=== 5.7. UCSA-07 : Préparer et expédier une commande
 
 [cols="1,3", options="header"]
 |===
 | Champ | Description
-
-| *Identifiant*
-| UCSA-08
-
-| *Acteurs*
-| Acheteur (principal) ; Transporteur — IFS-05 (secondaire)
-
-| *Préconditions*
-| Commande en état « expédiée » ; numéro de suivi disponible
-
-| *Déclencheur*
-| L'acheteur consulte le suivi de sa commande, ou le transporteur envoie une mise à jour de statut
-
-| *Scénario nominal*
-a|
-. Le transporteur envoie une mise à jour de statut via webhook (FS-C02 / IFS-05).
-. Le système met à jour le statut d'acheminement en base.
-. Le système notifie l'acheteur du nouveau statut (IFS-06).
-. L'acheteur consulte le suivi depuis son espace commandes (FS-B08).
-. Le système affiche l'historique complet des statuts et la date de livraison estimée.
-
-| *Scénarios alternatifs*
-a|
-* *1a.* Aucune mise à jour du transporteur reçue depuis plus de 48 h : le système conserve le dernier statut connu sans erreur.
-
-| *Postconditions*
-| Statut de livraison à jour en base ; acheteur informé.
-
-| *Exigences liées*
-| FS-B08, FS-C02, IFS-05
+| **Identifiant** | UCSA-07
+| **Acteurs** | Vendeur (principal) ; Transporteur — IFS-05 (secondaire)
+| **Préconditions** | Commande confirmée et en état « en_préparation » (paiement carte autorisé, ou virement confirmé manuellement par le vendeur) ; au moins un transporteur configuré
+| **Déclencheur** | Le vendeur déclare la commande prête à l'expédition
+| **Scénario nominal** | 1. Le vendeur consulte la commande dans le back-office et vérifie la disponibilité du stock (FS-V03). +
+2. Le vendeur prépare le colis et déclare l'expédition dans le système (FS-V05). +
+3. Le système transmet les données du colis au transporteur via l'API (FS-C01 / IFS-05). +
+4. Le transporteur confirme la prise en charge et retourne un numéro de suivi **OU** le vendeur saisit manuellement le numéro de suivi (FS-V09). +
+5. Le système enregistre le numéro de suivi et notifie l'acheteur avec ce numéro (IFS-06).
+| **Scénarios alternatifs** | **1a.** Le stock est insuffisant : le vendeur alerte l'acheteur du délai de réapprovisionnement avant expédition. +
+**3a.** L'API transporteur est indisponible : le système retourne une erreur et invite le vendeur à réessayer ultérieurement. +
+**3b.** Le transporteur ne retourne pas de numéro automatique : le vendeur saisit manuellement le numéro de suivi dans le système avant la notification à l'acheteur (FS-V09). +
+**Pré-condition bloquante.** Si le mode de paiement est un virement et que le vendeur n'a pas encore confirmé sa réception (FS-V10), le système bloque l'accès à cette étape et affiche un avertissement.
+| **Postconditions** | Commande en état « expédiée » ; numéro de suivi enregistré ; acheteur notifié.
+| **Exigences liées** | FS-V03, FS-V04, FS-V05, FS-V09, FS-C01, IFS-05, CS-04
 |===
 
-=== UCSA-09 : Traiter un litige ou une réclamation
+=== 5.8. UCSA-08 : Suivre la livraison d'un colis
 
 [cols="1,3", options="header"]
 |===
 | Champ | Description
-
-| *Identifiant*
-| UCSA-09
-
-| *Acteurs*
-| Acheteur (principal) ; Vendeur (secondaire) ; Prestataire de paiement (secondaire)
-
-| *Préconditions*
-| Commande livrée ou annulée ; réclamation non encore ouverte pour cette commande
-
-| *Déclencheur*
-| L'acheteur soumet une réclamation depuis son espace commandes
-
-| *Scénario nominal*
-a|
-. L'acheteur ouvre une réclamation en précisant le motif (non-réception, article défectueux, etc.).
-. Le système enregistre la réclamation (statut « ouverte ») et notifie le vendeur.
-. Le vendeur examine la réclamation et décide de l'issue (retour accepté, remboursement).
-. Si remboursement accordé : le système déclenche le remboursement via le prestataire (FS-P03 / IFS-04).
-. Le prestataire confirme le remboursement.
-. Le système clôture la réclamation et notifie l'acheteur.
-
-| *Scénarios alternatifs*
-a|
-* *3a.* Le vendeur rejette la réclamation : le système notifie l'acheteur du refus ; la réclamation passe en statut « clôturée ».
-
-| *Postconditions*
-| Réclamation clôturée ; remboursement déclenché si applicable.
-
-| *Exigences liées*
-| FS-V06, FS-P03, IFS-04
+| **Identifiant** | UCSA-08
+| **Acteurs** | Acheteur (principal) ; Transporteur — IFS-05 (secondaire)
+| **Préconditions** | Commande en état « expédiée » ; numéro de suivi disponible
+| **Déclencheur** | L'acheteur consulte le suivi de sa commande, ou le transporteur envoie une mise à jour de statut
+| **Scénario nominal** | 1. Le transporteur envoie une mise à jour de statut via webhook (FS-C02 / IFS-05). +
+2. Le système met à jour le statut d'acheminement en base. +
+3. Le système notifie l'acheteur du nouveau statut (IFS-06). +
+4. L'acheteur consulte le suivi depuis son espace commandes (FS-B08). +
+5. Le système affiche l'historique complet des statuts et la date de livraison estimée.
+| **Scénarios alternatifs** | **1a.** Aucune mise à jour du transporteur reçue depuis plus de 48 h : le système conserve le dernier statut connu sans erreur.
+| **Postconditions** | Statut de livraison à jour en base ; acheteur informé.
+| **Exigences liées** | FS-B08, FS-C02, IFS-05
 |===
 
-=== UCSA-10 : Gérer le catalogue et les stocks
+=== 5.9. UCSA-09 : Traiter un litige ou une réclamation
 
 [cols="1,3", options="header"]
 |===
 | Champ | Description
-
-| *Identifiant*
-| UCSA-10
-
-| *Acteurs*
-| Vendeur (principal)
-
-| *Préconditions*
-| Vendeur authentifié
-
-| *Déclencheur*
-| Le vendeur accède au back-office catalogue ou stocks
-
-| *Scénario nominal*
-a|
-. Le vendeur consulte la liste des produits existants.
-. Il peut créer un produit (nom, description, prix, photos, catégorie — FS-V02), le modifier ou l'archiver.
-. Il consulte les niveaux de stock de chaque produit (FS-V03).
-. Il met à jour les quantités disponibles et définit un seuil d'alerte.
-. Le système déclenche une alerte si le stock descend sous le seuil.
-
-| *Scénarios alternatifs*
-a|
-* *2a.* Le vendeur tente d'archiver un produit référencé dans une commande active : le système bloque l'archivage et affiche un avertissement.
-
-| *Postconditions*
-| Catalogue et stocks mis à jour ; les acheteurs voient le catalogue actualisé.
-
-| *Exigences liées*
-| FS-V02, FS-V03
+| **Identifiant** | UCSA-09
+| **Acteurs** | Acheteur (principal) ; Vendeur (secondaire) ; Prestataire de paiement (secondaire)
+| **Préconditions** | Commande livrée ou annulée ; réclamation non encore ouverte pour cette commande
+| **Déclencheur** | L'acheteur soumet une réclamation depuis son espace commandes
+| **Scénario nominal** | 1. L'acheteur ouvre une réclamation en précisant le motif (non-réception, article défectueux, etc.). +
+2. Le système enregistre la réclamation (statut « ouverte ») et notifie le vendeur. +
+3. Le vendeur examine la réclamation et décide de l'issue (retour accepté, remboursement). +
+4. Si remboursement accordé : le système déclenche le remboursement via le prestataire (FS-P03 / IFS-04). +
+5. Le prestataire confirme le remboursement. +
+6. Le système clôture la réclamation et notifie l'acheteur.
+| **Scénarios alternatifs** | **3a.** Le vendeur rejette la réclamation : le système notifie l'acheteur du refus ; la réclamation passe en statut « clôturée ».
+| **Postconditions** | Réclamation clôturée ; remboursement déclenché si applicable.
+| **Exigences liées** | FS-V06, FS-P03, IFS-04
 |===
 
-=== UCSA-11 : Consulter les rapports de ventes
+=== 5.10. UCSA-10 : Gérer le catalogue et les stocks
 
 [cols="1,3", options="header"]
 |===
 | Champ | Description
-
-| *Identifiant*
-| UCSA-11
-
-| *Acteurs*
-| Vendeur (principal)
-
-| *Préconditions*
-| Vendeur authentifié
-
-| *Déclencheur*
-| Le vendeur accède à la section « Rapports » du back-office
-
-| *Scénario nominal*
-a|
-. Le vendeur sélectionne une période ou un filtre (produit, catégorie).
-. Le système calcule et affiche le chiffre d'affaires, le nombre de commandes et les produits les plus vendus (FS-V07).
-. Le vendeur peut consulter l'historique détaillé des commandes passées.
-
-| *Scénarios alternatifs*
-a|
-* *2a.* Aucune commande sur la période sélectionnée : le système affiche un tableau vide avec un message explicatif.
-
-| *Postconditions*
-| Rapport affiché ; aucune modification des données métier.
-
-| *Exigences liées*
-| FS-V07
+| **Identifiant** | UCSA-10
+| **Acteurs** | Vendeur (principal)
+| **Préconditions** | Vendeur authentifié
+| **Déclencheur** | Le vendeur accède au back-office catalogue ou stocks
+| **Scénario nominal** | 1. Le vendeur consulte la liste des produits existants. +
+2. Il peut créer un produit (nom, description, prix, photos, catégorie — FS-V02), le modifier ou l'archiver. +
+3. Il consulte les niveaux de stock de chaque produit (FS-V03). +
+4. Il met à jour les quantités disponibles et définit un seuil d'alerte. +
+5. Le système déclenche une alerte si le stock descend sous le seuil.
+| **Scénarios alternatifs** | **2a.** Le vendeur tente d'archiver un produit référencé dans une commande active : le système bloque l'archivage et affiche un avertissement.
+| **Postconditions** | Catalogue et stocks mis à jour ; les acheteurs voient le catalogue actualisé.
+| **Exigences liées** | FS-V02, FS-V03
 |===
 
-=== UCSA-12 : Gérer les comptes utilisateurs et transporteurs
+=== 5.11. UCSA-11 : Consulter les rapports de ventes
 
 [cols="1,3", options="header"]
 |===
 | Champ | Description
-
-| *Identifiant*
-| UCSA-12
-
-| *Acteurs*
-| Administrateur (principal)
-
-| *Préconditions*
-| Administrateur authentifié
-
-| *Déclencheur*
-| L'administrateur accède à la console d'administration
-
-| *Scénario nominal*
-a|
-. L'administrateur consulte la liste des comptes utilisateurs (vendeurs et acheteurs).
-. Il peut créer, modifier, suspendre ou supprimer un compte (FS-A01), et ajuster les rôles (FS-A02).
-. Il accède à la liste des transporteurs configurés.
-. Il peut ajouter, modifier ou supprimer un transporteur (FS-A03).
-
-| *Scénarios alternatifs*
-a|
-* *2a.* L'adresse email du nouveau compte est déjà utilisée : le système retourne une erreur de duplication.
-* *4a.* Le transporteur est référencé dans des expéditions en cours : le système bloque la suppression et propose la désactivation.
-
-| *Postconditions*
-| Comptes et transporteurs mis à jour ; modifications effectives immédiatement.
-
-| *Exigences liées*
-| FS-A01, FS-A02, FS-A03
+| **Identifiant** | UCSA-11
+| **Acteurs** | Vendeur (principal)
+| **Préconditions** | Vendeur authentifié
+| **Déclencheur** | Le vendeur accède à la section « Rapports » du back-office
+| **Scénario nominal** | 1. Le vendeur sélectionne une période ou un filtre (produit, catégorie). +
+2. Le système calcule et affiche le chiffre d'affaires, le nombre de commandes et les produits les plus vendus (FS-V07). +
+3. Le vendeur peut consulter l'historique détaillé des commandes passées.
+| **Scénarios alternatifs** | **2a.** Aucune commande sur la période sélectionnée : le système affiche un tableau vide avec un message explicatif.
+| **Postconditions** | Rapport affiché ; aucune modification des données métier.
+| **Exigences liées** | FS-V07
 |===
 
-== Diagramme d'activité système — Flux de commande complet
+=== 5.12. UCSA-12 : Gérer les comptes utilisateurs et transporteurs
+
+[cols="1,3", options="header"]
+|===
+| Champ | Description
+| **Identifiant** | UCSA-12
+| **Acteurs** | Administrateur (principal)
+| **Préconditions** | Administrateur authentifié
+| **Déclencheur** | L'administrateur accède à la console d'administration
+| **Scénario nominal** | 1. L'administrateur consulte la liste des comptes utilisateurs (vendeurs et acheteurs). +
+2. Il peut créer, modifier, suspendre ou supprimer un compte (FS-A01), et ajuster les rôles (FS-A02). +
+3. Il accède à la liste des transporteurs configurés. +
+4. Il peut ajouter, modifier ou supprimer un transporteur (FS-A03).
+| **Scénarios alternatifs** | **2a.** L'adresse email du nouveau compte est déjà utilisée : le système retourne une erreur de duplication. +
+**4a.** Le transporteur est référencé dans des expéditions en cours : le système bloque la suppression et propose la désactivation.
+| **Postconditions** | Comptes et transporteurs mis à jour ; modifications effectives immédiatement.
+| **Exigences liées** | FS-A01, FS-A02, FS-A03
+|===
+
+=== 5.13. UCSA-13 : Confirmer la réception d'un virement bancaire
+
+[cols="1,3", options="header"]
+|===
+| Champ | Description
+| **Identifiant** | UCSA-13
+| **Acteurs** | Vendeur (principal)
+| **Préconditions** | Commande en statut « en_attente_paiement_virement » ; virement reçu sur le compte bancaire du vendeur
+| **Déclencheur** | Le vendeur accède à la liste des commandes en attente de confirmation de virement
+| **Scénario nominal** | 1. Le vendeur consulte les commandes en statut « en_attente_paiement_virement » dans le back-office. +
+2. Il identifie la commande correspondant au virement reçu via la référence communiquée à l'acheteur. +
+3. Il confirme manuellement la réception du virement (FS-V10). +
+4. Le système bascule la commande en statut « en_préparation ». +
+5. Le système notifie l'acheteur que son paiement a été confirmé et que la commande est en cours de préparation.
+| **Scénarios alternatifs** | **3a.** Le vendeur ne retrouve pas le virement correspondant : il peut laisser la commande en attente ou la rejeter après délai. +
+**3b.** Le vendeur rejette la commande (virement non reçu après délai) : le système annule la commande et notifie l'acheteur.
+| **Postconditions** | Commande en état « en_préparation » ; acheteur notifié de la confirmation de paiement.
+| **Exigences liées** | FS-V10, CS-08
+|===
+
+== 6. Diagramme d'activité système — Flux de commande complet
 
 Ce diagramme modélise le flux système de bout en bout, depuis la connexion de l'acheteur jusqu'à la clôture de la commande, en faisant apparaître les échanges avec les systèmes externes.
 
-[plantuml, sa-activity, svg]
+[plantuml]
 ----
 skinparam activityBackgroundColor #FEFEFE
 skinparam activityBorderColor #2E75B6
@@ -725,58 +504,77 @@ else (non)
 endif
 
 |Acheteur|
-:S'authentifier (FS-B01);
-
-|Système|
-:Restaurer le panier\nsauvegardé (FS-B05 / CS-03);
-
-|Acheteur|
+:S'authentifier;
 :Parcourir le catalogue (FS-B03);
 :Ajouter des produits au panier (FS-B04);
 :Valider le panier;
 
 |Système|
+:Restaurer le panier sauvegardé (FS-B05 / CS-03);
 :Afficher récapitulatif;
 :Contrôler adresse de livraison UE (CS-04);
 
 |Acheteur|
-:Saisir adresse de livraison\n+ choisir mode de livraison;
-:Soumettre le paiement\n(carte ou virement — CS-02);
+:Saisir adresse de livraison + choisir mode de livraison;
+:Choisir le mode de paiement\n(carte ou virement — CS-02);
 
-|Système|
-:Soumettre la demande\nau prestataire (FS-P01 / IFS-04);
-
-|Prestataire de paiement|
-if (Transaction autorisée ?) then (oui)
-  :Confirmer la transaction (FS-P02);
-else (non)
-  :Refuser la transaction;
+if (Mode de paiement ?) then (carte)
 
   |Système|
-  :Notifier l'acheteur\nde l'échec;
-  stop
-endif
+  :Soumettre la demande au prestataire\n(FS-P01 / IFS-04);
 
-|Système|
-:Créer la commande en base;
-:Réserver le stock;
-:Notifier l'acheteur (confirmation);
-:Notifier le vendeur (nouvelle commande);
+  |Prestataire de paiement|
+  if (Transaction autorisée ?) then (oui)
+    :Confirmer la transaction (FS-P02);
+  else (non)
+    :Refuser la transaction;
+
+    |Système|
+    :Notifier l'acheteur de l'échec;
+    stop
+  endif
+
+  |Système|
+  :Créer la commande — statut "en_préparation";
+  :Réserver le stock;
+  :Notifier l'acheteur (confirmation);
+  :Notifier le vendeur (nouvelle commande);
+
+else (virement)
+
+  |Système|
+  :Créer la commande — statut "en_attente_paiement_virement" (CS-08);
+  :Communiquer les coordonnées bancaires\net la référence à l'acheteur;
+  :Notifier le vendeur (commande en attente de virement);
+
+  |Vendeur|
+  :Vérifier la réception du virement;
+  if (Virement reçu ?) then (oui)
+    :Confirmer manuellement la réception (FS-V10);
+  else (non — délai dépassé)
+    :Rejeter la commande;
+
+    |Système|
+    :Annuler la commande;
+    :Notifier l'acheteur du rejet;
+    stop
+  endif
+
+  |Système|
+  :Basculer la commande en statut "en_préparation";
+  :Notifier l'acheteur (paiement confirmé);
+
+endif
 
 |Acheteur|
 if (Annulation souhaitée ?) then (oui)
   :Demander l'annulation (FS-B09);
 
   |Système|
-  :Transmettre la demande\nau vendeur (FS-V08);
+  :Transmettre la demande au vendeur (FS-V08);
 
   |Vendeur|
-  if (Commande déjà expédiée ?) then (oui)
-    :Refuser l'annulation;
-
-    |Système|
-    :Notifier l'acheteur du refus;
-  else (non)
+  if (Commande déjà expédiée ?) then (non)
     :Accepter l'annulation;
 
     |Système|
@@ -786,9 +584,47 @@ if (Annulation souhaitée ?) then (oui)
     :Confirmer le remboursement;
 
     |Système|
-    :Notifier l'acheteur;
+    :Notifier l'acheteur (annulation + remboursement);
     :Libérer le stock;
     stop
+
+  else (oui — déjà expédiée)
+    :Choisir la modalité d'annulation (FS-V11);
+
+    if (Modalité choisie ?) then (avec condition de renvoi)
+      |Système|
+      :Placer la commande en statut "en_attente_renvoi_colis" (CS-09);
+      :Notifier l'acheteur — renvoyer le colis;
+
+      |Acheteur|
+      :Renvoyer le colis;
+
+      |Vendeur|
+      :Confirmer la réception du colis retourné;
+
+      |Système|
+      :Déclencher le remboursement (FS-P03 / IFS-04);
+
+      |Prestataire de paiement|
+      :Confirmer le remboursement;
+
+      |Système|
+      :Clôturer la commande;
+      :Notifier l'acheteur (remboursement confirmé);
+      stop
+
+    else (sans condition de renvoi)
+      |Système|
+      :Déclencher directement le remboursement (FS-P03 / IFS-04);
+
+      |Prestataire de paiement|
+      :Confirmer le remboursement;
+
+      |Système|
+      :Clôturer la commande;
+      :Notifier l'acheteur (annulation + remboursement);
+      stop
+    endif
   endif
 else (non)
 endif
@@ -807,16 +643,28 @@ endif
 :Déclarer l'expédition (FS-V05);
 
 |Système|
-:Transmettre le colis\nau transporteur (FS-C01 / IFS-05);
+:Transmettre le colis au transporteur (FS-C01 / IFS-05);
 
 |Transporteur|
-:Prendre en charge le colis;
-:Acheminer vers le pays\nde l'acheteur (UE);
-:Mettre à jour les statuts\nde livraison (webhook);
+if (Numéro de suivi fourni automatiquement ?) then (oui)
+  :Retourner le numéro de suivi;
+else (non)
+  |Vendeur|
+  :Saisir manuellement le numéro de suivi (FS-V09);
+  |Transporteur|
+endif
+
+|Système|
+:Enregistrer le numéro de suivi;
+:Notifier l'acheteur (expédié — n° de suivi);
+
+|Transporteur|
+:Acheminer vers le pays de l'acheteur (UE);
+:Mettre à jour les statuts via webhook;
 
 |Système|
 :Recevoir les statuts (FS-C02);
-:Notifier l'acheteur\n(n° de suivi + statut — FS-B08);
+:Notifier l'acheteur (mise à jour statut livraison — FS-B08);
 
 |Acheteur|
 :Consulter le suivi de livraison;
@@ -824,16 +672,16 @@ endif
 
 |Système|
 :Clôturer la commande;
-:Mettre à jour les rapports\nde ventes (FS-V07);
+:Mettre à jour les rapports de ventes (FS-V07);
 
 stop
 ----
 
-== Diagramme de séquence système — Passation de commande
+== 7. Diagramme de séquence système — Passation de commande
 
-Ce diagramme représente les échanges chronologiques entre les acteurs et le système lors du flux de commande nominal, en mettant en évidence les interfaces externes (IFS-04 et IFS-05).
+Ce diagramme représente les échanges chronologiques entre les acteurs et le système lors du flux de commande nominal, en mettant en évidence les interfaces externes (IFS-04 et IFS-05) ainsi que les variantes de paiement et d'annulation.
 
-[plantuml, sa-sequence, svg]
+[plantuml]
 ----
 skinparam sequenceArrowColor #2E75B6
 skinparam sequenceParticipantBackgroundColor #E8F4FD
@@ -845,92 +693,129 @@ skinparam noteBackgroundColor #FFFBE6
 actor Acheteur as Buyer
 participant "Système\n(Boutique)" as Sys
 actor Vendeur as Vendor
-actor Administrateur as Admin
 participant "IFS-05\nTransporteur" as Carrier
 participant "IFS-04\nPrestataire paiement" as Payment
 
 == Inscription et activation de compte (UCSA-01) ==
 Buyer -> Sys : POST /register {email, mdp, adresse}
-Sys --> Buyer : 201 Created — compte créé, statut "en attente d'activation"
+Sys --> Buyer : 201 Created — statut "en attente d'activation"
 Sys -> Sys : Générer token d'activation (UUID, TTL 24h)
-Sys --> Buyer : IFS-06 — Email : lien d'activation\nhttps://boutique/activate?token={uuid}
-note right : FS-B01 / FS-B10 / CS-07\nToken à usage unique, expire dans 24 h
+Sys --> Buyer : IFS-06 — Email lien d'activation
+note right : FS-B01 / FS-B10 / CS-07
 
 Buyer -> Sys : GET /activate?token={uuid}
-Sys -> Sys : Vérifier token (valide + non expiré)
-Sys --> Buyer : 200 OK — compte activé, redirection vers connexion
-note right : Si token expiré :\nSys --> Buyer : 410 Gone\nBuyer peut demander un renvoi
+Sys -> Sys : Vérifier token
+Sys --> Buyer : 200 OK — compte activé
+note right : Si token expiré : 410 Gone\nRenvoi possible
 
-== Navigation et gestion du panier (UCSA-03 / UCSA-04) ==
+== Navigation et panier (UCSA-03 / UCSA-04) ==
 Buyer -> Sys : GET /catalogue?filtre=...
 Sys --> Buyer : 200 OK — liste produits (FS-B03)
 
 Buyer -> Sys : POST /panier/lignes {produit_id, qté}
-Sys --> Buyer : 200 OK — panier mis à jour (FS-B04)
-note right : Panier sauvegardé en base\npour la prochaine session (CS-03)
+Sys --> Buyer : 200 OK — panier mis à jour (FS-B04 / CS-03)
 
-== Tunnel d'achat et paiement (UCSA-05) ==
-Buyer -> Sys : POST /commandes {panier_id, adresse_UE, mode_livraison, mode_paiement}
-note right : CS-04 — adresse validée UE\nCS-02 — carte ou virement
+== Tunnel d'achat — Paiement par carte (UCSA-05) ==
+Buyer -> Sys : POST /commandes {panier_id, adresse_UE, mode_livraison, mode_paiement: "carte"}
+note right : CS-04 — adresse validée UE
 
-Sys -> Payment : POST /authorize {montant, mode, références}
+Sys -> Payment : POST /authorize {montant, carte, références}
 note right : IFS-04 (FS-P01)
 
-alt Paiement autorisé
+alt Paiement carte autorisé
   Payment --> Sys : 200 OK — {transaction_id, statut: "autorisé"}
-  Sys --> Buyer : 201 Created — commande confirmée {commande_id}
+  Sys --> Buyer : 201 Created — commande confirmée {commande_id}, statut "en_préparation"
   Sys -> Vendor : Notification : nouvelle commande #{commande_id}
 
-  == Préparation et expédition (UCSA-07) ==
-  Vendor -> Sys : PUT /commandes/{id}/statut {statut: "en_préparation"}
-  Sys --> Buyer : Notification : commande en préparation
-
-  opt Annulation demandée avant expédition (UCSA-06)
-    Buyer -> Sys : POST /commandes/{id}/annulation
-    Sys -> Vendor : Notification : demande d'annulation
-    alt Commande non expédiée
-      Vendor -> Sys : PUT /commandes/{id}/annulation {accepté: true}
-      Sys -> Payment : POST /refunds {transaction_id, montant}
-      Payment --> Sys : 200 OK — remboursement confirmé (FS-P03)
-      Sys --> Buyer : Notification : annulation + remboursement confirmé
-    else Commande déjà expédiée
-      Vendor -> Sys : PUT /commandes/{id}/annulation {accepté: false}
-      Sys --> Buyer : Notification : annulation refusée (colis déjà expédié)
-    end
-  end
-
-  Vendor -> Sys : PUT /commandes/{id}/expedition {transporteur_id, pays_destination}
-  Sys -> Carrier : POST /shipments {colis, adresse, service}
-  note right : IFS-05 (FS-C01)
-  Carrier --> Sys : 201 Created — {tracking_number}
-  Sys --> Buyer : Notification : expédié — n° de suivi {tracking_number}
-
-  == Suivi de livraison (UCSA-08) ==
-  Carrier -> Sys : POST /webhooks/tracking {tracking_number, statut, timestamp}
-  note right : IFS-05 (FS-C02)
-  Sys --> Buyer : Notification : mise à jour statut livraison
-
-  Buyer -> Sys : GET /commandes/{id}/suivi
-  Sys --> Buyer : 200 OK — statuts d'acheminement
-
-  Buyer -> Sys : PUT /commandes/{id}/reception {confirmé: true}
-  Sys --> Vendor : Notification : réception confirmée
-
-  Vendor -> Sys : GET /rapports/ventes
-  Sys --> Vendor : 200 OK — statistiques et historique (FS-V07)
-
-else Paiement refusé
-  Payment --> Sys : 402 Payment Required — {raison}
+else Paiement carte refusé
+  Payment --> Sys : 402 Payment Required
   Sys --> Buyer : Notification : échec paiement — réessayer ou changer de mode
-  note right : L'acheteur peut retenter\nou abandonner la commande
 end
+
+== Tunnel d'achat — Paiement par virement (UCSA-05 / CS-08) ==
+Buyer -> Sys : POST /commandes {panier_id, adresse_UE, mode_livraison, mode_paiement: "virement"}
+Sys --> Buyer : 201 Created — statut "en_attente_paiement_virement"\n+ coordonnées bancaires + référence
+Sys -> Vendor : Notification : commande en attente de virement #{commande_id}
+note right : CS-08 (FS-V10)
+
+Vendor -> Sys : PUT /commandes/{id}/paiement-virement {confirmé: true}
+note right : Confirmation manuelle du vendeur
+Sys --> Buyer : Notification : virement confirmé — commande en préparation
+Sys --> Sys : Statut → "en_préparation"
+
+== Annulation avant expédition (UCSA-06) ==
+opt Annulation demandée avant expédition
+  Buyer -> Sys : POST /commandes/{id}/annulation
+  Sys -> Vendor : Notification : demande d'annulation
+  Vendor -> Sys : PUT /commandes/{id}/annulation {accepté: true}
+  Sys -> Payment : POST /refunds {transaction_id, montant}
+  Payment --> Sys : 200 OK — remboursement confirmé (FS-P03)
+  Sys --> Buyer : Notification : annulation + remboursement confirmé
+end
+
+== Préparation et expédition (UCSA-07) ==
+Vendor -> Sys : PUT /commandes/{id}/statut {statut: "en_préparation"}
+note right : Bloqué si virement non confirmé (CS-08)
+
+Vendor -> Sys : PUT /commandes/{id}/expedition {transporteur_id, pays_destination}
+Sys -> Carrier : POST /shipments {colis, adresse, service}
+note right : IFS-05 (FS-C01)
+
+alt Numéro de suivi fourni automatiquement
+  Carrier --> Sys : 201 Created — {tracking_number}
+else Saisie manuelle par le vendeur
+  Vendor -> Sys : PUT /commandes/{id}/suivi {tracking_number}
+  note right : FS-V09
+end
+
+Sys --> Buyer : Notification : expédié — n° de suivi {tracking_number}
+
+== Annulation après expédition (UCSA-06 / CS-09) ==
+opt Annulation demandée après expédition
+  Buyer -> Sys : POST /commandes/{id}/annulation
+  Sys -> Vendor : Notification : demande d'annulation (colis expédié)
+
+  alt Annulation sous condition de renvoi (FS-V11)
+    Vendor -> Sys : PUT /commandes/{id}/annulation {modalité: "renvoi_requis"}
+    Sys --> Buyer : Notification : annulation conditionnelle — renvoyer le colis
+    note right : Statut → "en_attente_renvoi_colis" (CS-09)
+    Buyer -> Sys : POST /commandes/{id}/retour {confirmé: true}
+    Vendor -> Sys : PUT /commandes/{id}/retour-recu {confirmé: true}
+    Sys -> Payment : POST /refunds {transaction_id, montant}
+    Payment --> Sys : 200 OK — remboursement confirmé
+    Sys --> Buyer : Notification : retour reçu + remboursement confirmé
+
+  else Annulation sans condition de renvoi (FS-V11)
+    Vendor -> Sys : PUT /commandes/{id}/annulation {modalité: "sans_renvoi"}
+    Sys -> Payment : POST /refunds {transaction_id, montant}
+    Payment --> Sys : 200 OK — remboursement confirmé
+    Sys --> Buyer : Notification : annulation + remboursement confirmé
+
+  else Refus d'annulation
+    Vendor -> Sys : PUT /commandes/{id}/annulation {accepté: false}
+    Sys --> Buyer : Notification : annulation refusée
+  end
+end
+
+== Suivi de livraison (UCSA-08) ==
+Carrier -> Sys : POST /webhooks/tracking {tracking_number, statut, timestamp}
+note right : IFS-05 (FS-C02)
+Sys --> Buyer : Notification : mise à jour statut livraison
+
+Buyer -> Sys : GET /commandes/{id}/suivi
+Sys --> Buyer : 200 OK — historique des statuts
+
+Buyer -> Sys : PUT /commandes/{id}/reception {confirmé: true}
+Sys --> Vendor : Notification : réception confirmée
+Vendor -> Sys : GET /rapports/ventes
+Sys --> Vendor : 200 OK — statistiques (FS-V07)
 ----
 
-== Diagramme de classes logique — Modèle de données système
+== 8. Diagramme de classes logique — Modèle de données système
 
-Ce diagramme représente les entités manipulées par le système, leurs attributs principaux et leurs relations. Il constitue le modèle de données logique de la SA, indépendant de toute technologie de persistance.
+Ce diagramme représente les entités manipulées par le système, leurs attributs principaux et leurs relations.
 
-[plantuml, sa-classes, svg]
+[plantuml]
 ----
 skinparam classBackgroundColor #FEFEFE
 skinparam classBorderColor #2E75B6
@@ -978,7 +863,7 @@ class Commande {
   + adresseLivraison : Adresse
   + modeLivraison : String
   + montantTotal : Decimal
-  + statut : Enum {en_attente, en_préparation,\nexpédiée, livrée, annulée}
+  + statut : Enum {en_attente_paiement_virement,\nen_préparation, expédiée,\nen_attente_renvoi_colis,\nlivrée, annulée}
   + dateCommande : DateTime
 }
 
@@ -986,14 +871,16 @@ class Paiement {
   + id : UUID
   + montant : Decimal
   + mode : Enum {carte, virement}
-  + statut : Enum {autorisé, refusé, remboursé}
+  + statut : Enum {autorisé, en_attente_confirmation,\nrefusé, remboursé}
   + référencePrestataire : String
+  + référenceVirement : String
   + date : DateTime
 }
 
 class Expédition {
   + id : UUID
   + numéroSuivi : String
+  + origineNuméroSuivi : Enum {automatique, manuel}
   + statutLivraison : String
   + dateExpédition : DateTime
   + dateLivraisonEstimée : Date
@@ -1021,6 +908,13 @@ class Adresse {
   + paysUE : CodeISO
 }
 
+class RetourColis {
+  + id : UUID
+  + dateDemandeRenvoi : DateTime
+  + dateReceptionVendeur : DateTime
+  + statut : Enum {en_attente, reçu, refusé}
+}
+
 CompteUtilisateur "1" --> "0..1" Panier : possède
 CompteUtilisateur "1" --> "0..*" Commande : passe
 Panier "1" *-- "0..*" LignePanier : contient
@@ -1030,61 +924,53 @@ Commande "1" *-- "1" Paiement : réglée par
 Commande "1" *-- "0..1" Expédition : donne lieu à
 Commande "1" --> "0..*" Réclamation : fait l'objet de
 Commande "1" --> "1" Adresse : livrée à
+Commande "1" --> "0..1" RetourColis : peut faire l'objet de
 Expédition "0..*" --> "1" Transporteur : acheminée par
 
 note bottom of Commande
-  CS-04 : adresse.paysUE
-  doit être dans l'UE
+  CS-04 : adresse.paysUE doit être dans l'UE
+  CS-08 : statut "en_attente_paiement_virement"
+  si mode = virement
+  CS-09 : statut "en_attente_renvoi_colis"
+  si annulation après expédition avec renvoi requis
 end note
 
 note bottom of Paiement
   CS-02 : mode ∈ {carte, virement}
   CS-06 : tous les paiements sont journalisés
+  CS-08 : statut "en_attente_confirmation" si virement
+end note
+
+note bottom of Expédition
+  FS-V09 : numéroSuivi peut être fourni
+  automatiquement (API transporteur)
+  ou saisi manuellement par le vendeur
+end note
+
+note bottom of RetourColis
+  CS-09 : créée lors d'une annulation
+  après expédition avec condition de renvoi
 end note
 ----
 
-== Interfaces système (IFS)
+== 9. Interfaces système (IFS)
 
-[cols="1,2,1,2", options="header"]
+[cols="1,2,2,3", options="header"]
 |===
 | Identifiant | Interface | Type / Canal | Données échangées
-
-| *IFS-01*
-| Portail acheteur (front-office)
-| Web responsive HTTPS (CS-01)
-| Catalogue, panier, tunnel d'achat, suivi commande, profil
-
-| *IFS-02*
-| Back-office vendeur
-| Web HTTPS — desktop-first
-| Catalogue, stocks, commandes, expéditions, rapports de ventes
-
-| *IFS-03*
-| Back-office administrateur
-| Web HTTPS — desktop-first
-| Comptes utilisateurs, transporteurs, logs d'audit
-
-| *IFS-04*
-| API prestataire de paiement
-| REST/HTTPS — appel sortant + webhook entrant
-| Demande d'autorisation, confirmation de transaction, déclenchement de remboursement
-
-| *IFS-05*
-| API transporteur
-| REST/HTTPS — appel sortant + webhook entrant
-| Remise de colis, numéro de suivi, mises à jour de statut d'acheminement
-
-| *IFS-06*
-| Notifications email / SMS
-| SMTP / SMS Gateway — sortant
-| Confirmation de commande, expédition, annulation, alerte de rupture de stock
+| **IFS-01** | Portail acheteur (front-office) | Web responsive HTTPS (CS-01) | Catalogue, panier, tunnel d'achat, suivi commande, profil
+| **IFS-02** | Back-office vendeur | Web HTTPS — desktop-first | Catalogue, stocks, commandes, expéditions, confirmation virement, rapports de ventes
+| **IFS-03** | Back-office administrateur | Web HTTPS — desktop-first | Comptes utilisateurs, transporteurs, logs d'audit
+| **IFS-04** | API prestataire de paiement | REST/HTTPS — appel sortant + webhook entrant | Demande d'autorisation, confirmation de transaction, déclenchement de remboursement
+| **IFS-05** | API transporteur | REST/HTTPS — appel sortant + webhook entrant | Remise de colis, numéro de suivi (auto ou manuel), mises à jour de statut d'acheminement
+| **IFS-06** | Notifications email / SMS | SMTP / SMS Gateway — sortant | Confirmation de commande, expédition, numéro de suivi, annulation, renvoi colis, alerte de rupture de stock
 |===
 
-== Diagramme de composants système
+== 10. Diagramme de composants système
 
-Ce diagramme identifie les grands blocs fonctionnels du système et leurs dépendances, sans préjuger de l'architecture technique retenue lors de la LA (Logical Architecture).
+Ce diagramme identifie les grands blocs fonctionnels du système et leurs dépendances.
 
-[plantuml, sa-components, svg]
+[plantuml]
 ----
 skinparam componentBackgroundColor #FEFEFE
 skinparam componentBorderColor #2E75B6
@@ -1107,7 +993,7 @@ package "Système — Boutique en ligne" {
   }
 
   package "Back-office (IFS-02 / IFS-03)" {
-    [Espace Vendeur\n(catalogue, stock, commandes, rapports)] as BackVendor
+    [Espace Vendeur\n(catalogue, stock, commandes,\nconfirmation virement, rapports)] as BackVendor
     [Console Admin\n(comptes, transporteurs)] as BackAdmin
   }
 
@@ -1115,7 +1001,7 @@ package "Système — Boutique en ligne" {
     [Gestion des comptes\n(FS-A01..A04, FS-B01..B02)] as AccountSvc
     [Gestion du catalogue\net des stocks (FS-V02..V03, FS-B03)] as CatalogSvc
     [Gestion du panier\n(FS-B04..B05 / CS-03)] as CartSvc
-    [Orchestrateur de commande\n(FS-B06..B09, FS-V04..V08)] as OrderSvc
+    [Orchestrateur de commande\n(FS-B06..B09, FS-V04..V11)] as OrderSvc
     [Moteur de rapports\n(FS-V07)] as ReportSvc
   }
 
@@ -1158,14 +1044,13 @@ CarrierSvc --> ExtCarrier : IFS-05\nREST/HTTPS
 ExtCarrier --> CarrierSvc : webhook statuts
 ----
 
-== Matrice de traçabilité OA → SA
+== 11. Matrice de traçabilité OA → SA
 
 La matrice ci-dessous assure la couverture complète de chaque besoin opérationnel de l'OA par au moins une exigence ou fonction système de la SA.
 
 [cols="1,2,2,1", options="header"]
 |===
 | UC / COp (OA) | Besoin opérationnel | Fonctions SA | UCSA
-
 | UC_A1 | Gérer les comptes utilisateurs | FS-A01, FS-A02 | UCSA-12
 | UC_A2 | Gérer les transporteurs | FS-A03 | UCSA-12
 | UC_B0 | S'inscrire / activer son compte via lien email | FS-B01, FS-B10, CS-07 | UCSA-01, UCSA-02
@@ -1173,18 +1058,20 @@ La matrice ci-dessous assure la couverture complète de chaque besoin opération
 | UC_B1 | Parcourir le catalogue | FS-B03 | UCSA-03
 | UC_B2 / UC_B2B | Gérer et persister le panier | FS-B04, FS-B05 | UCSA-04
 | UC_B3 / UC_B4B | Passer une commande / choisir la livraison | FS-B06 | UCSA-05
-| UC_B4 | Effectuer un paiement | FS-B07, FS-P01, FS-P02 | UCSA-05
+| UC_B4 | Effectuer un paiement (carte ou virement) | FS-B07, FS-P01, FS-P02, FS-V10, CS-08 | UCSA-05, UCSA-13
 | UC_B5 / UC_C3 | Suivre la livraison | FS-B08, FS-C02 | UCSA-08
-| UC_B6 / UC_V7 | Annuler une commande | FS-B09, FS-V08, FS-P03 | UCSA-06
+| UC_B6 / UC_V7 | Annuler une commande (avant ou après expédition) | FS-B09, FS-V08, FS-V11, FS-P03, CS-09 | UCSA-06
 | UC_V0 | Mettre à jour son compte (vendeur) | FS-V01 | UCSA-02
 | UC_V1 | Gérer le catalogue produits | FS-V02 | UCSA-10
 | UC_V2 | Gérer les stocks | FS-V03 | UCSA-10
-| UC_V3 | Traiter les commandes reçues | FS-V04 | UCSA-07
-| UC_V4 / UC_C1 | Expédier vers l'UE / remise transporteur | FS-V05, FS-C01 | UCSA-07
+| UC_V3 | Traiter les commandes reçues / confirmer virement | FS-V04, FS-V10 | UCSA-07, UCSA-13
+| UC_V4 / UC_C1 | Expédier vers l'UE / remise transporteur / numéro de suivi | FS-V05, FS-C01, FS-V09 | UCSA-07
 | UC_V5 | Traiter les litiges et réclamations | FS-V06, FS-P03 | UCSA-09
 | UC_V6 | Consulter les rapports de ventes | FS-V07 | UCSA-11
 | COp-01 | Interface responsive | CS-01 | —
 | COp-02 | Modes de paiement carte / virement | CS-02, CS-06 | UCSA-05
 | COp-03 | Persistance du panier entre sessions | CS-03, FS-B05 | UCSA-04
 | — | Activation de compte par lien email | CS-07, FS-B01, FS-B10 | UCSA-01
+| — | Virement bancaire — attente de confirmation manuelle | CS-08, FS-V10 | UCSA-05, UCSA-13
+| — | Annulation après expédition — statut renvoi colis | CS-09, FS-V11 | UCSA-06
 |===
