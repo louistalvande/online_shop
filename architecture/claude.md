@@ -81,30 +81,62 @@ include::diagrams/nom-du-fichier.puml[]
 
 ### Structure type d'un chapitre ARCADIA
 
+La structure est identique pour les quatre niveaux ; seuls le vocabulaire et les diagrammes varient.
+
 ```asciidoc
 == Niveau XX — Nom du niveau
 
 === Objectif
 
-[courte description de ce que ce niveau modélise]
+Courte description de ce que ce niveau modélise et de son périmètre dans la démarche ARCADIA.
 
-=== Acteurs / Composants identifiés
+=== Éléments identifiés
 
-[liste ou tableau]
+Tableau des éléments propres à ce niveau (adapter l'intitulé de la colonne « Type » selon le niveau) :
+
+[cols="1,2,3", options="header"]
+|===
+| Identifiant | Nom | Description
+
+| XX-YYY-001  | Nom de l'élément | Description courte
+|===
+
+// OA  → Activités opérationnelles, acteurs opérationnels, capabilities
+// SA  → Fonctions système, acteurs externes, chaînes fonctionnelles
+// LA  → Composants logiques, fonctions allouées, interfaces logiques
+// PA  → Composants physiques/logiciels, nœuds de déploiement, interfaces physiques
 
 === Diagrammes
 
-==== Diagramme de contexte
+// Inclure les diagrammes pertinents pour ce niveau.
+// Voir le tableau « Types de diagrammes par niveau » dans les conventions PlantUML.
 
-.Contexte opérationnel
-[plantuml, oa-context, svg]
+==== [Titre du premier diagramme]
+
+.[Légende du diagramme]
+[plantuml, xx-nom-du-diagramme, svg]
 ----
-include::diagrams/oa-context.puml[]
+include::diagrams/xx-nom-du-diagramme.puml[]
 ----
 
-==== Chaînes fonctionnelles
+==== [Titre du second diagramme]
 
-[...]
+.[Légende du diagramme]
+[plantuml, xx-nom-du-second-diagramme, svg]
+----
+include::diagrams/xx-nom-du-second-diagramme.puml[]
+----
+
+=== Traçabilité
+
+Tableau de traçabilité vers le niveau précédent (sauf pour OA) :
+
+[cols="1,2,1,2", options="header"]
+|===
+| Identifiant (ce niveau) | Nom | Issu de (niveau N-1) | Justification
+
+| XX-YYY-001 | Nom | XX-ZZZ-00x | Raffinement / allocation de ...
+|===
 ```
 
 ---
