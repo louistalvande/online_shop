@@ -11,7 +11,7 @@
 
 L'Architecture Physique (PA) répond à la question : *quelles technologies et quelle infrastructure concrète implémentent l'architecture logique ?* Elle mappe chaque composant logique de la LA sur un composant physique réel — module de code, conteneur, service cloud — et définit les contraintes de déploiement, de sécurité et de scalabilité.
 
-La PA s'appuie directement sur la LA : les seize composants logiques identifiés sont affectés à des nœuds de déploiement et des technologies choisies. Les interfaces logiques (IFL) se traduisent ici en protocoles et APIs concrètes.
+La PA s'appuie directement sur la LA : les composants logiques identifiés sont affectés à des nœuds de déploiement et des technologies choisies. Les interfaces logiques (IFL) se traduisent ici en protocoles et APIs concrètes.
 
 NOTE: Les choix technologiques retenus ci-dessous sont des recommandations architecturales. Ils peuvent être substitués par des équivalents fonctionnels sans remettre en cause les frontières logiques définies en LA.
 
@@ -80,40 +80,36 @@ Les contraintes physiques complètent les contraintes système (CS) en ajoutant 
 | Composant logique (LA) | Technologie PA | Détails
 
 | Service Compte
-| Module Node.js / Express
-| Authentification JWT, hachage des mots de passe (bcrypt), gestion des tokens d'activation (CS-07)
+| Module Spring Boot (Java)
+| Authentification JWT (Spring Security), hachage BCrypt, gestion des tokens d'activation (CS-07)
 
 | Service Catalogue
-| Module Node.js / Express
-| CRUD produits, recherche textuelle via PostgreSQL full-text search
-
-| Service Stock
-| Module Node.js / Express
-| Mise à jour atomique des quantités (transactions PostgreSQL), alertes de rupture
+| Module Spring Boot (Java)
+| CRUD produits et stock, recherche textuelle via Hibernate / PostgreSQL full-text search
 
 | Service Panier
-| Module Node.js / Express + Redis
-| Données de session dans Redis (TTL court) ; sauvegarde persistante dans PostgreSQL (CS-03 / CPA-04)
+| Module Spring Boot (Java) + Redis
+| Données de session dans Redis (TTL court, Spring Data Redis) ; sauvegarde persistante via Hibernate (CS-03 / CPA-04)
 
 | Service Commande
-| Module Node.js / Express
-| Orchestration transactionnelle (PostgreSQL), gestion du cycle de vie des commandes
+| Module Spring Boot (Java)
+| Orchestration transactionnelle (Spring Data JPA / Hibernate), gestion du cycle de vie des commandes
 
 | Service Paiement
-| Module Node.js / Express
-| Soumission via SDK Stripe, réception webhooks signés, journalisation (CS-06 / CPA-07)
+| Module Spring Boot (Java)
+| Soumission via Stripe Java SDK, réception webhooks signés, journalisation (CS-06 / CPA-07)
 
 | Service Expédition
-| Module Node.js / Express
+| Module Spring Boot (Java)
 | Enregistrement du numéro de suivi saisi par le vendeur, exposition du numéro de suivi et de l'URL du site transporteur à l'acheteur (IFS-05 — lien sortant uniquement)
 
 | Service Notification
-| Module Node.js / Express
-| File d'envoi des emails transactionnels via SDK SendGrid
+| Module Spring Boot (Java)
+| File d'envoi des emails transactionnels via SendGrid Java SDK
 
 | Service Rapport
-| Module Node.js / Express
-| Requêtes agrégées PostgreSQL, génération de statistiques de ventes
+| Module Spring Boot (Java)
+| Requêtes JPQL agrégées, génération de statistiques de ventes
 |===
 
 === Intégrations externes
@@ -123,11 +119,11 @@ Les contraintes physiques complètent les contraintes système (CS) en ajoutant 
 | Composant logique (LA) | Technologie PA | Détails
 
 | Adaptateur Paiement
-| SDK Stripe (Node.js)
+| Stripe Java SDK
 | Appels sortants REST/HTTPS vers Stripe API ; réception de webhooks signés (IFS-04)
 
 | Adaptateur Messagerie
-| SDK SendGrid (Node.js)
+| SendGrid Java SDK
 | Envoi d'emails transactionnels via l'API HTTP SendGrid (IFS-06)
 |===
 
@@ -181,12 +177,12 @@ node "Conteneur Nginx\n(Reverse Proxy — HTTPS / TLS)" as Nginx {
   component "Terminaison TLS\nService assets statiques\nProxy → API" as NginxComp
 }
 
-node "Conteneur API\n(Node.js / Express)" as AppServer {
+node "Conteneur API\n(Spring Boot — Java)" as AppServer {
   package "Modules métier" {
-    component "compte | catalogue | stock\npanier | commande | paiement\nexpédition | notification | rapport" as Modules
+    component "compte | catalogue\npanier | commande | paiement\nexpédition | notification | rapport" as Modules
   }
   package "Adaptateurs" {
-    component "Stripe SDK\nSendGrid SDK" as Adapters
+    component "Stripe Java SDK\nSendGrid Java SDK" as Adapters
   }
 }
 
@@ -239,11 +235,10 @@ package "Conteneur : Nginx" {
   [front-admin\n(React SPA)] as FrontA
 }
 
-package "Conteneur : API Node.js" {
+package "Conteneur : API Spring Boot" {
   package "Modules métier" {
     [module-compte] as MCompte
     [module-catalogue] as MCatalogue
-    [module-stock] as MStock
     [module-panier] as MPanier
     [module-commande] as MCommande
     [module-paiement] as MPaiement
@@ -270,14 +265,13 @@ FrontB --> MCatalogue
 FrontB --> MPanier
 FrontB --> MCommande
 FrontV --> MCatalogue
-FrontV --> MStock
 FrontV --> MCommande
 FrontV --> MExpedition
 FrontV --> MRapport
 FrontA --> MCompte
 
 MCompte --> MNotif : envoi token activation
-MCommande --> MStock : réservation stock
+MCommande --> MCatalogue : réservation stock (IFL-06)
 MCommande --> MPaiement : IFL-08
 MCommande --> MExpedition : IFL-05
 MCommande --> MNotif : IFL-09
@@ -288,7 +282,6 @@ MPanier --> RedisDB : session (TTL)
 MPanier --> PgDB : persistance longue durée (CS-03)
 MCompte --> PgDB
 MCatalogue --> PgDB
-MStock --> PgDB
 MCommande --> PgDB
 MPaiement --> PgDB : journalisation (CPA-07)
 MExpedition --> PgDB
@@ -310,109 +303,109 @@ skinparam noteBackgroundColor #FFFBE6
 skinparam defaultFontSize 10
 
 participant "SPA React\n(Nginx)" as SPA
-participant "API Node.js\n(module-commande)" as API
-participant "module-paiement\n(Stripe SDK)" as PayMod
-participant "module-stock" as StockMod
-participant "module-notification\n(SendGrid SDK)" as NotifMod
+participant "API Spring Boot\n(module-commande)" as API
+participant "module-paiement\n(Stripe Java SDK)" as PayMod
+participant "module-catalogue\n(+ stock)" as CatalogMod
+participant "module-notification\n(SendGrid Java SDK)" as NotifMod
 participant "PostgreSQL" as PG
 participant "Redis" as Redis
 participant "Stripe API\n(IFS-04)" as Stripe
 participant "SendGrid\n(IFS-06)" as Mail
 
-SPA -> API : POST /commandes\n{panier_id, adresse_UE, mode_livraison, mode_paiement}\nAuthorization: Bearer {JWT}
-note right : HTTPS (CPA-02)\nCS-04 : adresse validée UE
+SPA -> API : POST /orders\n{cart_id, delivery_address, shipping_mode, payment_mode}\nAuthorization: Bearer {JWT}
+note right : HTTPS (CPA-02)\nCS-04 : EU delivery address validated
 
-API -> Redis : GET panier:{acheteur_id}
-Redis --> API : lignes du panier
+API -> Redis : GET cart:{customer_id}
+Redis --> API : cart lines
 
-alt Paiement par carte
-  API -> StockMod : reserverStock(lignes[])
-  StockMod -> PG : BEGIN ; UPDATE stock SET qté = qté - n WHERE id = ?
-  PG --> StockMod : OK
-  StockMod --> API : stock réservé
+alt Card payment
+  API -> CatalogMod : reserveStock(lines[])
+  CatalogMod -> PG : BEGIN ; UPDATE stock SET qty = qty - n WHERE id = ?
+  PG --> CatalogMod : OK
+  CatalogMod --> API : stock reserved
 
-  API -> PG : INSERT INTO commandes {statut: en_attente, ...}
-  PG --> API : commande_id
+  API -> PG : INSERT INTO orders {status: pending, ...}
+  PG --> API : order_id
 
-  API -> PayMod : soumettrePaiement(montant, mode:carte, commande_id)
+  API -> PayMod : submitPayment(amount, mode:card, order_id)
   PayMod -> Stripe : POST /v1/payment_intents\n{amount, currency, payment_method, metadata}
-  note right : SDK Stripe Node.js\nIFS-04
+  note right : Stripe Java SDK\nIFS-04
 
-  alt Paiement autorisé
+  alt Payment authorized
     Stripe --> PayMod : 200 OK {payment_intent_id, status: "succeeded"}
-    PayMod -> PG : INSERT INTO paiements {statut: autorisé, ref_stripe, ...}\n(CPA-07 — journalisation CS-06)
+    PayMod -> PG : INSERT INTO payments {status: authorized, stripe_ref, ...}\n(CPA-07 — CS-06)
     PG --> PayMod : OK
-    PayMod --> API : paiement confirmé
+    PayMod --> API : payment confirmed
 
-    API -> PG : UPDATE commandes SET statut = en_attente WHERE id = commande_id
+    API -> PG : UPDATE orders SET status = pending WHERE id = order_id
     PG --> API : OK
 
-    API -> NotifMod : notifier(acheteur_id, "commande_confirmée", commande_id)
-    NotifMod -> Mail : POST /v3/mail/send\n{to, template_id: "confirmation_commande", ...}
-    note right : SDK SendGrid\nIFS-06
+    API -> NotifMod : notify(customer_id, "order_confirmed", order_id)
+    NotifMod -> Mail : POST /v3/mail/send\n{to, template_id: "order_confirmation", ...}
+    note right : SendGrid Java SDK\nIFS-06
     Mail --> NotifMod : 202 Accepted
 
-    API -> NotifMod : notifier(vendeur_id, "nouvelle_commande", commande_id)
-    NotifMod -> Mail : POST /v3/mail/send {to: vendeur, ...}
+    API -> NotifMod : notify(vendor_id, "new_order", order_id)
+    NotifMod -> Mail : POST /v3/mail/send {to: vendor, ...}
     Mail --> NotifMod : 202 Accepted
 
-    API --> SPA : 201 Created {commande_id, statut: "en_attente"}
+    API --> SPA : 201 Created {order_id, status: "pending"}
 
-  else Paiement refusé
+  else Payment declined
     Stripe --> PayMod : 402 {error.code, error.message}
-    PayMod -> PG : INSERT INTO paiements {statut: refusé, ...}
-    PayMod -> StockMod : libererStock(lignes[])
-    StockMod -> PG : ROLLBACK réservation stock
-    PayMod --> API : paiement refusé
-    API -> PG : DELETE FROM commandes WHERE id = commande_id
-    API --> SPA : 402 {raison: error.message}
+    PayMod -> PG : INSERT INTO payments {status: declined, ...}
+    PayMod -> CatalogMod : releaseStock(lines[])
+    CatalogMod -> PG : ROLLBACK stock reservation
+    PayMod --> API : payment declined
+    API -> PG : DELETE FROM orders WHERE id = order_id
+    API --> SPA : 402 {reason: error.message}
   end
 
-else Paiement par virement (CS-02 / FS-V09)
-  API -> StockMod : preReserverStock(lignes[])
-  StockMod -> PG : BEGIN ; LOCK stock ; SET qté_reservée = qté_reservée + n
-  PG --> StockMod : OK
-  StockMod --> API : stock pré-réservé
+else Wire transfer payment (CS-02 / FS-V09)
+  API -> CatalogMod : preReserveStock(lines[])
+  CatalogMod -> PG : BEGIN ; LOCK stock ; SET qty_reserved = qty_reserved + n
+  PG --> CatalogMod : OK
+  CatalogMod --> API : stock pre-reserved
 
-  API -> PG : INSERT INTO commandes {statut: paiement_en_attente_virement, ...}
-  PG --> API : commande_id
+  API -> PG : INSERT INTO orders {status: pending_wire_transfer, ...}
+  PG --> API : order_id
 
-  API -> PayMod : enregistrerVirementEnAttente(montant, commande_id)
-  PayMod -> PG : INSERT INTO paiements {statut: en_attente_virement, mode: virement, ...}\n(CPA-07 — journalisation CS-06)
+  API -> PayMod : registerPendingTransfer(amount, order_id)
+  PayMod -> PG : INSERT INTO payments {status: pending_wire_transfer, mode: wire, ...}\n(CPA-07 — CS-06)
   PG --> PayMod : OK
-  PayMod --> API : virement en attente enregistré
+  PayMod --> API : transfer registered pending
 
-  API -> NotifMod : notifier(acheteur_id, "virement_en_attente", {coordonnées_bancaires})
-  NotifMod -> Mail : POST /v3/mail/send {to, template_id: "virement_en_attente", ...}
+  API -> NotifMod : notify(customer_id, "wire_transfer_pending", {bank_details})
+  NotifMod -> Mail : POST /v3/mail/send {to, template_id: "wire_transfer_pending", ...}
   Mail --> NotifMod : 202 Accepted
 
-  API -> NotifMod : notifier(vendeur_id, "virement_en_attente", commande_id)
-  NotifMod -> Mail : POST /v3/mail/send {to: vendeur, template_id: "virement_a_confirmer", ...}
+  API -> NotifMod : notify(vendor_id, "wire_transfer_to_confirm", order_id)
+  NotifMod -> Mail : POST /v3/mail/send {to: vendor, template_id: "wire_transfer_to_confirm", ...}
   Mail --> NotifMod : 202 Accepted
 
-  API --> SPA : 201 Created {commande_id, statut: "paiement_en_attente_virement"}
+  API --> SPA : 201 Created {order_id, status: "pending_wire_transfer"}
 
-  == Confirmation du virement par le vendeur ==
-  participant "SPA Vendeur\n(back-office)" as SPAVendor
-  SPAVendor -> API : POST /commandes/{id}/confirmer-virement\nAuthorization: Bearer {JWT vendeur}
+  == Wire transfer confirmation by vendor ==
+  participant "SPA React\n(vendor back-office)" as SPAVendor
+  SPAVendor -> API : POST /orders/{id}/confirm-transfer\nAuthorization: Bearer {JWT vendor}
 
-  API -> PayMod : confirmerVirement(commande_id)
-  PayMod -> PG : UPDATE paiements SET statut = autorisé WHERE commande_id = ?
+  API -> PayMod : confirmTransfer(order_id)
+  PayMod -> PG : UPDATE payments SET status = authorized WHERE order_id = ?
   PG --> PayMod : OK
-  PayMod --> API : virement confirmé
+  PayMod --> API : transfer confirmed
 
-  API -> PG : UPDATE commandes SET statut = en_attente WHERE id = commande_id
+  API -> PG : UPDATE orders SET status = pending WHERE id = order_id
   PG --> API : OK
 
-  API -> NotifMod : notifier(acheteur_id, "commande_confirmée", commande_id)
-  NotifMod -> Mail : POST /v3/mail/send {to, template_id: "confirmation_commande", ...}
+  API -> NotifMod : notify(customer_id, "order_confirmed", order_id)
+  NotifMod -> Mail : POST /v3/mail/send {to, template_id: "order_confirmation", ...}
   Mail --> NotifMod : 202 Accepted
 
-  API -> NotifMod : notifier(vendeur_id, "nouvelle_commande", commande_id)
-  NotifMod -> Mail : POST /v3/mail/send {to: vendeur, ...}
+  API -> NotifMod : notify(vendor_id, "new_order", order_id)
+  NotifMod -> Mail : POST /v3/mail/send {to: vendor, ...}
   Mail --> NotifMod : 202 Accepted
 
-  API --> SPAVendor : 200 OK {commande_id, statut: "en_attente"}
+  API --> SPAVendor : 200 OK {order_id, status: "pending"}
 end
 ----
 
@@ -430,38 +423,38 @@ skinparam noteBorderColor #F0A500
 skinparam noteBackgroundColor #FFFBE6
 skinparam defaultFontSize 10
 
-participant "SPA React\n(back-office vendeur)" as SPA
-participant "API Node.js\n(module-expedition)" as API
-participant "module-notification\n(SendGrid SDK)" as NotifMod
+participant "SPA React\n(vendor back-office)" as SPA
+participant "API Spring Boot\n(module-expedition)" as API
+participant "module-notification\n(SendGrid Java SDK)" as NotifMod
 participant "PostgreSQL" as PG
 participant "SendGrid\n(IFS-06)" as Mail
 
-note over SPA : Le vendeur a déposé le colis à la poste\net récupéré le numéro de suivi sur le reçu
+note over SPA : Vendor has dropped off the parcel at the post office\nand retrieved the tracking number from the receipt
 
-SPA -> API : PUT /commandes/{id}/expedition\n{transporteur_id, tracking_number}\nAuthorization: Bearer {JWT}
-note right : tracking_number saisi depuis le reçu\nde dépôt physique (FS-V05 / CS-05)
+SPA -> API : PUT /orders/{id}/shipment\n{carrier_id, tracking_number}\nAuthorization: Bearer {JWT}
+note right : tracking_number entered from physical receipt\n(FS-V05 / CS-05)
 
-API -> PG : SELECT * FROM commandes WHERE id = ? AND statut = en_préparation
-PG --> API : commande
+API -> PG : SELECT * FROM orders WHERE id = ? AND status = in_preparation
+PG --> API : order
 
-API -> PG : INSERT INTO expeditions {tracking_number, transporteur_id, date_expedition, ...}
-API -> PG : UPDATE commandes SET statut = expédiée WHERE id = ?
+API -> PG : INSERT INTO shipments {tracking_number, carrier_id, shipment_date, ...}
+API -> PG : UPDATE orders SET status = shipped WHERE id = ?
 PG --> API : OK
 
-API -> NotifMod : notifier(acheteur_id, "commande_expediee",\n{tracking_number, url_suivi_transporteur})
-NotifMod -> Mail : POST /v3/mail/send\n{to, template_id: "expedition",\ntracking_number, url_suivi}
-note right : SDK SendGrid\nIFS-06
+API -> NotifMod : notify(customer_id, "order_shipped",\n{tracking_number, carrier_tracking_url})
+NotifMod -> Mail : POST /v3/mail/send\n{to, template_id: "shipment",\ntracking_number, tracking_url}
+note right : SendGrid Java SDK\nIFS-06
 Mail --> NotifMod : 202 Accepted
 
-API --> SPA : 200 OK {tracking_number, statut: "expédiée"}
+API --> SPA : 200 OK {tracking_number, status: "shipped"}
 
-== Consultation du suivi par l'acheteur ==
-participant "SPA React\n(portail acheteur)" as SPABuyer
-SPABuyer -> API : GET /commandes/{id}/suivi\nAuthorization: Bearer {JWT acheteur}
-API -> PG : SELECT tracking_number, url_suivi FROM expeditions WHERE commande_id = ?
-PG --> API : {tracking_number, url_suivi}
-API --> SPABuyer : 200 OK {tracking_number, url_suivi_transporteur}
-note right : L'acheteur clique sur le lien\npour suivre son colis (IFS-05 — sortant)
+== Tracking consultation by buyer ==
+participant "SPA React\n(buyer portal)" as SPABuyer
+SPABuyer -> API : GET /orders/{id}/tracking\nAuthorization: Bearer {JWT buyer}
+API -> PG : SELECT tracking_number, tracking_url FROM shipments WHERE order_id = ?
+PG --> API : {tracking_number, tracking_url}
+API --> SPABuyer : 200 OK {tracking_number, carrier_tracking_url}
+note right : Buyer clicks the link\nto track the parcel (IFS-05 — outbound)
 ----
 
 == Matrice de traçabilité LA → PA
@@ -487,58 +480,53 @@ note right : L'acheteur clique sur le lien\npour suivre son colis (IFS-05 — so
 
 | Service Compte
 | module-compte
-| Conteneur API Node.js
-| Node.js / Express / bcrypt / JWT
+| Conteneur API Spring Boot
+| Spring Boot / Spring Security / JWT
 
 | Service Catalogue
 | module-catalogue
-| Conteneur API Node.js
-| Node.js / Express / PG full-text
-
-| Service Stock
-| module-stock
-| Conteneur API Node.js
-| Node.js / Express / transactions PG
+| Conteneur API Spring Boot
+| Spring Boot / Spring Data JPA / Hibernate
 
 | Service Panier
 | module-panier
-| Conteneur API Node.js + Redis
-| Node.js / Express / ioredis
+| Conteneur API Spring Boot + Redis
+| Spring Boot / Spring Data Redis
 
 | Service Commande
 | module-commande
-| Conteneur API Node.js
-| Node.js / Express / transactions PG
+| Conteneur API Spring Boot
+| Spring Boot / Spring Data JPA / Hibernate
 
 | Service Paiement
 | module-paiement
-| Conteneur API Node.js
-| Node.js / Express / SDK Stripe
+| Conteneur API Spring Boot
+| Spring Boot / Stripe Java SDK
 
 | Service Expédition
 | module-expedition
-| Conteneur API Node.js
-| Node.js / Express
+| Conteneur API Spring Boot
+| Spring Boot / Spring Data JPA / Hibernate
 
 | Service Notification
 | module-notification
-| Conteneur API Node.js
-| Node.js / Express / SDK SendGrid
+| Conteneur API Spring Boot
+| Spring Boot / SendGrid Java SDK
 
 | Service Rapport
 | module-rapport
-| Conteneur API Node.js
-| Node.js / Express / requêtes agrégées PG
+| Conteneur API Spring Boot
+| Spring Boot / Spring Data JPA / JPQL
 
 | Adaptateur Paiement
 | module-paiement (couche adaptateur)
-| Conteneur API Node.js
-| SDK Stripe Node.js
+| Conteneur API Spring Boot
+| Stripe Java SDK
 
 | Adaptateur Messagerie
 | module-notification (couche adaptateur)
-| Conteneur API Node.js
-| SDK SendGrid Node.js
+| Conteneur API Spring Boot
+| SendGrid Java SDK
 
 | Référentiel de données
 | boutique_db
