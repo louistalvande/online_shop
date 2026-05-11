@@ -25,15 +25,15 @@ La boutique repose sur trois acteurs distincts. L'**administrateur** est l'uniqu
 
 | *Vendeur*
 | Propriétaire et exploitant de la boutique
-| Mettre à jour ses données de compte, gérer le catalogue produits, administrer les stocks, traiter les commandes reçues, gérer les expéditions vers les pays de l'UE, consulter les rapports de ventes, traiter les litiges et réclamations, traiter les demandes de retour après expédition (accepter la demande, attendre la réception du colis renvoyé, déclencher le remboursement)
+| Mettre à jour ses données de compte, gérer le catalogue produits, administrer les stocks, traiter les commandes reçues, gérer les expéditions vers les pays de l'UE (déposer le colis auprès du transporteur, récupérer le numéro de suivi sur le reçu et le saisir dans la boutique), confirmer manuellement la réception des virements bancaires, consulter les rapports de ventes, traiter les litiges et réclamations, traiter les annulations après expédition en choisissant entre annulation avec condition de renvoi du colis ou annulation directe sans renvoi
 
 | *Acheteur*
 | Client de la boutique (résidant dans l'UE)
 | S'inscrire, activer son compte via le lien reçu par email, mettre à jour ses données de compte, parcourir le catalogue, sélectionner des produits, gérer et sauvegarder son panier, passer des commandes, effectuer les paiements (carte ou virement), choisir le mode de livraison, suivre et réceptionner les livraisons, annuler une commande en autonomie depuis son compte (avant expédition), demander un retour par email au vendeur (après expédition)
 
 | *Transporteur*
-| Système externe de livraison
-| Prendre en charge les colis expédiés par le vendeur, assurer la livraison dans les pays de l'UE, fournir un numéro de suivi et mettre à jour le statut de livraison
+| Service externe de livraison
+| Prendre en charge les colis déposés physiquement par le vendeur, assurer la livraison dans les pays de l'UE, fournir un numéro de suivi sur le reçu de dépôt, permettre le suivi en ligne via ce numéro
 
 | *Prestataire de paiement*
 | Système externe de traitement des paiements
@@ -58,7 +58,7 @@ Les contraintes suivantes sont issues du contexte d'usage réel des acteurs et s
 
 | COp-02
 | Modes de paiement acceptés
-| L'acheteur doit pouvoir régler ses commandes par **carte bancaire** ou par **virement bancaire**. Ces deux modes de paiement doivent être proposés lors du tunnel d'achat et traités via le prestataire de paiement externe.
+| L'acheteur doit pouvoir régler ses commandes par **carte bancaire** ou par **virement bancaire**. Ces deux modes doivent être proposés lors du tunnel d'achat. Le paiement par carte est traité automatiquement via le prestataire externe ; le paiement par virement met la commande en attente de confirmation manuelle — le vendeur doit confirmer la réception effective des fonds avant que la commande ne soit prise en charge.
 
 | COp-03
 | Persistance du panier entre sessions
@@ -261,23 +261,35 @@ endif
 :Ajouter au panier;
 :Valider le panier;
 :Saisir les informations\nde livraison;
-:Soumettre le paiement;
+:Soumettre le paiement\n(carte ou virement);
 
-|Prestataire de paiement|
-:Recevoir la demande\nde paiement;
+if (Mode de paiement ?) then (carte)
+  |Prestataire de paiement|
+  :Recevoir la demande\nde paiement;
 
-if (Transaction autorisée ?) then (oui)
-  :Confirmer le règlement;
-else (non)
-  :Refuser la transaction;
-endif
+  if (Transaction autorisée ?) then (oui)
+    :Confirmer le règlement;
+  else (non)
+    :Refuser la transaction;
+  endif
 
-|Acheteur|
-if (Paiement accepté ?) then (oui)
+  |Acheteur|
+  if (Paiement accepté ?) then (oui)
+    :Recevoir confirmation\nde commande;
+  else (non)
+    :Recevoir notification\nd'échec;
+    stop
+  endif
+else (virement)
+  |Acheteur|
+  :Recevoir les coordonnées\nbancaires et effectuer\nle virement;
+
+  |Vendeur|
+  :Recevoir notification\nde virement en attente;
+  :Réceptionner les fonds\net confirmer dans\nla boutique;
+
+  |Acheteur|
   :Recevoir confirmation\nde commande;
-else (non)
-  :Recevoir notification\nd'échec;
-  stop
 endif
 
 if (Annulation souhaitée\navant expédition ?) then (oui)
@@ -304,8 +316,10 @@ else (non)
   :Préparer la commande;
 endif
 
-:Expédier le colis\nvers l'UE;
-:Transmettre au\ntransporteur;
+:Préparer le colis;
+:Déposer le colis\nauprès du transporteur;
+:Récupérer le numéro\nde suivi sur le reçu;
+:Saisir le numéro de suivi\ndans la boutique et marquer\nla commande comme expédiée;
 
 |Transporteur|
 :Prendre en charge\nle colis;
@@ -316,27 +330,36 @@ endif
 :Suivre la livraison;
 :Réceptionner le colis;
 
-if (Retour souhaité\naprès réception ?) then (oui)
-  :Envoyer un email\nde demande de retour\nau vendeur;
+if (Annulation souhaitée\naprès expédition ?) then (oui)
+  :Envoyer demande\nd'annulation au vendeur;
 
   |Vendeur|
-  :Recevoir la demande\nde retour par email;
-  if (Retour accepté ?) then (oui)
-    :Notifier l'acheteur\nde l'acceptation;
+  :Recevoir la demande\nd'annulation;
+  if (Demande acceptée ?) then (oui)
+    if (Avec condition\nde renvoi ?) then (oui)
+      :Notifier l'acheteur\ndu renvoi requis;
 
-    |Acheteur|
-    :Renvoyer le colis\nau vendeur;
+      |Acheteur|
+      :Renvoyer le colis\nau vendeur;
 
-    |Vendeur|
-    :Réceptionner\nle colis renvoyé;
-    :Déclencher\nle remboursement;
+      |Vendeur|
+      :Réceptionner\nle colis renvoyé;
+      :Déclencher\nle remboursement;
 
-    |Prestataire de paiement|
-    :Traiter le remboursement;
+      |Prestataire de paiement|
+      :Traiter le remboursement;
 
-    |Acheteur|
-    :Recevoir confirmation\ndu remboursement;
-    stop
+      |Acheteur|
+      :Recevoir confirmation\ndu remboursement;
+      stop
+    else (sans renvoi)
+      |Prestataire de paiement|
+      :Traiter le remboursement\ndirect;
+
+      |Acheteur|
+      :Recevoir confirmation\ndu remboursement;
+      stop
+    endif
   else (non)
     :Notifier l'acheteur\ndu refus;
     |Acheteur|
@@ -388,14 +411,31 @@ Buyer -> Shop : Ajouter produit au panier
 Shop --> Buyer : Mettre à jour le panier
 
 Buyer -> Shop : Valider la commande\n(adresse + paiement)
-Shop -> Payment : Soumettre la demande de paiement
 
-alt Paiement accepté
+alt Paiement par carte
+  Shop -> Payment : Soumettre la demande de paiement
   Payment --> Shop : Confirmer la transaction
   Shop --> Buyer : Confirmer la commande
   Shop -> Mail : Transmettre l'email de confirmation
   Mail --> Buyer : Acheminer la confirmation de commande
   Shop -> Vendor : Notifier nouvelle commande
+
+else Paiement par virement
+  Shop --> Buyer : Transmettre les coordonnées bancaires\n(commande en attente de virement)
+  Shop -> Vendor : Notifier virement bancaire en attente
+  Buyer -> Buyer : Effectuer le virement bancaire
+  Vendor -> Shop : Confirmer la réception du virement
+  Shop --> Buyer : Confirmer la commande
+  Shop -> Mail : Transmettre l'email de confirmation
+  Mail --> Buyer : Acheminer la confirmation de commande
+  Shop -> Vendor : Notifier nouvelle commande à traiter
+
+else Paiement refusé (carte)
+  Payment --> Shop : Refuser la transaction
+  Shop -> Mail : Transmettre la notification d'échec
+  Mail --> Buyer : Notifier échec du paiement
+  note right : L'acheteur peut\nretenter ou annuler
+end
 
   Vendor -> Shop : Vérifier le stock
   Vendor -> Shop : Mettre à jour le statut (en préparation)
@@ -410,39 +450,40 @@ alt Paiement accepté
     Mail --> Buyer : Notifier annulation et remboursement
   end
 
-  Vendor -> Shop : Déclarer expédition (pays UE destination)
-  Vendor -> Carrier : Remettre le colis
-  Carrier -> Carrier : Acheminer vers le pays de l'acheteur
-  Carrier -> Shop : Mettre à jour le statut de livraison
+  Vendor -> Carrier : Déposer le colis (hors système)
+  Carrier --> Vendor : Remettre le reçu avec n° de suivi
+  Vendor -> Shop : Marquer commande expédiée\n+ saisir numéro de suivi
   Shop -> Mail : Transmettre la notification d'expédition
   Mail --> Buyer : Notifier expédition avec n° de suivi
 
   Buyer -> Shop : Confirmer réception
   Shop --> Vendor : Notifier réception confirmée
 
-  opt Demande de retour après expédition
-    Buyer -> Vendor : Envoyer email de demande de retour
-    alt Retour accepté
-      Vendor -> Buyer : Accepter la demande par email
+  opt Annulation ou retour après expédition
+    Buyer -> Shop : Envoyer demande d'annulation / retour
+    alt Acceptée — avec condition de renvoi
+      Shop -> Mail : Notifier l'acheteur du renvoi requis
+      Mail --> Buyer : Instruction de renvoi
       Buyer -> Carrier : Renvoyer le colis au vendeur
       Carrier -> Vendor : Livrer le colis retourné
-      Vendor -> Payment : Déclencher le remboursement
-      Payment --> Vendor : Confirmer le remboursement
-      Vendor -> Buyer : Confirmer le remboursement par email
-    else Retour refusé
-      Vendor -> Buyer : Refuser la demande par email
+      Vendor -> Shop : Confirmer la réception du retour
+      Shop -> Payment : Déclencher le remboursement
+      Payment --> Shop : Confirmer le remboursement
+      Shop -> Mail : Transmettre confirmation remboursement
+      Mail --> Buyer : Confirmer le remboursement
+    else Acceptée — sans condition de renvoi
+      Shop -> Payment : Déclencher le remboursement direct
+      Payment --> Shop : Confirmer le remboursement
+      Shop -> Mail : Transmettre confirmation remboursement
+      Mail --> Buyer : Confirmer le remboursement
+    else Refusée
+      Shop -> Mail : Transmettre le refus
+      Mail --> Buyer : Notification de refus
     end
   end
 
   Vendor -> Shop : Consulter les rapports de ventes
   Shop --> Vendor : Afficher statistiques et historique
-
-else Paiement refusé
-  Payment --> Shop : Refuser la transaction
-  Shop -> Mail : Transmettre la notification d'échec
-  Mail --> Buyer : Notifier échec du paiement
-  note right : L'acheteur peut\nretenter ou annuler
-end
 ----
 
 == Synthèse des activités opérationnelles
@@ -479,13 +520,16 @@ end
 | Prendre en charge les commandes reçues, vérifier le stock, préparer les colis
 
 | Gérer les expéditions vers l'UE
-| Choisir le transporteur, préparer les colis, générer les étiquettes, remettre les colis au transporteur
+| Préparer le colis, le déposer auprès d'un transporteur (ex. La Poste), récupérer le numéro de suivi sur le reçu, puis saisir ce numéro dans la boutique pour marquer la commande comme expédiée et notifier l'acheteur
 
 | Traiter les litiges et réclamations
 | Répondre aux demandes de remboursement, gérer les retours produits
 
-| Traiter un retour après expédition
-| Recevoir la demande de retour envoyée par email par l'acheteur ; accepter ou refuser la demande ; une fois le colis renvoyé réceptionné, déclencher le remboursement via le prestataire de paiement
+| Traiter une annulation après expédition
+| Recevoir la demande d'annulation de l'acheteur ; accepter ou refuser la demande. En cas d'acceptation, choisir entre deux modalités : (1) **avec condition de renvoi** — notifier l'acheteur qu'il doit renvoyer le colis, attendre la réception du retour, puis déclencher le remboursement ; (2) **sans condition de renvoi** — déclencher le remboursement directement, sans exiger le retour du colis.
+
+| Confirmer la réception d'un virement bancaire
+| Après réception effective des fonds sur le compte bancaire du vendeur, confirmer manuellement dans la boutique la réception du virement pour déclencher la prise en charge de la commande correspondante
 
 | Consulter les rapports de ventes
 | Analyser les performances commerciales, le chiffre d'affaires, les produits les plus vendus
@@ -522,7 +566,7 @@ end
 | Saisir l'adresse de livraison dans un pays de l'UE, choisir le mode de livraison, valider la commande
 
 | Effectuer un paiement
-| Régler la commande par **carte bancaire** ou par **virement bancaire** via le prestataire de paiement
+| Régler la commande par **carte bancaire** (autorisation immédiate) ou par **virement bancaire** (la commande reste en attente de la confirmation manuelle du vendeur jusqu'à réception effective des fonds)
 
 | Suivre la livraison
 | Consulter le statut d'expédition et le numéro de suivi du colis
@@ -530,8 +574,8 @@ end
 | Annuler une commande (avant expédition)
 | Depuis son espace compte, annuler une commande tant que le colis n'a pas encore été remis au transporteur ; le remboursement est déclenché automatiquement, sans intervention du vendeur
 
-| Demander un retour après expédition
-| Envoyer un email au vendeur pour demander le retour d'une commande déjà expédiée ; renvoyer le colis après acceptation du vendeur ; le remboursement est déclenché par le vendeur après réception du colis renvoyé
+| Demander une annulation après expédition
+| Contacter le vendeur pour demander l'annulation d'une commande déjà expédiée ; le vendeur décide d'accepter ou de refuser. En cas d'acceptation avec condition de renvoi : renvoyer le colis au vendeur avant d'obtenir le remboursement. En cas d'acceptation sans condition de renvoi : recevoir le remboursement directement sans obligation de renvoyer le colis.
 |===
 
 === Transporteur (système externe)
@@ -541,13 +585,13 @@ end
 | Activité | Description
 
 | Prendre en charge le colis
-| Réceptionner les colis remis par le vendeur pour expédition vers un pays de l'UE
+| Réceptionner les colis déposés physiquement par le vendeur pour expédition vers un pays de l'UE ; remettre un reçu avec numéro de suivi
 
 | Acheminer et livrer dans l'UE
 | Assurer le transport et la livraison du colis à l'adresse de l'acheteur dans le pays de destination
 
-| Mettre à jour le statut de livraison
-| Fournir un numéro de suivi et publier les mises à jour d'acheminement consultables par l'acheteur
+| Permettre le suivi en ligne
+| Mettre à disposition un service de suivi consultable par l'acheteur grâce au numéro de suivi fourni lors du dépôt
 |===
 
 === Prestataire de paiement (système externe)

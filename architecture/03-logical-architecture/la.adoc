@@ -64,7 +64,7 @@ Le système est structuré en cinq couches logiques : *Présentation*, *Applicat
 
 | *Service Commande*
 | Application
-| Orchestration du tunnel d'achat, création et cycle de vie des commandes, gestion des annulations
+| Orchestration du tunnel d'achat, création et cycle de vie des commandes (états : `paiement_en_attente_virement`, `en_attente`, `en_préparation`, `expédiée`, `en_attente_retour`, `livrée`, `annulée`), gestion des annulations avant et après expédition (avec ou sans condition de renvoi)
 | FS-B06, FS-B09, FS-V04, FS-V07, FS-V08
 
 | *Service Panier*
@@ -74,18 +74,18 @@ Le système est structuré en cinq couches logiques : *Présentation*, *Applicat
 
 | *Service Paiement*
 | Application
-| Soumission des demandes d'autorisation, traitement des confirmations et refus, déclenchement des remboursements, journalisation
-| FS-B07, FS-P01, FS-P02, FS-P03
+| Soumission des demandes d'autorisation (carte), gestion des paiements par virement en attente de confirmation manuelle (FS-V09), traitement des confirmations et refus, déclenchement des remboursements, journalisation
+| FS-B07, FS-P01, FS-P02, FS-P03, FS-V09
 
 | *Service Expédition*
 | Application
-| Déclaration d'expédition, remise au transporteur, réception et diffusion des statuts de suivi
-| FS-V05, FS-C01, FS-C02, FS-B08
+| Déclaration d'expédition avec saisie obligatoire du numéro de suivi récupéré lors du dépôt physique, enregistrement et exposition du numéro de suivi à l'acheteur, gestion des retours de colis (état `en_attente_retour`)
+| FS-V05, FS-C01, FS-B08
 
 | *Service Notification*
 | Application
 | Émission de toutes les notifications sortantes (email d'activation, confirmations, alertes)
-| FS-B01 (token), FS-B10 (activation), notifications liées à FS-V04, FS-P02, FS-C02
+| FS-B01 (token), FS-B10 (activation), notifications liées à FS-V04, FS-P02, FS-V05
 
 | *Service Rapport*
 | Application
@@ -96,11 +96,6 @@ Le système est structuré en cinq couches logiques : *Présentation*, *Applicat
 | Intégration externe
 | Encapsulation du protocole IFS-04 — traduction des appels internes vers l'API du prestataire de paiement et des webhooks entrants
 | FS-P01, FS-P02, FS-P03
-
-| *Adaptateur Transporteur*
-| Intégration externe
-| Encapsulation du protocole IFS-05 — création d'envois, réception des webhooks de statut
-| FS-C01, FS-C02
 
 | *Adaptateur Messagerie*
 | Intégration externe
@@ -152,7 +147,6 @@ package "Couche Application" {
 
 package "Couche Intégrations externes" {
   [Adaptateur Paiement\n(IFS-04)] as AdpPayment
-  [Adaptateur Transporteur\n(IFS-05)] as AdpCarrier
   [Adaptateur Messagerie\n(IFS-06)] as AdpMail
 }
 
@@ -161,8 +155,8 @@ package "Couche Infrastructure" {
 }
 
 component "Prestataire\nde paiement" as ExtPayment #D5E8F0
-component "Transporteur\n(UE)" as ExtCarrier #D5E8F0
 component "Service de\nmessagerie" as ExtMail #D5E8F0
+note "IFS-05 : lien site transporteur\nconsulté par l'acheteur (hors API)" as NCarrier
 
 Buyer --> UI_Buyer : IFS-01
 Vendor --> UI_Vendor : IFS-02
@@ -192,13 +186,10 @@ SvcPayment --> SvcNotif : IFL-09
 SvcShipping --> SvcNotif : IFL-09
 
 SvcPayment --> AdpPayment : IFL-10
-SvcShipping --> AdpCarrier : IFL-11
 SvcNotif --> AdpMail : IFL-12
 
 AdpPayment --> ExtPayment : IFS-04\nREST/HTTPS
 ExtPayment --> AdpPayment : webhook
-AdpCarrier --> ExtCarrier : IFS-05\nREST/HTTPS
-ExtCarrier --> AdpCarrier : webhook statuts
 AdpMail --> ExtMail : IFS-06\nSMTP / API
 
 SvcAccount --> DB : IFL-13
@@ -240,14 +231,14 @@ Les interfaces logiques définissent les contrats d'échange entre composants, i
 | *IFL-04*
 | Portails (UI)
 | Service Commande
-| Créer une commande, lister les commandes, mettre à jour le statut, demander une annulation
+| Créer une commande, lister les commandes, mettre à jour le statut, demander une annulation (avec flag `condition_renvoi` pour les annulations post-expédition), confirmer retour reçu
 | FS-B06, FS-B09, FS-V04, FS-V08
 
 | *IFL-05*
 | Portails (UI) / Service Commande
 | Service Expédition
-| Déclarer une expédition, obtenir le suivi, recevoir les mises à jour de statut
-| FS-V05, FS-C01, FS-C02, FS-B08
+| Déclarer une expédition (avec `tracking_number` obligatoire saisi par le vendeur depuis le reçu de dépôt), obtenir le numéro de suivi et l'URL du site transporteur, confirmer la réception d'un retour
+| FS-V05, FS-C01, FS-B08
 
 | *IFL-06*
 | Service Commande / Portail Vendeur
@@ -264,8 +255,8 @@ Les interfaces logiques définissent les contrats d'échange entre composants, i
 | *IFL-08*
 | Service Commande
 | Service Paiement
-| Demander une autorisation, demander un remboursement, interroger le statut d'un paiement
-| FS-P01, FS-P02, FS-P03
+| Demander une autorisation (carte), enregistrer un virement en attente, confirmer la réception d'un virement (FS-V09), demander un remboursement, interroger le statut d'un paiement
+| FS-P01, FS-P02, FS-P03, FS-V09
 
 | *IFL-09*
 | Services (Commande, Compte, Paiement, Expédition)
@@ -278,12 +269,6 @@ Les interfaces logiques définissent les contrats d'échange entre composants, i
 | Adaptateur Paiement
 | Autoriser transaction, rembourser, interroger statut — traduit vers IFS-04
 | FS-P01, FS-P02, FS-P03
-
-| *IFL-11*
-| Service Expédition
-| Adaptateur Transporteur
-| Créer un envoi, recevoir un webhook de statut — traduit vers IFS-05
-| FS-C01, FS-C02
 
 | *IFL-12*
 | Service Notification
@@ -388,30 +373,58 @@ SvcOrder -> SvcStock : IFL-06 — verifierStock(lignes[])
 SvcStock -> DB : IFL-13 — SELECT stock WHERE produit_id IN (...)
 SvcStock --> SvcOrder : Stock disponible
 
-SvcOrder -> SvcPayment : IFL-08 — demanderAutorisation(montant, mode, références)
-SvcPayment -> AdpPayment : IFL-10 — autoriser(montant, mode, données)
-AdpPayment -> ExtPayment : IFS-04 — POST /authorize
+alt Paiement par carte
+  SvcOrder -> SvcPayment : IFL-08 — demanderAutorisation(montant, mode:carte, références)
+  SvcPayment -> AdpPayment : IFL-10 — autoriser(montant, mode, données)
+  AdpPayment -> ExtPayment : IFS-04 — POST /authorize
 
-alt Paiement autorisé
-  ExtPayment --> AdpPayment : 200 OK {transaction_id}
-  AdpPayment --> SvcPayment : autorisation confirmée
-  SvcPayment -> DB : IFL-13 — INSERT paiement {statut: autorisé, CS-06}
-  SvcPayment --> SvcOrder : paiement autorisé
+  alt Paiement autorisé
+    ExtPayment --> AdpPayment : 200 OK {transaction_id}
+    AdpPayment --> SvcPayment : autorisation confirmée
+    SvcPayment -> DB : IFL-13 — INSERT paiement {statut: autorisé, CS-06}
+    SvcPayment --> SvcOrder : paiement autorisé
 
-  SvcOrder -> SvcStock : IFL-06 — reserverStock(lignes[])
-  SvcOrder -> DB : IFL-13 — INSERT commande {statut: en_attente}
+    SvcOrder -> SvcStock : IFL-06 — reserverStock(lignes[])
+    SvcOrder -> DB : IFL-13 — INSERT commande {statut: en_attente}
+    SvcOrder -> SvcNotif : IFL-09 — notifier(COMMANDE_CONFIRMEE, acheteur)
+    SvcOrder -> SvcNotif : IFL-09 — notifier(NOUVELLE_COMMANDE, vendeur)
+    SvcOrder --> UI : 201 Created {commande_id}
+    UI --> Buyer : Confirmation de commande
+
+  else Paiement refusé
+    ExtPayment --> AdpPayment : 402 {raison}
+    AdpPayment --> SvcPayment : autorisation refusée
+    SvcPayment -> DB : IFL-13 — INSERT paiement {statut: refusé, CS-06}
+    SvcPayment --> SvcOrder : paiement refusé
+    SvcOrder --> UI : 402 Payment Required
+    UI --> Buyer : Échec paiement — réessayer
+  end
+
+else Paiement par virement (FS-V09)
+  SvcOrder -> SvcPayment : IFL-08 — enregistrerVirementEnAttente(montant, mode:virement)
+  SvcPayment -> DB : IFL-13 — INSERT paiement {statut: en_attente_virement, CS-06}
+  SvcPayment --> SvcOrder : virement enregistré en attente
+  SvcOrder -> SvcStock : IFL-06 — preReserverStock(lignes[])
+  SvcOrder -> DB : IFL-13 — INSERT commande {statut: paiement_en_attente_virement}
+  SvcOrder -> SvcNotif : IFL-09 — notifier(VIREMENT_EN_ATTENTE, acheteur, {coordonnées_bancaires})
+  SvcOrder -> SvcNotif : IFL-09 — notifier(VIREMENT_EN_ATTENTE, vendeur, {commande_id})
+  SvcOrder --> UI : 201 Created {commande_id, statut: paiement_en_attente_virement}
+  UI --> Buyer : Commande créée — effectuer le virement
+
+  note right of SvcPayment
+    Attente confirmation manuelle du vendeur
+    Endpoint : POST /commandes/{id}/confirmer-virement
+  end note
+
+  == Confirmation du virement par le vendeur (UCSA-13) ==
+  actor Vendeur as Vendor2
+  Vendor2 -> UI : Confirmer réception du virement
+  UI -> SvcPayment : IFL-08 — confirmerVirement(commande_id)
+  SvcPayment -> DB : IFL-13 — UPDATE paiement {statut: autorisé}
+  SvcPayment -> SvcOrder : IFL-08 — virementConfirmé(commande_id)
+  SvcOrder -> DB : IFL-13 — UPDATE commande {statut: en_attente}
   SvcOrder -> SvcNotif : IFL-09 — notifier(COMMANDE_CONFIRMEE, acheteur)
   SvcOrder -> SvcNotif : IFL-09 — notifier(NOUVELLE_COMMANDE, vendeur)
-  SvcOrder --> UI : 201 Created {commande_id}
-  UI --> Buyer : Confirmation de commande
-
-else Paiement refusé
-  ExtPayment --> AdpPayment : 402 {raison}
-  AdpPayment --> SvcPayment : autorisation refusée
-  SvcPayment -> DB : IFL-13 — INSERT paiement {statut: refusé, CS-06}
-  SvcPayment --> SvcOrder : paiement refusé
-  SvcOrder --> UI : 402 Payment Required
-  UI --> Buyer : Échec paiement — réessayer
 end
 ----
 
@@ -435,38 +448,28 @@ participant "Portail\nAcheteur" as UI_B
 participant "Service\nCommande" as SvcOrder
 participant "Service\nExpédition" as SvcShipping
 participant "Service\nNotification" as SvcNotif
-participant "Adaptateur\nTransporteur" as AdpCarrier
 participant "Adaptateur\nMessagerie" as AdpMail
 participant "Référentiel\nde données" as DB
-participant "Transporteur\n(UE)" as ExtCarrier #D5E8F0
 
-Vendor -> UI_V : Déclarer expédition (commande_id, transporteur_id, pays UE)
+note over Vendor : Le vendeur a déposé le colis\nauprès du transporteur (hors système)\net récupéré le numéro de suivi sur le reçu
+
+Vendor -> UI_V : Déclarer expédition (commande_id, transporteur_id, tracking_number)
 UI_V -> SvcOrder : IFL-04 — mettreAJourStatut(commande_id, EN_PREPARATION)
 SvcOrder -> DB : IFL-13 — UPDATE commande {statut: en_préparation}
 
-UI_V -> SvcShipping : IFL-05 — declarerExpedition(commande_id, transporteur_id, adresse)
-SvcShipping -> AdpCarrier : IFL-11 — creerEnvoi(colis, adresse, service)
-AdpCarrier -> ExtCarrier : IFS-05 — POST /shipments
-
-ExtCarrier --> AdpCarrier : 201 Created {tracking_number}
-AdpCarrier --> SvcShipping : tracking_number reçu
+UI_V -> SvcShipping : IFL-05 — declarerExpedition(commande_id, transporteur_id, tracking_number)
 SvcShipping -> DB : IFL-13 — INSERT expédition {tracking_number, statut: expédiée}
 SvcShipping -> SvcOrder : IFL-04 — mettreAJourStatut(commande_id, EXPEDIEE)
-SvcShipping -> SvcNotif : IFL-09 — notifier(EXPEDIEE, acheteur, {tracking_number})
-SvcNotif -> AdpMail : IFL-12 — envoyerEmail(acheteur, template:expedition, {tracking_number})
-SvcShipping --> UI_V : expédition déclarée
+SvcShipping -> SvcNotif : IFL-09 — notifier(EXPEDIEE, acheteur, {tracking_number, url_suivi})
+SvcNotif -> AdpMail : IFL-12 — envoyerEmail(acheteur, template:expedition, {tracking_number, url_suivi})
+SvcShipping --> UI_V : 200 OK — expédition enregistrée {tracking_number}
 
-== Suivi en temps réel (webhook entrant) ==
-ExtCarrier -> AdpCarrier : POST /webhooks/tracking {tracking_number, statut, timestamp}
-AdpCarrier -> SvcShipping : IFL-11 — mettreAJourStatut(tracking_number, statut)
-SvcShipping -> DB : IFL-13 — UPDATE expédition {statutLivraison}
-SvcShipping -> SvcNotif : IFL-09 — notifier(STATUT_LIVRAISON, acheteur, {statut})
-
+== Consultation du suivi (UCSA-08) ==
 Buyer -> UI_B : Consulter le suivi de ma commande
 UI_B -> SvcShipping : IFL-05 — getSuivi(commande_id)
 SvcShipping -> DB : IFL-13 — SELECT expédition WHERE commande_id
-SvcShipping --> UI_B : statuts d'acheminement
-UI_B --> Buyer : Affichage du suivi en temps réel
+SvcShipping --> UI_B : {tracking_number, url_suivi_transporteur}
+UI_B --> Buyer : Affichage du numéro de suivi\net lien vers le site du transporteur (CS-05)
 ----
 
 == Diagramme d'états — Cycle de vie d'une commande
@@ -481,25 +484,46 @@ skinparam arrowColor #2E75B6
 skinparam noteBackgroundColor #FFFBE6
 skinparam noteBorderColor #F0A500
 
-[*] --> En_attente : SvcOrder.creerCommande()\n[paiement autorisé]
+[*] --> Paiement_en_attente_virement : SvcOrder.creerCommande()\n[mode = virement]
+[*] --> En_attente : SvcOrder.creerCommande()\n[paiement carte autorisé]
+
+Paiement_en_attente_virement --> En_attente : SvcPayment.confirmerVirement()\n[Vendeur confirme réception des fonds]
+Paiement_en_attente_virement --> Annulee : SvcOrder.rejeterVirement()\n[Vendeur rejette — fonds non reçus]
 
 En_attente --> En_preparation : SvcOrder.mettreAJourStatut()\n[Vendeur prend en charge]
 
-En_preparation --> Expediee : SvcShipping.declarerExpedition()\n[colis remis au transporteur]
+En_preparation --> Expediee : SvcShipping.declarerExpedition()\n[colis remis au transporteur + numéro de suivi saisi]
 
-Expediee --> Livree : SvcShipping.mettreAJourStatut()\n[webhook transporteur : DELIVERED]
+Expediee --> Livree : SvcOrder.confirmerReception()\n[acheteur confirme la réception]
 
 Livree --> [*]
 
-En_attente --> Annulee : SvcOrder.annuler()\n[acheteur demande + vendeur accepte]
-En_preparation --> Annulee : SvcOrder.annuler()\n[acheteur demande + vendeur accepte]
+En_attente --> Annulee : SvcOrder.annuler()\n[acheteur demande + vendeur accepte\navant expédition]
+En_preparation --> Annulee : SvcOrder.annuler()\n[acheteur demande + vendeur accepte\navant expédition]
+
+Expediee --> En_attente_retour : SvcOrder.annuler()\n[vendeur accepte avec condition_renvoi]
+Expediee --> Annulee : SvcOrder.annuler()\n[vendeur accepte sans condition_renvoi]
+
+En_attente_retour --> Annulee : SvcShipping.confirmerRetour()\n[vendeur confirme réception du colis retourné]
 
 Annulee --> [*] : SvcPayment.rembourser()
 
+note right of Paiement_en_attente_virement
+  Stock pré-réservé
+  Vendeur doit confirmer
+  la réception du virement (FS-V09)
+end note
+
 note right of En_preparation
-  Transition vers Annulee
-  impossible si statut = Expediee
-  (CS imposée par SvcOrder)
+  Numéro de suivi saisi
+  obligatoirement par le vendeur
+  lors de la déclaration d'expédition
+end note
+
+note right of En_attente_retour
+  Annulation post-expédition avec renvoi :
+  l'acheteur doit renvoyer le colis
+  avant que le remboursement soit déclenché
 end note
 
 note right of Expediee
@@ -595,7 +619,7 @@ package "Entités métier (SA)" #F0F8FF {
     + adresseLivraison : Adresse
     + modeLivraison : String
     + montantTotal : Decimal
-    + statut : Enum {en_attente, en_préparation,\nexpédiée, livrée, annulée}
+    + statut : Enum {paiement_en_attente_virement,\nen_attente, en_préparation,\nexpédiée, en_attente_retour,\nlivrée, annulée}
     + dateCommande : DateTime
   }
 
@@ -603,7 +627,7 @@ package "Entités métier (SA)" #F0F8FF {
     + id : UUID
     + montant : Decimal
     + mode : Enum {carte, virement}
-    + statut : Enum {autorisé, refusé, remboursé}
+    + statut : Enum {en_attente_virement,\nautorisé, refusé, remboursé}
     + référencePrestataire : String
     + date : DateTime
   }
@@ -620,7 +644,7 @@ package "Entités métier (SA)" #F0F8FF {
     + id : UUID
     + nom : String
     + paysSupportés : List<CodeISO>
-    + urlApiSuivi : URL
+    + urlSuivi : URL
     + actif : Boolean
   }
 
@@ -650,14 +674,6 @@ package "Entités techniques (LA)" #FFF8E8 {
     + timestamp : DateTime
   }
 
-  class StatutAcheminement {
-    + id : UUID
-    + expéditionId : UUID
-    + statut : String
-    + localisation : String
-    + timestamp : DateTime
-  }
-
   class TemplateNotification {
     + id : UUID
     + code : String
@@ -677,7 +693,6 @@ Commande "1" *-- "1" Paiement : réglée par
 Commande "1" *-- "0..1" Expédition : donne lieu à
 Commande "1" --> "0..*" Réclamation : fait l'objet de
 Expédition "0..*" --> "1" Transporteur : acheminée par
-Expédition "1" *-- "0..*" StatutAcheminement : historise
 Paiement "1" *-- "0..*" JournalPaiement : journalisé par
 
 note bottom of TokenActivation
@@ -713,13 +728,13 @@ end note
 | FS-V02 | Gérer le catalogue produits | Service Catalogue | IFL-02, IFL-13
 | FS-V03 | Gérer les stocks et alertes | Service Stock | IFL-06, IFL-09, IFL-13
 | FS-V04 | Traiter les commandes reçues | Service Commande | IFL-04, IFL-09, IFL-13
-| FS-V05 | Expédier vers l'UE | Service Expédition, Adaptateur Transporteur | IFL-05, IFL-11
+| FS-V05 | Déclarer l'expédition avec saisie du numéro de suivi | Service Expédition | IFL-05, IFL-09, IFL-13
 | FS-V06 | Traiter les litiges et réclamations | Service Commande, Service Paiement | IFL-04, IFL-08
 | FS-V07 | Consulter les rapports de ventes | Service Rapport | IFL-07, IFL-13
-| FS-V08 | Accepter / refuser une annulation | Service Commande | IFL-04, IFL-08
+| FS-V08 | Traiter les annulations (avant/après expédition, avec/sans renvoi) | Service Commande | IFL-04, IFL-08
+| FS-V09 | Confirmer la réception d'un virement bancaire | Service Paiement, Service Commande | IFL-08, IFL-13
 | FS-P01 | Demander une autorisation de paiement | Service Paiement, Adaptateur Paiement | IFL-08, IFL-10
 | FS-P02 | Confirmer / refuser la transaction (CS-06) | Service Paiement, Référentiel | IFL-08, IFL-09, IFL-13
 | FS-P03 | Déclencher un remboursement | Service Paiement, Adaptateur Paiement | IFL-08, IFL-10
-| FS-C01 | Transmettre les données de colis | Service Expédition, Adaptateur Transporteur | IFL-05, IFL-11
-| FS-C02 | Recevoir et diffuser les statuts de livraison | Adaptateur Transporteur, Service Expédition, Service Notification | IFL-11, IFL-05, IFL-09
+| FS-C01 | Afficher le numéro de suivi et l'URL du site transporteur à l'acheteur | Service Expédition | IFL-05, IFL-13
 |===

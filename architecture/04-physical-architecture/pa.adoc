@@ -105,7 +105,7 @@ Les contraintes physiques complètent les contraintes système (CS) en ajoutant 
 
 | Service Expédition
 | Module Node.js / Express
-| Remise colis via API transporteur, réception webhooks de suivi (IFS-05)
+| Enregistrement du numéro de suivi saisi par le vendeur, exposition du numéro de suivi et de l'URL du site transporteur à l'acheteur (IFS-05 — lien sortant uniquement)
 
 | Service Notification
 | Module Node.js / Express
@@ -125,10 +125,6 @@ Les contraintes physiques complètent les contraintes système (CS) en ajoutant 
 | Adaptateur Paiement
 | SDK Stripe (Node.js)
 | Appels sortants REST/HTTPS vers Stripe API ; réception de webhooks signés (IFS-04)
-
-| Adaptateur Transporteur
-| Client HTTP (axios)
-| Appels sortants REST/HTTPS vers l'API transporteur UE ; réception webhooks de statut (IFS-05)
 
 | Adaptateur Messagerie
 | SDK SendGrid (Node.js)
@@ -190,7 +186,7 @@ node "Conteneur API\n(Node.js / Express)" as AppServer {
     component "compte | catalogue | stock\npanier | commande | paiement\nexpédition | notification | rapport" as Modules
   }
   package "Adaptateurs" {
-    component "Stripe SDK\nHTTP Transporteur\nSendGrid SDK" as Adapters
+    component "Stripe SDK\nSendGrid SDK" as Adapters
   }
 }
 
@@ -203,8 +199,9 @@ node "Conteneur Redis 7" as Cache {
 }
 
 component "Stripe API\n(prestataire paiement)" as Stripe #D5E8F0
-component "API Transporteur\n(UE — IFS-05)" as CarrierAPI #D5E8F0
 component "SendGrid\n(e-mail — IFS-06)" as SendGrid #D5E8F0
+
+note "IFS-05 : lien vers site transporteur\n(consulté par l'acheteur via son navigateur)" as NCarrier
 
 User --> Browser : HTTPS
 Browser --> Nginx : HTTPS (CPA-02)
@@ -213,8 +210,6 @@ AppServer --> DB : TCP 5432 (IFL-13)
 AppServer --> Cache : TCP 6379 (CPA-04)
 Adapters --> Stripe : REST/HTTPS (IFS-04)
 Stripe --> Adapters : webhook HTTPS signé
-Adapters --> CarrierAPI : REST/HTTPS (IFS-05)
-CarrierAPI --> Adapters : webhook statuts
 Adapters --> SendGrid : HTTPS (IFS-06)
 
 note bottom of AppServer
@@ -258,7 +253,6 @@ package "Conteneur : API Node.js" {
   }
   package "Adaptateurs externes" {
     [adaptateur-stripe\n(SDK Stripe)] as AStripe
-    [adaptateur-transporteur\n(HTTP client)] as ACarrier
     [adaptateur-messagerie\n(SDK SendGrid)] as AMail
   }
 }
@@ -288,7 +282,6 @@ MCommande --> MPaiement : IFL-08
 MCommande --> MExpedition : IFL-05
 MCommande --> MNotif : IFL-09
 MPaiement --> AStripe : IFL-10
-MExpedition --> ACarrier : IFL-11
 MNotif --> AMail : IFL-12
 
 MPanier --> RedisDB : session (TTL)
@@ -332,52 +325,100 @@ note right : HTTPS (CPA-02)\nCS-04 : adresse validée UE
 API -> Redis : GET panier:{acheteur_id}
 Redis --> API : lignes du panier
 
-API -> StockMod : reserverStock(lignes[])
-StockMod -> PG : BEGIN ; UPDATE stock SET qté = qté - n WHERE id = ?
-PG --> StockMod : OK
-StockMod --> API : stock réservé
+alt Paiement par carte
+  API -> StockMod : reserverStock(lignes[])
+  StockMod -> PG : BEGIN ; UPDATE stock SET qté = qté - n WHERE id = ?
+  PG --> StockMod : OK
+  StockMod --> API : stock réservé
 
-API -> PG : INSERT INTO commandes {statut: en_attente, ...}
-PG --> API : commande_id
+  API -> PG : INSERT INTO commandes {statut: en_attente, ...}
+  PG --> API : commande_id
 
-API -> PayMod : soumettrePaiement(montant, mode, commande_id)
-PayMod -> Stripe : POST /v1/payment_intents\n{amount, currency, payment_method, metadata}
-note right : SDK Stripe Node.js\nIFS-04
+  API -> PayMod : soumettrePaiement(montant, mode:carte, commande_id)
+  PayMod -> Stripe : POST /v1/payment_intents\n{amount, currency, payment_method, metadata}
+  note right : SDK Stripe Node.js\nIFS-04
 
-alt Paiement autorisé
-  Stripe --> PayMod : 200 OK {payment_intent_id, status: "succeeded"}
-  PayMod -> PG : INSERT INTO paiements {statut: autorisé, ref_stripe, ...}\n(CPA-07 — journalisation CS-06)
+  alt Paiement autorisé
+    Stripe --> PayMod : 200 OK {payment_intent_id, status: "succeeded"}
+    PayMod -> PG : INSERT INTO paiements {statut: autorisé, ref_stripe, ...}\n(CPA-07 — journalisation CS-06)
+    PG --> PayMod : OK
+    PayMod --> API : paiement confirmé
+
+    API -> PG : UPDATE commandes SET statut = en_attente WHERE id = commande_id
+    PG --> API : OK
+
+    API -> NotifMod : notifier(acheteur_id, "commande_confirmée", commande_id)
+    NotifMod -> Mail : POST /v3/mail/send\n{to, template_id: "confirmation_commande", ...}
+    note right : SDK SendGrid\nIFS-06
+    Mail --> NotifMod : 202 Accepted
+
+    API -> NotifMod : notifier(vendeur_id, "nouvelle_commande", commande_id)
+    NotifMod -> Mail : POST /v3/mail/send {to: vendeur, ...}
+    Mail --> NotifMod : 202 Accepted
+
+    API --> SPA : 201 Created {commande_id, statut: "en_attente"}
+
+  else Paiement refusé
+    Stripe --> PayMod : 402 {error.code, error.message}
+    PayMod -> PG : INSERT INTO paiements {statut: refusé, ...}
+    PayMod -> StockMod : libererStock(lignes[])
+    StockMod -> PG : ROLLBACK réservation stock
+    PayMod --> API : paiement refusé
+    API -> PG : DELETE FROM commandes WHERE id = commande_id
+    API --> SPA : 402 {raison: error.message}
+  end
+
+else Paiement par virement (CS-02 / FS-V09)
+  API -> StockMod : preReserverStock(lignes[])
+  StockMod -> PG : BEGIN ; LOCK stock ; SET qté_reservée = qté_reservée + n
+  PG --> StockMod : OK
+  StockMod --> API : stock pré-réservé
+
+  API -> PG : INSERT INTO commandes {statut: paiement_en_attente_virement, ...}
+  PG --> API : commande_id
+
+  API -> PayMod : enregistrerVirementEnAttente(montant, commande_id)
+  PayMod -> PG : INSERT INTO paiements {statut: en_attente_virement, mode: virement, ...}\n(CPA-07 — journalisation CS-06)
   PG --> PayMod : OK
-  PayMod --> API : paiement confirmé
+  PayMod --> API : virement en attente enregistré
 
-  API -> PG : UPDATE commandes SET statut = en_préparation WHERE id = commande_id
+  API -> NotifMod : notifier(acheteur_id, "virement_en_attente", {coordonnées_bancaires})
+  NotifMod -> Mail : POST /v3/mail/send {to, template_id: "virement_en_attente", ...}
+  Mail --> NotifMod : 202 Accepted
+
+  API -> NotifMod : notifier(vendeur_id, "virement_en_attente", commande_id)
+  NotifMod -> Mail : POST /v3/mail/send {to: vendeur, template_id: "virement_a_confirmer", ...}
+  Mail --> NotifMod : 202 Accepted
+
+  API --> SPA : 201 Created {commande_id, statut: "paiement_en_attente_virement"}
+
+  == Confirmation du virement par le vendeur ==
+  participant "SPA Vendeur\n(back-office)" as SPAVendor
+  SPAVendor -> API : POST /commandes/{id}/confirmer-virement\nAuthorization: Bearer {JWT vendeur}
+
+  API -> PayMod : confirmerVirement(commande_id)
+  PayMod -> PG : UPDATE paiements SET statut = autorisé WHERE commande_id = ?
+  PG --> PayMod : OK
+  PayMod --> API : virement confirmé
+
+  API -> PG : UPDATE commandes SET statut = en_attente WHERE id = commande_id
   PG --> API : OK
 
   API -> NotifMod : notifier(acheteur_id, "commande_confirmée", commande_id)
-  NotifMod -> Mail : POST /v3/mail/send\n{to, template_id: "confirmation_commande", ...}
-  note right : SDK SendGrid\nIFS-06
+  NotifMod -> Mail : POST /v3/mail/send {to, template_id: "confirmation_commande", ...}
   Mail --> NotifMod : 202 Accepted
 
   API -> NotifMod : notifier(vendeur_id, "nouvelle_commande", commande_id)
   NotifMod -> Mail : POST /v3/mail/send {to: vendeur, ...}
   Mail --> NotifMod : 202 Accepted
 
-  API --> SPA : 201 Created {commande_id, statut: "en_préparation"}
-
-else Paiement refusé
-  Stripe --> PayMod : 402 {error.code, error.message}
-  PayMod -> PG : INSERT INTO paiements {statut: refusé, ...}
-  PayMod -> StockMod : libererStock(lignes[])
-  StockMod -> PG : ROLLBACK réservation stock
-  PayMod --> API : paiement refusé
-  API -> PG : DELETE FROM commandes WHERE id = commande_id
-  API --> SPA : 402 {raison: error.message}
+  API --> SPAVendor : 200 OK {commande_id, statut: "en_attente"}
 end
 ----
 
-== Diagramme de séquence technique — Expédition et webhooks transporteur
+== Diagramme de séquence technique — Expédition et suivi de commande
 
-Ce diagramme représente le flux technique d'expédition d'une commande et la réception des mises à jour de statut via webhook du transporteur.
+Ce diagramme représente le flux technique d'expédition d'une commande : le vendeur saisit le numéro de suivi récupéré lors du dépôt physique, le système l'enregistre et notifie l'acheteur qui peut consulter son colis sur le site du transporteur.
 
 [plantuml, pa-sequence-expedition, svg]
 ----
@@ -393,42 +434,34 @@ participant "SPA React\n(back-office vendeur)" as SPA
 participant "API Node.js\n(module-expedition)" as API
 participant "module-notification\n(SendGrid SDK)" as NotifMod
 participant "PostgreSQL" as PG
-participant "API Transporteur\n(IFS-05)" as CarrierAPI
 participant "SendGrid\n(IFS-06)" as Mail
 
-SPA -> API : PUT /commandes/{id}/expedition\n{transporteur_id, pays_destination}\nAuthorization: Bearer {JWT}
+note over SPA : Le vendeur a déposé le colis à la poste\net récupéré le numéro de suivi sur le reçu
+
+SPA -> API : PUT /commandes/{id}/expedition\n{transporteur_id, tracking_number}\nAuthorization: Bearer {JWT}
+note right : tracking_number saisi depuis le reçu\nde dépôt physique (FS-V05 / CS-05)
 
 API -> PG : SELECT * FROM commandes WHERE id = ? AND statut = en_préparation
 PG --> API : commande
 
-API -> CarrierAPI : POST /shipments\n{weight, dimensions, adresse_destinataire, service}
-note right : REST/HTTPS (IFS-05)\nCS-04 : pays_destination dans l'UE
-
-CarrierAPI --> API : 201 Created {tracking_number, label_url}
-
-API -> PG : INSERT INTO expeditions {tracking_number, transporteur_id, ...}
-API -> PG : UPDATE commandes SET statut = expediée WHERE id = ?
+API -> PG : INSERT INTO expeditions {tracking_number, transporteur_id, date_expedition, ...}
+API -> PG : UPDATE commandes SET statut = expédiée WHERE id = ?
 PG --> API : OK
 
-API -> NotifMod : notifier(acheteur_id, "commande_expediee", tracking_number)
-NotifMod -> Mail : POST /v3/mail/send\n{to, template_id: "expedition", tracking_number}
+API -> NotifMod : notifier(acheteur_id, "commande_expediee",\n{tracking_number, url_suivi_transporteur})
+NotifMod -> Mail : POST /v3/mail/send\n{to, template_id: "expedition",\ntracking_number, url_suivi}
+note right : SDK SendGrid\nIFS-06
 Mail --> NotifMod : 202 Accepted
 
-API --> SPA : 200 OK {tracking_number}
+API --> SPA : 200 OK {tracking_number, statut: "expédiée"}
 
-== Webhooks de statut (asynchrone) ==
-
-CarrierAPI -> API : POST /webhooks/tracking\n{tracking_number, statut, timestamp, localisation}
-note right : Appel entrant — IFS-05\nNginx forward vers API
-
-API -> PG : INSERT INTO statuts_acheminement\n{tracking_number, statut, timestamp}
-PG --> API : OK
-
-API -> NotifMod : notifier(acheteur_id, "statut_livraison", statut)
-NotifMod -> Mail : POST /v3/mail/send\n{to, template_id: "statut_livraison", statut}
-Mail --> NotifMod : 202 Accepted
-
-API --> CarrierAPI : 200 OK
+== Consultation du suivi par l'acheteur ==
+participant "SPA React\n(portail acheteur)" as SPABuyer
+SPABuyer -> API : GET /commandes/{id}/suivi\nAuthorization: Bearer {JWT acheteur}
+API -> PG : SELECT tracking_number, url_suivi FROM expeditions WHERE commande_id = ?
+PG --> API : {tracking_number, url_suivi}
+API --> SPABuyer : 200 OK {tracking_number, url_suivi_transporteur}
+note right : L'acheteur clique sur le lien\npour suivre son colis (IFS-05 — sortant)
 ----
 
 == Matrice de traçabilité LA → PA
@@ -485,7 +518,7 @@ API --> CarrierAPI : 200 OK
 | Service Expédition
 | module-expedition
 | Conteneur API Node.js
-| Node.js / Express / axios
+| Node.js / Express
 
 | Service Notification
 | module-notification
@@ -501,11 +534,6 @@ API --> CarrierAPI : 200 OK
 | module-paiement (couche adaptateur)
 | Conteneur API Node.js
 | SDK Stripe Node.js
-
-| Adaptateur Transporteur
-| module-expedition (couche adaptateur)
-| Conteneur API Node.js
-| axios / REST (IFS-05)
 
 | Adaptateur Messagerie
 | module-notification (couche adaptateur)
