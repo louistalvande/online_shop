@@ -5,7 +5,7 @@
 :sectnums:
 :icons: font
 :source-highlighter: rouge
-:imagesdir: diagrams
+:imagesdir: architecture/02-system-analysis/diagrams
 
 == Contexte et objectif
 
