@@ -44,7 +44,7 @@ Le système est structuré en cinq couches logiques : *Présentation*, *Applicat
 
 | *Console Administrateur*
 | Présentation
-| Interface web desktop — gestion des comptes, des transporteurs, logs d'audit
+| Interface web desktop — gestion des comptes, des transporteurs
 | FS-A01..A03
 
 | *Service Compte*
@@ -54,13 +54,8 @@ Le système est structuré en cinq couches logiques : *Présentation*, *Applicat
 
 | *Service Catalogue*
 | Application
-| CRUD produits, gestion des catégories, recherche et filtrage, publication / archivage
-| FS-V02, FS-B03
-
-| *Service Stock*
-| Application
-| Suivi des niveaux de stock, réservation à la commande, libération à l'annulation, alertes de rupture
-| FS-V03
+| CRUD produits, gestion des catégories, recherche et filtrage, publication / archivage, suivi des niveaux de stock, réservation à la commande, libération à l'annulation, alertes de rupture
+| FS-V02, FS-V03, FS-B03
 
 | *Service Commande*
 | Application
@@ -104,7 +99,7 @@ Le système est structuré en cinq couches logiques : *Présentation*, *Applicat
 
 | *Référentiel de données*
 | Infrastructure
-| Persistance de toutes les entités métier (comptes, produits, stocks, paniers, commandes, paiements, expéditions, réclamations)
+| Persistance de toutes les entités métier (comptes, produits avec stock, paniers, commandes, paiements, expéditions, réclamations)
 | Support de toutes les FS
 |===
 
@@ -136,7 +131,6 @@ package "Couche Présentation" {
 package "Couche Application" {
   [Service Compte] as SvcAccount
   [Service Catalogue] as SvcCatalog
-  [Service Stock] as SvcStock
   [Service Panier] as SvcCart
   [Service Commande] as SvcOrder
   [Service Paiement] as SvcPayment
@@ -170,7 +164,7 @@ UI_Buyer --> SvcShipping : IFL-05
 
 UI_Vendor --> SvcAccount : IFL-01
 UI_Vendor --> SvcCatalog : IFL-02
-UI_Vendor --> SvcStock : IFL-06
+UI_Vendor --> SvcCatalog : IFL-06
 UI_Vendor --> SvcOrder : IFL-04
 UI_Vendor --> SvcShipping : IFL-05
 UI_Vendor --> SvcReport : IFL-07
@@ -178,7 +172,7 @@ UI_Vendor --> SvcReport : IFL-07
 UI_Admin --> SvcAccount : IFL-01
 
 SvcOrder --> SvcPayment : IFL-08
-SvcOrder --> SvcStock : IFL-06
+SvcOrder --> SvcCatalog : IFL-06
 SvcOrder --> SvcShipping : IFL-05
 SvcOrder --> SvcNotif : IFL-09
 SvcAccount --> SvcNotif : IFL-09
@@ -194,7 +188,6 @@ AdpMail --> ExtMail : IFS-06\nSMTP / API
 
 SvcAccount --> DB : IFL-13
 SvcCatalog --> DB : IFL-13
-SvcStock --> DB : IFL-13
 SvcCart --> DB : IFL-13
 SvcOrder --> DB : IFL-13
 SvcPayment --> DB : IFL-13
@@ -242,7 +235,7 @@ Les interfaces logiques définissent les contrats d'échange entre composants, i
 
 | *IFL-06*
 | Service Commande / Portail Vendeur
-| Service Stock
+| Service Catalogue
 | Réserver du stock, libérer du stock, interroger les niveaux, déclencher une alerte rupture
 | FS-V03
 
@@ -353,7 +346,7 @@ actor Acheteur as Buyer
 participant "Portail\nAcheteur" as UI
 participant "Service\nPanier" as SvcCart
 participant "Service\nCommande" as SvcOrder
-participant "Service\nStock" as SvcStock
+participant "Service\nCatalogue" as SvcCatalog
 participant "Service\nPaiement" as SvcPayment
 participant "Service\nNotification" as SvcNotif
 participant "Adaptateur\nPaiement" as AdpPayment
@@ -369,9 +362,9 @@ Buyer -> UI : Soumettre commande (adresse UE, mode livraison, mode paiement)
 note right : CS-04 — adresse validée côté UI\nCS-02 — mode ∈ {carte, virement}
 
 UI -> SvcOrder : IFL-04 — creerCommande(panier_id, adresse, modeLivraison, modePaiement)
-SvcOrder -> SvcStock : IFL-06 — verifierStock(lignes[])
-SvcStock -> DB : IFL-13 — SELECT stock WHERE produit_id IN (...)
-SvcStock --> SvcOrder : Stock disponible
+SvcOrder -> SvcCatalog : IFL-06 — verifierStock(lignes[])
+SvcCatalog -> DB : IFL-13 — SELECT stock WHERE produit_id IN (...)
+SvcCatalog --> SvcOrder : Stock disponible
 
 alt Paiement par carte
   SvcOrder -> SvcPayment : IFL-08 — demanderAutorisation(montant, mode:carte, références)
@@ -384,7 +377,7 @@ alt Paiement par carte
     SvcPayment -> DB : IFL-13 — INSERT paiement {statut: autorisé, CS-06}
     SvcPayment --> SvcOrder : paiement autorisé
 
-    SvcOrder -> SvcStock : IFL-06 — reserverStock(lignes[])
+    SvcOrder -> SvcCatalog : IFL-06 — reserverStock(lignes[])
     SvcOrder -> DB : IFL-13 — INSERT commande {statut: en_attente}
     SvcOrder -> SvcNotif : IFL-09 — notifier(COMMANDE_CONFIRMEE, acheteur)
     SvcOrder -> SvcNotif : IFL-09 — notifier(NOUVELLE_COMMANDE, vendeur)
@@ -404,7 +397,7 @@ else Paiement par virement (FS-V09)
   SvcOrder -> SvcPayment : IFL-08 — enregistrerVirementEnAttente(montant, mode:virement)
   SvcPayment -> DB : IFL-13 — INSERT paiement {statut: en_attente_virement, CS-06}
   SvcPayment --> SvcOrder : virement enregistré en attente
-  SvcOrder -> SvcStock : IFL-06 — preReserverStock(lignes[])
+  SvcOrder -> SvcCatalog : IFL-06 — preReserverStock(lignes[])
   SvcOrder -> DB : IFL-13 — INSERT commande {statut: paiement_en_attente_virement}
   SvcOrder -> SvcNotif : IFL-09 — notifier(VIREMENT_EN_ATTENTE, acheteur, {coordonnées_bancaires})
   SvcOrder -> SvcNotif : IFL-09 — notifier(VIREMENT_EN_ATTENTE, vendeur, {commande_id})
@@ -527,9 +520,8 @@ note right of En_attente_retour
 end note
 
 note right of Expediee
-  SvcShipping reçoit les webhooks
-  du transporteur et met à jour
-  le statut d'acheminement
+  Numéro de suivi exposé à l'acheteur
+  via lien site transporteur (IFS-05)
 end note
 ----
 
@@ -596,10 +588,6 @@ package "Entités métier (SA)" #F0F8FF {
     + photos : List<URL>
     + catégorie : String
     + statut : Enum {publié, archivé}
-  }
-
-  class Stock {
-    + id : UUID
     + quantitéDisponible : Integer
     + seuilAlerte : Integer
   }
@@ -688,7 +676,6 @@ CompteUtilisateur "1" --> "0..1" Panier : possède
 CompteUtilisateur "1" --> "0..*" Commande : passe
 Panier "1" *-- "0..*" LignePanier : contient
 LignePanier "0..*" --> "1" Produit : référence
-Produit "1" -- "1" Stock : géré par
 Commande "1" *-- "1" Paiement : réglée par
 Commande "1" *-- "0..1" Expédition : donne lieu à
 Commande "1" --> "0..*" Réclamation : fait l'objet de
@@ -726,7 +713,7 @@ end note
 | FS-B09 | Annuler une commande | Service Commande | IFL-04, IFL-08
 | FS-B10 | Activer le compte via token (CS-07) | Service Compte | IFL-01, IFL-13
 | FS-V02 | Gérer le catalogue produits | Service Catalogue | IFL-02, IFL-13
-| FS-V03 | Gérer les stocks et alertes | Service Stock | IFL-06, IFL-09, IFL-13
+| FS-V03 | Gérer les stocks et alertes | Service Catalogue | IFL-06, IFL-09, IFL-13
 | FS-V04 | Traiter les commandes reçues | Service Commande | IFL-04, IFL-09, IFL-13
 | FS-V05 | Déclarer l'expédition avec saisie du numéro de suivi | Service Expédition | IFL-05, IFL-09, IFL-13
 | FS-V06 | Traiter les litiges et réclamations | Service Commande, Service Paiement | IFL-04, IFL-08
