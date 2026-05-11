@@ -611,6 +611,11 @@ package "Entités métier (SA)" #F0F8FF {
     + dateCommande : DateTime
   }
 
+  class LigneCommande {
+    + quantité : Integer
+    + prixUnitaireCapturé : Decimal
+  }
+
   class Paiement {
     + id : UUID
     + montant : Decimal
@@ -676,6 +681,8 @@ CompteUtilisateur "1" --> "0..1" Panier : possède
 CompteUtilisateur "1" --> "0..*" Commande : passe
 Panier "1" *-- "0..*" LignePanier : contient
 LignePanier "0..*" --> "1" Produit : référence
+Commande "1" *-- "1..*" LigneCommande : contient
+LigneCommande "0..*" --> "1" Produit : référence
 Commande "1" *-- "1" Paiement : réglée par
 Commande "1" *-- "0..1" Expédition : donne lieu à
 Commande "1" --> "0..*" Réclamation : fait l'objet de
