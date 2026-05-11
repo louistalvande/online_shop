@@ -1,3 +1,2 @@
 architecture/.asciidoctor/*
-.asciidoctor/diagram/*.cache
-.asciidoctor/diagram/*.svg.cache
+.asciidoctor
