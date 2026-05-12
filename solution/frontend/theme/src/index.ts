@@ -1,5 +1,6 @@
 export { ChurchIcon, CartIcon, UserIcon, SettingsIcon, PackageIcon, GalleryIcon, GlobeIcon } from './icons'
 export { Button } from './Button'
+export { IconButton } from './IconButton'
 export { Card } from './Card'
 export { AppShell } from './AppShell'
 export { LangToggle } from './LangToggle'

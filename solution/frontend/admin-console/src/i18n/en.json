@@ -35,5 +35,14 @@
   "createAccount.cancel": "Cancel",
   "createAccount.error.emailUsed": "This email address is already in use.",
   "createAccount.error.generic": "An error occurred. Please try again.",
-  "lang.toggle": "Switch language"
+  "lang.toggle": "Switch language",
+  "nav.logout": "Log out",
+  "login.title": "Admin login",
+  "login.subtitle": "Access restricted to platform administrators.",
+  "login.email": "Email address",
+  "login.password": "Password",
+  "login.submit": "Sign in",
+  "login.loading": "Signing in…",
+  "login.error.invalid": "Incorrect email or password.",
+  "login.error.generic": "An error occurred. Please try again."
 }

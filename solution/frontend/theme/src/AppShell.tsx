@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import { GalleryIcon, UserIcon } from './icons'
+import { GalleryIcon } from './icons'
 
 interface AppShellProps {
   appName: string
@@ -25,9 +25,6 @@ export function AppShell({ appName, navLinks = [], actions, children }: AppShell
               <a key={l.href} href={l.href} style={navLinkStyle}>{l.label}</a>
             ))}
             {actions}
-            <button style={iconBtnStyle} aria-label="Mon compte">
-              <UserIcon size={22} />
-            </button>
           </nav>
         </div>
       </header>
@@ -80,15 +77,6 @@ const navLinkStyle: React.CSSProperties = {
   fontSize: 14,
   fontWeight: 500,
   color: 'var(--text)',
-}
-const iconBtnStyle: React.CSSProperties = {
-  background: 'none',
-  border: 'none',
-  display: 'flex',
-  alignItems: 'center',
-  color: 'var(--text)',
-  cursor: 'pointer',
-  padding: 4,
 }
 const footerStyle: React.CSSProperties = {
   borderTop: '1px solid var(--border)',

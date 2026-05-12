@@ -10,3 +10,15 @@ CREATE TABLE accounts (
     status        VARCHAR(20)  NOT NULL,
     created_at    TIMESTAMP    NOT NULL DEFAULT NOW()
 );
+
+INSERT INTO accounts (id, email, password_hash, first_name, last_name, role, status, created_at)
+VALUES (
+  gen_random_uuid(),
+  'admin@onlineshop.com',
+  '$2a$10$ChRjfMxH2qKlmI5L.uqmV.SXW8NKJI59ML0gLTbPjXvObG2.lEOD6',
+  'Admin',
+  'System',
+  'ADMIN',
+  'ACTIVE',
+  NOW()
+);

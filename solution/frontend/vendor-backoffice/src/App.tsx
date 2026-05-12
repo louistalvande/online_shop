@@ -1,6 +1,6 @@
 import './index.css'
 import { useTranslation } from 'react-i18next'
-import { AppShell, Button, Card, PackageIcon, UserIcon, LangToggle } from '@workspace/theme'
+import { AppShell, Button, Card, PackageIcon, UserIcon, LangToggle, IconButton } from '@workspace/theme'
 
 const ORDERS = [
   { id: 'CMD-001', buyer: 'Marie Dupont', items: 3, total: '14,70 €', status: 'En attente' },
@@ -42,12 +42,7 @@ export default function App() {
             lang={i18n.language}
             onToggle={() => i18n.changeLanguage(i18n.language === 'fr' ? 'en' : 'fr')}
           />
-          <button
-            style={{ background: 'none', border: 'none', display: 'flex', color: 'var(--text)' }}
-            aria-label={t('nav.profile')}
-          >
-            <UserIcon size={22} />
-          </button>
+          <IconButton aria-label={t('nav.profile')}><UserIcon size={22} /></IconButton>
         </div>
       }
     >

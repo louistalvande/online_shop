@@ -105,6 +105,23 @@
   <build>
     <plugins>
       <plugin>
+        <groupId>org.flywaydb</groupId>
+        <artifactId>flyway-maven-plugin</artifactId>
+        <configuration>
+          <url>jdbc:postgresql://${db.host:localhost}:5432/${db.name:shop}</url>
+          <user>${db.user:shop}</user>
+          <password>${db.password:dev}</password>
+          <cleanDisabled>false</cleanDisabled>
+        </configuration>
+        <dependencies>
+          <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+            <version>${postgresql.version}</version>
+          </dependency>
+        </dependencies>
+      </plugin>
+      <plugin>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-maven-plugin</artifactId>
         <configuration>

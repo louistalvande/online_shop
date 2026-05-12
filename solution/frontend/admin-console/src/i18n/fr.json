@@ -35,5 +35,14 @@
   "createAccount.cancel": "Annuler",
   "createAccount.error.emailUsed": "Cette adresse email est déjà utilisée.",
   "createAccount.error.generic": "Une erreur est survenue. Veuillez réessayer.",
-  "lang.toggle": "Changer de langue"
+  "lang.toggle": "Changer de langue",
+  "nav.logout": "Se déconnecter",
+  "login.title": "Connexion administrateur",
+  "login.subtitle": "Accès réservé aux administrateurs de la plateforme.",
+  "login.email": "Adresse email",
+  "login.password": "Mot de passe",
+  "login.submit": "Se connecter",
+  "login.loading": "Connexion…",
+  "login.error.invalid": "Email ou mot de passe incorrect.",
+  "login.error.generic": "Une erreur est survenue. Veuillez réessayer."
 }

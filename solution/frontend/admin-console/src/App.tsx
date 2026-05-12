@@ -1,14 +1,21 @@
 import './index.css'
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { AppShell, Button, Card, SettingsIcon, UserIcon, PackageIcon, LangToggle } from '@workspace/theme'
+import { AppShell, Button, Card, SettingsIcon, UserIcon, PackageIcon, LangToggle, IconButton } from '@workspace/theme'
 import CreateAccountModal from './components/CreateAccountModal'
+import LoginPage from './LoginPage'
+import { getSession, logout } from './api/authApi'
 import { listAccounts, type AccountResponse } from './api/accountApi'
 
 export default function App() {
   const { t, i18n } = useTranslation()
+  const [session, setSession] = useState(getSession)
   const [accounts, setAccounts] = useState<AccountResponse[]>([])
   const [showModal, setShowModal] = useState(false)
+
+  if (!session) {
+    return <LoginPage onLogin={() => setSession(getSession())} />
+  }
 
   async function fetchAccounts() {
     try {
@@ -57,12 +64,11 @@ export default function App() {
               lang={i18n.language}
               onToggle={() => i18n.changeLanguage(i18n.language === 'fr' ? 'en' : 'fr')}
             />
-            <button
-              style={{ background: 'none', border: 'none', display: 'flex', color: 'var(--text)' }}
-              aria-label={t('nav.settings')}
-            >
-              <SettingsIcon size={20} />
-            </button>
+            <span style={{ fontSize: 13, color: 'var(--text-muted)' }}>{session.email}</span>
+            <IconButton aria-label={t('nav.settings')}><SettingsIcon size={20} /></IconButton>
+            <IconButton aria-label={t('nav.logout')} onClick={() => { logout(); setSession(null) }}>
+              <UserIcon size={22} />
+            </IconButton>
           </div>
         }
       >
