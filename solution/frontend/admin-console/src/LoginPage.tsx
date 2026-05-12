@@ -50,7 +50,6 @@ export default function LoginPage({ onLogin }: LoginPageProps) {
               required
               autoFocus
               style={inputStyle}
-              placeholder="admin@onlineshop.com"
             />
           </label>
 
