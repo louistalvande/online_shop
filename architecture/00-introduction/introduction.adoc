@@ -1,0 +1,14 @@
+= Introduction
+
+Ce document décrit l'architecture du système de boutique en ligne selon la méthode *ARCADIA* (Architecture Analysis and Design Integrated Approach), une approche MBSE (Model-Based Systems Engineering).
+
+Il est organisé en quatre niveaux d'analyse :
+
+. *OA — Operational Analysis* : besoins et activités des parties prenantes, contexte opérationnel.
+. *SA — System Analysis* : fonctions attendues du système, interfaces avec les acteurs.
+. *LA — Logical Architecture* : décomposition fonctionnelle logique, composants logiques et échanges.
+. *PA — Physical Architecture* : décomposition physique, composants matériels/logiciels, déploiement.
+
+image::./arcadia.png[Méthode ARCADIA]
+
+A noter que les termes et acronymes utilisés sont définis dans le glossaire en fin de document.

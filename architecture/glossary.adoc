@@ -1,0 +1,30 @@
+= Glossaire
+
+[cols="1,3", options="header"]
+|===
+| Terme | Définition
+
+| ARCADIA
+| Architecture Analysis and Design Integrated Approach. Méthode MBSE structurant l'architecture en quatre niveaux : OA, SA, LA, PA.
+
+| MBSE
+| Model-Based Systems Engineering. Approche d'ingénierie système centrée sur des modèles formels plutôt que sur des documents textuels.
+
+| OA
+| Operational Analysis. Niveau 1 d'ARCADIA : décrit le contexte métier, les acteurs opérationnels et leurs activités.
+
+| SA
+| System Analysis. Niveau 2 d'ARCADIA : décrit les fonctions que le système doit rendre aux acteurs.
+
+| LA
+| Logical Architecture. Niveau 3 d'ARCADIA : décomposition logique du système en composants et interfaces.
+
+| PA
+| Physical Architecture. Niveau 4 d'ARCADIA : décomposition physique et logicielle, nœuds de déploiement.
+
+| PlantUML
+| Outil de génération de diagrammes à partir d'une syntaxe textuelle.
+
+| AsciiDoc
+| Format de balisage léger utilisé pour la rédaction de la documentation.
+|===

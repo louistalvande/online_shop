@@ -1,0 +1,15 @@
+= Architecture du système
+:doctype: book
+:toc: left
+:toclevels: 3
+:sectnums:
+:icons: font
+:source-highlighter: rouge
+
+include::00-introduction/introduction.adoc[leveloffset=+1]
+include::01-operational-analysis/oa.adoc[leveloffset=+1]
+include::02-system-analysis/sa.adoc[leveloffset=+1]
+include::03-logical-architecture/la.adoc[leveloffset=+1]
+include::04-physical-architecture/pa.adoc[leveloffset=+1]
+
+include::glossary.adoc[leveloffset=+1]

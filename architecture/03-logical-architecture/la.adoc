@@ -1,0 +1,734 @@
+= Architecture Logique (LA — Logical Architecture)
+:doctype: article
+:toc: left
+:toclevels: 3
+:sectnums:
+:icons: font
+:source-highlighter: rouge
+:imagesdir: architecture/03-logical-architecture/diagrams
+
+== Contexte et objectif
+
+L'Architecture Logique (LA) définit la *décomposition interne du système* en composants logiques cohérents, leurs responsabilités, leurs interfaces et leurs interactions. Elle répond à la question : *comment le système est-il structuré pour remplir les fonctions identifiées en SA ?*
+
+La LA ne choisit pas encore de technologies d'implémentation (langages, frameworks, bases de données) — c'est le rôle de la PA (Physical Architecture). Elle pose les *frontières architecturales stables* sur lesquelles la PA s'appuiera.
+
+NOTE: Chaque composant logique de la LA est tracé vers une ou plusieurs fonctions système (FS) de la SA. Les interfaces logiques (IFL) précisent les contrats d'échange entre composants, indépendamment du protocole de transport retenu en PA.
+
+=== Principes architecturaux retenus
+
+* *Séparation des responsabilités* — chaque composant a une responsabilité unique et cohérente.
+* *Couplage faible* — les composants communiquent via des interfaces contractuelles explicites (IFL).
+* *Traçabilité SA → LA* — toute fonction système (FS) est allouée à exactement un composant logique.
+* *Isolation des systèmes externes* — les intégrations tierces (paiement, transporteur, messagerie) sont encapsulées dans des composants dédiés de type *adaptateur*.
+
+== Décomposition en composants logiques
+
+Le système est structuré en cinq couches logiques : *Présentation*, *Application*, *Domaine*, *Infrastructure* et *Intégrations externes*.
+
+=== Vue d'ensemble des composants
+
+[cols="1,1,2,2", options="header"]
+|===
+| Composant | Couche | Responsabilité | Fonctions SA allouées
+
+| *Portail Acheteur*
+| Présentation
+| Interface web responsive — catalogue, panier, tunnel d'achat, suivi de commande, profil acheteur
+| FS-B01..B10
+
+| *Back-office Vendeur*
+| Présentation
+| Interface web desktop — gestion catalogue, stocks, commandes, expéditions, rapports
+| FS-V01..V09
+
+| *Console Administrateur*
+| Présentation
+| Interface web desktop — gestion des comptes, des transporteurs
+| FS-A01..A03
+
+| *Service Compte*
+| Application
+| Inscription, activation par token email, authentification, gestion du profil, gestion des rôles
+| FS-B01, FS-B02, FS-B10, FS-A01, FS-A02
+
+| *Service Catalogue*
+| Application
+| CRUD produits, gestion des catégories, recherche et filtrage, publication / archivage, suivi des niveaux de stock, réservation à la commande, libération à l'annulation, alertes de rupture
+| FS-V02, FS-V03, FS-B03
+
+| *Service Commande*
+| Application
+| Orchestration du tunnel d'achat, création et cycle de vie des commandes (états : `paiement_en_attente_virement`, `en_attente`, `en_préparation`, `expédiée`, `en_attente_retour`, `livrée`, `annulée`), gestion des annulations avant et après expédition (avec ou sans condition de renvoi)
+| FS-B06, FS-B09, FS-V04, FS-V07, FS-V08
+
+| *Service Panier*
+| Application
+| Gestion du panier en session et persistance inter-sessions, restauration à la reconnexion
+| FS-B04, FS-B05
+
+| *Service Paiement*
+| Application
+| Soumission des demandes d'autorisation (carte), gestion des paiements par virement en attente de confirmation manuelle (FS-V09), traitement des confirmations et refus, déclenchement des remboursements, journalisation
+| FS-B07, FS-P01, FS-P02, FS-P03, FS-V09
+
+| *Service Expédition*
+| Application
+| Déclaration d'expédition avec saisie obligatoire du numéro de suivi récupéré lors du dépôt physique, enregistrement et exposition du numéro de suivi à l'acheteur, gestion des retours de colis (état `en_attente_retour`)
+| FS-V05, FS-C01, FS-B08
+
+| *Service Notification*
+| Application
+| Émission de toutes les notifications sortantes (email d'activation, confirmations, alertes)
+| FS-B01 (token), FS-B10 (activation), notifications liées à FS-V04, FS-P02, FS-V05
+
+| *Service Rapport*
+| Application
+| Agrégation des données de ventes, génération des rapports et statistiques
+| FS-V07
+
+| *Adaptateur Paiement*
+| Intégration externe
+| Encapsulation du protocole IFS-04 — traduction des appels internes vers l'API du prestataire de paiement et des webhooks entrants
+| FS-P01, FS-P02, FS-P03
+
+| *Adaptateur Messagerie*
+| Intégration externe
+| Encapsulation du protocole IFS-06 — envoi des emails via le service de messagerie externe
+| FS-B01, toutes notifications
+
+| *Référentiel de données*
+| Infrastructure
+| Persistance de toutes les entités métier (comptes, produits avec stock, paniers, commandes, paiements, expéditions, réclamations)
+| Support de toutes les FS
+|===
+
+== Diagramme de composants logiques
+
+Ce diagramme représente l'architecture logique complète du système, les cinq couches, les composants et leurs interfaces logiques (IFL).
+
+[plantuml, la-components, svg]
+----
+skinparam componentBackgroundColor #FEFEFE
+skinparam componentBorderColor #2E75B6
+skinparam arrowColor #2E75B6
+skinparam noteBackgroundColor #FFFBE6
+skinparam noteBorderColor #F0A500
+skinparam packageBackgroundColor #F0F8FF
+skinparam packageBorderColor #AAAAAA
+skinparam defaultFontSize 10
+
+actor "Acheteur" as Buyer
+actor "Vendeur" as Vendor
+actor "Administrateur" as Admin
+
+package "Couche Présentation" {
+  [Portail Acheteur\n(IFS-01 — responsive)] as UI_Buyer
+  [Back-office Vendeur\n(IFS-02)] as UI_Vendor
+  [Console Admin\n(IFS-03)] as UI_Admin
+}
+
+package "Couche Application" {
+  [Service Compte] as SvcAccount
+  [Service Catalogue] as SvcCatalog
+  [Service Panier] as SvcCart
+  [Service Commande] as SvcOrder
+  [Service Paiement] as SvcPayment
+  [Service Expédition] as SvcShipping
+  [Service Notification] as SvcNotif
+  [Service Rapport] as SvcReport
+}
+
+package "Couche Intégrations externes" {
+  [Adaptateur Paiement\n(IFS-04)] as AdpPayment
+  [Adaptateur Messagerie\n(IFS-06)] as AdpMail
+}
+
+package "Couche Infrastructure" {
+  database "Référentiel\nde données" as DB
+}
+
+component "Prestataire\nde paiement" as ExtPayment #D5E8F0
+component "Service de\nmessagerie" as ExtMail #D5E8F0
+note "IFS-05 : lien site transporteur\nconsulté par l'acheteur (hors API)" as NCarrier
+
+Buyer --> UI_Buyer : IFS-01
+Vendor --> UI_Vendor : IFS-02
+Admin --> UI_Admin : IFS-03
+
+UI_Buyer --> SvcAccount : IFL-01
+UI_Buyer --> SvcCatalog : IFL-02
+UI_Buyer --> SvcCart : IFL-03
+UI_Buyer --> SvcOrder : IFL-04
+UI_Buyer --> SvcShipping : IFL-05
+
+UI_Vendor --> SvcAccount : IFL-01
+UI_Vendor --> SvcCatalog : IFL-02
+UI_Vendor --> SvcCatalog : IFL-06
+UI_Vendor --> SvcOrder : IFL-04
+UI_Vendor --> SvcShipping : IFL-05
+UI_Vendor --> SvcReport : IFL-07
+
+UI_Admin --> SvcAccount : IFL-01
+
+SvcOrder --> SvcPayment : IFL-08
+SvcOrder --> SvcCatalog : IFL-06
+SvcOrder --> SvcShipping : IFL-05
+SvcOrder --> SvcNotif : IFL-09
+SvcAccount --> SvcNotif : IFL-09
+SvcPayment --> SvcNotif : IFL-09
+SvcShipping --> SvcNotif : IFL-09
+
+SvcPayment --> AdpPayment : IFL-10
+SvcNotif --> AdpMail : IFL-12
+
+AdpPayment --> ExtPayment : IFS-04\nREST/HTTPS
+ExtPayment --> AdpPayment : webhook
+AdpMail --> ExtMail : IFS-06\nSMTP / API
+
+SvcAccount --> DB : IFL-13
+SvcCatalog --> DB : IFL-13
+SvcCart --> DB : IFL-13
+SvcOrder --> DB : IFL-13
+SvcPayment --> DB : IFL-13
+SvcShipping --> DB : IFL-13
+SvcReport --> DB : IFL-13
+----
+
+== Interfaces logiques (IFL)
+
+Les interfaces logiques définissent les contrats d'échange entre composants, indépendamment du protocole technique retenu en PA.
+
+[cols="1,1,1,2,1", options="header"]
+|===
+| Identifiant | Émetteur | Récepteur | Données / opérations | FS SA couvertes
+
+| *IFL-01*
+| Portails (UI)
+| Service Compte
+| Inscription, activation token, authentification, mise à jour profil, gestion rôles, gestion transporteurs
+| FS-B01, FS-B02, FS-B10, FS-A01..A03
+
+| *IFL-02*
+| Portails (UI)
+| Service Catalogue
+| Lister produits, rechercher, filtrer, CRUD produits et catégories
+| FS-B03, FS-V02
+
+| *IFL-03*
+| Portail Acheteur
+| Service Panier
+| Ajouter / modifier / supprimer une ligne, obtenir le panier courant, restaurer le panier sauvegardé
+| FS-B04, FS-B05
+
+| *IFL-04*
+| Portails (UI)
+| Service Commande
+| Créer une commande, lister les commandes, mettre à jour le statut, demander une annulation (avec flag `condition_renvoi` pour les annulations post-expédition), confirmer retour reçu
+| FS-B06, FS-B09, FS-V04, FS-V08
+
+| *IFL-05*
+| Portails (UI) / Service Commande
+| Service Expédition
+| Déclarer une expédition (avec `tracking_number` obligatoire saisi par le vendeur depuis le reçu de dépôt), obtenir le numéro de suivi et l'URL du site transporteur, confirmer la réception d'un retour
+| FS-V05, FS-C01, FS-B08
+
+| *IFL-06*
+| Service Commande / Portail Vendeur
+| Service Catalogue
+| Réserver du stock, libérer du stock, interroger les niveaux, déclencher une alerte rupture
+| FS-V03
+
+| *IFL-07*
+| Back-office Vendeur
+| Service Rapport
+| Obtenir les agrégats de ventes, l'historique, les statistiques produits
+| FS-V07
+
+| *IFL-08*
+| Service Commande
+| Service Paiement
+| Demander une autorisation (carte), enregistrer un virement en attente, confirmer la réception d'un virement (FS-V09), demander un remboursement, interroger le statut d'un paiement
+| FS-P01, FS-P02, FS-P03, FS-V09
+
+| *IFL-09*
+| Services (Commande, Compte, Paiement, Expédition)
+| Service Notification
+| Émettre une notification (type, destinataire, données variables)
+| Toutes notifications
+
+| *IFL-10*
+| Service Paiement
+| Adaptateur Paiement
+| Autoriser transaction, rembourser, interroger statut — traduit vers IFS-04
+| FS-P01, FS-P02, FS-P03
+
+| *IFL-12*
+| Service Notification
+| Adaptateur Messagerie
+| Envoyer un email (destinataire, template, variables) — traduit vers IFS-06
+| FS-B01, toutes notifications email
+
+| *IFL-13*
+| Services applicatifs
+| Référentiel de données
+| CRUD sur toutes les entités du modèle de données logique (SA §5)
+| Support de toutes les FS
+|===
+
+== Diagramme de séquence logique — Inscription et activation de compte
+
+Ce diagramme illustre les interactions entre composants logiques lors du flux d'inscription et d'activation de compte acheteur (UCSA-01).
+
+[plantuml, la-seq-inscription, svg]
+----
+skinparam sequenceArrowColor #2E75B6
+skinparam sequenceParticipantBackgroundColor #E8F4FD
+skinparam sequenceParticipantBorderColor #2E75B6
+skinparam sequenceLifeLineBorderColor #2E75B6
+skinparam noteBorderColor #F0A500
+skinparam noteBackgroundColor #FFFBE6
+
+actor Acheteur as Buyer
+participant "Portail\nAcheteur" as UI
+participant "Service\nCompte" as SvcAccount
+participant "Service\nNotification" as SvcNotif
+participant "Adaptateur\nMessagerie" as AdpMail
+participant "Référentiel\nde données" as DB
+participant "Service de\nmessagerie" as ExtMail #D5E8F0
+
+Buyer -> UI : Soumettre le formulaire d'inscription
+UI -> SvcAccount : IFL-01 — creerCompte(email, mdpHashé, profil)
+SvcAccount -> DB : IFL-13 — INSERT compte {statut: en_attente}
+SvcAccount -> SvcAccount : Générer token UUID + expiration 24h (CS-07)
+SvcAccount -> DB : IFL-13 — INSERT token_activation {uuid, compte_id, expireAt}
+SvcAccount -> SvcNotif : IFL-09 — notifier(ACTIVATION_EMAIL, email, {token})
+SvcNotif -> AdpMail : IFL-12 — envoyerEmail(destinataire, template:activation, {lienToken})
+AdpMail -> ExtMail : IFS-06 — SMTP / API POST
+ExtMail --> Buyer : Email — lien d'activation
+
+SvcAccount --> UI : 201 Created — compte en attente d'activation
+UI --> Buyer : "Vérifiez votre boîte mail"
+
+== Activation ==
+Buyer -> UI : GET /activate?token={uuid}
+UI -> SvcAccount : IFL-01 — activerCompte(token)
+SvcAccount -> DB : IFL-13 — SELECT token WHERE uuid = {uuid}
+
+alt Token valide et non expiré
+  SvcAccount -> DB : IFL-13 — UPDATE compte {statut: actif}
+  SvcAccount -> DB : IFL-13 — DELETE token_activation
+  SvcAccount --> UI : 200 OK
+  UI --> Buyer : Compte activé — redirection connexion
+else Token expiré
+  SvcAccount --> UI : 410 Gone — token expiré
+  UI --> Buyer : Proposer le renvoi du lien
+else Token déjà utilisé
+  SvcAccount --> UI : 409 Conflict — compte déjà activé
+  UI --> Buyer : "Votre compte est déjà actif"
+end
+----
+
+== Diagramme de séquence logique — Tunnel d'achat et paiement
+
+Ce diagramme illustre les interactions entre composants logiques lors de la passation d'une commande (UCSA-05).
+
+[plantuml, la-seq-commande, svg]
+----
+skinparam sequenceArrowColor #2E75B6
+skinparam sequenceParticipantBackgroundColor #E8F4FD
+skinparam sequenceParticipantBorderColor #2E75B6
+skinparam sequenceLifeLineBorderColor #2E75B6
+skinparam noteBorderColor #F0A500
+skinparam noteBackgroundColor #FFFBE6
+
+actor Acheteur as Buyer
+participant "Portail\nAcheteur" as UI
+participant "Service\nPanier" as SvcCart
+participant "Service\nCommande" as SvcOrder
+participant "Service\nCatalogue" as SvcCatalog
+participant "Service\nPaiement" as SvcPayment
+participant "Service\nNotification" as SvcNotif
+participant "Adaptateur\nPaiement" as AdpPayment
+participant "Référentiel\nde données" as DB
+participant "Prestataire\nde paiement" as ExtPayment #D5E8F0
+
+Buyer -> UI : Valider le panier
+UI -> SvcCart : IFL-03 — getPanier(acheteur_id)
+SvcCart -> DB : IFL-13 — SELECT lignes panier
+SvcCart --> UI : Lignes panier + montants
+
+Buyer -> UI : Soumettre commande (adresse UE, mode livraison, mode paiement)
+note right : CS-04 — adresse validée côté UI\nCS-02 — mode ∈ {carte, virement}
+
+UI -> SvcOrder : IFL-04 — creerCommande(panier_id, adresse, modeLivraison, modePaiement)
+SvcOrder -> SvcCatalog : IFL-06 — verifierStock(lignes[])
+SvcCatalog -> DB : IFL-13 — SELECT stock WHERE produit_id IN (...)
+SvcCatalog --> SvcOrder : Stock disponible
+
+alt Paiement par carte
+  SvcOrder -> SvcPayment : IFL-08 — demanderAutorisation(montant, mode:carte, références)
+  SvcPayment -> AdpPayment : IFL-10 — autoriser(montant, mode, données)
+  AdpPayment -> ExtPayment : IFS-04 — POST /authorize
+
+  alt Paiement autorisé
+    ExtPayment --> AdpPayment : 200 OK {transaction_id}
+    AdpPayment --> SvcPayment : autorisation confirmée
+    SvcPayment -> DB : IFL-13 — INSERT paiement {statut: autorisé, CS-06}
+    SvcPayment --> SvcOrder : paiement autorisé
+
+    SvcOrder -> SvcCatalog : IFL-06 — reserverStock(lignes[])
+    SvcOrder -> DB : IFL-13 — INSERT commande {statut: en_attente}
+    SvcOrder -> SvcNotif : IFL-09 — notifier(COMMANDE_CONFIRMEE, acheteur)
+    SvcOrder -> SvcNotif : IFL-09 — notifier(NOUVELLE_COMMANDE, vendeur)
+    SvcOrder --> UI : 201 Created {commande_id}
+    UI --> Buyer : Confirmation de commande
+
+  else Paiement refusé
+    ExtPayment --> AdpPayment : 402 {raison}
+    AdpPayment --> SvcPayment : autorisation refusée
+    SvcPayment -> DB : IFL-13 — INSERT paiement {statut: refusé, CS-06}
+    SvcPayment --> SvcOrder : paiement refusé
+    SvcOrder --> UI : 402 Payment Required
+    UI --> Buyer : Échec paiement — réessayer
+  end
+
+else Paiement par virement (FS-V09)
+  SvcOrder -> SvcPayment : IFL-08 — enregistrerVirementEnAttente(montant, mode:virement)
+  SvcPayment -> DB : IFL-13 — INSERT paiement {statut: en_attente_virement, CS-06}
+  SvcPayment --> SvcOrder : virement enregistré en attente
+  SvcOrder -> SvcCatalog : IFL-06 — preReserverStock(lignes[])
+  SvcOrder -> DB : IFL-13 — INSERT commande {statut: paiement_en_attente_virement}
+  SvcOrder -> SvcNotif : IFL-09 — notifier(VIREMENT_EN_ATTENTE, acheteur, {coordonnées_bancaires})
+  SvcOrder -> SvcNotif : IFL-09 — notifier(VIREMENT_EN_ATTENTE, vendeur, {commande_id})
+  SvcOrder --> UI : 201 Created {commande_id, statut: paiement_en_attente_virement}
+  UI --> Buyer : Commande créée — effectuer le virement
+
+  note right of SvcPayment
+    Attente confirmation manuelle du vendeur
+    Endpoint : POST /commandes/{id}/confirmer-virement
+  end note
+
+  == Confirmation du virement par le vendeur (UCSA-13) ==
+  actor Vendeur as Vendor2
+  Vendor2 -> UI : Confirmer réception du virement
+  UI -> SvcPayment : IFL-08 — confirmerVirement(commande_id)
+  SvcPayment -> DB : IFL-13 — UPDATE paiement {statut: autorisé}
+  SvcPayment -> SvcOrder : IFL-08 — virementConfirmé(commande_id)
+  SvcOrder -> DB : IFL-13 — UPDATE commande {statut: en_attente}
+  SvcOrder -> SvcNotif : IFL-09 — notifier(COMMANDE_CONFIRMEE, acheteur)
+  SvcOrder -> SvcNotif : IFL-09 — notifier(NOUVELLE_COMMANDE, vendeur)
+end
+----
+
+== Diagramme de séquence logique — Expédition et suivi
+
+Ce diagramme illustre les interactions entre composants logiques lors de l'expédition d'une commande et du suivi de livraison (UCSA-07 / UCSA-08).
+
+[plantuml, la-seq-expedition, svg]
+----
+skinparam sequenceArrowColor #2E75B6
+skinparam sequenceParticipantBackgroundColor #E8F4FD
+skinparam sequenceParticipantBorderColor #2E75B6
+skinparam sequenceLifeLineBorderColor #2E75B6
+skinparam noteBorderColor #F0A500
+skinparam noteBackgroundColor #FFFBE6
+
+actor Vendeur as Vendor
+actor Acheteur as Buyer
+participant "Back-office\nVendeur" as UI_V
+participant "Portail\nAcheteur" as UI_B
+participant "Service\nCommande" as SvcOrder
+participant "Service\nExpédition" as SvcShipping
+participant "Service\nNotification" as SvcNotif
+participant "Adaptateur\nMessagerie" as AdpMail
+participant "Référentiel\nde données" as DB
+
+note over Vendor : Le vendeur a déposé le colis\nauprès du transporteur (hors système)\net récupéré le numéro de suivi sur le reçu
+
+Vendor -> UI_V : Déclarer expédition (commande_id, transporteur_id, tracking_number)
+UI_V -> SvcOrder : IFL-04 — mettreAJourStatut(commande_id, EN_PREPARATION)
+SvcOrder -> DB : IFL-13 — UPDATE commande {statut: en_préparation}
+
+UI_V -> SvcShipping : IFL-05 — declarerExpedition(commande_id, transporteur_id, tracking_number)
+SvcShipping -> DB : IFL-13 — INSERT expédition {tracking_number, statut: expédiée}
+SvcShipping -> SvcOrder : IFL-04 — mettreAJourStatut(commande_id, EXPEDIEE)
+SvcShipping -> SvcNotif : IFL-09 — notifier(EXPEDIEE, acheteur, {tracking_number, url_suivi})
+SvcNotif -> AdpMail : IFL-12 — envoyerEmail(acheteur, template:expedition, {tracking_number, url_suivi})
+SvcShipping --> UI_V : 200 OK — expédition enregistrée {tracking_number}
+
+== Consultation du suivi (UCSA-08) ==
+Buyer -> UI_B : Consulter le suivi de ma commande
+UI_B -> SvcShipping : IFL-05 — getSuivi(commande_id)
+SvcShipping -> DB : IFL-13 — SELECT expédition WHERE commande_id
+SvcShipping --> UI_B : {tracking_number, url_suivi_transporteur}
+UI_B --> Buyer : Affichage du numéro de suivi\net lien vers le site du transporteur (CS-05)
+----
+
+== Diagramme d'états — Cycle de vie d'une commande
+
+Ce diagramme représente les états possibles d'une commande et les transitions déclenchées par les composants logiques.
+
+[plantuml, la-states-commande, svg]
+----
+skinparam stateBorderColor #2E75B6
+skinparam stateBackgroundColor #E8F4FD
+skinparam arrowColor #2E75B6
+skinparam noteBackgroundColor #FFFBE6
+skinparam noteBorderColor #F0A500
+
+[*] --> Paiement_en_attente_virement : SvcOrder.creerCommande()\n[mode = virement]
+[*] --> En_attente : SvcOrder.creerCommande()\n[paiement carte autorisé]
+
+Paiement_en_attente_virement --> En_attente : SvcPayment.confirmerVirement()\n[Vendeur confirme réception des fonds]
+Paiement_en_attente_virement --> Annulee : SvcOrder.rejeterVirement()\n[Vendeur rejette — fonds non reçus]
+
+En_attente --> En_preparation : SvcOrder.mettreAJourStatut()\n[Vendeur prend en charge]
+
+En_preparation --> Expediee : SvcShipping.declarerExpedition()\n[colis remis au transporteur + numéro de suivi saisi]
+
+Expediee --> Livree : SvcOrder.confirmerReception()\n[acheteur confirme la réception]
+
+Livree --> [*]
+
+En_attente --> Annulee : SvcOrder.annuler()\n[acheteur demande + vendeur accepte\navant expédition]
+En_preparation --> Annulee : SvcOrder.annuler()\n[acheteur demande + vendeur accepte\navant expédition]
+
+Expediee --> En_attente_retour : SvcOrder.annuler()\n[vendeur accepte avec condition_renvoi]
+Expediee --> Annulee : SvcOrder.annuler()\n[vendeur accepte sans condition_renvoi]
+
+En_attente_retour --> Annulee : SvcShipping.confirmerRetour()\n[vendeur confirme réception du colis retourné]
+
+Annulee --> [*] : SvcPayment.rembourser()
+
+note right of Paiement_en_attente_virement
+  Stock pré-réservé
+  Vendeur doit confirmer
+  la réception du virement (FS-V09)
+end note
+
+note right of En_preparation
+  Numéro de suivi saisi
+  obligatoirement par le vendeur
+  lors de la déclaration d'expédition
+end note
+
+note right of En_attente_retour
+  Annulation post-expédition avec renvoi :
+  l'acheteur doit renvoyer le colis
+  avant que le remboursement soit déclenché
+end note
+
+note right of Expediee
+  Numéro de suivi exposé à l'acheteur
+  via lien site transporteur (IFS-05)
+end note
+----
+
+== Diagramme d'états — Cycle de vie d'un compte acheteur
+
+[plantuml, la-states-compte, svg]
+----
+skinparam stateBorderColor #2E75B6
+skinparam stateBackgroundColor #E8F4FD
+skinparam arrowColor #2E75B6
+skinparam noteBackgroundColor #FFFBE6
+skinparam noteBorderColor #F0A500
+
+[*] --> En_attente_activation : SvcAccount.creerCompte()\n+ envoi email token (CS-07)
+
+En_attente_activation --> Actif : SvcAccount.activerCompte(token)\n[token valide, non expiré]
+
+En_attente_activation --> En_attente_activation : SvcAccount.renvoyerToken()\n[token expiré — nouveau token généré]
+
+Actif --> Suspendu : SvcAccount.suspendre()\n[Admin]
+
+Suspendu --> Actif : SvcAccount.reactiver()\n[Admin]
+
+Suspendu --> Supprime : SvcAccount.supprimer()\n[Admin]
+
+Actif --> Supprime : SvcAccount.supprimer()\n[Admin]
+
+Supprime --> [*]
+
+note right of En_attente_activation
+  Token UUID à usage unique
+  TTL : 24 h (CS-07)
+end note
+----
+
+== Modèle de données logique — Compléments LA
+
+La SA a défini les entités métier. La LA précise les entités techniques nécessaires au fonctionnement des composants logiques.
+
+[plantuml, la-classes, svg]
+----
+skinparam classBackgroundColor #FEFEFE
+skinparam classBorderColor #2E75B6
+skinparam arrowColor #2E75B6
+skinparam noteBackgroundColor #FFFBE6
+skinparam noteBorderColor #F0A500
+
+package "Entités métier (SA)" #F0F8FF {
+
+  class CompteUtilisateur {
+    + id : UUID
+    + email : String
+    + motDePasseHaché : String
+    + rôle : Enum {admin, vendeur, acheteur}
+    + statut : Enum {en_attente, actif, suspendu, supprimé}
+    + dateCreation : DateTime
+  }
+
+  class Produit {
+    + id : UUID
+    + nom : String
+    + description : Text
+    + prixHT : Decimal
+    + photos : List<URL>
+    + catégorie : String
+    + statut : Enum {publié, archivé}
+    + quantitéDisponible : Integer
+    + seuilAlerte : Integer
+  }
+
+  class Panier {
+    + id : UUID
+    + dateMiseAJour : DateTime
+  }
+
+  class LignePanier {
+    + quantité : Integer
+    + prixUnitaireCapturé : Decimal
+  }
+
+  class Commande {
+    + id : UUID
+    + adresseLivraison : Adresse
+    + modeLivraison : String
+    + montantTotal : Decimal
+    + statut : Enum {paiement_en_attente_virement,\nen_attente, en_préparation,\nexpédiée, en_attente_retour,\nlivrée, annulée}
+    + dateCommande : DateTime
+  }
+
+  class LigneCommande {
+    + quantité : Integer
+    + prixUnitaireCapturé : Decimal
+  }
+
+  class Paiement {
+    + id : UUID
+    + montant : Decimal
+    + mode : Enum {carte, virement}
+    + statut : Enum {en_attente_virement,\nautorisé, refusé, remboursé}
+    + référencePrestataire : String
+    + date : DateTime
+  }
+
+  class Expédition {
+    + id : UUID
+    + numéroSuivi : String
+    + statutLivraison : String
+    + dateExpédition : DateTime
+    + dateLivraisonEstimée : Date
+  }
+
+  class Transporteur {
+    + id : UUID
+    + nom : String
+    + paysSupportés : List<CodeISO>
+    + urlSuivi : URL
+    + actif : Boolean
+  }
+
+  class Réclamation {
+    + id : UUID
+    + motif : String
+    + statut : Enum {ouverte, résolue, clôturée}
+    + dateOuverture : DateTime
+  }
+}
+
+package "Entités techniques (LA)" #FFF8E8 {
+
+  class TokenActivation {
+    + id : UUID
+    + compteId : UUID
+    + token : UUID
+    + expireAt : DateTime
+    + utilisé : Boolean
+  }
+
+  class JournalPaiement {
+    + id : UUID
+    + paiementId : UUID
+    + événement : String
+    + données : JSON
+    + timestamp : DateTime
+  }
+
+  class TemplateNotification {
+    + id : UUID
+    + code : String
+    + canal : Enum {email, sms}
+    + sujet : String
+    + corps : Text
+  }
+}
+
+CompteUtilisateur "1" --> "0..*" TokenActivation : génère
+CompteUtilisateur "1" --> "0..1" Panier : possède
+CompteUtilisateur "1" --> "0..*" Commande : passe
+Panier "1" *-- "0..*" LignePanier : contient
+LignePanier "0..*" --> "1" Produit : référence
+Commande "1" *-- "1..*" LigneCommande : contient
+LigneCommande "0..*" --> "1" Produit : référence
+Commande "1" *-- "1" Paiement : réglée par
+Commande "1" *-- "0..1" Expédition : donne lieu à
+Commande "1" --> "0..*" Réclamation : fait l'objet de
+Expédition "0..*" --> "1" Transporteur : acheminée par
+Paiement "1" *-- "0..*" JournalPaiement : journalisé par
+
+note bottom of TokenActivation
+  CS-07 : TTL 24h
+  usage unique (utilisé = true après activation)
+end note
+
+note bottom of JournalPaiement
+  CS-06 : toutes les transactions
+  financières sont journalisées
+end note
+----
+
+== Matrice de traçabilité SA → LA
+
+[cols="1,2,2,1", options="header"]
+|===
+| Fonction SA | Description | Composant(s) LA | Interface(s) LA
+
+| FS-A01 | Gérer les comptes utilisateurs | Service Compte | IFL-01, IFL-13
+| FS-A02 | Gérer les rôles et droits d'accès | Service Compte | IFL-01, IFL-13
+| FS-A03 | Gérer les transporteurs | Service Compte, Référentiel | IFL-01, IFL-13
+| FS-B01 | Inscription + envoi email d'activation | Service Compte, Service Notification, Adaptateur Messagerie | IFL-01, IFL-09, IFL-12
+| FS-B02 | Mise à jour du profil acheteur | Service Compte | IFL-01, IFL-13
+| FS-B03 | Afficher et filtrer le catalogue | Service Catalogue | IFL-02, IFL-13
+| FS-B04 | Gérer le panier | Service Panier | IFL-03, IFL-13
+| FS-B05 | Persister et restaurer le panier (CS-03) | Service Panier, Référentiel | IFL-03, IFL-13
+| FS-B06 | Orchestrer le tunnel d'achat | Service Commande | IFL-04, IFL-06, IFL-08
+| FS-B07 | Soumettre le paiement (CS-02) | Service Paiement, Adaptateur Paiement | IFL-08, IFL-10
+| FS-B08 | Afficher le suivi de livraison | Service Expédition | IFL-05, IFL-13
+| FS-B09 | Annuler une commande | Service Commande | IFL-04, IFL-08
+| FS-B10 | Activer le compte via token (CS-07) | Service Compte | IFL-01, IFL-13
+| FS-V02 | Gérer le catalogue produits | Service Catalogue | IFL-02, IFL-13
+| FS-V03 | Gérer les stocks et alertes | Service Catalogue | IFL-06, IFL-09, IFL-13
+| FS-V04 | Traiter les commandes reçues | Service Commande | IFL-04, IFL-09, IFL-13
+| FS-V05 | Déclarer l'expédition avec saisie du numéro de suivi | Service Expédition | IFL-05, IFL-09, IFL-13
+| FS-V06 | Traiter les litiges et réclamations | Service Commande, Service Paiement | IFL-04, IFL-08
+| FS-V07 | Consulter les rapports de ventes | Service Rapport | IFL-07, IFL-13
+| FS-V08 | Traiter les annulations (avant/après expédition, avec/sans renvoi) | Service Commande | IFL-04, IFL-08
+| FS-V09 | Confirmer la réception d'un virement bancaire | Service Paiement, Service Commande | IFL-08, IFL-13
+| FS-P01 | Demander une autorisation de paiement | Service Paiement, Adaptateur Paiement | IFL-08, IFL-10
+| FS-P02 | Confirmer / refuser la transaction (CS-06) | Service Paiement, Référentiel | IFL-08, IFL-09, IFL-13
+| FS-P03 | Déclencher un remboursement | Service Paiement, Adaptateur Paiement | IFL-08, IFL-10
+| FS-C01 | Afficher le numéro de suivi et l'URL du site transporteur à l'acheteur | Service Expédition | IFL-05, IFL-13
+|===

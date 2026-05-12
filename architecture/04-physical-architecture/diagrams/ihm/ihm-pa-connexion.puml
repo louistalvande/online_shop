@@ -1,0 +1,19 @@
+@startsalt
+' Composant PA : front-acheteur (Portail Acheteur)
+' Fonctions allouées : Service Compte — FS-B01 (authentification)
+title Portail Acheteur — Connexion
+
+{+
+  == Se connecter
+  Email          | "                    "
+  Mot de passe   | "                    "
+  --
+  [ ] Se souvenir de moi
+  --
+  [Se connecter]
+  --
+  [Mot de passe oublié ?]
+  ==
+  Pas encore de compte ? [S'inscrire]
+}
+@endsalt

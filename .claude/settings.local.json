@@ -1,7 +1,8 @@
 {
   "permissions": {
     "allow": [
-      "Bash(asciidoctor-pdf -r asciidoctor-diagram \"architecture/architecture.adoc\" -o \"architecture/architecture.pdf\")"
+      "Bash(asciidoctor-pdf -r asciidoctor-diagram \"architecture/architecture.adoc\" -o \"architecture/architecture.pdf\")",
+      "PowerShell(Get-ChildItem \"c:\\\\Users\\\\mltal\\\\Documents\\\\Travail_Louis\\\\online_shop\\\\architecture\" -Recurse | Where-Object { !$_.PSIsContainer } | Select-Object -ExpandProperty FullName | ForEach-Object { $_.Replace\\(\"c:\\\\Users\\\\mltal\\\\Documents\\\\Travail_Louis\\\\online_shop\\\\architecture\\\\\", \"\"\\) })"
     ]
   }
 }

@@ -1,0 +1,33 @@
+@startsalt
+' Composant PA : front-acheteur (Portail Acheteur)
+' Fonctions allouées : Service Catalogue — FS-B03 ; Service Panier — FS-B04
+title Portail Acheteur — Détail produit
+
+{+
+  {/ Accueil | Catalogue | Mon panier (1) | Mon compte }
+  ==
+  Catalogue > Sport > Chaussures sport
+  ==
+  {
+    [ Photo ]
+    [ Photo ]
+  } |
+  {
+    **Chaussures sport**
+    Catégorie : Sport
+    --
+    Prix HT : **49,90 €**
+    Prix TTC : 59,88 €
+    --
+    Disponibilité : En stock (12 unités)
+    --
+    Quantité : [-] "1" [+]
+    --
+    [Ajouter au panier]
+  }
+  ==
+  Description
+  Chaussure de sport légère et respirante, idéale pour
+  la course à pied et les activités en salle.
+}
+@endsalt

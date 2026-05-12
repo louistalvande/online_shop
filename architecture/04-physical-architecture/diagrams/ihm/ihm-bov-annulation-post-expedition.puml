@@ -1,0 +1,29 @@
+@startsalt
+' Composant PA : front-vendeur (Back-office Vendeur)
+' Fonctions allouées : Service Commande — FS-V08
+' Couvre : annulation après expédition avec ou sans condition de renvoi
+title Back-office Vendeur — Annulation après expédition
+
+{+
+  == Demande d'annulation — Commande #CMD-2025-0039
+  Acheteur : Bernard Claire — Expédiée le 12/01/2025
+  Motif déclaré : Article non conforme à la description
+  ==
+  Choisissez le traitement de cette demande :
+  --
+  (X) Accepter avec condition de renvoi
+      L'acheteur doit renvoyer le colis.
+      Le remboursement sera déclenché à réception du retour.
+      La commande passe en état « En attente retour ».
+  --
+  ( ) Accepter sans condition de renvoi
+      Remboursement immédiat sans retour du colis.
+      La commande passe directement en état « Annulée ».
+  --
+  ( ) Refuser la demande
+      La commande reste dans son état actuel.
+      L'acheteur sera notifié du refus.
+  --
+  [Annuler]   [Valider la décision]
+}
+@endsalt

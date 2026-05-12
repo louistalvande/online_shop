@@ -1,0 +1,795 @@
+= Architecture Physique (PA — Physical Architecture)
+:doctype: article
+:toc: left
+:toclevels: 3
+:sectnums:
+:icons: font
+:source-highlighter: rouge
+:imagesdir: architecture/04-physical-architecture/diagrams
+
+== Contexte et objectif
+
+L'Architecture Physique (PA) répond à la question : *quelles technologies et quelle infrastructure concrète implémentent l'architecture logique ?* Elle mappe chaque composant logique de la LA sur un composant physique réel — module de code, conteneur, service cloud — et définit les contraintes de déploiement, de sécurité et de scalabilité.
+
+La PA s'appuie directement sur la LA : les composants logiques identifiés sont affectés à des nœuds de déploiement et des technologies choisies. Les interfaces logiques (IFL) se traduisent ici en protocoles et APIs concrètes.
+
+NOTE: Les choix technologiques retenus ci-dessous sont des recommandations architecturales. Ils peuvent être substitués par des équivalents fonctionnels sans remettre en cause les frontières logiques définies en LA.
+
+== Contraintes physiques (CPA)
+
+Les contraintes physiques complètent les contraintes système (CS) en ajoutant les exigences d'infrastructure et de déploiement.
+
+[cols="1,1,3", options="header"]
+|===
+| Identifiant | Contrainte physique | Description
+
+| CPA-01
+| Déploiement conteneurisé
+| Chaque composant déployable est encapsulé dans un conteneur Docker. L'orchestration locale utilise Docker Compose (développement) et Kubernetes (production).
+
+| CPA-02
+| HTTPS obligatoire
+| Toutes les communications réseau utilisent TLS 1.2 minimum. La terminaison TLS est assurée par le reverse proxy (Nginx).
+
+| CPA-03
+| Transactions ACID
+| La base de données relationnelle (PostgreSQL) garantit l'intégrité des opérations critiques — commandes, paiements, réservations de stock.
+
+| CPA-04
+| Cache distribué pour les sessions
+| La persistance du panier (CS-03) et la gestion des sessions utilisateur sont déportées dans Redis, indépendamment du serveur d'application (scalabilité horizontale possible).
+
+| CPA-05
+| Serveur d'application stateless
+| Le serveur d'application ne stocke aucun état en mémoire locale. Tout l'état métier est externalisé dans PostgreSQL ou Redis.
+
+| CPA-06
+| Environnements séparés
+| Trois environnements distincts : développement (local Docker Compose), staging (pré-production), production.
+
+| CPA-07
+| Journalisation des transactions financières
+| Toutes les transactions (paiement, remboursement) sont journalisées en base avec horodatage, montant, statut et référence prestataire — issu de CS-06.
+|===
+
+== Pile technologique retenue
+
+=== Présentation
+
+[cols="2,2,3", options="header"]
+|===
+| Composant logique (LA) | Technologie PA | Détails
+
+| Portail Acheteur
+| React 18 — TypeScript — Vite
+| SPA responsive (CS-01), servie par Nginx ; routes client-side, appels vers l'API REST
+
+| Back-office Vendeur
+| React 18 — TypeScript — Vite
+| SPA desktop-first, accès HTTPS authentifié par JWT
+
+| Console Administrateur
+| React 18 — TypeScript — Vite
+| SPA desktop, gestion des comptes et transporteurs
+|===
+
+=== Application et domaine
+
+[cols="2,2,3", options="header"]
+|===
+| Composant logique (LA) | Technologie PA | Détails
+
+| Service Compte
+| Module Spring Boot (Java)
+| Authentification JWT (Spring Security), hachage BCrypt, gestion des tokens d'activation (CS-07)
+
+| Service Catalogue
+| Module Spring Boot (Java)
+| CRUD produits et stock, recherche textuelle via Hibernate / PostgreSQL full-text search
+
+| Service Panier
+| Module Spring Boot (Java) + Redis
+| Données de session dans Redis (TTL court, Spring Data Redis) ; sauvegarde persistante via Hibernate (CS-03 / CPA-04)
+
+| Service Commande
+| Module Spring Boot (Java)
+| Orchestration transactionnelle (Spring Data JPA / Hibernate), gestion du cycle de vie des commandes
+
+| Service Paiement
+| Module Spring Boot (Java)
+| Soumission via Stripe Java SDK, réception webhooks signés, journalisation (CS-06 / CPA-07)
+
+| Service Expédition
+| Module Spring Boot (Java)
+| Enregistrement du numéro de suivi saisi par le vendeur, exposition du numéro de suivi et de l'URL du site transporteur à l'acheteur (IFS-05 — lien sortant uniquement)
+
+| Service Notification
+| Module Spring Boot (Java)
+| File d'envoi des emails transactionnels via SendGrid Java SDK
+
+| Service Rapport
+| Module Spring Boot (Java)
+| Requêtes JPQL agrégées, génération de statistiques de ventes
+|===
+
+=== Intégrations externes
+
+[cols="2,2,3", options="header"]
+|===
+| Composant logique (LA) | Technologie PA | Détails
+
+| Adaptateur Paiement
+| Stripe Java SDK
+| Appels sortants REST/HTTPS vers Stripe API ; réception de webhooks signés (IFS-04)
+
+| Adaptateur Messagerie
+| SendGrid Java SDK
+| Envoi d'emails transactionnels via l'API HTTP SendGrid (IFS-06)
+|===
+
+=== Infrastructure
+
+[cols="2,2,3", options="header"]
+|===
+| Composant logique (LA) | Technologie PA | Détails
+
+| Référentiel de données
+| PostgreSQL 16
+| Base de données principale — toutes les entités métier ; migrations gérées via Flyway
+
+| — (cache et sessions)
+| Redis 7
+| Persistance des paniers en session (CS-03 / CPA-04) ; révocation des tokens JWT
+
+| — (reverse proxy)
+| Nginx
+| Terminaison TLS (CPA-02), service des SPA statiques, proxy vers API, rate limiting
+
+| — (conteneurisation)
+| Docker / Docker Compose / Kubernetes
+| Isolation des composants (CPA-01), déploiements reproductibles par environnement (CPA-06)
+|===
+
+== Diagramme de déploiement
+
+Ce diagramme représente la topologie des nœuds physiques et l'allocation des composants logiques aux conteneurs Docker.
+
+[plantuml, pa-deployment, svg]
+----
+skinparam nodeBackgroundColor #FEFEFE
+skinparam nodeBorderColor #2E75B6
+skinparam componentBackgroundColor #E8F4FD
+skinparam componentBorderColor #2E75B6
+skinparam arrowColor #2E75B6
+skinparam noteBackgroundColor #FFFBE6
+skinparam noteBorderColor #F0A500
+skinparam defaultFontSize 10
+skinparam packageBackgroundColor #F0F8FF
+skinparam packageBorderColor #AAAAAA
+
+actor "Acheteur /\nVendeur /\nAdmin" as User
+
+node "Navigateur Web\n(Client)" as Browser {
+  component "SPA React\n(front-acheteur | front-vendeur | front-admin)" as SPA
+}
+
+node "Conteneur Nginx\n(Reverse Proxy — HTTPS / TLS)" as Nginx {
+  component "Terminaison TLS\nService assets statiques\nProxy → API" as NginxComp
+}
+
+node "Conteneur API\n(Spring Boot — Java)" as AppServer {
+  frame "Modules métier" {
+    component "compte | catalogue\npanier | commande | paiement\nexpédition | notification | rapport" as Modules
+  }
+  frame "Adaptateurs" {
+    component "Stripe Java SDK\nSendGrid Java SDK" as Adapters
+  }
+}
+
+node "Conteneur PostgreSQL 16" as DB {
+  component "boutique_db\n(entités métier)" as PgDB
+}
+
+node "Conteneur Redis 7" as Cache {
+  component "Sessions & paniers\n(CS-03 / CPA-04)" as RedisDB
+}
+
+component "Stripe API\n(prestataire paiement)" as Stripe #D5E8F0
+component "SendGrid\n(e-mail — IFS-06)" as SendGrid #D5E8F0
+
+note "IFS-05 : lien vers site transporteur\n(consulté par l'acheteur via son navigateur)" as NCarrier
+
+User --> Browser : HTTPS
+Browser --> Nginx : HTTPS (CPA-02)
+Nginx --> AppServer : HTTP — proxy interne
+AppServer --> DB : TCP 5432 (IFL-13)
+AppServer --> Cache : TCP 6379 (CPA-04)
+Adapters --> Stripe : REST/HTTPS (IFS-04)
+Stripe --> Adapters : webhook HTTPS signé
+Adapters --> SendGrid : HTTPS (IFS-06)
+
+note bottom of AppServer
+  CPA-05 : stateless
+  tout l'état dans PostgreSQL ou Redis
+end note
+----
+
+== Diagramme de composants physiques
+
+Ce diagramme représente les modules de code et leurs dépendances, regroupés par conteneur de déploiement.
+
+[plantuml, pa-components, svg]
+----
+skinparam componentBackgroundColor #FEFEFE
+skinparam componentBorderColor #2E75B6
+skinparam arrowColor #2E75B6
+skinparam packageBackgroundColor #F0F8FF
+skinparam packageBorderColor #AAAAAA
+skinparam databaseBackgroundColor #FFF8E7
+skinparam databaseBorderColor #F0A500
+skinparam defaultFontSize 10
+
+package "Conteneur : Nginx" {
+  [front-acheteur\n(React SPA)] as FrontB
+  [front-vendeur\n(React SPA)] as FrontV
+  [front-admin\n(React SPA)] as FrontA
+}
+
+package "Conteneur : API Spring Boot" {
+  package "Modules métier" {
+    [module-compte] as MCompte
+    [module-catalogue] as MCatalogue
+    [module-panier] as MPanier
+    [module-commande] as MCommande
+    [module-paiement] as MPaiement
+    [module-expedition] as MExpedition
+    [module-notification] as MNotif
+    [module-rapport] as MRapport
+  }
+  package "Adaptateurs externes" {
+    [adaptateur-stripe\n(SDK Stripe)] as AStripe
+    [adaptateur-messagerie\n(SDK SendGrid)] as AMail
+  }
+}
+
+package "Conteneur : PostgreSQL 16" {
+  database "boutique_db" as PgDB
+}
+
+package "Conteneur : Redis 7" {
+  database "cache / sessions" as RedisDB
+}
+
+FrontB --> MCompte : JWT auth
+FrontB --> MCatalogue
+FrontB --> MPanier
+FrontB --> MCommande
+FrontV --> MCatalogue
+FrontV --> MCommande
+FrontV --> MExpedition
+FrontV --> MRapport
+FrontA --> MCompte
+
+MCompte --> MNotif : envoi token activation
+MCommande --> MCatalogue : réservation stock (IFL-06)
+MCommande --> MPaiement : IFL-08
+MCommande --> MExpedition : IFL-05
+MCommande --> MNotif : IFL-09
+MPaiement --> AStripe : IFL-10
+MNotif --> AMail : IFL-12
+
+MPanier --> RedisDB : session (TTL)
+MPanier --> PgDB : persistance longue durée (CS-03)
+MCompte --> PgDB
+MCatalogue --> PgDB
+MCommande --> PgDB
+MPaiement --> PgDB : journalisation (CPA-07)
+MExpedition --> PgDB
+MRapport --> PgDB
+----
+
+== Diagramme de séquence technique — Tunnel d'achat et paiement Stripe
+
+Ce diagramme représente les échanges techniques complets lors de la passation d'une commande, depuis la SPA React jusqu'aux systèmes externes, en faisant apparaître les protocoles, SDK et conventions API concrètes.
+
+[plantuml, pa-sequence-commande, svg]
+----
+skinparam sequenceArrowColor #2E75B6
+skinparam sequenceParticipantBackgroundColor #E8F4FD
+skinparam sequenceParticipantBorderColor #2E75B6
+skinparam sequenceLifeLineBorderColor #2E75B6
+skinparam noteBorderColor #F0A500
+skinparam noteBackgroundColor #FFFBE6
+skinparam defaultFontSize 10
+
+participant "SPA React\n(Nginx)" as SPA
+participant "API Spring Boot\n(module-commande)" as API
+participant "module-paiement\n(Stripe Java SDK)" as PayMod
+participant "module-catalogue\n(+ stock)" as CatalogMod
+participant "module-notification\n(SendGrid Java SDK)" as NotifMod
+participant "PostgreSQL" as PG
+participant "Redis" as Redis
+participant "Stripe API\n(IFS-04)" as Stripe
+participant "SendGrid\n(IFS-06)" as Mail
+
+SPA -> API : POST /orders\n{cart_id, delivery_address, shipping_mode, payment_mode}\nAuthorization: Bearer {JWT}
+note right : HTTPS (CPA-02)\nCS-04 : EU delivery address validated
+
+API -> Redis : GET cart:{customer_id}
+Redis --> API : cart lines
+
+alt Card payment
+  API -> CatalogMod : reserveStock(lines[])
+  CatalogMod -> PG : BEGIN ; UPDATE stock SET qty = qty - n WHERE id = ?
+  PG --> CatalogMod : OK
+  CatalogMod --> API : stock reserved
+
+  API -> PG : INSERT INTO orders {status: pending, ...}
+  PG --> API : order_id
+
+  API -> PayMod : submitPayment(amount, mode:card, order_id)
+  PayMod -> Stripe : POST /v1/payment_intents\n{amount, currency, payment_method, metadata}
+  note right : Stripe Java SDK\nIFS-04
+
+  alt Payment authorized
+    Stripe --> PayMod : 200 OK {payment_intent_id, status: "succeeded"}
+    PayMod -> PG : INSERT INTO payments {status: authorized, stripe_ref, ...}\n(CPA-07 — CS-06)
+    PG --> PayMod : OK
+    PayMod --> API : payment confirmed
+
+    API -> PG : UPDATE orders SET status = pending WHERE id = order_id
+    PG --> API : OK
+
+    API -> NotifMod : notify(customer_id, "order_confirmed", order_id)
+    NotifMod -> Mail : POST /v3/mail/send\n{to, template_id: "order_confirmation", ...}
+    note right : SendGrid Java SDK\nIFS-06
+    Mail --> NotifMod : 202 Accepted
+
+    API -> NotifMod : notify(vendor_id, "new_order", order_id)
+    NotifMod -> Mail : POST /v3/mail/send {to: vendor, ...}
+    Mail --> NotifMod : 202 Accepted
+
+    API --> SPA : 201 Created {order_id, status: "pending"}
+
+  else Payment declined
+    Stripe --> PayMod : 402 {error.code, error.message}
+    PayMod -> PG : INSERT INTO payments {status: declined, ...}
+    PayMod -> CatalogMod : releaseStock(lines[])
+    CatalogMod -> PG : ROLLBACK stock reservation
+    PayMod --> API : payment declined
+    API -> PG : DELETE FROM orders WHERE id = order_id
+    API --> SPA : 402 {reason: error.message}
+  end
+
+else Wire transfer payment (CS-02 / FS-V09)
+  API -> CatalogMod : preReserveStock(lines[])
+  CatalogMod -> PG : BEGIN ; LOCK stock ; SET qty_reserved = qty_reserved + n
+  PG --> CatalogMod : OK
+  CatalogMod --> API : stock pre-reserved
+
+  API -> PG : INSERT INTO orders {status: pending_wire_transfer, ...}
+  PG --> API : order_id
+
+  API -> PayMod : registerPendingTransfer(amount, order_id)
+  PayMod -> PG : INSERT INTO payments {status: pending_wire_transfer, mode: wire, ...}\n(CPA-07 — CS-06)
+  PG --> PayMod : OK
+  PayMod --> API : transfer registered pending
+
+  API -> NotifMod : notify(customer_id, "wire_transfer_pending", {bank_details})
+  NotifMod -> Mail : POST /v3/mail/send {to, template_id: "wire_transfer_pending", ...}
+  Mail --> NotifMod : 202 Accepted
+
+  API -> NotifMod : notify(vendor_id, "wire_transfer_to_confirm", order_id)
+  NotifMod -> Mail : POST /v3/mail/send {to: vendor, template_id: "wire_transfer_to_confirm", ...}
+  Mail --> NotifMod : 202 Accepted
+
+  API --> SPA : 201 Created {order_id, status: "pending_wire_transfer"}
+
+  == Wire transfer confirmation by vendor ==
+  participant "SPA React\n(vendor back-office)" as SPAVendor
+  SPAVendor -> API : POST /orders/{id}/confirm-transfer\nAuthorization: Bearer {JWT vendor}
+
+  API -> PayMod : confirmTransfer(order_id)
+  PayMod -> PG : UPDATE payments SET status = authorized WHERE order_id = ?
+  PG --> PayMod : OK
+  PayMod --> API : transfer confirmed
+
+  API -> PG : UPDATE orders SET status = pending WHERE id = order_id
+  PG --> API : OK
+
+  API -> NotifMod : notify(customer_id, "order_confirmed", order_id)
+  NotifMod -> Mail : POST /v3/mail/send {to, template_id: "order_confirmation", ...}
+  Mail --> NotifMod : 202 Accepted
+
+  API -> NotifMod : notify(vendor_id, "new_order", order_id)
+  NotifMod -> Mail : POST /v3/mail/send {to: vendor, ...}
+  Mail --> NotifMod : 202 Accepted
+
+  API --> SPAVendor : 200 OK {order_id, status: "pending"}
+end
+----
+
+== Diagramme de séquence technique — Expédition et suivi de commande
+
+Ce diagramme représente le flux technique d'expédition d'une commande : le vendeur saisit le numéro de suivi récupéré lors du dépôt physique, le système l'enregistre et notifie l'acheteur qui peut consulter son colis sur le site du transporteur.
+
+[plantuml, pa-sequence-expedition, svg]
+----
+skinparam sequenceArrowColor #2E75B6
+skinparam sequenceParticipantBackgroundColor #E8F4FD
+skinparam sequenceParticipantBorderColor #2E75B6
+skinparam sequenceLifeLineBorderColor #2E75B6
+skinparam noteBorderColor #F0A500
+skinparam noteBackgroundColor #FFFBE6
+skinparam defaultFontSize 10
+
+participant "SPA React\n(vendor back-office)" as SPA
+participant "API Spring Boot\n(module-expedition)" as API
+participant "module-notification\n(SendGrid Java SDK)" as NotifMod
+participant "PostgreSQL" as PG
+participant "SendGrid\n(IFS-06)" as Mail
+
+note over SPA : Vendor has dropped off the parcel at the post office\nand retrieved the tracking number from the receipt
+
+SPA -> API : PUT /orders/{id}/shipment\n{carrier_id, tracking_number}\nAuthorization: Bearer {JWT}
+note right : tracking_number entered from physical receipt\n(FS-V05 / CS-05)
+
+API -> PG : SELECT * FROM orders WHERE id = ? AND status = in_preparation
+PG --> API : order
+
+API -> PG : INSERT INTO shipments {tracking_number, carrier_id, shipment_date, ...}
+API -> PG : UPDATE orders SET status = shipped WHERE id = ?
+PG --> API : OK
+
+API -> NotifMod : notify(customer_id, "order_shipped",\n{tracking_number, carrier_tracking_url})
+NotifMod -> Mail : POST /v3/mail/send\n{to, template_id: "shipment",\ntracking_number, tracking_url}
+note right : SendGrid Java SDK\nIFS-06
+Mail --> NotifMod : 202 Accepted
+
+API --> SPA : 200 OK {tracking_number, status: "shipped"}
+
+== Tracking consultation by buyer ==
+participant "SPA React\n(buyer portal)" as SPABuyer
+SPABuyer -> API : GET /orders/{id}/tracking\nAuthorization: Bearer {JWT buyer}
+API -> PG : SELECT tracking_number, tracking_url FROM shipments WHERE order_id = ?
+PG --> API : {tracking_number, tracking_url}
+API --> SPABuyer : 200 OK {tracking_number, carrier_tracking_url}
+note right : Buyer clicks the link\nto track the parcel (IFS-05 — outbound)
+----
+
+== Maquettes IHM
+
+Les maquettes filaires ci-dessous illustrent les interfaces utilisateur de chaque composant frontend. Elles sont rattachées aux fonctions logiques (LA) allouées à chaque composant et restent indépendantes de toute charte graphique — Salt modélise la structure, non le rendu final.
+
+=== Portail Acheteur
+
+==== Connexion
+
+Formulaire d'authentification (FS-B01). Le lien « Mot de passe oublié » déclenche un email de réinitialisation via IFS-06. La case « Se souvenir de moi » prolonge la durée du token JWT stocké dans Redis (CPA-04).
+
+.Maquette filaire : Portail Acheteur — Connexion
+[plantuml, ihm-pa-connexion, svg]
+----
+include::diagrams/ihm/ihm-pa-connexion.puml[]
+----
+
+==== Inscription
+
+Ce formulaire couvre FS-B01 (création de compte) et FS-B10 (activation par email). Après soumission, l'acheteur reçoit un email avec le lien d'activation tokenisé (CS-07). Le compte reste inaccessible tant que le lien n'a pas été cliqué.
+
+.Maquette filaire : Portail Acheteur — Inscription
+[plantuml, ihm-pa-inscription, svg]
+----
+include::diagrams/ihm/ihm-pa-inscription.puml[]
+----
+
+==== Catalogue produits
+
+Écran principal d'exploration du catalogue (FS-B03). La barre de filtres (catégorie, prix maximum) et la barre de recherche textuelle correspondent aux critères de filtrage définis en SA. Le bouton « Ajouter au panier » déclenche FS-B04 ; les produits en rupture sont affichés mais non ajoutables.
+
+.Maquette filaire : Portail Acheteur — Catalogue
+[plantuml, ihm-pa-catalogue, svg]
+----
+include::diagrams/ihm/ihm-pa-catalogue.puml[]
+----
+
+==== Détail produit
+
+Page de détail d'un produit (FS-B03 / FS-B04). Affiche le prix HT et TTC, la disponibilité issue du stock fusionné dans `Produit`, et un sélecteur de quantité. L'ajout au panier est bloqué si le stock est à zéro.
+
+.Maquette filaire : Portail Acheteur — Détail produit
+[plantuml, ihm-pa-detail-produit, svg]
+----
+include::diagrams/ihm/ihm-pa-detail-produit.puml[]
+----
+
+==== Panier
+
+Affichage et modification du panier courant (FS-B04 / FS-B05 / CS-03). Les modifications de quantité sont persistées en base immédiatement. Le bouton « Valider le panier » amorce le tunnel d'achat.
+
+.Maquette filaire : Portail Acheteur — Panier
+[plantuml, ihm-pa-panier, svg]
+----
+include::diagrams/ihm/ihm-pa-panier.puml[]
+----
+
+==== Tunnel d'achat — Adresse et livraison
+
+Étape 1/3 du tunnel (FS-B06). La liste déroulante de pays est restreinte aux membres de l'UE (CS-04). Les modes de livraison sont alimentés par les transporteurs configurés par l'administrateur (FS-A03).
+
+.Maquette filaire : Portail Acheteur — Tunnel d'achat : adresse et livraison
+[plantuml, ihm-pa-tunnel-adresse, svg]
+----
+include::diagrams/ihm/ihm-pa-tunnel-adresse.puml[]
+----
+
+==== Tunnel d'achat — Paiement
+
+Étape 2/3 du tunnel (FS-B07 / CS-02). Le récapitulatif de commande est figé à ce stade. L'acheteur choisit entre carte bancaire (autorisation immédiate via Stripe Java SDK — IFS-04) ou virement bancaire (commande créée en état `paiement_en_attente_virement`). En cas de carte, les données sont transmises directement au SDK Stripe sans transiter en clair par le backend (PCI-DSS).
+
+.Maquette filaire : Portail Acheteur — Tunnel d'achat : paiement
+[plantuml, ihm-pa-tunnel-paiement, svg]
+----
+include::diagrams/ihm/ihm-pa-tunnel-paiement.puml[]
+----
+
+==== Confirmation de commande
+
+Écran terminal du tunnel d'achat (FS-B06). Affiche la référence de commande, le statut initial et la livraison estimée. Un email de confirmation est envoyé simultanément via SendGrid (IFS-06).
+
+.Maquette filaire : Portail Acheteur — Confirmation de commande
+[plantuml, ihm-pa-confirmation-commande, svg]
+----
+include::diagrams/ihm/ihm-pa-confirmation-commande.puml[]
+----
+
+==== Commande en attente de virement
+
+Affiché après création d'une commande en mode virement bancaire (FS-B07 / CS-02). Présente les coordonnées bancaires du vendeur et la référence à inclure dans le libellé du virement. La commande reste en état `paiement_en_attente_virement` jusqu'à confirmation manuelle du vendeur (FS-V09).
+
+.Maquette filaire : Portail Acheteur — Virement en attente
+[plantuml, ihm-pa-virement-en-attente, svg]
+----
+include::diagrams/ihm/ihm-pa-virement-en-attente.puml[]
+----
+
+==== Suivi de commande
+
+Accès au numéro de suivi et au lien vers le site du transporteur (FS-B08 / FS-C01 / CS-05). Le lien est une URL sortante — le suivi de l'acheminement s'effectue directement sur le site du transporteur (IFS-05). L'acheteur peut déclencher une annulation ou une réclamation depuis cet écran.
+
+.Maquette filaire : Portail Acheteur — Suivi de commande
+[plantuml, ihm-pa-suivi-commande, svg]
+----
+include::diagrams/ihm/ihm-pa-suivi-commande.puml[]
+----
+
+==== Annulation d'une commande
+
+Écran de demande d'annulation avant expédition (FS-B09). Rappelle le contenu de la commande et son statut. Le motif est optionnel. Le remboursement est déclenché automatiquement par le système après acceptation vendeur via le prestataire de paiement (FS-P03).
+
+.Maquette filaire : Portail Acheteur — Annulation
+[plantuml, ihm-pa-annulation, svg]
+----
+include::diagrams/ihm/ihm-pa-annulation.puml[]
+----
+
+==== Réclamation
+
+Formulaire de dépôt d'une réclamation post-livraison (FS-V06). Le motif sélectionné oriente le traitement côté vendeur. La réclamation est créée en état `ouverte` ; le vendeur dispose d'un délai pour répondre avant escalade.
+
+.Maquette filaire : Portail Acheteur — Réclamation
+[plantuml, ihm-pa-reclamation, svg]
+----
+include::diagrams/ihm/ihm-pa-reclamation.puml[]
+----
+
+==== Mon compte
+
+Gestion du profil acheteur (FS-B02). Réunit sur trois onglets les informations personnelles, l'adresse de livraison par défaut et la modification du mot de passe. La mise à jour de l'email est soumise à validation d'unicité côté Service Compte.
+
+.Maquette filaire : Portail Acheteur — Mon compte
+[plantuml, ihm-pa-mon-compte, svg]
+----
+include::diagrams/ihm/ihm-pa-mon-compte.puml[]
+----
+
+=== Back-office Vendeur
+
+==== Tableau de bord
+
+Vue synthétique de l'activité (FS-V04 / FS-V07). Les compteurs en haut de page agrègent les commandes par statut. La liste des dernières commandes permet d'accéder directement aux actions critiques : traiter une commande en attente, déclarer une expédition, confirmer un virement.
+
+.Maquette filaire : Back-office Vendeur — Tableau de bord
+[plantuml, ihm-bov-tableau-de-bord, svg]
+----
+include::diagrams/ihm/ihm-bov-tableau-de-bord.puml[]
+----
+
+==== Détail d'une commande
+
+Vue complète d'une commande avec toutes ses lignes (FS-V04 / FS-V08). Présente les informations acheteur, l'adresse de livraison, le détail des `LigneCommande` et le statut du paiement. Les actions disponibles dépendent du statut courant.
+
+.Maquette filaire : Back-office Vendeur — Détail d'une commande
+[plantuml, ihm-bov-detail-commande, svg]
+----
+include::diagrams/ihm/ihm-bov-detail-commande.puml[]
+----
+
+==== Déclaration d'expédition
+
+Formulaire de déclaration d'expédition (FS-V05 / CS-05). Le champ « Numéro de suivi » est obligatoire — la soumission est bloquée s'il est vide. Ce numéro est récupéré sur le reçu de dépôt physique ; il n'est jamais généré par le système. La liste des transporteurs est alimentée par les données configurées en console admin (FS-A03).
+
+.Maquette filaire : Back-office Vendeur — Déclaration d'expédition
+[plantuml, ihm-bov-expedition, svg]
+----
+include::diagrams/ihm/ihm-bov-expedition.puml[]
+----
+
+==== Annulation après expédition
+
+Écran de traitement d'une demande d'annulation reçue après expédition (FS-V08). Le vendeur choisit entre trois options : accepter avec condition de renvoi (commande → `en_attente_retour`), accepter sans condition de renvoi (remboursement immédiat), ou refuser. Les conséquences de chaque choix sont explicitées inline pour éviter les erreurs.
+
+.Maquette filaire : Back-office Vendeur — Annulation après expédition
+[plantuml, ihm-bov-annulation-post-expedition, svg]
+----
+include::diagrams/ihm/ihm-bov-annulation-post-expedition.puml[]
+----
+
+==== Confirmation de virement bancaire
+
+Écran dédié à la confirmation manuelle des virements (FS-V09 / CS-02). Liste toutes les commandes en état `paiement_en_attente_virement`. Le vendeur doit vérifier son relevé bancaire avant de confirmer. La confirmation passe la commande en `en_attente` et notifie l'acheteur (IFS-06). Le rejet annule la commande et libère le stock pré-réservé.
+
+.Maquette filaire : Back-office Vendeur — Confirmation de virement
+[plantuml, ihm-bov-virement, svg]
+----
+include::diagrams/ihm/ihm-bov-virement.puml[]
+----
+
+==== Gestion du catalogue
+
+Liste paginée des produits avec indicateurs de stock en ligne (FS-V02 / FS-V03). Le stock et le seuil d'alerte sont affichés directement dans la liste (fusion Produit/Stock). Les produits sous le seuil d'alerte ou en rupture sont signalés visuellement. L'archivage est bloqué si le produit est référencé dans une commande active.
+
+.Maquette filaire : Back-office Vendeur — Gestion du catalogue
+[plantuml, ihm-bov-catalogue, svg]
+----
+include::diagrams/ihm/ihm-bov-catalogue.puml[]
+----
+
+==== Édition d'un produit
+
+Formulaire de création et de modification d'un produit (FS-V02 / FS-V03). Les champs `Quantité disponible` et `Seuil d'alerte` sont intégrés directement dans le formulaire produit, conformément à la fusion Produit/Stock opérée en LA. Le statut `Archivé` retire le produit du catalogue acheteur sans le supprimer.
+
+.Maquette filaire : Back-office Vendeur — Édition d'un produit
+[plantuml, ihm-bov-produit, svg]
+----
+include::diagrams/ihm/ihm-bov-produit.puml[]
+----
+
+==== Gestion des réclamations
+
+Vue de traitement des réclamations acheteurs (FS-V06). L'onglet « Ouvertes » liste les réclamations en attente de réponse vendeur avec le détail du message acheteur. Le vendeur peut rembourser via le prestataire de paiement (FS-P03) ou rejeter la demande. La réclamation passe en statut `clôturée` dans les deux cas.
+
+.Maquette filaire : Back-office Vendeur — Gestion des réclamations
+[plantuml, ihm-bov-reclamations, svg]
+----
+include::diagrams/ihm/ihm-bov-reclamations.puml[]
+----
+
+==== Rapports de ventes
+
+Tableau de bord analytique (FS-V07). Les indicateurs clés (CA, nombre de commandes, panier moyen, taux d'annulation) sont calculés par des requêtes JPQL agrégées sur la période sélectionnée. Le classement des produits est dérivé des `LigneCommande`. L'export CSV génère un fichier téléchargeable côté client.
+
+.Maquette filaire : Back-office Vendeur — Rapports de ventes
+[plantuml, ihm-bov-rapports, svg]
+----
+include::diagrams/ihm/ihm-bov-rapports.puml[]
+----
+
+=== Console Administrateur
+
+==== Gestion des comptes
+
+Liste de tous les comptes utilisateurs (FS-A01 / FS-A02). Les filtres par rôle et par statut permettent de cibler rapidement les comptes en attente d'activation ou suspendus. Les actions disponibles varient selon le statut : un compte suspendu peut être réactivé ; un compte en attente peut être supprimé.
+
+.Maquette filaire : Console Admin — Gestion des comptes
+[plantuml, ihm-admin-comptes, svg]
+----
+include::diagrams/ihm/ihm-admin-comptes.puml[]
+----
+
+==== Gestion des transporteurs
+
+Configuration des transporteurs disponibles sur la plateforme (FS-A03). La désactivation masque le transporteur lors de la déclaration d'expédition sans supprimer les expéditions existantes. La suppression est bloquée si des expéditions actives référencent ce transporteur.
+
+.Maquette filaire : Console Admin — Gestion des transporteurs
+[plantuml, ihm-admin-transporteurs, svg]
+----
+include::diagrams/ihm/ihm-admin-transporteurs.puml[]
+----
+
+==== Formulaire transporteur
+
+Formulaire d'ajout et d'édition d'un transporteur (FS-A03). Les pays couverts sont restreints aux membres de l'UE (CS-04). L'URL de suivi est utilisée par le portail acheteur pour construire le lien IFS-05 (CS-05). La désactivation (`Actif : Non`) masque le transporteur du back-office vendeur sans le supprimer.
+
+.Maquette filaire : Console Admin — Formulaire transporteur
+[plantuml, ihm-admin-form-transporteur, svg]
+----
+include::diagrams/ihm/ihm-admin-form-transporteur.puml[]
+----
+
+== Matrice de traçabilité LA → PA
+
+[cols="2,2,2,2", options="header"]
+|===
+| Composant logique (LA) | Module physique (PA) | Nœud de déploiement | Technologie
+
+| Portail Acheteur
+| front-acheteur
+| Conteneur Nginx
+| React 18 / TypeScript / Vite
+
+| Back-office Vendeur
+| front-vendeur
+| Conteneur Nginx
+| React 18 / TypeScript / Vite
+
+| Console Administrateur
+| front-admin
+| Conteneur Nginx
+| React 18 / TypeScript / Vite
+
+| Service Compte
+| module-compte
+| Conteneur API Spring Boot
+| Spring Boot / Spring Security / JWT
+
+| Service Catalogue
+| module-catalogue
+| Conteneur API Spring Boot
+| Spring Boot / Spring Data JPA / Hibernate
+
+| Service Panier
+| module-panier
+| Conteneur API Spring Boot + Redis
+| Spring Boot / Spring Data Redis
+
+| Service Commande
+| module-commande
+| Conteneur API Spring Boot
+| Spring Boot / Spring Data JPA / Hibernate
+
+| Service Paiement
+| module-paiement
+| Conteneur API Spring Boot
+| Spring Boot / Stripe Java SDK
+
+| Service Expédition
+| module-expedition
+| Conteneur API Spring Boot
+| Spring Boot / Spring Data JPA / Hibernate
+
+| Service Notification
+| module-notification
+| Conteneur API Spring Boot
+| Spring Boot / SendGrid Java SDK
+
+| Service Rapport
+| module-rapport
+| Conteneur API Spring Boot
+| Spring Boot / Spring Data JPA / JPQL
+
+| Adaptateur Paiement
+| module-paiement (couche adaptateur)
+| Conteneur API Spring Boot
+| Stripe Java SDK
+
+| Adaptateur Messagerie
+| module-notification (couche adaptateur)
+| Conteneur API Spring Boot
+| SendGrid Java SDK
+
+| Référentiel de données
+| boutique_db
+| Conteneur PostgreSQL 16
+| PostgreSQL 16 / Flyway
+|===
