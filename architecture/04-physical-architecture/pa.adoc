@@ -178,10 +178,10 @@ node "Conteneur Nginx\n(Reverse Proxy — HTTPS / TLS)" as Nginx {
 }
 
 node "Conteneur API\n(Spring Boot — Java)" as AppServer {
-  package "Modules métier" {
+  frame "Modules métier" {
     component "compte | catalogue\npanier | commande | paiement\nexpédition | notification | rapport" as Modules
   }
-  package "Adaptateurs" {
+  frame "Adaptateurs" {
     component "Stripe Java SDK\nSendGrid Java SDK" as Adapters
   }
 }
