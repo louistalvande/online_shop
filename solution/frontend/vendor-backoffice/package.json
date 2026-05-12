@@ -9,8 +9,11 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@workspace/theme": "*",
+    "i18next": "^24.0.0",
     "react": "^18.3.1",
-    "react-dom": "^18.3.1"
+    "react-dom": "^18.3.1",
+    "react-i18next": "^15.0.0"
   },
   "devDependencies": {
     "@types/react": "^18.3.1",

@@ -1,0 +1,10 @@
+{
+  "name": "workspace",
+  "private": true,
+  "workspaces": [
+    "theme",
+    "buyer-portal",
+    "vendor-backoffice",
+    "admin-console"
+  ]
+}

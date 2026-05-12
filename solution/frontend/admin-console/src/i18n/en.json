@@ -1,0 +1,19 @@
+{
+  "app.name": "Admin Console",
+  "nav.overview": "Overview",
+  "nav.users": "Users",
+  "nav.settings": "Settings",
+  "overview.title": "Overview",
+  "stats.users": "Users",
+  "stats.activeVendors": "Active vendors",
+  "stats.totalOrders": "Total orders",
+  "stats.platformRevenue": "Platform revenue",
+  "users.title": "Users",
+  "users.add": "Add",
+  "users.name": "Name",
+  "users.email": "Email",
+  "users.role": "Role",
+  "users.since": "Member since",
+  "users.edit": "Edit",
+  "lang.toggle": "Switch language"
+}

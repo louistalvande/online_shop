@@ -1,0 +1,19 @@
+{
+  "app.name": "Console d'administration",
+  "nav.overview": "Vue d'ensemble",
+  "nav.users": "Utilisateurs",
+  "nav.settings": "Paramètres",
+  "overview.title": "Vue d'ensemble",
+  "stats.users": "Utilisateurs",
+  "stats.activeVendors": "Vendeurs actifs",
+  "stats.totalOrders": "Commandes totales",
+  "stats.platformRevenue": "Revenus plateforme",
+  "users.title": "Utilisateurs",
+  "users.add": "Ajouter",
+  "users.name": "Nom",
+  "users.email": "Email",
+  "users.role": "Rôle",
+  "users.since": "Membre depuis",
+  "users.edit": "Éditer",
+  "lang.toggle": "Changer de langue"
+}

@@ -5,7 +5,11 @@
       "PowerShell(Get-ChildItem \"c:\\\\Users\\\\mltal\\\\Documents\\\\Travail_Louis\\\\online_shop\\\\architecture\" -Recurse | Where-Object { !$_.PSIsContainer } | Select-Object -ExpandProperty FullName | ForEach-Object { $_.Replace\\(\"c:\\\\Users\\\\mltal\\\\Documents\\\\Travail_Louis\\\\online_shop\\\\architecture\\\\\", \"\"\\) })",
       "Bash(docker compose *)",
       "Bash(Start-Process \"C:\\\\Program Files\\\\Docker\\\\Docker\\\\Docker Desktop.exe\")",
-      "Bash(docker stop *)"
+      "Bash(docker stop *)",
+      "Bash(Get-ChildItem -Path \"c:\\\\Users\\\\mltal\\\\Documents\\\\Travail_Louis\\\\online_shop\" -Force)",
+      "Bash(Select-Object Name, PSIsContainer)",
+      "Bash(Get-ChildItem -Recurse -Path \"c:\\\\Users\\\\mltal\\\\Documents\\\\Travail_Louis\\\\online_shop\\\\solution\\\\frontend\" -Directory)",
+      "Bash(Select-Object -First 20)"
     ]
   }
 }
