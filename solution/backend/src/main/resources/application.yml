@@ -21,6 +21,10 @@ spring:
       host: ${REDIS_HOST:localhost}
       port: ${REDIS_PORT:6379}
 
+spring.messages:
+  basename: messages
+  encoding: UTF-8
+
 server:
   port: 8080
 
