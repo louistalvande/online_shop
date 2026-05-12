@@ -12,4 +12,6 @@ include::02-system-analysis/sa.adoc[leveloffset=+1]
 include::03-logical-architecture/la.adoc[leveloffset=+1]
 include::04-physical-architecture/pa.adoc[leveloffset=+1]
 
+include::05-backlog/us.adoc[leveloffset=+1]
+
 include::glossary.adoc[leveloffset=+1]

@@ -1,0 +1,23 @@
+@startsalt
+' Composant PA : front-acheteur (Portail Acheteur)
+' Fonctions allouées : Service Panier — FS-B04 (gestion panier), FS-B05 (persistance CS-03)
+title Portail Acheteur — Panier
+
+{+
+  == Mon panier (3 articles)
+  {#
+    Produit              | Qté          | Prix unit. | Sous-total | Action
+    Chaussures cuir brun | "1         " | 89,00 €    | 89,00 €    | [Retirer]
+    Veste laine grise    | "1         " | 149,00 €   | 149,00 €   | [Retirer]
+    Ceinture daim noir   | "2         " | 34,00 €    | 68,00 €    | [Retirer]
+  }
+  ==
+  Total HT : 306,00 €
+  TVA (20 %) : 61,20 €
+  **Total TTC : 367,20 €**
+  --
+  [Continuer mes achats]   [Valider le panier]
+  ==
+  Votre panier est sauvegardé automatiquement.
+}
+@endsalt

@@ -1,0 +1,34 @@
+@startsalt
+' Composant PA : front-acheteur (Portail Acheteur)
+' Fonctions allouées : Service Catalogue — FS-B03 (affichage et filtrage catalogue)
+title Portail Acheteur — Catalogue produits
+
+{+
+  {
+    "Rechercher un produit...    " | [Rechercher]
+  }
+  --
+  {
+    {+
+      == Filtres
+      Catégorie    | ^Toutes^
+      Prix max (€) | "     "
+      Disponible   | [X] Uniquement
+      --
+      [Réinitialiser]
+    }
+    |
+    {
+      {#
+        Produit                  | Prix HT | Stock      | Action
+        Chaussures cuir brun     | 89,00 € | Disponible | [Ajouter]
+        Veste laine grise        | 149,00 €| Disponible | [Ajouter]
+        Sac à dos toile          | 59,00 € | Rupture    | [Indisponible]
+        Ceinture daim noir       | 34,00 € | Disponible | [Ajouter]
+      }
+      --
+      [< Précédent]  Page 1/4  [Suivant >]
+    }
+  }
+}
+@endsalt

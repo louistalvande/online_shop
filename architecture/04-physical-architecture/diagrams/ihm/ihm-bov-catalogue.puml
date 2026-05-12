@@ -1,0 +1,21 @@
+@startsalt
+' Composant PA : front-vendeur (Back-office Vendeur)
+' Fonctions allouées : Service Catalogue — FS-V02 (CRUD produits), FS-V03 (stocks et alertes)
+' L'archivage est bloqué si le produit est référencé dans une commande active
+title Back-office Vendeur — Gestion du catalogue
+
+{+
+  [+ Nouveau produit]
+  --
+  {#
+    Produit              | Stock | Seuil | Statut    | Actions
+    Chaussures cuir brun | 12    | 5     | Publié    | [Modifier] [Archiver]
+    Veste laine grise    | 3     | 5     | Alerte !  | [Modifier] [Archiver]
+    Sac à dos toile      | 0     | 3     | Rupture ! | [Modifier] [Archiver]
+    Ceinture daim noir   | 27    | 5     | Publié    | [Modifier] [Archiver]
+    Écharpe laine        | —     | —     | Archivé   | [Réactiver]
+  }
+  --
+  [< Précédent]  Page 1/3  [Suivant >]
+}
+@endsalt

@@ -1,0 +1,23 @@
+@startsalt
+' Composant PA : front-vendeur (Back-office Vendeur)
+' Fonctions allouées : Service Expédition — FS-V05 (CS-05)
+' Le numéro de suivi est récupéré sur le reçu de dépôt physique — jamais généré par le système
+' La liste des transporteurs est alimentée par la console admin (FS-A03)
+title Back-office Vendeur — Déclaration d'expédition
+
+{+
+  == Déclarer l'expédition — CMD-2025-0042
+  Acheteur : Marie Dupont
+  Adresse  : 12 rue des Lilas, 75011 Paris, France
+  --
+  Transporteur     | ^La Poste — Colissimo^
+  --
+  Numéro de suivi  | "                         "
+  (Reportez ici le numéro figurant sur le reçu de dépôt)
+  --
+  [Annuler]   [Enregistrer l'expédition]
+  ==
+  La commande passera en statut « Expédiée ».
+  L'acheteur sera notifié par email avec le numéro de suivi.
+}
+@endsalt

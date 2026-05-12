@@ -1,0 +1,31 @@
+@startsalt
+' Composant PA : front-vendeur (Back-office Vendeur)
+' Fonctions allouées : Service Commande — FS-V04 (traitement commande), FS-V08 (annulation)
+title Back-office Vendeur — Détail d'une commande
+
+{+
+  == Commande CMD-2025-0042 — En attente
+  --
+  == Acheteur
+  Marie Dupont — marie.dupont@email.com
+  12 rue des Lilas, 75011 Paris, France
+  --
+  == Paiement
+  Mode : Carte bancaire | Statut : Autorisé
+  --
+  == Lignes de commande
+  {#
+    Produit              | Qté | Prix unit. | Sous-total
+    Chaussures cuir brun | 1   | 89,00 €    | 89,00 €
+    Veste laine grise    | 1   | 149,00 €   | 149,00 €
+    Ceinture daim noir   | 2   | 34,00 €    | 68,00 €
+  }
+  Livraison : 5,90 €  |  **Total TTC : 373,10 €**
+  --
+  == Livraison
+  Mode : La Poste — Colissimo
+  --
+  [Marquer en préparation]   [Déclarer l'expédition]
+  [Traiter une annulation]
+}
+@endsalt

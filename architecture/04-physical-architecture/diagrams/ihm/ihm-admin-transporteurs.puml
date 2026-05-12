@@ -1,0 +1,19 @@
+@startsalt
+' Composant PA : front-admin (Console Administrateur)
+' Fonctions allouées : Service Compte — FS-A03 (gestion transporteurs)
+' La désactivation masque le transporteur sans supprimer les expéditions existantes
+' La suppression est bloquée si des expéditions actives référencent ce transporteur
+title Console Admin — Gestion des transporteurs
+
+{+
+  [+ Ajouter un transporteur]
+  --
+  {#
+    Nom          | Pays couverts    | URL de suivi              | Statut   | Actions
+    La Poste     | FR, BE, DE, ES…  | laposte.fr/suivi          | Actif    | [Modifier] [Désactiver]
+    Chronopost   | FR, BE, LU       | chronopost.fr/tracking    | Actif    | [Modifier] [Désactiver]
+    DHL Express  | Tous UE          | dhl.fr/tracking           | Actif    | [Modifier] [Désactiver]
+    UPS          | Tous UE          | ups.com/track             | Inactif  | [Modifier] [Activer] [Supprimer]
+  }
+}
+@endsalt

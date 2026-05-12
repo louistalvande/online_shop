@@ -1,0 +1,41 @@
+@startsalt
+' Composant PA : front-vendeur (Back-office Vendeur)
+' Fonctions allouées : Service Commande — FS-V04, Service Rapport — FS-V07
+title Back-office Vendeur — Tableau de bord
+
+{+
+  == Tableau de bord
+  {
+    {+
+      En attente
+      **4**
+    }
+    |
+    {+
+      En préparation
+      **2**
+    }
+    |
+    {+
+      Expédiées
+      **11**
+    }
+    |
+    {+
+      Virement en attente
+      **1**
+    }
+  }
+  ==
+  == Dernières commandes
+  {#
+    Réf.            | Acheteur       | Montant   | Statut              | Actions
+    CMD-2025-0042   | M. Dupont      | 373,10 €  | En attente          | [Traiter]
+    CMD-2025-0041   | C. Bernard     | 129,00 €  | Virement en attente | [Confirmer]
+    CMD-2025-0040   | L. Martin      | 89,00 €   | En préparation      | [Expédier]
+    CMD-2025-0039   | R. Petit       | 248,50 €  | Expédiée            | [Voir]
+  }
+  ==
+  [Voir toutes les commandes]   [Rapports de ventes]
+}
+@endsalt
