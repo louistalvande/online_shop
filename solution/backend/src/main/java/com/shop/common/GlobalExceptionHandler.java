@@ -1,6 +1,7 @@
 package com.shop.common;
 
 import com.shop.account.exception.EmailAlreadyUsedException;
+import com.shop.auth.exception.InvalidCredentialsException;
 import org.springframework.context.MessageSource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -39,6 +40,22 @@ public class GlobalExceptionHandler {
         String message = messageSource.getMessage("error.email.already.used", null, locale);
         return ResponseEntity.status(HttpStatus.CONFLICT)
                 .body(Map.of("error", "EMAIL_ALREADY_USED", "message", message));
+    }
+
+    /**
+     * Handles invalid login credentials — returns HTTP 401 with a generic error (CS-08).
+     * The message is deliberately vague to prevent account enumeration.
+     *
+     * @param ex     the exception
+     * @param locale the request locale
+     * @return a 401 response with a localised error body
+     */
+    @ExceptionHandler(InvalidCredentialsException.class)
+    public ResponseEntity<Map<String, String>> handleInvalidCredentials(
+            InvalidCredentialsException ex, Locale locale) {
+        String message = messageSource.getMessage("error.invalidCredentials", null, locale);
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .body(Map.of("error", "INVALID_CREDENTIALS", "message", message));
     }
 
     /**

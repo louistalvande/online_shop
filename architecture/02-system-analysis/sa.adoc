@@ -91,6 +91,10 @@ Les contraintes opérationnelles (COp) de l'OA sont traduites en contraintes sys
 | CS-07
 | Activation de compte par email
 | À l'issue de l'inscription, le système doit envoyer automatiquement un email contenant un lien d'activation tokenisé à usage unique. Le compte est activé uniquement sur clic de ce lien. Le token doit avoir une durée de validité limitée (ex. 24 h) au-delà de laquelle un renvoi est possible.
+
+| CS-08
+| TokenAuthentification
+| L'accès aux back-offices vendeur et administrateur est conditionné à une authentification par email et mot de passe. Le système émet un Tokenjeton d'authentification signé (validité 24 h) que le client inclut dans l'en-tête de chaque requête protégée. Un compte suspendu ou supprimé ne peut pas s'authentifier. Les messages d'erreur ne distinguent pas un email inconnu d'un mot de passe incorrect (sécurité contre l'énumération de comptes).
 |===
 
 == Exigences fonctionnelles système

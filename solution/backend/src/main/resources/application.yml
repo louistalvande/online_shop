@@ -39,3 +39,7 @@ management:
     web:
       exposure:
         include: health,info
+
+jwt:
+  secret: ${JWT_SECRET:dGhpcy1pcy1hLXZlcnktbG9uZy1zZWNyZXQta2V5LWZvci1kZXYtb25seS0xMjM0NTY3OA==}
+  expiration-ms: 86400000
