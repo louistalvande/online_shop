@@ -1,0 +1,26 @@
+@startsalt
+' Composant PA : front-acheteur (Portail Acheteur)
+' Fonctions allouées : Service Commande — FS-B09 (avant expédition)
+title Portail Acheteur — Annuler une commande
+
+{+
+  == Annuler la commande #CMD-2025-0042
+  {#
+    Produit             | Qté | Sous-total
+    Chaussures sport    | 1   | 49,90 €
+    Veste imperméable   | 1   | 89,00 €
+    Total TTC           |     | 172,78 €
+  }
+  ==
+  Statut actuel : **En préparation**
+  La commande n'est pas encore expédiée.
+  --
+  Motif d'annulation (optionnel)
+  ^Sélectionner un motif^
+  --
+  Le remboursement sera déclenché automatiquement
+  après confirmation du vendeur.
+  --
+  [Retour]   [Confirmer l'annulation]
+}
+@endsalt

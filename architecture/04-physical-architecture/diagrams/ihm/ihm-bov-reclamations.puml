@@ -1,0 +1,25 @@
+@startsalt
+' Composant PA : front-vendeur (Back-office Vendeur)
+' Fonctions allouées : Service Commande — FS-V06
+title Back-office Vendeur — Gestion des réclamations
+
+{+
+  {/ Réclamations ouvertes | Clôturées }
+  ==
+  {#
+    Référence | Acheteur      | Commande | Motif                | Statut  | Action
+    REC-007   | Bernard C.    | #039     | Non conforme         | Ouverte | [Traiter]
+    REC-006   | Petit A.      | #035     | Article défectueux   | Ouverte | [Traiter]
+  }
+  ==
+  Réclamation REC-007 — Bernard Claire
+  Commande #039 — Motif : Article non conforme à la description
+  --
+  Message de l'acheteur :
+  {SI
+    "L'article reçu ne correspond pas aux photos..."
+  }
+  --
+  [Rembourser et clôturer]   [Rejeter la réclamation]
+}
+@endsalt

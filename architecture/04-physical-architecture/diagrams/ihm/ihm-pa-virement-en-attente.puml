@@ -1,0 +1,28 @@
+@startsalt
+' Composant PA : front-acheteur (Portail Acheteur)
+' Fonctions allouées : Service Commande — FS-B06 ; Service Paiement — FS-B07, CS-02
+title Portail Acheteur — Commande en attente de virement
+
+{+
+  == Commande créée — virement bancaire requis
+  Référence : #CMD-2025-0043
+  Montant à virer : **215,50 €**
+  --
+  Effectuez votre virement en utilisant
+  les coordonnées ci-dessous.
+  ==
+  {#
+    Champ        | Valeur
+    Titulaire    | Boutique SAS
+    IBAN         | FR76 3000 6000 0112 3456 7890 189
+    BIC          | BNPAFRPPXXX
+    Référence    | CMD-2025-0043
+  }
+  ==
+  Une fois le virement effectué, votre commande
+  sera confirmée après vérification par le vendeur.
+  Délai habituel : 1-2 jours ouvrés.
+  --
+  [Retour à mes commandes]
+}
+@endsalt

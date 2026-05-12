@@ -1,0 +1,20 @@
+@startsalt
+' Composant PA : front-admin (Console Administrateur)
+' Fonctions allouées : Service Compte — FS-A03
+title Console Admin — Ajout / édition d'un transporteur
+
+{+
+  == Transporteur
+  Nom               | "Colissimo           "
+  URL de suivi      | "colissimo.fr/suivi  "
+  --
+  == Pays couverts (UE)
+  [X] France        [X] Allemagne   [X] Espagne
+  [X] Italie        [X] Belgique    [ ] Pologne
+  [ ] Roumanie      [ ] Pays-Bas    [ ] Portugal
+  --
+  Actif             | (X) Oui   ( ) Non
+  --
+  [Annuler]   [Enregistrer]
+}
+@endsalt

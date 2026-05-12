@@ -457,6 +457,266 @@ API --> SPABuyer : 200 OK {tracking_number, carrier_tracking_url}
 note right : Buyer clicks the link\nto track the parcel (IFS-05 — outbound)
 ----
 
+== Maquettes IHM
+
+Les maquettes filaires ci-dessous illustrent les interfaces utilisateur de chaque composant frontend. Elles sont rattachées aux fonctions logiques (LA) allouées à chaque composant et restent indépendantes de toute charte graphique — Salt modélise la structure, non le rendu final.
+
+=== Portail Acheteur
+
+==== Connexion
+
+Formulaire d'authentification (FS-B01). Le lien « Mot de passe oublié » déclenche un email de réinitialisation via IFS-06. La case « Se souvenir de moi » prolonge la durée du token JWT stocké dans Redis (CPA-04).
+
+.Maquette filaire : Portail Acheteur — Connexion
+[plantuml, ihm-pa-connexion, svg]
+----
+include::diagrams/ihm/ihm-pa-connexion.puml[]
+----
+
+==== Inscription
+
+Ce formulaire couvre FS-B01 (création de compte) et FS-B10 (activation par email). Après soumission, l'acheteur reçoit un email avec le lien d'activation tokenisé (CS-07). Le compte reste inaccessible tant que le lien n'a pas été cliqué.
+
+.Maquette filaire : Portail Acheteur — Inscription
+[plantuml, ihm-pa-inscription, svg]
+----
+include::diagrams/ihm/ihm-pa-inscription.puml[]
+----
+
+==== Catalogue produits
+
+Écran principal d'exploration du catalogue (FS-B03). La barre de filtres (catégorie, prix maximum) et la barre de recherche textuelle correspondent aux critères de filtrage définis en SA. Le bouton « Ajouter au panier » déclenche FS-B04 ; les produits en rupture sont affichés mais non ajoutables.
+
+.Maquette filaire : Portail Acheteur — Catalogue
+[plantuml, ihm-pa-catalogue, svg]
+----
+include::diagrams/ihm/ihm-pa-catalogue.puml[]
+----
+
+==== Détail produit
+
+Page de détail d'un produit (FS-B03 / FS-B04). Affiche le prix HT et TTC, la disponibilité issue du stock fusionné dans `Produit`, et un sélecteur de quantité. L'ajout au panier est bloqué si le stock est à zéro.
+
+.Maquette filaire : Portail Acheteur — Détail produit
+[plantuml, ihm-pa-detail-produit, svg]
+----
+include::diagrams/ihm/ihm-pa-detail-produit.puml[]
+----
+
+==== Panier
+
+Affichage et modification du panier courant (FS-B04 / FS-B05 / CS-03). Les modifications de quantité sont persistées en base immédiatement. Le bouton « Valider le panier » amorce le tunnel d'achat.
+
+.Maquette filaire : Portail Acheteur — Panier
+[plantuml, ihm-pa-panier, svg]
+----
+include::diagrams/ihm/ihm-pa-panier.puml[]
+----
+
+==== Tunnel d'achat — Adresse et livraison
+
+Étape 1/3 du tunnel (FS-B06). La liste déroulante de pays est restreinte aux membres de l'UE (CS-04). Les modes de livraison sont alimentés par les transporteurs configurés par l'administrateur (FS-A03).
+
+.Maquette filaire : Portail Acheteur — Tunnel d'achat : adresse et livraison
+[plantuml, ihm-pa-tunnel-adresse, svg]
+----
+include::diagrams/ihm/ihm-pa-tunnel-adresse.puml[]
+----
+
+==== Tunnel d'achat — Paiement
+
+Étape 2/3 du tunnel (FS-B07 / CS-02). Le récapitulatif de commande est figé à ce stade. L'acheteur choisit entre carte bancaire (autorisation immédiate via Stripe Java SDK — IFS-04) ou virement bancaire (commande créée en état `paiement_en_attente_virement`). En cas de carte, les données sont transmises directement au SDK Stripe sans transiter en clair par le backend (PCI-DSS).
+
+.Maquette filaire : Portail Acheteur — Tunnel d'achat : paiement
+[plantuml, ihm-pa-tunnel-paiement, svg]
+----
+include::diagrams/ihm/ihm-pa-tunnel-paiement.puml[]
+----
+
+==== Confirmation de commande
+
+Écran terminal du tunnel d'achat (FS-B06). Affiche la référence de commande, le statut initial et la livraison estimée. Un email de confirmation est envoyé simultanément via SendGrid (IFS-06).
+
+.Maquette filaire : Portail Acheteur — Confirmation de commande
+[plantuml, ihm-pa-confirmation-commande, svg]
+----
+include::diagrams/ihm/ihm-pa-confirmation-commande.puml[]
+----
+
+==== Commande en attente de virement
+
+Affiché après création d'une commande en mode virement bancaire (FS-B07 / CS-02). Présente les coordonnées bancaires du vendeur et la référence à inclure dans le libellé du virement. La commande reste en état `paiement_en_attente_virement` jusqu'à confirmation manuelle du vendeur (FS-V09).
+
+.Maquette filaire : Portail Acheteur — Virement en attente
+[plantuml, ihm-pa-virement-en-attente, svg]
+----
+include::diagrams/ihm/ihm-pa-virement-en-attente.puml[]
+----
+
+==== Suivi de commande
+
+Accès au numéro de suivi et au lien vers le site du transporteur (FS-B08 / FS-C01 / CS-05). Le lien est une URL sortante — le suivi de l'acheminement s'effectue directement sur le site du transporteur (IFS-05). L'acheteur peut déclencher une annulation ou une réclamation depuis cet écran.
+
+.Maquette filaire : Portail Acheteur — Suivi de commande
+[plantuml, ihm-pa-suivi-commande, svg]
+----
+include::diagrams/ihm/ihm-pa-suivi-commande.puml[]
+----
+
+==== Annulation d'une commande
+
+Écran de demande d'annulation avant expédition (FS-B09). Rappelle le contenu de la commande et son statut. Le motif est optionnel. Le remboursement est déclenché automatiquement par le système après acceptation vendeur via le prestataire de paiement (FS-P03).
+
+.Maquette filaire : Portail Acheteur — Annulation
+[plantuml, ihm-pa-annulation, svg]
+----
+include::diagrams/ihm/ihm-pa-annulation.puml[]
+----
+
+==== Réclamation
+
+Formulaire de dépôt d'une réclamation post-livraison (FS-V06). Le motif sélectionné oriente le traitement côté vendeur. La réclamation est créée en état `ouverte` ; le vendeur dispose d'un délai pour répondre avant escalade.
+
+.Maquette filaire : Portail Acheteur — Réclamation
+[plantuml, ihm-pa-reclamation, svg]
+----
+include::diagrams/ihm/ihm-pa-reclamation.puml[]
+----
+
+==== Mon compte
+
+Gestion du profil acheteur (FS-B02). Réunit sur trois onglets les informations personnelles, l'adresse de livraison par défaut et la modification du mot de passe. La mise à jour de l'email est soumise à validation d'unicité côté Service Compte.
+
+.Maquette filaire : Portail Acheteur — Mon compte
+[plantuml, ihm-pa-mon-compte, svg]
+----
+include::diagrams/ihm/ihm-pa-mon-compte.puml[]
+----
+
+=== Back-office Vendeur
+
+==== Tableau de bord
+
+Vue synthétique de l'activité (FS-V04 / FS-V07). Les compteurs en haut de page agrègent les commandes par statut. La liste des dernières commandes permet d'accéder directement aux actions critiques : traiter une commande en attente, déclarer une expédition, confirmer un virement.
+
+.Maquette filaire : Back-office Vendeur — Tableau de bord
+[plantuml, ihm-bov-tableau-de-bord, svg]
+----
+include::diagrams/ihm/ihm-bov-tableau-de-bord.puml[]
+----
+
+==== Détail d'une commande
+
+Vue complète d'une commande avec toutes ses lignes (FS-V04 / FS-V08). Présente les informations acheteur, l'adresse de livraison, le détail des `LigneCommande` et le statut du paiement. Les actions disponibles dépendent du statut courant.
+
+.Maquette filaire : Back-office Vendeur — Détail d'une commande
+[plantuml, ihm-bov-detail-commande, svg]
+----
+include::diagrams/ihm/ihm-bov-detail-commande.puml[]
+----
+
+==== Déclaration d'expédition
+
+Formulaire de déclaration d'expédition (FS-V05 / CS-05). Le champ « Numéro de suivi » est obligatoire — la soumission est bloquée s'il est vide. Ce numéro est récupéré sur le reçu de dépôt physique ; il n'est jamais généré par le système. La liste des transporteurs est alimentée par les données configurées en console admin (FS-A03).
+
+.Maquette filaire : Back-office Vendeur — Déclaration d'expédition
+[plantuml, ihm-bov-expedition, svg]
+----
+include::diagrams/ihm/ihm-bov-expedition.puml[]
+----
+
+==== Annulation après expédition
+
+Écran de traitement d'une demande d'annulation reçue après expédition (FS-V08). Le vendeur choisit entre trois options : accepter avec condition de renvoi (commande → `en_attente_retour`), accepter sans condition de renvoi (remboursement immédiat), ou refuser. Les conséquences de chaque choix sont explicitées inline pour éviter les erreurs.
+
+.Maquette filaire : Back-office Vendeur — Annulation après expédition
+[plantuml, ihm-bov-annulation-post-expedition, svg]
+----
+include::diagrams/ihm/ihm-bov-annulation-post-expedition.puml[]
+----
+
+==== Confirmation de virement bancaire
+
+Écran dédié à la confirmation manuelle des virements (FS-V09 / CS-02). Liste toutes les commandes en état `paiement_en_attente_virement`. Le vendeur doit vérifier son relevé bancaire avant de confirmer. La confirmation passe la commande en `en_attente` et notifie l'acheteur (IFS-06). Le rejet annule la commande et libère le stock pré-réservé.
+
+.Maquette filaire : Back-office Vendeur — Confirmation de virement
+[plantuml, ihm-bov-virement, svg]
+----
+include::diagrams/ihm/ihm-bov-virement.puml[]
+----
+
+==== Gestion du catalogue
+
+Liste paginée des produits avec indicateurs de stock en ligne (FS-V02 / FS-V03). Le stock et le seuil d'alerte sont affichés directement dans la liste (fusion Produit/Stock). Les produits sous le seuil d'alerte ou en rupture sont signalés visuellement. L'archivage est bloqué si le produit est référencé dans une commande active.
+
+.Maquette filaire : Back-office Vendeur — Gestion du catalogue
+[plantuml, ihm-bov-catalogue, svg]
+----
+include::diagrams/ihm/ihm-bov-catalogue.puml[]
+----
+
+==== Édition d'un produit
+
+Formulaire de création et de modification d'un produit (FS-V02 / FS-V03). Les champs `Quantité disponible` et `Seuil d'alerte` sont intégrés directement dans le formulaire produit, conformément à la fusion Produit/Stock opérée en LA. Le statut `Archivé` retire le produit du catalogue acheteur sans le supprimer.
+
+.Maquette filaire : Back-office Vendeur — Édition d'un produit
+[plantuml, ihm-bov-produit, svg]
+----
+include::diagrams/ihm/ihm-bov-produit.puml[]
+----
+
+==== Gestion des réclamations
+
+Vue de traitement des réclamations acheteurs (FS-V06). L'onglet « Ouvertes » liste les réclamations en attente de réponse vendeur avec le détail du message acheteur. Le vendeur peut rembourser via le prestataire de paiement (FS-P03) ou rejeter la demande. La réclamation passe en statut `clôturée` dans les deux cas.
+
+.Maquette filaire : Back-office Vendeur — Gestion des réclamations
+[plantuml, ihm-bov-reclamations, svg]
+----
+include::diagrams/ihm/ihm-bov-reclamations.puml[]
+----
+
+==== Rapports de ventes
+
+Tableau de bord analytique (FS-V07). Les indicateurs clés (CA, nombre de commandes, panier moyen, taux d'annulation) sont calculés par des requêtes JPQL agrégées sur la période sélectionnée. Le classement des produits est dérivé des `LigneCommande`. L'export CSV génère un fichier téléchargeable côté client.
+
+.Maquette filaire : Back-office Vendeur — Rapports de ventes
+[plantuml, ihm-bov-rapports, svg]
+----
+include::diagrams/ihm/ihm-bov-rapports.puml[]
+----
+
+=== Console Administrateur
+
+==== Gestion des comptes
+
+Liste de tous les comptes utilisateurs (FS-A01 / FS-A02). Les filtres par rôle et par statut permettent de cibler rapidement les comptes en attente d'activation ou suspendus. Les actions disponibles varient selon le statut : un compte suspendu peut être réactivé ; un compte en attente peut être supprimé.
+
+.Maquette filaire : Console Admin — Gestion des comptes
+[plantuml, ihm-admin-comptes, svg]
+----
+include::diagrams/ihm/ihm-admin-comptes.puml[]
+----
+
+==== Gestion des transporteurs
+
+Configuration des transporteurs disponibles sur la plateforme (FS-A03). La désactivation masque le transporteur lors de la déclaration d'expédition sans supprimer les expéditions existantes. La suppression est bloquée si des expéditions actives référencent ce transporteur.
+
+.Maquette filaire : Console Admin — Gestion des transporteurs
+[plantuml, ihm-admin-transporteurs, svg]
+----
+include::diagrams/ihm/ihm-admin-transporteurs.puml[]
+----
+
+==== Formulaire transporteur
+
+Formulaire d'ajout et d'édition d'un transporteur (FS-A03). Les pays couverts sont restreints aux membres de l'UE (CS-04). L'URL de suivi est utilisée par le portail acheteur pour construire le lien IFS-05 (CS-05). La désactivation (`Actif : Non`) masque le transporteur du back-office vendeur sans le supprimer.
+
+.Maquette filaire : Console Admin — Formulaire transporteur
+[plantuml, ihm-admin-form-transporteur, svg]
+----
+include::diagrams/ihm/ihm-admin-form-transporteur.puml[]
+----
+
 == Matrice de traçabilité LA → PA
 
 [cols="2,2,2,2", options="header"]

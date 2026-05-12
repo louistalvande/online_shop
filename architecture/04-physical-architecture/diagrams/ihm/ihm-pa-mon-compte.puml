@@ -1,0 +1,27 @@
+@startsalt
+' Composant PA : front-acheteur (Portail Acheteur)
+' Fonctions allouées : Service Compte — FS-B02
+title Portail Acheteur — Mon compte
+
+{+
+  {/ Mes commandes | Mon profil | Sécurité }
+  ==
+  == Informations personnelles
+  Prénom       | "Marie               "
+  Nom          | "Dupont              "
+  Email        | "marie@email.fr      "
+  Téléphone    | "                    "
+  ==
+  == Adresse de livraison par défaut
+  Adresse      | "12 rue des Lilas    "
+  Ville        | "Paris               "
+  Code postal  | "75001               "
+  Pays (UE)    | ^France^
+  ==
+  == Sécurité
+  Nouveau mot de passe   | "                    "
+  Confirmer              | "                    "
+  --
+  [Annuler]   [Enregistrer les modifications]
+}
+@endsalt
