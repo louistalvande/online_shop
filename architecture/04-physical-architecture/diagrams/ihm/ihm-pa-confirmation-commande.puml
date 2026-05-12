@@ -1,0 +1,28 @@
+@startsalt
+' Composant PA : front-acheteur (Portail Acheteur)
+' Fonctions allouées : Service Commande — FS-B06 (confirmation tunnel d'achat)
+' Un email de confirmation est envoyé simultanément via SendGrid (IFS-06)
+title Portail Acheteur — Confirmation de commande
+
+{+
+  == Commande confirmée
+  Référence      | CMD-2025-0042
+  Statut         | En attente de préparation
+  Date           | 12/01/2025 à 14h37
+  --
+  == Récapitulatif
+  {#
+    3 articles | 306,00 € HT
+    Livraison  | 5,90 €
+    Total TTC  | 373,10 €
+    Paiement   | Carte — autorisé
+  }
+  --
+  Livraison estimée : entre le 15 et le 17 janvier 2025
+  --
+  Un email de confirmation a été envoyé à
+  marie.dupont@email.com
+  ==
+  [Suivre ma commande]   [Retour au catalogue]
+}
+@endsalt

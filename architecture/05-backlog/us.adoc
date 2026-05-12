@@ -1,0 +1,463 @@
+= Backlog — User Stories
+:doctype: article
+:toc: left
+:toclevels: 3
+:sectnums:
+:icons: font
+:source-highlighter: rouge
+
+== Contexte
+
+Ce document liste l'ensemble des user stories dérivées des fonctions système (FS) définies en SA et allouées en LA/PA. Chaque user story est tracée vers les éléments ARCADIA dont elle est issue.
+
+Les user stories sont regroupées par domaine fonctionnel et ordonnées selon les dépendances d'implémentation (les stories d'infrastructure avant celles de fonctionnalité).
+
+NOTE: Le statut de chaque story est à renseigner dans la colonne « Statut » au fil du développement. Valeurs suggérées : `À faire` / `En cours` / `Terminée`.
+
+== Gestion des comptes (Admin)
+
+_Fonctions ARCADIA : FS-A01, FS-A02, FS-A03 — UCSA-12 — LA : Console Administrateur / Service Compte_
+
+[cols="1,3,4,1", options="header"]
+|===
+| ID | User story | Critères d'acceptation | Statut
+
+| *US-ADM-01*
+| En tant qu'administrateur, je peux créer un compte acheteur ou vendeur depuis la console d'administration.
+a|
+- [ ] Formulaire : email, rôle (acheteur / vendeur), informations de profil
+- [ ] Erreur si l'email est déjà utilisé (pas de doublon)
+- [ ] Compte créé avec statut `actif`
+| À faire
+
+| *US-ADM-02*
+| En tant qu'administrateur, je peux suspendre un compte actif (acheteur ou vendeur).
+a|
+- [ ] Action disponible uniquement sur les comptes au statut `actif`
+- [ ] Compte passe en statut `suspendu` ; l'utilisateur ne peut plus se connecter
+- [ ] Action réversible (voir US-ADM-03)
+| À faire
+
+| *US-ADM-03*
+| En tant qu'administrateur, je peux réactiver un compte suspendu.
+a|
+- [ ] Action disponible uniquement sur les comptes au statut `suspendu`
+- [ ] Compte repasse en statut `actif` ; l'utilisateur peut de nouveau se connecter
+| À faire
+
+| *US-ADM-04*
+| En tant qu'administrateur, je peux supprimer un compte (actif ou suspendu).
+a|
+- [ ] Confirmation obligatoire avant suppression
+- [ ] Compte passe en statut `supprimé`
+- [ ] L'utilisateur ne peut plus se connecter ni récupérer son compte
+| À faire
+
+| *US-ADM-05*
+| En tant qu'administrateur, je peux modifier le rôle d'un utilisateur (acheteur ↔ vendeur).
+a|
+- [ ] Sélecteur de rôle disponible sur la fiche utilisateur
+- [ ] Modification effective immédiatement
+| À faire
+
+| *US-ADM-06*
+| En tant qu'administrateur, je peux ajouter un transporteur avec son nom, les pays de l'UE couverts et l'URL de son site de suivi.
+a|
+- [ ] Formulaire : nom, pays UE couverts (multi-sélect restreint à l'UE), URL de suivi
+- [ ] Transporteur créé avec statut `actif` et disponible immédiatement dans le back-office vendeur
+| À faire
+
+| *US-ADM-07*
+| En tant qu'administrateur, je peux modifier les informations d'un transporteur existant.
+a|
+- [ ] Tous les champs sont éditables (nom, pays, URL de suivi)
+- [ ] Modifications effectives immédiatement
+| À faire
+
+| *US-ADM-08*
+| En tant qu'administrateur, je peux désactiver un transporteur sans le supprimer.
+a|
+- [ ] Transporteur masqué du back-office vendeur pour les nouvelles expéditions
+- [ ] Les expéditions existantes référençant ce transporteur ne sont pas affectées
+| À faire
+
+| *US-ADM-09*
+| En tant qu'administrateur, je peux supprimer un transporteur qui n'est référencé dans aucune expédition active.
+a|
+- [ ] Suppression bloquée si des expéditions actives référencent ce transporteur, avec proposition de désactivation
+- [ ] Confirmation obligatoire avant suppression effective
+| À faire
+
+|===
+
+== Inscription et activation de compte
+
+_Fonctions ARCADIA : FS-B01, FS-B10, CS-07 — UCSA-01 — LA : Service Compte / Service Notification / Adaptateur Messagerie_
+
+[cols="1,3,4,1", options="header"]
+|===
+| ID | User story | Critères d'acceptation | Statut
+
+| *US-REG-01*
+| En tant que visiteur, je peux créer un compte acheteur en saisissant mon email, mon mot de passe et mes informations de profil.
+a|
+- [ ] Formulaire : email, mot de passe (+ confirmation), nom, prénom
+- [ ] Erreur si l'email est déjà utilisé
+- [ ] Compte créé en statut `en_attente_activation`
+- [ ] Email d'activation envoyé automatiquement via SendGrid (CS-07)
+| À faire
+
+| *US-REG-02*
+| En tant que nouvel acheteur, je peux activer mon compte en cliquant sur le lien reçu par email.
+a|
+- [ ] Token UUID à usage unique, TTL 24 h (CS-07)
+- [ ] Clic valide → compte passe en statut `actif`, redirection vers la page de connexion
+- [ ] Token expiré (> 24 h) → message d'erreur + proposition de renvoi du lien
+- [ ] Token déjà utilisé → message « votre compte est déjà actif »
+| À faire
+
+| *US-REG-03*
+| En tant que nouvel acheteur dont le token a expiré, je peux demander le renvoi d'un nouveau lien d'activation.
+a|
+- [ ] Lien « Renvoyer le lien » accessible depuis la page d'erreur de token expiré
+- [ ] Nouveau token généré ; l'ancien est invalidé
+- [ ] Email d'activation renvoyé
+| À faire
+
+|===
+
+== Gestion du profil
+
+_Fonctions ARCADIA : FS-B02, FS-V01 — UCSA-02 — LA : Service Compte_
+
+[cols="1,3,4,1", options="header"]
+|===
+| ID | User story | Critères d'acceptation | Statut
+
+| *US-PRF-01*
+| En tant qu'acheteur authentifié, je peux modifier mes informations personnelles (nom, adresse de livraison par défaut, mot de passe).
+a|
+- [ ] Formulaire pré-rempli avec les données actuelles
+- [ ] Unicité de l'email vérifiée si modification de l'email
+- [ ] Confirmation de succès après sauvegarde
+| À faire
+
+| *US-PRF-02*
+| En tant que vendeur authentifié, je peux modifier mes informations personnelles (nom, adresse, mot de passe, coordonnées).
+a|
+- [ ] Même règles que US-PRF-01
+| À faire
+
+|===
+
+== Catalogue produits — Vendeur
+
+_Fonctions ARCADIA : FS-V02, FS-V03 — UCSA-10 — LA : Service Catalogue_
+
+[cols="1,3,4,1", options="header"]
+|===
+| ID | User story | Critères d'acceptation | Statut
+
+| *US-CAT-01*
+| En tant que vendeur, je peux créer une fiche produit avec nom, description, prix HT, photos, catégorie, quantité disponible et seuil d'alerte de stock.
+a|
+- [ ] Champs obligatoires : nom, prix HT, quantité disponible
+- [ ] Produit créé en statut `publié` par défaut
+- [ ] Photos uploadées et associées au produit
+| À faire
+
+| *US-CAT-02*
+| En tant que vendeur, je peux modifier une fiche produit existante.
+a|
+- [ ] Tous les champs sont éditables
+- [ ] Modifications visibles immédiatement dans le catalogue acheteur
+| À faire
+
+| *US-CAT-03*
+| En tant que vendeur, je peux archiver un produit pour le retirer du catalogue sans le supprimer.
+a|
+- [ ] Produit archivé non visible dans le catalogue acheteur
+- [ ] Archivage bloqué si le produit est référencé dans une commande active (message d'avertissement)
+| À faire
+
+| *US-CAT-04*
+| En tant que vendeur, je peux consulter et mettre à jour les niveaux de stock de mes produits et définir un seuil d'alerte.
+a|
+- [ ] Stock et seuil d'alerte affichés dans la liste des produits
+- [ ] Quantités modifiables depuis la liste ou le formulaire produit
+- [ ] Indicateur visuel (couleur) sur les produits sous le seuil ou en rupture
+| À faire
+
+| *US-CAT-05*
+| En tant que vendeur, je reçois une notification lorsque le stock d'un produit passe en dessous de son seuil d'alerte.
+a|
+- [ ] Notification déclenchée automatiquement lors du franchissement du seuil
+- [ ] Indicateur visible dans le back-office vendeur
+| À faire
+
+|===
+
+== Catalogue produits — Acheteur
+
+_Fonctions ARCADIA : FS-B03 — UCSA-03 — LA : Service Catalogue_
+
+[cols="1,3,4,1", options="header"]
+|===
+| ID | User story | Critères d'acceptation | Statut
+
+| *US-SHP-01*
+| En tant que visiteur (connecté ou non), je peux parcourir les produits publiés du catalogue.
+a|
+- [ ] Liste paginée des produits avec nom, prix HT/TTC, disponibilité
+- [ ] Accès sans authentification
+| À faire
+
+| *US-SHP-02*
+| En tant qu'acheteur, je peux filtrer les produits par catégorie, prix maximum et disponibilité, et effectuer une recherche textuelle.
+a|
+- [ ] Filtres cumulables, résultats mis à jour dynamiquement
+- [ ] Message « aucun résultat » avec option de réinitialisation des filtres
+| À faire
+
+|===
+
+== Panier
+
+_Fonctions ARCADIA : FS-B04, FS-B05, CS-03 — UCSA-04 — LA : Service Panier_
+
+[cols="1,3,4,1", options="header"]
+|===
+| ID | User story | Critères d'acceptation | Statut
+
+| *US-CRT-01*
+| En tant qu'acheteur authentifié, je peux ajouter des produits à mon panier, modifier les quantités et retirer des articles.
+a|
+- [ ] Ajout bloqué si le produit est en rupture de stock (message explicite)
+- [ ] Récapitulatif (lignes + total) mis à jour en temps réel
+| À faire
+
+| *US-CRT-02*
+| En tant qu'acheteur authentifié, mon panier est automatiquement sauvegardé et intégralement restauré à ma reconnexion.
+a|
+- [ ] Panier persisté en base après chaque modification (CS-03)
+- [ ] Contenu (produits, quantités) restauré à la reconnexion suivante
+| À faire
+
+|===
+
+== Tunnel d'achat et paiement
+
+_Fonctions ARCADIA : FS-B06, FS-B07, FS-P01, FS-P02, CS-02, CS-04 — UCSA-05 — LA : Service Commande / Service Paiement / Adaptateur Paiement_
+
+[cols="1,3,4,1", options="header"]
+|===
+| ID | User story | Critères d'acceptation | Statut
+
+| *US-ORD-01*
+| En tant qu'acheteur, je peux saisir une adresse de livraison restreinte aux pays membres de l'Union Européenne.
+a|
+- [ ] Liste déroulante limitée aux pays de l'UE (CS-04)
+- [ ] Adresse hors UE bloquée avec message d'erreur
+| À faire
+
+| *US-ORD-02*
+| En tant qu'acheteur, je peux choisir un mode de livraison parmi les transporteurs actifs couvrant mon pays de destination.
+a|
+- [ ] Seuls les transporteurs actifs et compatibles avec le pays de livraison sont proposés
+- [ ] Tarif affiché pour chaque option
+| À faire
+
+| *US-ORD-03*
+| En tant qu'acheteur, je peux régler ma commande par carte bancaire avec autorisation immédiate via Stripe.
+a|
+- [ ] Données carte transmises directement à Stripe sans transit en clair par le backend (PCI-DSS)
+- [ ] Commande confirmée et vendeur notifié si la transaction est autorisée ; stock réservé
+- [ ] Message d'erreur explicite si la transaction est refusée
+| À faire
+
+| *US-ORD-04*
+| En tant qu'acheteur, je peux régler ma commande par virement bancaire ; je reçois les coordonnées bancaires du vendeur et ma commande est placée en attente de confirmation.
+a|
+- [ ] Commande créée en statut `paiement_en_attente_virement`
+- [ ] Coordonnées bancaires et référence à inclure affichées et envoyées par email
+- [ ] Stock pré-réservé ; vendeur notifié du virement en attente
+| À faire
+
+| *US-ORD-05*
+| En tant qu'acheteur, je reçois un email de confirmation après validation de ma commande.
+a|
+- [ ] Email envoyé via SendGrid contenant le numéro de commande, le récapitulatif et la livraison estimée
+| À faire
+
+|===
+
+== Gestion des commandes — Vendeur
+
+_Fonctions ARCADIA : FS-V04, FS-V09 — UCSA-07, UCSA-13 — LA : Service Commande / Service Paiement_
+
+[cols="1,3,4,1", options="header"]
+|===
+| ID | User story | Critères d'acceptation | Statut
+
+| *US-VND-01*
+| En tant que vendeur, je suis notifié des nouvelles commandes et je peux les consulter dans mon tableau de bord.
+a|
+- [ ] Notification email à chaque nouvelle commande
+- [ ] Commande visible dans le back-office avec détail acheteur, lignes et statut
+| À faire
+
+| *US-VND-02*
+| En tant que vendeur, je peux confirmer la réception d'un virement bancaire pour déclencher la prise en charge de la commande.
+a|
+- [ ] Liste des commandes en statut `paiement_en_attente_virement` dans le back-office
+- [ ] « Confirmer » → commande passe en `en_attente` ; acheteur notifié
+- [ ] « Rejeter » → commande annulée ; stock pré-réservé libéré ; acheteur notifié
+| À faire
+
+|===
+
+== Expédition et suivi
+
+_Fonctions ARCADIA : FS-V05, FS-B08, FS-C01, CS-05 — UCSA-07, UCSA-08 — LA : Service Expédition_
+
+[cols="1,3,4,1", options="header"]
+|===
+| ID | User story | Critères d'acceptation | Statut
+
+| *US-EXP-01*
+| En tant que vendeur, je peux déclarer l'expédition d'une commande en saisissant le numéro de suivi récupéré sur le reçu de dépôt physique auprès du transporteur.
+a|
+- [ ] Formulaire : sélecteur de transporteur (actifs uniquement) + champ numéro de suivi (obligatoire)
+- [ ] Soumission bloquée si le champ numéro de suivi est vide
+- [ ] Commande passe en statut `expédiée` ; numéro de suivi enregistré en base
+- [ ] Acheteur notifié par email avec le numéro de suivi et le lien vers le site du transporteur
+| À faire
+
+| *US-EXP-02*
+| En tant qu'acheteur, je peux consulter le numéro de suivi de ma commande et accéder au site du transporteur depuis mon espace commandes.
+a|
+- [ ] Numéro de suivi affiché dans le détail de la commande expédiée
+- [ ] Lien vers le site de suivi du transporteur (URL construite à partir du numéro et de l'URL configurée par l'admin)
+- [ ] Si numéro non encore disponible : message « en cours d'expédition — numéro non disponible »
+| À faire
+
+|===
+
+== Annulation de commande
+
+_Fonctions ARCADIA : FS-B09, FS-V08, FS-P03 — UCSA-06 — LA : Service Commande / Service Paiement_
+
+[cols="1,3,4,1", options="header"]
+|===
+| ID | User story | Critères d'acceptation | Statut
+
+| *US-CAN-01*
+| En tant qu'acheteur, je peux annuler une commande en attente ou en préparation depuis mon espace commandes.
+a|
+- [ ] Bouton d'annulation disponible sur les commandes aux statuts `en_attente` et `en_préparation`
+- [ ] Confirmation obligatoire avant annulation
+- [ ] Demande transmise au vendeur pour acceptation
+| À faire
+
+| *US-CAN-02*
+| En tant que vendeur, je peux accepter ou refuser une demande d'annulation reçue avant expédition.
+a|
+- [ ] Notification de la demande d'annulation dans le back-office
+- [ ] Acceptation → remboursement déclenché via Stripe (FS-P03) ; stock libéré ; acheteur notifié
+- [ ] Refus → acheteur notifié du refus ; commande maintenue dans son statut courant
+| À faire
+
+| *US-CAN-03*
+| En tant que vendeur, je peux accepter une annulation après expédition en exigeant le renvoi préalable du colis.
+a|
+- [ ] Commande passe en statut `en_attente_retour` ; acheteur notifié du renvoi requis
+- [ ] Vendeur confirme la réception du colis retourné dans le back-office
+- [ ] Remboursement déclenché uniquement après confirmation de réception
+| À faire
+
+| *US-CAN-04*
+| En tant que vendeur, je peux accepter une annulation après expédition sans exiger le retour du colis.
+a|
+- [ ] Remboursement déclenché immédiatement via Stripe (FS-P03)
+- [ ] Commande passe directement en statut `annulée` ; acheteur notifié
+| À faire
+
+|===
+
+== Litiges et réclamations
+
+_Fonctions ARCADIA : FS-V06, FS-P03 — UCSA-09 — LA : Service Commande / Service Paiement_
+
+[cols="1,3,4,1", options="header"]
+|===
+| ID | User story | Critères d'acceptation | Statut
+
+| *US-CLM-01*
+| En tant qu'acheteur, je peux ouvrir une réclamation depuis mon espace commandes en précisant le motif.
+a|
+- [ ] Formulaire avec sélection du motif (non-réception, article défectueux, etc.) et champ libre
+- [ ] Réclamation créée en statut `ouverte` ; vendeur notifié
+| À faire
+
+| *US-CLM-02*
+| En tant que vendeur, je peux consulter les réclamations ouvertes et décider d'accorder ou de refuser un remboursement.
+a|
+- [ ] Liste des réclamations `ouvertes` avec le message acheteur dans le back-office
+- [ ] Remboursement accordé → déclenché via Stripe ; réclamation passe en `clôturée` ; acheteur notifié
+- [ ] Refus → réclamation passe en `clôturée` ; acheteur notifié du refus
+| À faire
+
+|===
+
+== Rapports de ventes
+
+_Fonctions ARCADIA : FS-V07 — UCSA-11 — LA : Service Rapport_
+
+[cols="1,3,4,1", options="header"]
+|===
+| ID | User story | Critères d'acceptation | Statut
+
+| *US-RPT-01*
+| En tant que vendeur, je peux consulter les indicateurs de ventes sur une période donnée et exporter les données.
+a|
+- [ ] Indicateurs : chiffre d'affaires, nombre de commandes, panier moyen, taux d'annulation
+- [ ] Classement des produits les plus vendus (dérivé des `LigneCommande`)
+- [ ] Filtres par période et par catégorie
+- [ ] Export CSV téléchargeable côté client
+| À faire
+
+|===
+
+== Matrice de traçabilité FS → User Stories
+
+[cols="1,2,2", options="header"]
+|===
+| Fonction SA | Description | User Stories
+
+| FS-A01 | Créer, suspendre et supprimer les comptes | US-ADM-01, US-ADM-02, US-ADM-03, US-ADM-04
+| FS-A02 | Gérer les rôles et droits d'accès | US-ADM-05
+| FS-A03 | Gérer les transporteurs | US-ADM-06, US-ADM-07, US-ADM-08, US-ADM-09
+| FS-B01 | Inscription + envoi email d'activation | US-REG-01
+| FS-B02 | Mise à jour du profil acheteur | US-PRF-01
+| FS-B03 | Afficher et filtrer le catalogue | US-SHP-01, US-SHP-02
+| FS-B04 | Gérer le panier | US-CRT-01
+| FS-B05 | Persister et restaurer le panier | US-CRT-02
+| FS-B06 | Orchestrer le tunnel d'achat | US-ORD-01, US-ORD-02
+| FS-B07 | Soumettre le paiement (carte ou virement) | US-ORD-03, US-ORD-04
+| FS-B08 | Afficher le suivi de livraison | US-EXP-02
+| FS-B09 | Annuler une commande (acheteur) | US-CAN-01
+| FS-B10 | Activer le compte via token | US-REG-02, US-REG-03
+| FS-V01 | Mise à jour du profil vendeur | US-PRF-02
+| FS-V02 | Gérer le catalogue produits | US-CAT-01, US-CAT-02, US-CAT-03
+| FS-V03 | Gérer les stocks et alertes | US-CAT-04, US-CAT-05
+| FS-V04 | Traiter les commandes reçues | US-VND-01
+| FS-V05 | Déclarer l'expédition avec numéro de suivi | US-EXP-01
+| FS-V06 | Traiter les litiges et réclamations | US-CLM-01, US-CLM-02
+| FS-V07 | Consulter les rapports de ventes | US-RPT-01
+| FS-V08 | Traiter les annulations (avant/après expédition) | US-CAN-02, US-CAN-03, US-CAN-04
+| FS-V09 | Confirmer la réception d'un virement bancaire | US-VND-02
+| FS-C01 | Afficher le n° de suivi et l'URL transporteur | US-EXP-02
+| FS-P01 | Demander une autorisation de paiement | US-ORD-03
+| FS-P02 | Confirmer / refuser la transaction | US-ORD-03, US-ORD-05
+| FS-P03 | Déclencher un remboursement | US-CAN-02, US-CAN-03, US-CAN-04, US-CLM-02
+|===

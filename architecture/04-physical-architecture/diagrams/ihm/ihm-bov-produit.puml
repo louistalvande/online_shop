@@ -1,0 +1,30 @@
+@startsalt
+' Composant PA : front-vendeur (Back-office Vendeur)
+' Fonctions allouées : Service Catalogue — FS-V02 (CRUD), FS-V03 (stock — fusion Produit/Stock)
+' Statut « Archivé » retire le produit du catalogue acheteur sans le supprimer
+title Back-office Vendeur — Édition d'un produit
+
+{+
+  == Modifier le produit
+  Nom            | "Chaussures cuir brun       "
+  Catégorie      | ^Chaussures                 ^
+  Description    | {SI
+                     "Chaussures en cuir pleine fleur,
+                      doublure cuir, semelle Goodyear."
+                   }
+  Prix HT (€)    | "89,00               "
+  --
+  Photos         | [Ajouter une photo]
+                   [photo1.jpg] [photo2.jpg]
+  --
+  == Stock
+  Quantité disponible | "12  "
+  Seuil d'alerte      | "5   "
+  --
+  == Statut
+  (X) Publié
+  ( ) Archivé
+  --
+  [Annuler]   [Enregistrer les modifications]
+}
+@endsalt

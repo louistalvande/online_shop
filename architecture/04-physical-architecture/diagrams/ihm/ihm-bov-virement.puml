@@ -1,0 +1,25 @@
+@startsalt
+' Composant PA : front-vendeur (Back-office Vendeur)
+' Fonctions allouées : Service Paiement — FS-V09 (CS-02 — confirmation virement bancaire)
+title Back-office Vendeur — Confirmation de virement bancaire
+
+{+
+  == Commandes en attente de virement (1)
+  {#
+    Réf.          | Acheteur    | Montant   | Date commande | Actions
+    CMD-2025-0041 | C. Bernard  | 129,00 €  | 11/01/2025    | [Confirmer] [Rejeter]
+  }
+  ==
+  == Confirmer CMD-2025-0041
+  Vérifiez votre relevé bancaire avant de confirmer.
+  --
+  Montant attendu  : 129,00 €
+  Référence libellé : CMD-2025-0041
+  --
+  Confirmer déclenche la prise en charge de la commande
+  et notifie l'acheteur.
+  Rejeter annule la commande et libère le stock réservé.
+  --
+  [Rejeter le virement]   [Confirmer la réception]
+}
+@endsalt

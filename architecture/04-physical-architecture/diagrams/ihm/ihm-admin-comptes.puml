@@ -1,0 +1,23 @@
+@startsalt
+' Composant PA : front-admin (Console Administrateur)
+' Fonctions allouées : Service Compte — FS-A01 (créer/suspendre/supprimer), FS-A02 (rôles)
+' Les actions disponibles varient selon le statut du compte
+title Console Admin — Gestion des comptes
+
+{+
+  [+ Créer un compte]
+  --
+  Rôle   | ^Tous^    Statut | ^Tous^   | [Filtrer]
+  --
+  {#
+    Email                    | Nom            | Rôle     | Statut    | Actions
+    marie.dupont@email.com   | Marie Dupont   | Acheteur | Actif     | [Suspendre] [Supprimer]
+    c.bernard@email.com      | C. Bernard     | Acheteur | Actif     | [Suspendre] [Supprimer]
+    vendor@boutique.fr       | La Boutique    | Vendeur  | Actif     | [Suspendre] [Supprimer]
+    new.user@email.com       | Paul Lefebvre  | Acheteur | En attente| [Supprimer]
+    old.user@email.com       | Anne Martin    | Acheteur | Suspendu  | [Réactiver] [Supprimer]
+  }
+  --
+  [< Précédent]  Page 1/2  [Suivant >]
+}
+@endsalt

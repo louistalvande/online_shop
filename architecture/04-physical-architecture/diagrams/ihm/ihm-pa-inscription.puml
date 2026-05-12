@@ -1,0 +1,21 @@
+@startsalt
+' Composant PA : front-acheteur (Portail Acheteur)
+' Fonctions allouées : Service Compte — FS-B01 (inscription), FS-B10 (activation par email)
+title Portail Acheteur — Inscription
+
+{+
+  == Créer un compte
+  Prénom          | "                    "
+  Nom             | "                    "
+  Email           | "                    "
+  Mot de passe    | "                    "
+  Confirmer       | "                    "
+  --
+  [Créer mon compte]
+  ==
+  Après inscription, vous recevrez un email
+  contenant un lien d'activation (valable 24 h).
+  ==
+  Déjà un compte ? [Se connecter]
+}
+@endsalt

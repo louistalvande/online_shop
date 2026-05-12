@@ -1,0 +1,42 @@
+@startsalt
+' Composant PA : front-vendeur (Back-office Vendeur)
+' Fonctions allouées : Service Rapport — FS-V07 (agrégats JPQL, statistiques de ventes)
+title Back-office Vendeur — Rapports de ventes
+
+{+
+  == Rapports de ventes
+  Période | ^Janvier 2025^  | [Appliquer]
+  --
+  {
+    {+
+      Chiffre d'affaires
+      **8 420,00 €**
+    }
+    |
+    {+
+      Commandes
+      **34**
+    }
+    |
+    {+
+      Panier moyen
+      **247,65 €**
+    }
+    |
+    {+
+      Taux d'annulation
+      **5,9 %**
+    }
+  }
+  ==
+  == Produits les plus vendus
+  {#
+    Rang | Produit              | Qté vendue | CA généré
+    1    | Chaussures cuir brun | 18         | 1 602,00 €
+    2    | Veste laine grise    | 12         | 1 788,00 €
+    3    | Ceinture daim noir   | 24         | 816,00 €
+  }
+  ==
+  [Exporter en CSV]
+}
+@endsalt

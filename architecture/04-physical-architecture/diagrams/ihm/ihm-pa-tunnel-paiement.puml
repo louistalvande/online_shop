@@ -1,0 +1,29 @@
+@startsalt
+' Composant PA : front-acheteur (Portail Acheteur)
+' Fonctions allouées : Service Paiement — FS-B07 (CS-02 : carte ou virement)
+' Données carte transmises directement à Stripe SDK sans transit en clair (PCI-DSS)
+title Portail Acheteur — Tunnel d'achat : Paiement (étape 2/3)
+
+{+
+  == Récapitulatif
+  {#
+    3 articles | 306,00 € HT
+    Livraison  | 5,90 €
+    TVA 20 %   | 61,20 €
+    **Total TTC**  | **373,10 €**
+  }
+  ==
+  == Mode de paiement
+  (X) Carte bancaire
+      Numéro       | "                    "
+      Expiration   | "MM/AA"
+      CVV          | "   "
+  --
+  ( ) Virement bancaire
+      Les coordonnées bancaires vous seront
+      communiquées après validation. La commande
+      sera traitée à réception des fonds.
+  --
+  [Retour]   [Confirmer et payer]
+}
+@endsalt

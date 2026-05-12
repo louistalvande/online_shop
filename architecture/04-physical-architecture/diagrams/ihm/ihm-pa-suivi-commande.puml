@@ -1,0 +1,29 @@
+@startsalt
+' Composant PA : front-acheteur (Portail Acheteur)
+' Fonctions allouées : Service Expédition — FS-B08, FS-C01 (CS-05)
+' IFS-05 : lien sortant vers le site de suivi du transporteur (pas d'API système)
+title Portail Acheteur — Suivi de commande
+
+{+
+  == Commande CMD-2025-0042
+  Statut    | Expédiée le 13/01/2025
+  Transporteur | La Poste — Colissimo
+  --
+  == Suivi du colis
+  Numéro de suivi : 2A26257849123
+  [Suivre mon colis sur le site La Poste]
+  --
+  Livraison estimée : 15-17 janvier 2025
+  ==
+  == Détail de la commande
+  {#
+    Produit              | Qté | Prix unit.
+    Chaussures cuir brun | 1   | 89,00 €
+    Veste laine grise    | 1   | 149,00 €
+    Ceinture daim noir   | 2   | 34,00 €
+  }
+  Total TTC : 373,10 €
+  ==
+  [Annuler la commande]   [Ouvrir une réclamation]
+}
+@endsalt
