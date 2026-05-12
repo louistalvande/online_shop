@@ -35,12 +35,12 @@ Le système est structuré en cinq couches logiques : *Présentation*, *Applicat
 | *Portail Acheteur*
 | Présentation
 | Interface web responsive — catalogue, panier, tunnel d'achat, suivi de commande, profil acheteur
-| FS-B01..B10, FS-B03..B09
+| FS-B01..B10
 
 | *Back-office Vendeur*
 | Présentation
 | Interface web desktop — gestion catalogue, stocks, commandes, expéditions, rapports
-| FS-V01..V08
+| FS-V01..V09
 
 | *Console Administrateur*
 | Présentation

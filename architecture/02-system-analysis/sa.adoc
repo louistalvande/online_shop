@@ -43,7 +43,7 @@ NOTE: Le système couvre l'ensemble des interactions numériques entre les six a
 | *Transporteur*
 | Système externe
 | Prise en charge et livraison des colis
-| API de suivi et de mise à jour de statut (IFS-05)
+| Site de suivi (IFS-05) — lien web sortant consulté par l'acheteur
 
 | *Prestataire de paiement*
 | Système externe
@@ -139,7 +139,7 @@ Les fonctions système (FS) sont dérivées des cas d'utilisation opérationnels
 | FS-B05 | Sauvegarder et restaurer le panier entre sessions (CS-03) | UC_B2B
 | FS-B06 | Orchestrer le tunnel d'achat (adresse, mode de livraison, validation) | UC_B3 / UC_B4B
 | FS-B07 | Soumettre le paiement au prestataire externe — carte ou virement (CS-02) | UC_B4
-| FS-B08 | Afficher le suivi de livraison en temps réel (numéro de suivi, statuts) | UC_B5 / UC_C3
+| FS-B08 | Afficher le numéro de suivi et le lien vers le site du transporteur dans l'espace commandes | UC_B5
 | FS-B09 | Permettre l'annulation d'une commande avant expédition | UC_B6
 |===
 
@@ -194,6 +194,7 @@ rectangle "Système — Boutique en ligne" {
     usecase (UCSA-07\nPréparer et expédier\nune commande) as UC07
     usecase (UCSA-09\nTraiter un litige\nou une réclamation) as UC09
     usecase (UCSA-11\nConsulter les rapports\nde ventes) as UC11
+    usecase (UCSA-13\nConfirmer la réception\nd'un virement bancaire) as UC13
   }
 
   package "Expérience d'achat" {
@@ -218,6 +219,7 @@ Vendor --> UC10
 Vendor --> UC07
 Vendor --> UC09
 Vendor --> UC11
+Vendor --> UC13
 Vendor --> UC06 : accepte/refuse
 
 Buyer --> UC01
@@ -1062,7 +1064,7 @@ class CompteUtilisateur {
   + email : String
   + motDePasseHaché : String
   + rôle : Enum {admin, vendeur, acheteur}
-  + statut : Enum {actif, suspendu, supprimé}
+  + statut : Enum {en_attente, actif, suspendu, supprimé}
   + dateCreation : DateTime
 }
 
@@ -1074,10 +1076,6 @@ class Produit {
   + photos : List<URL>
   + catégorie : String
   + statut : Enum {publié, archivé}
-}
-
-class Stock {
-  + id : UUID
   + quantitéDisponible : Integer
   + seuilAlerte : Integer
 }
@@ -1088,6 +1086,11 @@ class Panier {
 }
 
 class LignePanier {
+  + quantité : Integer
+  + prixUnitaireCapturé : Decimal
+}
+
+class LigneCommande {
   + quantité : Integer
   + prixUnitaireCapturé : Decimal
 }
@@ -1144,7 +1147,8 @@ CompteUtilisateur "1" --> "0..1" Panier : possède
 CompteUtilisateur "1" --> "0..*" Commande : passe
 Panier "1" *-- "0..*" LignePanier : contient
 LignePanier "0..*" --> "1" Produit : référence
-Produit "1" -- "1" Stock : géré par
+Commande "1" *-- "1..*" LigneCommande : contient
+LigneCommande "0..*" --> "1" Produit : référence
 Commande "1" *-- "1" Paiement : réglée par
 Commande "1" *-- "0..1" Expédition : donne lieu à
 Commande "1" --> "0..*" Réclamation : fait l'objet de
@@ -1181,7 +1185,7 @@ end note
 | *IFS-03*
 | Back-office administrateur
 | Web HTTPS — desktop-first
-| Comptes utilisateurs, transporteurs, logs d'audit
+| Comptes utilisateurs, transporteurs
 
 | *IFS-04*
 | API prestataire de paiement
@@ -1231,7 +1235,7 @@ package "Système — Boutique en ligne" {
   }
 
   package "Noyau Métier" {
-    [Gestion des comptes\n(FS-A01..A04, FS-B01..B02)] as AccountSvc
+    [Gestion des comptes\n(FS-A01..A03, FS-B01..B02)] as AccountSvc
     [Gestion du catalogue\net des stocks (FS-V02..V03, FS-B03)] as CatalogSvc
     [Gestion du panier\n(FS-B04..B05 / CS-03)] as CartSvc
     [Orchestrateur de commande\n(FS-B06..B09, FS-V04..V08)] as OrderSvc
