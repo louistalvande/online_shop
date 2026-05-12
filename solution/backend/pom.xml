@@ -18,6 +18,10 @@
 
   <properties>
     <java.version>21</java.version>
+    <db.host>localhost</db.host>
+    <db.name>shop</db.name>
+    <db.user>shop</db.user>
+    <db.password>dev</db.password>
   </properties>
 
   <dependencies>
@@ -108,9 +112,9 @@
         <groupId>org.flywaydb</groupId>
         <artifactId>flyway-maven-plugin</artifactId>
         <configuration>
-          <url>jdbc:postgresql://${db.host:localhost}:5432/${db.name:shop}</url>
-          <user>${db.user:shop}</user>
-          <password>${db.password:dev}</password>
+          <url>jdbc:postgresql://${db.host}:5432/${db.name}</url>
+          <user>${db.user}</user>
+          <password>${db.password}</password>
           <cleanDisabled>false</cleanDisabled>
         </configuration>
         <dependencies>
