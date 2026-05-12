@@ -224,24 +224,28 @@ solution/
 │   │   ├── application.yml
 │   │   └── db/migration/
 │   │       └── V1__init_schema.sql
+│   ├── Dockerfile.dev
 │   └── pom.xml
 ├── frontend/
-│   ├── buyer-portal/               ← Buyer Portal (SPA)
+│   ├── Dockerfile.dev              ← shared dev image (Node + Nginx + SSH)
+│   ├── nginx.dev.conf              ← proxies buyer/vendor/admin.localhost → Vite ports
+│   ├── buyer-portal/               ← Buyer Portal
 │   │   └── src/
 │   │       └── i18n/
 │   │           ├── en.json
 │   │           └── fr.json
-│   ├── vendor-backoffice/          ← Vendor Back-office (SPA)
+│   ├── vendor-backoffice/          ← Vendor Back-office
 │   │   └── src/
 │   │       └── i18n/
 │   │           ├── en.json
 │   │           └── fr.json
-│   └── admin-console/              ← Admin Console (SPA)
+│   └── admin-console/              ← Admin Console
 │       └── src/
 │           └── i18n/
 │               ├── en.json
 │               └── fr.json
-└── docker-compose.yml
+├── docker-compose.yml
+└── docker-compose.dev.yml
 ```
 
 ---
@@ -415,22 +419,189 @@ All three SPAs must support **French (fr) and English (en)**. French is the defa
 
 ---
 
+## Dev environment — VS Code Remote SSH into containers
+
+In dev mode each service runs in its own Docker container with an SSH server, so VS Code can connect to it via **Remote - SSH** and edit, build, and run code directly inside the container.
+
+### Dev Dockerfiles
+
+Each service has a `Dockerfile.dev` alongside its regular `Dockerfile`.
+
+**`backend/Dockerfile.dev`**
+```dockerfile
+FROM maven:3.9-eclipse-temurin-21
+RUN apt-get update && apt-get install -y openssh-server \
+    && mkdir /var/run/sshd \
+    && echo 'root:dev' | chpasswd \
+    && sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config
+WORKDIR /workspace
+EXPOSE 22 8080
+CMD ["/usr/sbin/sshd", "-D"]
+```
+
+**`frontend/Dockerfile.dev`** (shared by all three apps)
+```dockerfile
+FROM node:20
+RUN apt-get update && apt-get install -y openssh-server nginx \
+    && mkdir /var/run/sshd \
+    && echo 'root:dev' | chpasswd \
+    && sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config
+COPY nginx.dev.conf /etc/nginx/nginx.conf
+WORKDIR /workspace
+EXPOSE 22 80
+# start nginx and sshd
+CMD nginx && /usr/sbin/sshd -D
+```
+
+**`frontend/nginx.dev.conf`**
+
+Nginx acts as the single entry point on port 80 and proxies each subdomain to its Vite dev server. WebSocket connections (used by Vite HMR) are forwarded as well.
+
+```nginx
+events {}
+
+http {
+  # buyer.localhost → Vite :5173
+  server {
+    listen 80;
+    server_name buyer.localhost;
+    location / {
+      proxy_pass http://localhost:5173;
+      proxy_http_version 1.1;
+      proxy_set_header Upgrade $http_upgrade;
+      proxy_set_header Connection "upgrade";
+      proxy_set_header Host $host;
+    }
+  }
+
+  # vendor.localhost → Vite :5174
+  server {
+    listen 80;
+    server_name vendor.localhost;
+    location / {
+      proxy_pass http://localhost:5174;
+      proxy_http_version 1.1;
+      proxy_set_header Upgrade $http_upgrade;
+      proxy_set_header Connection "upgrade";
+      proxy_set_header Host $host;
+    }
+  }
+
+  # admin.localhost → Vite :5175
+  server {
+    listen 80;
+    server_name admin.localhost;
+    location / {
+      proxy_pass http://localhost:5175;
+      proxy_http_version 1.1;
+      proxy_set_header Upgrade $http_upgrade;
+      proxy_set_header Connection "upgrade";
+      proxy_set_header Host $host;
+    }
+  }
+}
+```
+
+### `docker-compose.dev.yml`
+
+Source directories are bind-mounted into `/workspace` so edits made inside the container are reflected on the host (and vice versa).
+
+```yaml
+services:
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: shop
+      POSTGRES_USER: shop
+      POSTGRES_PASSWORD: dev
+    ports:
+      - "5432:5432"
+
+  redis:
+    image: redis:7
+    ports:
+      - "6379:6379"
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.dev
+    ports:
+      - "8080:8080"   # Spring Boot
+      - "2222:22"     # SSH
+    volumes:
+      - ./backend:/workspace
+    depends_on:
+      - db
+      - redis
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.dev
+    ports:
+      - "80:80"       # Nginx → buyer.localhost / vendor.localhost / admin.localhost
+      - "2223:22"     # SSH
+    volumes:
+      - ./frontend:/workspace
+```
+
+### VS Code SSH config (`~/.ssh/config`)
+
+```
+Host shop-backend
+  HostName localhost
+  Port 2222
+  User root
+  StrictHostKeyChecking no
+
+Host shop-frontend
+  HostName localhost
+  Port 2223
+  User root
+  StrictHostKeyChecking no
+```
+
+### Workflow
+
+```bash
+# Start all dev containers
+docker compose -f docker-compose.dev.yml up --build -d
+
+# In VS Code: Remote-SSH → Connect to Host → shop-backend  or  shop-frontend
+# Open /workspace — source is live-mounted from the host
+
+# Inside backend container — build and run
+./mvnw spring-boot:run          # Spring Boot DevTools watches for class changes
+
+# Inside frontend container — start each Vite server in its own terminal
+cd /workspace/buyer-portal      && npm install && npm run dev -- --host --port 5173
+cd /workspace/vendor-backoffice && npm install && npm run dev -- --host --port 5174
+cd /workspace/admin-console     && npm install && npm run dev -- --host --port 5175
+# Nginx (already running) proxies the three apps:
+#   http://buyer.localhost  → :5173
+#   http://vendor.localhost → :5174
+#   http://admin.localhost  → :5175
+```
+
+---
+
 ## Development commands
 
 ```bash
-# Backend
+# Backend (local, no Docker)
 cd backend
 ./mvnw spring-boot:run
 
 # Regenerate openapi.yaml
 ./mvnw springdoc-openapi:generate
 
-# Frontend (any SPA)
+# Frontend (local, no Docker)
 cd frontend/buyer-portal   # or vendor-backoffice / admin-console
 npm install
 npm run dev
 
-# Full stack with Docker Compose
+# Full stack (prod-like)
 docker compose up --build
 
 # Run DB migrations only
@@ -440,7 +611,6 @@ docker compose up --build
 ---
 
 ## What Claude must do in this directory
-
 - Strictly enforce Controller → Service → Repository: no layer skip, no Repository injection in a Controller.
 - Generate code that strictly matches the domain model and business rules above.
 - Verify identifiers against the architecture before creating new entities or endpoints.
