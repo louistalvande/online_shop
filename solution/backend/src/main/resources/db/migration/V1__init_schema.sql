@@ -1,0 +1,2 @@
+-- V1: initial schema placeholder
+-- Add CREATE TABLE statements here as domain entities are implemented.

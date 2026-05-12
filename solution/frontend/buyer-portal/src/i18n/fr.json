@@ -1,0 +1,12 @@
+{
+  "app.name": "Dessins d'artistes locaux",
+  "nav.home": "Accueil",
+  "nav.catalog": "Catalogue",
+  "nav.cart": "Panier",
+  "home.title": "Dessins d'artistes locaux",
+  "home.subtitle": "Découvrez notre collection de dessins uniques créés par des artistes locaux talentueux. Chaque œuvre est une expression de créativité et d'émotion, parfaite pour décorer votre espace ou offrir un cadeau spécial. Explorez notre catalogue et trouvez la pièce qui résonne avec vous.",
+  "home.featured": "Œuvres en Vedette",
+  "home.viewAll": "Voir tout le catalogue",
+  "product.addToCart": "Ajouter",
+  "lang.toggle": "Changer de langue"
+}

@@ -1,0 +1,20 @@
+{
+  "app.name": "Vendor Space",
+  "nav.dashboard": "Dashboard",
+  "nav.orders": "Orders",
+  "nav.catalog": "Catalogue",
+  "nav.profile": "Profile",
+  "dashboard.title": "Dashboard",
+  "stats.pendingOrders": "Pending orders",
+  "stats.monthlyRevenue": "Monthly revenue",
+  "stats.activeProducts": "Active illustrations",
+  "orders.recent": "Recent orders",
+  "orders.viewAll": "View all",
+  "orders.ref": "Reference",
+  "orders.buyer": "Buyer",
+  "orders.items": "Items",
+  "orders.total": "Total",
+  "orders.status": "Status",
+  "orders.details": "Details",
+  "lang.toggle": "Switch language"
+}

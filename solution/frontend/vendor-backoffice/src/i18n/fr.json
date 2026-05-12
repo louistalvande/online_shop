@@ -1,0 +1,20 @@
+{
+  "app.name": "Espace Vendeur",
+  "nav.dashboard": "Tableau de bord",
+  "nav.orders": "Commandes",
+  "nav.catalog": "Catalogue",
+  "nav.profile": "Profil",
+  "dashboard.title": "Tableau de bord",
+  "stats.pendingOrders": "Commandes en attente",
+  "stats.monthlyRevenue": "Revenus du mois",
+  "stats.activeProducts": "Illustrations actives",
+  "orders.recent": "Commandes récentes",
+  "orders.viewAll": "Voir tout",
+  "orders.ref": "Référence",
+  "orders.buyer": "Acheteur",
+  "orders.items": "Articles",
+  "orders.total": "Total",
+  "orders.status": "Statut",
+  "orders.details": "Détails",
+  "lang.toggle": "Changer de langue"
+}
