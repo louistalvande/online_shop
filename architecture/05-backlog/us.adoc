@@ -352,22 +352,21 @@ _Fonctions ARCADIA : FS-B09, FS-V08, FS-P03 — UCSA-06 — LA : Service Command
 | ID | User story | Critères d'acceptation | Statut
 
 | *US-CAN-01*
-| En tant qu'acheteur, je peux annuler une commande en attente ou en préparation depuis mon espace commandes.
+| En tant qu'acheteur, je peux annuler une commande en attente ou en préparation depuis mon espace commandes sans que le vendeur puisse s'y opposer.
 a|
 - [ ] Bouton d'annulation disponible sur les commandes aux statuts `en_attente` et `en_préparation`
 - [ ] Confirmation obligatoire avant annulation
 - [ ] Si paiement par virement : champ « IBAN de remboursement » obligatoire dans le formulaire d'annulation, avec validation du format IBAN
 - [ ] Si paiement par carte : aucun champ bancaire requis
-- [ ] Demande transmise au vendeur pour acceptation
+- [ ] Annulation effective immédiatement ; stock libéré ; vendeur notifié
 | À faire
 
 | *US-CAN-02*
-| En tant que vendeur, je peux accepter ou refuser une demande d'annulation reçue avant expédition.
+| En tant que vendeur, je suis notifié d'une annulation avant expédition et dois procéder au remboursement si le paiement était par virement.
 a|
-- [ ] Notification de la demande d'annulation dans le back-office
-- [ ] Acceptation, paiement carte → remboursement déclenché via Stripe (FS-P03) ; stock libéré ; acheteur notifié
-- [ ] Acceptation, paiement virement → commande passe en `remboursement_virement_en_cours` ; IBAN de l'acheteur et montant affichés au vendeur pour virement inverse ; stock libéré
-- [ ] Refus → acheteur notifié du refus ; commande maintenue dans son statut courant
+- [ ] Notification de l'annulation dans le back-office (lecture seule — aucun refus possible)
+- [ ] Paiement carte → remboursement déclenché automatiquement par le système via Stripe (FS-P03) ; aucune action requise du vendeur
+- [ ] Paiement virement → IBAN de l'acheteur et montant affichés au vendeur pour virement inverse ; commande en `remboursement_virement_en_cours`
 | À faire
 
 | *US-CAN-03*

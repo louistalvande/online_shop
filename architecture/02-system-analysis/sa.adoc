@@ -121,7 +121,7 @@ Les fonctions système (FS) sont dérivées des cas d'utilisation opérationnels
 | FS-V05 | Permettre au vendeur de déclarer l'expédition d'une commande en saisissant le numéro de suivi récupéré sur le reçu de dépôt physique ; passer la commande en état `expédiée` et notifier l'acheteur avec ce numéro | UC_V4
 | FS-V06 | Traiter les litiges et réclamations (remboursement, retour) | UC_V5
 | FS-V07 | Consulter les rapports de ventes (CA, produits, historique) | UC_V6
-| FS-V08 | Traiter les demandes d'annulation : avant expédition (accepter/refuser) ; après expédition, choisir entre annulation avec condition de renvoi ou annulation directe sans renvoi | UC_V7
+| FS-V08 | Traiter les demandes d'annulation après expédition : accepter ou refuser ; en cas d'acceptation, choisir entre annulation avec condition de renvoi ou annulation directe sans renvoi | UC_V7
 | FS-V09 | Confirmer manuellement la réception d'un virement bancaire et déclencher la prise en charge de la commande correspondante | —
 | FS-V10 | Confirmer l'émission d'un virement inverse de remboursement vers l'acheteur à la suite d'une annulation de commande réglée par virement bancaire | UC_V7
 |===
@@ -338,7 +338,7 @@ a|
 | UCSA-06
 
 | *Acteurs*
-| Acheteur (principal) ; Vendeur (secondaire) ; Prestataire de paiement (secondaire)
+| Acheteur (principal) ; Vendeur (secondaire — post-expédition uniquement) ; Prestataire de paiement (secondaire)
 
 | *Préconditions*
 | Commande existante dans l'état `en_attente` ou `en_préparation` (avant expédition), ou dans l'état `expédiée` (après expédition)
@@ -348,21 +348,18 @@ a|
 
 | *Scénario nominal — annulation avant expédition, paiement par carte*
 a|
-. Le système transmet la demande d'annulation au vendeur.
-. Le vendeur vérifie que le colis n'a pas encore été remis au transporteur.
-. Le vendeur accepte l'annulation dans le système.
+. L'acheteur soumet la demande d'annulation. Le système annule automatiquement la commande et libère le stock ; le vendeur est notifié.
 . Le système déclenche un remboursement via le prestataire (IFS-04 / FS-P03).
 . Le prestataire confirme le remboursement.
-. Le système notifie l'acheteur de l'annulation et du remboursement ; le stock est libéré.
+. Le système notifie l'acheteur de l'annulation et du remboursement.
 
 | *Scénario alternatif — annulation avant expédition, paiement par virement*
 a|
 * *0v.* Le paiement initial ayant été effectué par virement bancaire, le système détecte le mode de paiement et affiche un champ obligatoire « IBAN de remboursement » dans le formulaire de demande d'annulation.
-* *1v.* L'acheteur renseigne son IBAN et soumet la demande. Le système valide le format IBAN et enregistre la demande avec l'IBAN associé.
-* *2v.* Le vendeur accepte l'annulation. Le système passe la commande en état `remboursement_virement_en_cours`, libère le stock et notifie le vendeur de procéder à un virement inverse, en lui transmettant l'IBAN fourni par l'acheteur et le montant à rembourser.
-* *3v.* Le vendeur effectue le virement inverse depuis son compte bancaire.
-* *4v.* Le vendeur confirme dans la boutique l'émission du virement de remboursement (FS-V10).
-* *5v.* Le système enregistre le remboursement, passe la commande en état `annulée` et notifie l'acheteur que le virement de remboursement a été émis.
+* *1v.* L'acheteur renseigne son IBAN et soumet la demande. Le système annule automatiquement la commande, libère le stock et notifie le vendeur. Le système passe la commande en état `remboursement_virement_en_cours` et transmet au vendeur l'IBAN de l'acheteur et le montant à rembourser.
+* *2v.* Le vendeur effectue le virement inverse depuis son compte bancaire.
+* *3v.* Le vendeur confirme dans la boutique l'émission du virement de remboursement (FS-V10).
+* *4v.* Le système enregistre le remboursement, passe la commande en état `annulée` et notifie l'acheteur que le virement de remboursement a été émis.
 
 | *Scénario alternatif — annulation après expédition, avec condition de renvoi*
 a|
@@ -378,7 +375,7 @@ a|
 
 | *Scénarios d'erreur*
 a|
-* *3d.* Le vendeur refuse la demande d'annulation (toutes situations) : le système notifie l'acheteur du refus ; la commande reste dans son état courant.
+* *3d.* Le vendeur refuse la demande d'annulation après expédition : le système notifie l'acheteur du refus ; la commande reste dans son état courant.
 
 | *Postconditions*
 | Commande en état `en_attente_retour` (attente du retour), `remboursement_virement_en_cours` (virement inverse en attente de confirmation vendeur) ou `annulée` (remboursement confirmé) ; stock libéré si applicable.

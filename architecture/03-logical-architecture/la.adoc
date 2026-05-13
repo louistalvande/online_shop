@@ -498,10 +498,10 @@ Expediee --> Livree : SvcOrder.confirmerReception()\n[acheteur confirme la réce
 
 Livree --> [*]
 
-En_attente --> Annulee : SvcOrder.annuler()\n[carte + vendeur accepte avant expédition]
-En_attente --> Remboursement_virement_en_cours : SvcOrder.annuler()\n[virement + vendeur accepte avant expédition]
-En_preparation --> Annulee : SvcOrder.annuler()\n[carte + vendeur accepte avant expédition]
-En_preparation --> Remboursement_virement_en_cours : SvcOrder.annuler()\n[virement + vendeur accepte avant expédition]
+En_attente --> Annulee : SvcOrder.annuler()\n[carte — acheteur demande avant expédition]
+En_attente --> Remboursement_virement_en_cours : SvcOrder.annuler()\n[virement — acheteur demande avant expédition]
+En_preparation --> Annulee : SvcOrder.annuler()\n[carte — acheteur demande avant expédition]
+En_preparation --> Remboursement_virement_en_cours : SvcOrder.annuler()\n[virement — acheteur demande avant expédition]
 
 Expediee --> En_attente_retour : SvcOrder.annuler()\n[vendeur accepte avec condition_renvoi]
 Expediee --> Annulee : SvcOrder.annuler()\n[carte + vendeur accepte sans condition_renvoi]
