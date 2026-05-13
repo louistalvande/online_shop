@@ -292,10 +292,20 @@ else (virement)
 endif
 
 if (Annulation souhaitée\navant expédition ?) then (oui)
-  :Annuler la commande\ndepuis son compte;
+  if (Mode de paiement ?) then (virement)
+    :Renseigner son IBAN\ndans le formulaire\nd'annulation;
+  else (carte)
+  endif
+  :Soumettre la demande\nd'annulation;
 
-  |Prestataire de paiement|
-  :Traiter le remboursement\nautomatique;
+  if (Mode de paiement ?) then (carte)
+    |Prestataire de paiement|
+    :Traiter le remboursement\nautomatique;
+  else (virement)
+    |Vendeur|
+    :Émettre un virement inverse\nvers l'IBAN de l'acheteur;
+    :Confirmer l'émission du\nremboursement dans la boutique;
+  endif
 
   |Acheteur|
   :Recevoir confirmation\nd'annulation et remboursement;
@@ -525,7 +535,10 @@ end
 | Répondre aux demandes de remboursement, gérer les retours produits
 
 | Traiter une annulation après expédition
-| Recevoir la demande d'annulation de l'acheteur ; accepter ou refuser la demande. En cas d'acceptation, choisir entre deux modalités : (1) **avec condition de renvoi** — notifier l'acheteur qu'il doit renvoyer le colis, attendre la réception du retour, puis déclencher le remboursement ; (2) **sans condition de renvoi** — déclencher le remboursement directement, sans exiger le retour du colis.
+| Recevoir la demande d'annulation de l'acheteur ; accepter ou refuser la demande. En cas d'acceptation, choisir entre deux modalités : (1) **avec condition de renvoi** — notifier l'acheteur qu'il doit renvoyer le colis, attendre la réception du retour, puis déclencher le remboursement ; (2) **sans condition de renvoi** — déclencher le remboursement directement, sans exiger le retour du colis. Si le paiement initial était par virement bancaire, le remboursement ne peut pas être traité automatiquement par le prestataire : le vendeur doit émettre un virement inverse vers l'acheteur et confirmer l'émission dans la boutique.
+
+| Émettre un virement inverse de remboursement
+| Lorsqu'une commande réglée par virement est annulée (avant ou après expédition), effectuer un virement bancaire du montant de la commande vers le compte de l'acheteur, puis confirmer manuellement l'émission dans la boutique pour clôturer le remboursement.
 
 | Confirmer la réception d'un virement bancaire
 | Après réception effective des fonds sur le compte bancaire du vendeur, confirmer manuellement dans la boutique la réception du virement pour déclencher la prise en charge de la commande correspondante

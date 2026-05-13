@@ -565,12 +565,18 @@ include::diagrams/ihm/ihm-pa-suivi-commande.puml[]
 
 ==== Annulation d'une commande
 
-Écran de demande d'annulation avant expédition (FS-B09). Rappelle le contenu de la commande et son statut. Le motif est optionnel. Le remboursement est déclenché automatiquement par le système après acceptation vendeur via le prestataire de paiement (FS-P03).
+Écran de demande d'annulation avant expédition (FS-B09). Rappelle le contenu de la commande et son statut. Le motif est optionnel. Si la commande a été réglée par carte, le remboursement est déclenché automatiquement via le prestataire (FS-P03) après acceptation vendeur. Si la commande a été réglée par virement, un champ « IBAN de remboursement » est affiché et obligatoire : l'acheteur doit fournir son RIB pour permettre au vendeur d'émettre un virement inverse (FS-V10).
 
-.Maquette filaire : Portail Acheteur — Annulation
+.Maquette filaire : Portail Acheteur — Annulation (paiement par carte)
 [plantuml, ihm-pa-annulation, svg]
 ----
 include::diagrams/ihm/ihm-pa-annulation.puml[]
+----
+
+.Maquette filaire : Portail Acheteur — Annulation (paiement par virement — champ IBAN obligatoire)
+[plantuml, ihm-pa-annulation-virement, svg]
+----
+include::diagrams/ihm/ihm-pa-annulation-virement.puml[]
 ----
 
 ==== Réclamation

@@ -69,8 +69,8 @@ Le système est structuré en cinq couches logiques : *Présentation*, *Applicat
 
 | *Service Paiement*
 | Application
-| Soumission des demandes d'autorisation (carte), gestion des paiements par virement en attente de confirmation manuelle (FS-V09), traitement des confirmations et refus, déclenchement des remboursements, journalisation
-| FS-B07, FS-P01, FS-P02, FS-P03, FS-V09
+| Soumission des demandes d'autorisation (carte), gestion des paiements par virement en attente de confirmation manuelle (FS-V09), traitement des confirmations et refus, déclenchement des remboursements carte via le prestataire (FS-P03), coordination des virements inverses de remboursement pour les paiements par virement (FS-V10), journalisation
+| FS-B07, FS-P01, FS-P02, FS-P03, FS-V09, FS-V10
 
 | *Service Expédition*
 | Application
@@ -498,15 +498,22 @@ Expediee --> Livree : SvcOrder.confirmerReception()\n[acheteur confirme la réce
 
 Livree --> [*]
 
-En_attente --> Annulee : SvcOrder.annuler()\n[acheteur demande + vendeur accepte\navant expédition]
-En_preparation --> Annulee : SvcOrder.annuler()\n[acheteur demande + vendeur accepte\navant expédition]
+En_attente --> Annulee : SvcOrder.annuler()\n[carte + vendeur accepte avant expédition]
+En_attente --> Remboursement_virement_en_cours : SvcOrder.annuler()\n[virement + vendeur accepte avant expédition]
+En_preparation --> Annulee : SvcOrder.annuler()\n[carte + vendeur accepte avant expédition]
+En_preparation --> Remboursement_virement_en_cours : SvcOrder.annuler()\n[virement + vendeur accepte avant expédition]
 
 Expediee --> En_attente_retour : SvcOrder.annuler()\n[vendeur accepte avec condition_renvoi]
-Expediee --> Annulee : SvcOrder.annuler()\n[vendeur accepte sans condition_renvoi]
+Expediee --> Annulee : SvcOrder.annuler()\n[carte + vendeur accepte sans condition_renvoi]
+Expediee --> Remboursement_virement_en_cours : SvcOrder.annuler()\n[virement + vendeur accepte sans condition_renvoi]
 
-En_attente_retour --> Annulee : SvcShipping.confirmerRetour()\n[vendeur confirme réception du colis retourné]
+En_attente_retour --> Annulee : SvcShipping.confirmerRetour()\n[carte + vendeur confirme réception retour]
+En_attente_retour --> Remboursement_virement_en_cours : SvcShipping.confirmerRetour()\n[virement + vendeur confirme réception retour]
 
-Annulee --> [*] : SvcPayment.rembourser()
+Remboursement_virement_en_cours --> Annulee : SvcPayment.confirmerVirementInverse()\n[vendeur confirme émission virement inverse]
+
+Annulee --> [*] : SvcPayment.rembourser()\n[carte — via prestataire]
+Annulee --> [*] : [virement — après confirmation FS-V10]
 
 note right of Paiement_en_attente_virement
   Stock pré-réservé
@@ -524,6 +531,13 @@ note right of En_attente_retour
   Annulation post-expédition avec renvoi :
   l'acheteur doit renvoyer le colis
   avant que le remboursement soit déclenché
+end note
+
+note right of Remboursement_virement_en_cours
+  Paiement initial par virement —
+  le vendeur doit émettre un virement inverse
+  vers l'IBAN de l'acheteur (FS-V10)
+  et confirmer l'émission dans la boutique
 end note
 
 note right of Expediee
@@ -614,7 +628,7 @@ package "Entités métier (SA)" #F0F8FF {
     + adresseLivraison : Adresse
     + modeLivraison : String
     + montantTotal : Decimal
-    + statut : Enum {paiement_en_attente_virement,\nen_attente, en_préparation,\nexpédiée, en_attente_retour,\nlivrée, annulée}
+    + statut : Enum {paiement_en_attente_virement,\nen_attente, en_préparation,\nexpédiée, en_attente_retour,\nremboursement_virement_en_cours,\nlivrée, annulée}
     + dateCommande : DateTime
   }
 
@@ -627,8 +641,9 @@ package "Entités métier (SA)" #F0F8FF {
     + id : UUID
     + montant : Decimal
     + mode : Enum {carte, virement}
-    + statut : Enum {en_attente_virement,\nautorisé, refusé, remboursé}
+    + statut : Enum {en_attente_virement,\nautorisé, refusé, remboursé,\nvirement_inverse_en_cours}
     + référencePrestataire : String
+    + ibanAcheteur : String
     + date : DateTime
   }
 

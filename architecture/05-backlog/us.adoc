@@ -356,6 +356,8 @@ _Fonctions ARCADIA : FS-B09, FS-V08, FS-P03 — UCSA-06 — LA : Service Command
 a|
 - [ ] Bouton d'annulation disponible sur les commandes aux statuts `en_attente` et `en_préparation`
 - [ ] Confirmation obligatoire avant annulation
+- [ ] Si paiement par virement : champ « IBAN de remboursement » obligatoire dans le formulaire d'annulation, avec validation du format IBAN
+- [ ] Si paiement par carte : aucun champ bancaire requis
 - [ ] Demande transmise au vendeur pour acceptation
 | À faire
 
@@ -363,7 +365,8 @@ a|
 | En tant que vendeur, je peux accepter ou refuser une demande d'annulation reçue avant expédition.
 a|
 - [ ] Notification de la demande d'annulation dans le back-office
-- [ ] Acceptation → remboursement déclenché via Stripe (FS-P03) ; stock libéré ; acheteur notifié
+- [ ] Acceptation, paiement carte → remboursement déclenché via Stripe (FS-P03) ; stock libéré ; acheteur notifié
+- [ ] Acceptation, paiement virement → commande passe en `remboursement_virement_en_cours` ; IBAN de l'acheteur et montant affichés au vendeur pour virement inverse ; stock libéré
 - [ ] Refus → acheteur notifié du refus ; commande maintenue dans son statut courant
 | À faire
 
@@ -372,14 +375,23 @@ a|
 a|
 - [ ] Commande passe en statut `en_attente_retour` ; acheteur notifié du renvoi requis
 - [ ] Vendeur confirme la réception du colis retourné dans le back-office
-- [ ] Remboursement déclenché uniquement après confirmation de réception
+- [ ] Remboursement carte → déclenché via Stripe (FS-P03) après confirmation de réception
+- [ ] Remboursement virement → commande passe en `remboursement_virement_en_cours` ; IBAN + montant fournis au vendeur pour virement inverse
 | À faire
 
 | *US-CAN-04*
 | En tant que vendeur, je peux accepter une annulation après expédition sans exiger le retour du colis.
 a|
-- [ ] Remboursement déclenché immédiatement via Stripe (FS-P03)
-- [ ] Commande passe directement en statut `annulée` ; acheteur notifié
+- [ ] Paiement carte → remboursement déclenché immédiatement via Stripe (FS-P03) ; commande passe en `annulée` ; acheteur notifié
+- [ ] Paiement virement → commande passe en `remboursement_virement_en_cours` ; IBAN + montant fournis au vendeur pour virement inverse
+| À faire
+
+| *US-CAN-05*
+| En tant que vendeur, je peux confirmer l'émission d'un virement inverse de remboursement vers l'acheteur.
+a|
+- [ ] Bouton « Confirmer le virement de remboursement » accessible depuis la commande en statut `remboursement_virement_en_cours`
+- [ ] Confirmation → commande passe en `annulée` (FS-V10) ; acheteur notifié que le virement de remboursement a été émis
+- [ ] IBAN de l'acheteur et montant rappelés sur l'écran de confirmation
 | À faire
 
 |===

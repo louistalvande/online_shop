@@ -1,0 +1,29 @@
+@startsalt
+' Composant PA : front-acheteur (Portail Acheteur)
+' Fonctions allouées : Service Commande — FS-B09 (avant expédition), FS-V10 (virement inverse)
+title Portail Acheteur — Annuler une commande (paiement par virement)
+
+{+
+  == Annuler la commande #CMD-2025-0042
+  {#
+    Produit             | Qté | Sous-total
+    Chaussures sport    | 1   | 49,90 €
+    Veste imperméable   | 1   | 89,00 €
+    Total TTC           |     | 172,78 €
+  }
+  ==
+  Statut actuel : **En préparation**
+  La commande n'est pas encore expédiée.
+  --
+  Motif d'annulation (optionnel)
+  ^Sélectionner un motif^
+  --
+  == Coordonnées bancaires de remboursement
+  Cette commande a été réglée par virement bancaire.
+  Veuillez indiquer votre IBAN pour recevoir le remboursement.
+  IBAN *  | "FR76                               "
+  --
+  [Retour]   [Confirmer l'annulation]
+}
+
+@endsalt
