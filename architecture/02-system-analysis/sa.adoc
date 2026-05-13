@@ -762,19 +762,21 @@ start
 
 |Système|
 :Générer token d'activation (CS-07);
-:Envoyer email avec lien tokenisé\n(IFS-06 / FS-B10);
 
-|Acheteur|
-:Cliquer sur le lien d'activation;
+repeat
+  |Service de messagerie|
+  :Acheminer le lien d'activation\n(IFS-06 / FS-B10);
 
-|Système|
-if (Token valide et non expiré ?) then (oui)
-  :Activer le compte (FS-B10);
-else (non)
-  :Notifier l'acheteur — token expiré;
-  :Proposer le renvoi du lien;
-  stop
-endif
+  |Acheteur|
+  :Cliquer sur le lien d'activation;
+
+  |Système|
+  :Vérifier le token;
+
+backward :Notifier l'acheteur — token expiré\nProposer le renvoi du lien;
+repeat while (Token valide et non expiré ?) is (non) not (oui)
+
+:Activer le compte (FS-B10);
 
 |Acheteur|
 :S'authentifier (FS-B01);

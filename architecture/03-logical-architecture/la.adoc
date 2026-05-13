@@ -323,6 +323,13 @@ alt Token valide et non expiré
 else Token expiré
   SvcAccount --> UI : 410 Gone — token expiré
   UI --> Buyer : Proposer le renvoi du lien
+  Buyer -> UI : Demander le renvoi du lien
+  UI -> SvcAccount : IFL-01 — renvoyerLienActivation(email)
+  SvcAccount -> DB : IFL-13 — INSERT nouveau token_activation
+  SvcAccount -> SvcNotif : IFL-09 — notifier(ACTIVATION_EMAIL, email, {token})
+  SvcNotif -> AdpMail : IFL-12 — envoyerEmail(destinataire, template:activation, {lienToken})
+  AdpMail -> ExtMail : IFS-06 — SMTP / API POST
+  note right : Reprend le flux d'acheminement\ndu lien d'activation
 else Token déjà utilisé
   SvcAccount --> UI : 409 Conflict — compte déjà activé
   UI --> Buyer : "Votre compte est déjà actif"

@@ -241,19 +241,18 @@ skinparam swimlaneBorderColor #AAAAAA
 start
 :S'inscrire;
 
-|Service de messagerie|
-:Acheminer le lien\nd'activation vers\nla boîte mail de l'acheteur;
+repeat
+  |Service de messagerie|
+  :Acheminer le lien\nd'activation vers\nla boîte mail de l'acheteur;
 
-|Acheteur|
-:Consulter sa boîte mail;
-:Cliquer sur le lien\nd'activation;
+  |Acheteur|
+  :Consulter sa boîte mail;
+  :Cliquer sur le lien\nd'activation;
 
-if (Lien valide ?) then (oui)
-  :Compte activé;
-else (non)
-  :Demander le renvoi\ndu lien;
-  stop
-endif
+backward :Demander le renvoi\ndu lien;
+repeat while (Lien valide ?) is (non) not (oui)
+
+:Compte activé;
 
 :Se connecter;
 :Parcourir le catalogue;
