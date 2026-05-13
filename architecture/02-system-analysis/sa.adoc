@@ -77,8 +77,8 @@ Les contraintes opérationnelles (COp) de l'OA sont traduites en contraintes sys
 | Le système doit persister le panier d'un acheteur authentifié en base et le restaurer intégralement à chaque reconnexion — issu de COp-03.
 
 | CS-04
-| Livraison UE uniquement
-| Le système doit restreindre la saisie d'adresse de livraison aux pays membres de l'Union Européenne.
+| Livraison zone euro uniquement
+| Le système doit restreindre la saisie d'adresse de livraison aux pays de la zone euro.
 
 | CS-05
 | Numéro de suivi et lien transporteur
@@ -295,7 +295,7 @@ a|
 | Acheteur (principal) ; Prestataire de paiement (secondaire)
 
 | *Préconditions*
-| Acheteur authentifié ; panier non vide ; adresse de livraison dans un pays de l'UE
+| Acheteur authentifié ; panier non vide ; adresse de livraison dans un pays de la zone euro
 
 | *Déclencheur*
 | L'acheteur clique sur « Valider le panier »
@@ -303,7 +303,7 @@ a|
 | *Scénario nominal (carte bancaire)*
 a|
 . Le système affiche le récapitulatif du panier.
-. L'acheteur saisit ou sélectionne une adresse de livraison (pays UE — CS-04).
+. L'acheteur saisit ou sélectionne une adresse de livraison (zone euro — CS-04).
 . Le système affiche les modes de livraison disponibles et leurs tarifs.
 . L'acheteur choisit un mode de livraison.
 . L'acheteur choisit le paiement par carte et saisit ses informations bancaires (CS-02).
@@ -318,7 +318,7 @@ a|
 | *Scénarios alternatifs — erreurs*
 a|
 * *6a.* Le prestataire refuse la transaction carte : le système notifie l'acheteur et l'invite à réessayer ou à changer de mode de paiement.
-* *2a.* L'adresse de livraison est hors UE : le système affiche un message d'erreur et bloque la validation.
+* *2a.* L'adresse de livraison est hors zone euro : le système affiche un message d'erreur et bloque la validation.
 
 | *Postconditions*
 | Commande créée en base ; paiement autorisé (carte) ou en attente de confirmation vendeur (virement) ; vendeur notifié ; stock réservé.
@@ -791,7 +791,7 @@ repeat while (Token valide et non expiré ?) is (non) not (oui)
 
 |Système|
 :Afficher récapitulatif;
-:Contrôler adresse de livraison UE (CS-04);
+:Contrôler adresse de livraison zone euro (CS-04);
 
 |Acheteur|
 :Saisir adresse de livraison\n+ choisir mode de livraison;
@@ -977,8 +977,8 @@ Sys --> Buyer : 200 OK — panier mis à jour (FS-B04)
 note right : Panier sauvegardé en base\npour la prochaine session (CS-03)
 
 == Tunnel d'achat et paiement (UCSA-05) ==
-Buyer -> Sys : POST /commandes {panier_id, adresse_UE, mode_livraison, mode_paiement}
-note right : CS-04 — adresse validée UE\nCS-02 — carte ou virement
+Buyer -> Sys : POST /commandes {panier_id, adresse_zone_euro, mode_livraison, mode_paiement}
+note right : CS-04 — adresse validée zone euro\nCS-02 — carte ou virement
 
 alt Paiement par carte
   Sys -> Payment : POST /authorize {montant, mode: carte, références}
@@ -1142,7 +1142,7 @@ class Adresse {
   + rue : String
   + ville : String
   + codePostal : String
-  + paysUE : CodeISO
+  + paysZoneEuro : CodeISO
 }
 
 CompteUtilisateur "1" --> "0..1" Panier : possède
@@ -1158,8 +1158,8 @@ Commande "1" --> "1" Adresse : livrée à
 Expédition "0..*" --> "1" Transporteur : acheminée par
 
 note bottom of Commande
-  CS-04 : adresse.paysUE
-  doit être dans l'UE
+  CS-04 : adresse.paysZoneEuro
+  doit être dans la zone euro
 end note
 
 note bottom of Paiement
@@ -1301,7 +1301,7 @@ La matrice ci-dessous assure la couverture complète de chaque besoin opération
 | UC_V1 | Gérer le catalogue produits | FS-V02 | UCSA-10
 | UC_V2 | Gérer les stocks | FS-V03 | UCSA-10
 | UC_V3 | Traiter les commandes reçues | FS-V04 | UCSA-07
-| UC_V4 | Expédier vers l'UE — dépôt physique + saisie manuelle du numéro de suivi | FS-V05 | UCSA-07
+| UC_V4 | Expédier vers la zone euro — dépôt physique + saisie manuelle du numéro de suivi | FS-V05 | UCSA-07
 | UC_V5 | Traiter les litiges et réclamations | FS-V06, FS-P03 | UCSA-09
 | UC_V6 | Consulter les rapports de ventes | FS-V07 | UCSA-11
 | — | Confirmer réception d'un virement bancaire | FS-V09 | UCSA-13

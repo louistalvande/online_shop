@@ -61,9 +61,9 @@ a|
 | À faire
 
 | *US-ADM-06*
-| En tant qu'administrateur, je peux ajouter un transporteur avec son nom, les pays de l'UE couverts et l'URL de son site de suivi.
+| En tant qu'administrateur, je peux ajouter un transporteur avec son nom, les pays de la zone euro couverts et l'URL de son site de suivi.
 a|
-- [ ] Formulaire : nom, pays UE couverts (multi-sélect restreint à l'UE), URL de suivi
+- [ ] Formulaire : nom, pays de la zone euro couverts (multi-sélect restreint à la zone euro), URL de suivi
 - [ ] Transporteur créé avec statut `actif` et disponible immédiatement dans le back-office vendeur
 | À faire
 
@@ -254,10 +254,10 @@ _Fonctions ARCADIA : FS-B06, FS-B07, FS-P01, FS-P02, CS-02, CS-04 — UCSA-05 �
 | ID | User story | Critères d'acceptation | Statut
 
 | *US-ORD-01*
-| En tant qu'acheteur, je peux saisir une adresse de livraison restreinte aux pays membres de l'Union Européenne.
+| En tant qu'acheteur, je peux saisir une adresse de livraison restreinte aux pays de la zone euro.
 a|
-- [ ] Liste déroulante limitée aux pays de l'UE (CS-04)
-- [ ] Adresse hors UE bloquée avec message d'erreur
+- [ ] Liste déroulante limitée aux pays de la zone euro (CS-04)
+- [ ] Adresse hors zone euro bloquée avec message d'erreur
 | À faire
 
 | *US-ORD-02*

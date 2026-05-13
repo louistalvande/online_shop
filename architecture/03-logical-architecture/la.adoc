@@ -365,7 +365,7 @@ UI -> SvcCart : IFL-03 — getPanier(acheteur_id)
 SvcCart -> DB : IFL-13 — SELECT lignes panier
 SvcCart --> UI : Lignes panier + montants
 
-Buyer -> UI : Soumettre commande (adresse UE, mode livraison, mode paiement)
+Buyer -> UI : Soumettre commande (adresse zone euro, mode livraison, mode paiement)
 note right : CS-04 — adresse validée côté UI\nCS-02 — mode ∈ {carte, virement}
 
 UI -> SvcOrder : IFL-04 — creerCommande(panier_id, adresse, modeLivraison, modePaiement)
