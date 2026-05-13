@@ -106,6 +106,7 @@ Les fonctions système (FS) sont dérivées des cas d'utilisation opérationnels
 | FS-A01 | Créer, suspendre et supprimer les comptes vendeur et acheteur | UC_A1
 | FS-A02 | Gérer les droits d'accès (rôles) sur la plateforme | UC_A1
 | FS-A03 | Ajouter, modifier et supprimer les transporteurs disponibles | UC_A2
+| FS-A04 | Permettre à l'administrateur de modifier son mot de passe | UC_A_ACC
 |===
 
 === Gestion de la boutique (Vendeur)
@@ -215,6 +216,7 @@ rectangle "Système — Boutique en ligne" {
 }
 
 Admin --> UC12
+Admin --> UC02 : mot de passe uniquement
 
 Vendor --> UC02
 Vendor --> UC10
@@ -397,7 +399,7 @@ a|
 | UCSA-02
 
 | *Acteurs*
-| Acheteur ou Vendeur (principal)
+| Acheteur ou Vendeur (principal) ; Administrateur (secondaire — mot de passe uniquement)
 
 | *Préconditions*
 | Utilisateur authentifié
@@ -408,20 +410,20 @@ a|
 | *Scénario nominal*
 a|
 . L'utilisateur accède au formulaire de mise à jour de son profil.
-. Il modifie les champs souhaités (nom, adresse, mot de passe, etc.).
-. Le système valide les données saisies (unicité de l'email, format du mot de passe).
+. Il modifie les champs souhaités (nom, prénom, adresse postale, mot de passe). L'adresse email n'est pas modifiable.
+. Le système valide les données saisies (format du mot de passe, cohérence de l'adresse).
 . Le système enregistre les modifications et confirme la mise à jour.
 
 | *Scénarios alternatifs*
 a|
-* *3a.* L'adresse email est déjà utilisée par un autre compte : le système retourne une erreur sans modifier le compte.
-* *3b.* Les données saisies sont invalides (format incorrect) : le système signale les champs en erreur.
+* *2a.* L'acteur est Administrateur : seul le champ « mot de passe » est disponible ; les autres champs sont masqués.
+* *3a.* Les données saisies sont invalides (format incorrect) : le système signale les champs en erreur.
 
 | *Postconditions*
 | Données du compte mises à jour en base.
 
 | *Exigences liées*
-| FS-V01, FS-B02
+| FS-V01, FS-B02, FS-A04
 |===
 
 === UCSA-03 : Parcourir et rechercher le catalogue
@@ -1300,6 +1302,7 @@ La matrice ci-dessous assure la couverture complète de chaque besoin opération
 
 | UC_A1 | Gérer les comptes utilisateurs | FS-A01, FS-A02 | UCSA-12
 | UC_A2 | Gérer les transporteurs | FS-A03 | UCSA-12
+| UC_A_ACC | Modifier son mot de passe (administrateur) | FS-A04 | UCSA-02
 | UC_B0 | S'inscrire / activer son compte via lien email | FS-B01, FS-B10, CS-07 | UCSA-01, UCSA-02
 | UC_B_ACC | Mettre à jour son compte (acheteur) | FS-B02 | UCSA-02
 | UC_B1 | Parcourir le catalogue | FS-B03 | UCSA-03
