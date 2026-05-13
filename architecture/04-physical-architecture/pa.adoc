@@ -50,6 +50,10 @@ Les contraintes physiques complètent les contraintes système (CS) en ajoutant 
 | CPA-07
 | Journalisation des transactions financières
 | Toutes les transactions (paiement, remboursement) sont journalisées en base avec horodatage, montant, statut et référence prestataire — issu de CS-06.
+
+| CPA-08
+| Implémentation de la TokenAuthentification (CS-08)
+| Les jetons sont signés avec HMAC-SHA-256 (JJWT), ont une validité de 24 h et sont transmis dans l'en-tête `Authorization: Bearer`. Les mots de passe sont hachés avec BCrypt (coût 10). La clé de signature est injectée par variable d'environnement (`JWT_SECRET`). Les jetons révoqués sont inscrits dans Redis (CPA-04).
 |===
 
 == Pile technologique retenue
@@ -70,7 +74,7 @@ Les contraintes physiques complètent les contraintes système (CS) en ajoutant 
 
 | Console Administrateur
 | React 18 — TypeScript — Vite
-| SPA desktop, gestion des comptes et transporteurs
+| SPA desktop-first, accès HTTPS authentifié par jeton JWT (CS-08 / CPA-08) ; gestion des comptes et transporteurs
 |===
 
 === Application et domaine
@@ -81,7 +85,7 @@ Les contraintes physiques complètent les contraintes système (CS) en ajoutant 
 
 | Service Compte
 | Module Spring Boot (Java)
-| Authentification JWT (Spring Security), hachage BCrypt, gestion des tokens d'activation (CS-07)
+| Authentification JWT — Spring Security + JJWT (CS-08 / CPA-08), hachage BCrypt, gestion des tokens d'activation (CS-07)
 
 | Service Catalogue
 | Module Spring Boot (Java)
@@ -686,6 +690,16 @@ include::diagrams/ihm/ihm-bov-rapports.puml[]
 ----
 
 === Console Administrateur
+
+==== Connexion
+
+Formulaire d'authentification de l'administrateur (CS-08 / CPA-08). Le système vérifie les identifiants, contrôle que le compte est actif et porte le rôle `ADMIN`, puis émet un jeton JWT signé valable 24 h. Le message d'erreur est délibérément générique pour éviter l'énumération de comptes.
+
+.Maquette filaire : Console Admin — Connexion
+[plantuml, ihm-admin-connexion, svg]
+----
+include::diagrams/ihm/ihm-admin-connexion.puml[]
+----
 
 ==== Gestion des comptes
 

@@ -94,7 +94,8 @@ Les contraintes opérationnelles (COp) de l'OA sont traduites en contraintes sys
 
 | CS-08
 | TokenAuthentification
-| L'accès aux back-offices vendeur et administrateur est conditionné à une authentification par email et mot de passe. Le système émet un Tokenjeton d'authentification signé (validité 24 h) que le client inclut dans l'en-tête de chaque requête protégée. Un compte suspendu ou supprimé ne peut pas s'authentifier. Les messages d'erreur ne distinguent pas un email inconnu d'un mot de passe incorrect (sécurité contre l'énumération de comptes).
+| L'accès aux back-offices vendeur et administrateur est conditionné à une authentification par email et mot de passe ; le système émet un jeton d'authentification que le client présente à chaque requête protégée.
+Un compte suspendu ou supprimé ne peut pas s'authentifier. Les messages d'erreur ne distinguent pas un email inconnu d'un mot de passe incorrect (sécurité contre l'énumération de comptes).
 |===
 
 == Exigences fonctionnelles système
