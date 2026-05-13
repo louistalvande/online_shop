@@ -39,18 +39,14 @@ public class AuthServiceImpl implements AuthService {
     /**
      * {@inheritDoc}
      *
-     * <p>Uses a generic error for all failure cases (unknown email, wrong password,
-     * wrong role, inactive account) to prevent account enumeration — CS-08.
+     * <p>Uses a generic error for all failure cases to prevent account enumeration — CS-08.
+     * The JWT embeds the account role so each SPA can access its protected endpoints.
      */
     @Override
     @Transactional(readOnly = true)
-    public AuthResponse login(LoginRequest request, String requiredRole) {
+    public AuthResponse login(LoginRequest request) {
         Account account = accountRepository.findByEmail(request.getEmail())
                 .orElseThrow(InvalidCredentialsException::new);
-
-        if (!account.getRole().name().equals(requiredRole)) {
-            throw new InvalidCredentialsException();
-        }
 
         if (account.getStatus() != AccountStatus.ACTIVE) {
             throw new InvalidCredentialsException();

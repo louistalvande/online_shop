@@ -7,7 +7,7 @@ import com.shop.auth.service.AuthService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
 
-/** REST implementation of the admin authentication controller. */
+/** REST implementation of the shared authentication controller. */
 @RestController
 public class AuthControllerImpl implements AuthController {
 
@@ -25,6 +25,6 @@ public class AuthControllerImpl implements AuthController {
     /** {@inheritDoc} */
     @Override
     public ResponseEntity<AuthResponse> login(LoginRequest request) {
-        return ResponseEntity.ok(authService.login(request, "ADMIN"));
+        return ResponseEntity.ok(authService.login(request));
     }
 }

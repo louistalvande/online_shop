@@ -16,5 +16,14 @@
   "orders.total": "Total",
   "orders.status": "Status",
   "orders.details": "Details",
-  "lang.toggle": "Switch language"
+  "lang.toggle": "Switch language",
+  "nav.logout": "Log out",
+  "login.title": "Vendor login",
+  "login.subtitle": "Access restricted to platform vendors.",
+  "login.email": "Email address",
+  "login.password": "Password",
+  "login.submit": "Log in",
+  "login.loading": "Logging in…",
+  "login.error.invalid": "Invalid email or password.",
+  "login.error.generic": "An error occurred. Please try again."
 }
