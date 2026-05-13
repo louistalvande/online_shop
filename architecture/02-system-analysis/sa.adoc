@@ -107,6 +107,7 @@ Les fonctions système (FS) sont dérivées des cas d'utilisation opérationnels
 | FS-A02 | Gérer les droits d'accès (rôles) sur la plateforme | UC_A1
 | FS-A03 | Ajouter, modifier et supprimer les transporteurs disponibles | UC_A2
 | FS-A04 | Permettre à l'administrateur de modifier son mot de passe | UC_A_ACC
+| FS-A05 | Basculer en mode maintenance de la plateforme : activer ou désactiver la redirection de tous les internautes non administrateurs vers la page « Site en maintenance » | UC_A3
 |===
 
 === Gestion de la boutique (Vendeur)
@@ -190,6 +191,10 @@ rectangle "Système — Boutique en ligne" {
     usecase (UCSA-12\nGérer les comptes\nutilisateurs et transporteurs) as UC12
   }
 
+  package "Administration de la plateforme" {
+    usecase (UCSA-14\nBasculer en mode\nmaintenance) as UC14
+  }
+
   package "Gestion de la boutique" {
     usecase (UCSA-02\nGérer son compte) as UC02
     usecase (UCSA-10\nGérer le catalogue\net les stocks) as UC10
@@ -217,6 +222,7 @@ rectangle "Système — Boutique en ligne" {
 
 Admin --> UC12
 Admin --> UC02 : mot de passe uniquement
+Admin --> UC14
 
 Vendor --> UC02
 Vendor --> UC10
@@ -756,6 +762,48 @@ a|
 
 | *Exigences liées*
 | FS-V09, CS-02
+|===
+
+=== UCSA-14 : Basculer en mode maintenance
+
+[cols="1,3", options="header"]
+|===
+| Champ | Description
+
+| *Identifiant*
+| UCSA-14
+
+| *Acteurs*
+| Administrateur (principal)
+
+| *Préconditions*
+| Administrateur authentifié
+
+| *Déclencheur*
+| L'administrateur souhaite activer ou désactiver le mode maintenance de la boutique
+
+| *Scénario nominal — Activation*
+a|
+. L'administrateur accède au panneau d'administration et active le commutateur « Mode maintenance » (FS-A05).
+. Le système enregistre l'état `maintenance = actif`.
+. Toute requête d'un internaute non administrateur est interceptée ; le système retourne la page « Site en maintenance ».
+. Les autres pages de la boutique (catalogue, panier, commande, compte) sont inaccessibles.
+
+| *Scénario nominal — Désactivation*
+a|
+. L'administrateur désactive le commutateur « Mode maintenance » (FS-A05).
+. Le système enregistre l'état `maintenance = inactif`.
+. La boutique redevient normalement accessible à tous les internautes.
+
+| *Scénarios alternatifs*
+a|
+* *1a.* L'administrateur tente d'accéder à la boutique en mode maintenance : l'accès au panneau d'administration reste disponible sans redirection.
+
+| *Postconditions*
+| État de maintenance mis à jour ; internautes redirigés ou non selon l'état actif.
+
+| *Exigences liées*
+| FS-A05
 |===
 
 == Diagramme d'activité système — Flux de commande complet
@@ -1302,6 +1350,7 @@ La matrice ci-dessous assure la couverture complète de chaque besoin opération
 
 | UC_A1 | Gérer les comptes utilisateurs | FS-A01, FS-A02 | UCSA-12
 | UC_A2 | Gérer les transporteurs | FS-A03 | UCSA-12
+| UC_A3 | Basculer en mode maintenance | FS-A05 | UCSA-14
 | UC_A_ACC | Modifier son mot de passe (administrateur) | FS-A04 | UCSA-02
 | UC_B0 | S'inscrire / activer son compte via lien email | FS-B01, FS-B10, CS-07 | UCSA-01, UCSA-02
 | UC_B_ACC | Mettre à jour son compte (acheteur) | FS-B02 | UCSA-02

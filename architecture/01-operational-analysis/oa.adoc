@@ -103,6 +103,9 @@ rectangle "Boutique en ligne" {
     usecase (Ajouter un\ntransporteur) as UC_A2a
     usecase (Modifier / supprimer\nun transporteur) as UC_A2b
   }
+  package "Administration de la plateforme" {
+    usecase (Basculer en mode\nmaintenance) as UC_A3
+  }
 }
 
 Admin --> UC_A0
@@ -110,10 +113,12 @@ Admin --> UC_A1
 Admin --> UC_A1b
 Admin --> UC_A2a
 Admin --> UC_A2b
+Admin --> UC_A3
 UC_A1 ..> UC_A0 : <<include>>
 UC_A1b ..> UC_A0 : <<include>>
 UC_A2a ..> UC_A0 : <<include>>
 UC_A2b ..> UC_A0 : <<include>>
+UC_A3 ..> UC_A0 : <<include>>
 UC_A2a --> Carrier
 UC_A2b --> Carrier
 ----
@@ -535,6 +540,9 @@ end
 
 | Gérer les transporteurs
 | Ajouter, modifier et supprimer les transporteurs disponibles sur la plateforme pour les expéditions zone euro
+
+| Basculer en mode maintenance
+| Activer ou désactiver le mode maintenance de la boutique ; lorsqu'il est actif, tout internaute non administrateur est redirigé vers une page « Site en maintenance » et les autres pages sont inaccessibles
 |===
 
 === Vendeur
