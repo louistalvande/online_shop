@@ -19,10 +19,17 @@ export interface CreateAccountRequest {
   role: AccountRole
 }
 
+import { getSession } from './authApi'
+
 const BASE = '/api/admin/accounts'
 
+function authHeader(): HeadersInit {
+  const session = getSession()
+  return session ? { Authorization: `Bearer ${session.token}` } : {}
+}
+
 export async function listAccounts(): Promise<AccountResponse[]> {
-  const res = await fetch(BASE)
+  const res = await fetch(BASE, { headers: authHeader() })
   if (!res.ok) throw new Error('Failed to fetch accounts')
   return res.json()
 }
@@ -30,7 +37,7 @@ export async function listAccounts(): Promise<AccountResponse[]> {
 export async function createAccount(payload: CreateAccountRequest): Promise<AccountResponse> {
   const res = await fetch(BASE, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', ...authHeader() },
     body: JSON.stringify(payload),
   })
   if (res.status === 409) {
