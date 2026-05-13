@@ -94,6 +94,7 @@ actor "Administrateur" as Admin
 actor "Transporteur\n(système externe)" as Carrier
 
 rectangle "Boutique en ligne" {
+  usecase (S'authentifier) as UC_A0
   package "Gestion des comptes" {
     usecase (Créer / suspendre /\nsupprimer un compte\nacheteur ou vendeur) as UC_A1
     usecase (Gérer les droits\nd'accès à la plateforme) as UC_A1b
@@ -104,10 +105,15 @@ rectangle "Boutique en ligne" {
   }
 }
 
+Admin --> UC_A0
 Admin --> UC_A1
 Admin --> UC_A1b
 Admin --> UC_A2a
 Admin --> UC_A2b
+UC_A1 ..> UC_A0 : <<include>>
+UC_A1b ..> UC_A0 : <<include>>
+UC_A2a ..> UC_A0 : <<include>>
+UC_A2b ..> UC_A0 : <<include>>
 UC_A2a --> Carrier
 UC_A2b --> Carrier
 ----
@@ -133,6 +139,7 @@ actor "Vendeur" as Vendor
 actor "Transporteur\n(système externe)" as Carrier
 
 rectangle "Boutique en ligne" {
+  usecase (S'authentifier) as UC_V_AUTH
   package "Gestion du compte" {
     usecase (Mettre à jour\nson compte) as UC_V0
   }
@@ -151,6 +158,7 @@ rectangle "Boutique en ligne" {
   }
 }
 
+Vendor --> UC_V_AUTH
 Vendor --> UC_V0
 Vendor --> UC_V1
 Vendor --> UC_V2
@@ -159,6 +167,14 @@ Vendor --> UC_V4
 Vendor --> UC_V5
 Vendor --> UC_V6
 Vendor --> UC_V8
+UC_V0 ..> UC_V_AUTH : <<include>>
+UC_V1 ..> UC_V_AUTH : <<include>>
+UC_V2 ..> UC_V_AUTH : <<include>>
+UC_V3 ..> UC_V_AUTH : <<include>>
+UC_V4 ..> UC_V_AUTH : <<include>>
+UC_V5 ..> UC_V_AUTH : <<include>>
+UC_V6 ..> UC_V_AUTH : <<include>>
+UC_V8 ..> UC_V_AUTH : <<include>>
 UC_V4 --> Carrier
 ----
 
@@ -188,6 +204,7 @@ rectangle "Boutique en ligne" {
   package "Inscription et compte" {
     usecase (S'inscrire) as UC_B0
     usecase (Activer son compte\nvia email) as UC_B0B
+    usecase (S'authentifier) as UC_B_AUTH
     usecase (Mettre à jour\nson compte) as UC_B_ACC
   }
   package "Navigation et panier" {
@@ -209,6 +226,7 @@ rectangle "Boutique en ligne" {
 
 Buyer --> UC_B0
 Buyer --> UC_B0B
+Buyer --> UC_B_AUTH
 Buyer --> UC_B_ACC
 Buyer --> UC_B1
 Buyer --> UC_B2
@@ -219,6 +237,15 @@ Buyer --> UC_B4
 Buyer --> UC_B5
 Buyer --> UC_B6
 Buyer --> UC_B7
+
+UC_B_ACC ..> UC_B_AUTH : <<include>>
+UC_B2B ..> UC_B_AUTH : <<include>>
+UC_B3 ..> UC_B_AUTH : <<include>>
+UC_B4B ..> UC_B_AUTH : <<include>>
+UC_B4 ..> UC_B_AUTH : <<include>>
+UC_B5 ..> UC_B_AUTH : <<include>>
+UC_B6 ..> UC_B_AUTH : <<include>>
+UC_B7 ..> UC_B_AUTH : <<include>>
 
 UC_B0 --> Mail
 Mail --> UC_B0B
