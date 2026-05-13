@@ -487,6 +487,24 @@ Ce formulaire couvre FS-B01 (création de compte) et FS-B10 (activation par emai
 include::diagrams/ihm/ihm-pa-inscription.puml[]
 ----
 
+==== Page d'accueil
+
+La page d'accueil est le point d'entrée de la boutique pour tout internaute non encore connecté ou souhaitant parcourir le catalogue. Elle affiche en haut un *carrousel d'annonces défilantes* (FS-V11), suivi d'un accès direct au catalogue.
+
+*Carrousel d'annonces* :
+
+* Une seule annonce est visible à la fois ; le défilement est automatique (intervalle configurable) et peut être contrôlé manuellement via les flèches `<` / `>`.
+* Chaque annonce peut contenir un texte, une image ou les deux, selon la configuration du vendeur.
+* Si un lien est renseigné, l'ensemble du bloc annonce est cliquable et redirige l'internaute vers ce lien.
+* Les indicateurs de position (● ○ ○) reflètent le nombre d'annonces et la position courante.
+* Si aucune annonce n'est configurée, le carrousel est masqué et le catalogue s'affiche directement.
+
+.Maquette filaire : Portail Acheteur — Page d'accueil avec carrousel
+[plantuml, ihm-pa-accueil, svg]
+----
+include::diagrams/ihm/ihm-pa-accueil.puml[]
+----
+
 ==== Catalogue produits
 
 Écran principal d'exploration du catalogue (FS-B03). La barre de filtres (catégorie, prix maximum) et la barre de recherche textuelle correspondent aux critères de filtrage définis en SA. Le bouton « Ajouter au panier » déclenche FS-B04 ; les produits en rupture sont affichés mais non ajoutables.
@@ -499,7 +517,7 @@ include::diagrams/ihm/ihm-pa-catalogue.puml[]
 
 ==== Détail produit
 
-Page de détail d'un produit (FS-B03 / FS-B04). Affiche le prix HT et TTC, la disponibilité issue du stock fusionné dans `Produit`, et un sélecteur de quantité. L'ajout au panier est bloqué si le stock est à zéro.
+Page de détail d'un produit (FS-B03 / FS-B04). Affiche le prix (TTC), la disponibilité issue du stock fusionné dans `Produit`, et un sélecteur de quantité. L'ajout au panier est bloqué si le stock est à zéro.
 
 .Maquette filaire : Portail Acheteur — Détail produit
 [plantuml, ihm-pa-detail-produit, svg]
@@ -519,7 +537,7 @@ include::diagrams/ihm/ihm-pa-panier.puml[]
 
 ==== Tunnel d'achat — Adresse et livraison
 
-Étape 1/3 du tunnel (FS-B06). La liste déroulante de pays est restreinte aux membres de l'UE (CS-04). Les modes de livraison sont alimentés par les transporteurs configurés par l'administrateur (FS-A03).
+Étape 1/3 du tunnel (FS-B06). La liste déroulante de pays est restreinte aux pays de la zone euro (CS-04). Les modes de livraison sont alimentés par les transporteurs configurés par l'administrateur (FS-A03).
 
 .Maquette filaire : Portail Acheteur — Tunnel d'achat : adresse et livraison
 [plantuml, ihm-pa-tunnel-adresse, svg]
@@ -569,12 +587,18 @@ include::diagrams/ihm/ihm-pa-suivi-commande.puml[]
 
 ==== Annulation d'une commande
 
-Écran de demande d'annulation avant expédition (FS-B09). Rappelle le contenu de la commande et son statut. Le motif est optionnel. Le remboursement est déclenché automatiquement par le système après acceptation vendeur via le prestataire de paiement (FS-P03).
+Écran de demande d'annulation avant expédition (FS-B09). Rappelle le contenu de la commande et son statut. Le motif est optionnel. Si la commande a été réglée par carte, le remboursement est déclenché automatiquement via le prestataire (FS-P03) après acceptation vendeur. Si la commande a été réglée par virement, un champ « IBAN de remboursement » est affiché et obligatoire : l'acheteur doit fournir son RIB pour permettre au vendeur d'émettre un virement inverse (FS-V10).
 
-.Maquette filaire : Portail Acheteur — Annulation
+.Maquette filaire : Portail Acheteur — Annulation (paiement par carte)
 [plantuml, ihm-pa-annulation, svg]
 ----
 include::diagrams/ihm/ihm-pa-annulation.puml[]
+----
+
+.Maquette filaire : Portail Acheteur — Annulation (paiement par virement — champ IBAN obligatoire)
+[plantuml, ihm-pa-annulation-virement, svg]
+----
+include::diagrams/ihm/ihm-pa-annulation-virement.puml[]
 ----
 
 ==== Réclamation
@@ -679,6 +703,22 @@ Vue de traitement des réclamations acheteurs (FS-V06). L'onglet « Ouvertes » 
 include::diagrams/ihm/ihm-bov-reclamations.puml[]
 ----
 
+==== Annonces défilantes
+
+Gestion du carrousel d'annonces affiché sur la page d'accueil (FS-V11). Chaque annonce est composée d'un texte, d'une image ou des deux. Un lien de redirection optionnel est associé : un clic de l'internaute sur l'annonce déclenche la navigation vers ce lien. Les annonces sont triées par ordre croissant ; les boutons ↑ / ↓ modifient l'ordre. La suppression est immédiate et retire l'annonce du carrousel sans confirmation.
+
+.Maquette filaire : Back-office Vendeur — Gestion des annonces défilantes
+[plantuml, ihm-bov-annonces, svg]
+----
+include::diagrams/ihm/ihm-bov-annonces.puml[]
+----
+
+.Maquette filaire : Back-office Vendeur — Formulaire annonce défilante
+[plantuml, ihm-bov-annonce-form, svg]
+----
+include::diagrams/ihm/ihm-bov-annonce-form.puml[]
+----
+
 ==== Rapports de ventes
 
 Tableau de bord analytique (FS-V07). Les indicateurs clés (CA, nombre de commandes, panier moyen, taux d'annulation) sont calculés par des requêtes JPQL agrégées sur la période sélectionnée. Le classement des produits est dérivé des `LigneCommande`. L'export CSV génère un fichier téléchargeable côté client.
@@ -723,7 +763,7 @@ include::diagrams/ihm/ihm-admin-transporteurs.puml[]
 
 ==== Formulaire transporteur
 
-Formulaire d'ajout et d'édition d'un transporteur (FS-A03). Les pays couverts sont restreints aux membres de l'UE (CS-04). L'URL de suivi est utilisée par le portail acheteur pour construire le lien IFS-05 (CS-05). La désactivation (`Actif : Non`) masque le transporteur du back-office vendeur sans le supprimer.
+Formulaire d'ajout et d'édition d'un transporteur (FS-A03). Les pays couverts sont restreints aux pays de la zone euro (CS-04). L'URL de suivi est utilisée par le portail acheteur pour construire le lien IFS-05 (CS-05). La désactivation (`Actif : Non`) masque le transporteur du back-office vendeur sans le supprimer.
 
 .Maquette filaire : Console Admin — Formulaire transporteur
 [plantuml, ihm-admin-form-transporteur, svg]

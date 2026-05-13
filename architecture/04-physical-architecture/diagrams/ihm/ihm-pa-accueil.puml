@@ -1,0 +1,42 @@
+@startuml ihm-pa-accueil
+' Composant PA : Portail Acheteur
+' Fonctions allouées : FS-V11 (affichage carrousel annonces défilantes)
+salt
+{+
+  [Logo]  "Rechercher...          "  [Panier (3)]  [Mon compte]
+  ==
+  {+
+    ' Carrousel d'annonces — une annonce visible à la fois
+    ' Le bloc entier est cliquable si un lien est associé
+    [<]  |  {
+             [      image      ]
+             Soldes d'été : -20% sur tout !
+           }  |  [>]
+    --
+    ● ○ ○
+  }
+  ==
+  Catégories : ^Toutes^  [Vêtements]  [Accessoires]  [Chaussures]
+  --
+  {
+    {+
+      [img]
+      Chaussures cuir brun
+      45,00 €
+      [Ajouter au panier]
+    }  |
+    {+
+      [img]
+      Veste laine grise
+      89,00 €
+      [Ajouter au panier]
+    }  |
+    {+
+      [img]
+      Sac à dos toile
+      <s>35,00 €</s> Rupture
+      [Indisponible]
+    }
+  }
+}
+@enduml

@@ -77,8 +77,8 @@ Les contraintes opérationnelles (COp) de l'OA sont traduites en contraintes sys
 | Le système doit persister le panier d'un acheteur authentifié en base et le restaurer intégralement à chaque reconnexion — issu de COp-03.
 
 | CS-04
-| Livraison UE uniquement
-| Le système doit restreindre la saisie d'adresse de livraison aux pays membres de l'Union Européenne.
+| Livraison zone euro uniquement
+| Le système doit restreindre la saisie d'adresse de livraison aux pays de la zone euro.
 
 | CS-05
 | Numéro de suivi et lien transporteur
@@ -96,6 +96,10 @@ Les contraintes opérationnelles (COp) de l'OA sont traduites en contraintes sys
 | TokenAuthentification
 | L'accès aux back-offices vendeur et administrateur est conditionné à une authentification par email et mot de passe ; le système émet un jeton d'authentification que le client présente à chaque requête protégée.
 Un compte suspendu ou supprimé ne peut pas s'authentifier. Les messages d'erreur ne distinguent pas un email inconnu d'un mot de passe incorrect (sécurité contre l'énumération de comptes).
+
+| CS-09
+| Prix TTC — pas de TVA
+| Tous les prix affichés sur la boutique sont exprimés en TTC. Aucune TVA n'est calculée ni affichée en sus ; le prix saisi par le vendeur est le prix final payé par l'acheteur.
 |===
 
 == Exigences fonctionnelles système
@@ -111,6 +115,8 @@ Les fonctions système (FS) sont dérivées des cas d'utilisation opérationnels
 | FS-A01 | Créer, suspendre et supprimer les comptes vendeur et acheteur | UC_A1
 | FS-A02 | Gérer les droits d'accès (rôles) sur la plateforme | UC_A1
 | FS-A03 | Ajouter, modifier et supprimer les transporteurs disponibles | UC_A2
+| FS-A04 | Permettre à l'administrateur de modifier son mot de passe | UC_A_ACC
+| FS-A05 | Basculer en mode maintenance de la plateforme : activer ou désactiver la redirection de tous les internautes non administrateurs vers la page « Site en maintenance » | UC_A3
 |===
 
 === Gestion de la boutique (Vendeur)
@@ -126,8 +132,10 @@ Les fonctions système (FS) sont dérivées des cas d'utilisation opérationnels
 | FS-V05 | Permettre au vendeur de déclarer l'expédition d'une commande en saisissant le numéro de suivi récupéré sur le reçu de dépôt physique ; passer la commande en état `expédiée` et notifier l'acheteur avec ce numéro | UC_V4
 | FS-V06 | Traiter les litiges et réclamations (remboursement, retour) | UC_V5
 | FS-V07 | Consulter les rapports de ventes (CA, produits, historique) | UC_V6
-| FS-V08 | Traiter les demandes d'annulation : avant expédition (accepter/refuser) ; après expédition, choisir entre annulation avec condition de renvoi ou annulation directe sans renvoi | UC_V7
+| FS-V08 | Traiter les demandes d'annulation après expédition : accepter ou refuser ; en cas d'acceptation, choisir entre annulation avec condition de renvoi ou annulation directe sans renvoi | UC_V7
 | FS-V09 | Confirmer manuellement la réception d'un virement bancaire et déclencher la prise en charge de la commande correspondante | —
+| FS-V10 | Confirmer l'émission d'un virement inverse de remboursement vers l'acheteur à la suite d'une annulation de commande réglée par virement bancaire | UC_V7
+| FS-V11 | Créer, modifier, réordonner et supprimer les annonces défilantes affichées sur la page d'accueil ; chaque annonce comporte un contenu texte, une image ou les deux, et un lien de redirection optionnel au clic | UC_V9
 |===
 
 === Expérience d'achat (Acheteur)
@@ -156,7 +164,7 @@ Les fonctions système (FS) sont dérivées des cas d'utilisation opérationnels
 
 | FS-P01 | Soumettre une demande d'autorisation de transaction au prestataire de paiement | UC_P1
 | FS-P02 | Recevoir la confirmation ou le refus de transaction et notifier les parties | UC_P2
-| FS-P03 | Déclencher et confirmer un remboursement via le prestataire | UC_P3
+| FS-P03 | Annuler une transaction et déclencher un remboursement via le prestataire de paiement | UC_P3
 | FS-C01 | Afficher à l'acheteur le numéro de suivi et l'URL du site de suivi du transporteur depuis son espace commandes | UC_C3
 |===
 
@@ -193,6 +201,10 @@ rectangle "Système — Boutique en ligne" {
     usecase (UCSA-12\nGérer les comptes\nutilisateurs et transporteurs) as UC12
   }
 
+  package "Administration de la plateforme" {
+    usecase (UCSA-14\nBasculer en mode\nmaintenance) as UC14
+  }
+
   package "Gestion de la boutique" {
     usecase (UCSA-02\nGérer son compte) as UC02
     usecase (UCSA-10\nGérer le catalogue\net les stocks) as UC10
@@ -200,6 +212,7 @@ rectangle "Système — Boutique en ligne" {
     usecase (UCSA-09\nTraiter un litige\nou une réclamation) as UC09
     usecase (UCSA-11\nConsulter les rapports\nde ventes) as UC11
     usecase (UCSA-13\nConfirmer la réception\nd'un virement bancaire) as UC13
+    usecase (UCSA-15\nGérer les annonces\ndéfilantes) as UC15
   }
 
   package "Expérience d'achat" {
@@ -212,12 +225,15 @@ rectangle "Système — Boutique en ligne" {
   }
 
   package "Interfaces externes" {
-    usecase (Autoriser / Confirmer\nune transaction) as UC_P
+    usecase (Autoriser / Confirmer\nune transaction) as UC_P1
+    usecase (Annuler une transaction /\nRembourser) as UC_P3
     usecase (Remettre un colis /\nSuivre le statut) as UC_C
   }
 }
 
 Admin --> UC12
+Admin --> UC02 : mot de passe uniquement
+Admin --> UC14
 
 Vendor --> UC02
 Vendor --> UC10
@@ -225,7 +241,8 @@ Vendor --> UC07
 Vendor --> UC09
 Vendor --> UC11
 Vendor --> UC13
-Vendor --> UC06 : accepte/refuse
+Vendor --> UC15
+Vendor --> UC06 : virement inverse
 
 Buyer --> UC01
 Buyer --> UC02
@@ -235,12 +252,14 @@ Buyer --> UC05
 Buyer --> UC06
 Buyer --> UC08
 
-UC05 --> UC_P : IFS-04
-UC09 --> UC_P : remboursement
+UC05 --> UC_P1 : IFS-04
+UC06 --> UC_P3 : annulation / remboursement
+UC09 --> UC_P3 : remboursement
 UC07 --> UC_C : IFS-05
 UC08 --> UC_C : statuts
 
-Payment --> UC_P
+Payment --> UC_P1
+Payment --> UC_P3
 Carrier --> UC_C
 ----
 
@@ -300,7 +319,7 @@ a|
 | Acheteur (principal) ; Prestataire de paiement (secondaire)
 
 | *Préconditions*
-| Acheteur authentifié ; panier non vide ; adresse de livraison dans un pays de l'UE
+| Acheteur authentifié ; panier non vide ; adresse de livraison dans un pays de la zone euro
 
 | *Déclencheur*
 | L'acheteur clique sur « Valider le panier »
@@ -308,7 +327,7 @@ a|
 | *Scénario nominal (carte bancaire)*
 a|
 . Le système affiche le récapitulatif du panier.
-. L'acheteur saisit ou sélectionne une adresse de livraison (pays UE — CS-04).
+. L'acheteur saisit ou sélectionne une adresse de livraison (zone euro — CS-04).
 . Le système affiche les modes de livraison disponibles et leurs tarifs.
 . L'acheteur choisit un mode de livraison.
 . L'acheteur choisit le paiement par carte et saisit ses informations bancaires (CS-02).
@@ -323,7 +342,7 @@ a|
 | *Scénarios alternatifs — erreurs*
 a|
 * *6a.* Le prestataire refuse la transaction carte : le système notifie l'acheteur et l'invite à réessayer ou à changer de mode de paiement.
-* *2a.* L'adresse de livraison est hors UE : le système affiche un message d'erreur et bloque la validation.
+* *2a.* L'adresse de livraison est hors zone euro : le système affiche un message d'erreur et bloque la validation.
 
 | *Postconditions*
 | Commande créée en base ; paiement autorisé (carte) ou en attente de confirmation vendeur (virement) ; vendeur notifié ; stock réservé.
@@ -342,7 +361,7 @@ a|
 | UCSA-06
 
 | *Acteurs*
-| Acheteur (principal) ; Vendeur (secondaire) ; Prestataire de paiement (secondaire)
+| Acheteur (principal) ; Vendeur (secondaire — post-expédition uniquement) ; Prestataire de paiement (secondaire)
 
 | *Préconditions*
 | Commande existante dans l'état `en_attente` ou `en_préparation` (avant expédition), ou dans l'état `expédiée` (après expédition)
@@ -350,35 +369,42 @@ a|
 | *Déclencheur*
 | L'acheteur soumet une demande d'annulation depuis son espace commandes
 
-| *Scénario nominal — annulation avant expédition*
+| *Scénario nominal — annulation avant expédition, paiement par carte*
 a|
-. Le système transmet la demande d'annulation au vendeur.
-. Le vendeur vérifie que le colis n'a pas encore été remis au transporteur.
-. Le vendeur accepte l'annulation dans le système.
+. L'acheteur soumet la demande d'annulation. Le système annule automatiquement la commande et libère le stock ; le vendeur est notifié.
 . Le système déclenche un remboursement via le prestataire (IFS-04 / FS-P03).
 . Le prestataire confirme le remboursement.
-. Le système notifie l'acheteur de l'annulation et du remboursement ; le stock est libéré.
+. Le système notifie l'acheteur de l'annulation et du remboursement.
+
+| *Scénario alternatif — annulation avant expédition, paiement par virement*
+a|
+* *0v.* Le paiement initial ayant été effectué par virement bancaire, le système détecte le mode de paiement et affiche un champ obligatoire « IBAN de remboursement » dans le formulaire de demande d'annulation.
+* *1v.* L'acheteur renseigne son IBAN et soumet la demande. Le système annule automatiquement la commande, libère le stock et notifie le vendeur. Le système passe la commande en état `remboursement_virement_en_cours` et transmet au vendeur l'IBAN de l'acheteur et le montant à rembourser.
+* *2v.* Le vendeur effectue le virement inverse depuis son compte bancaire.
+* *3v.* Le vendeur confirme dans la boutique l'émission du virement de remboursement (FS-V10).
+* *4v.* Le système enregistre le remboursement, passe la commande en état `annulée` et notifie l'acheteur que le virement de remboursement a été émis.
 
 | *Scénario alternatif — annulation après expédition, avec condition de renvoi*
 a|
 * *2b.* Le colis est déjà expédié. Le vendeur accepte l'annulation **avec condition de renvoi** : le système passe la commande en état `en_attente_retour` et notifie l'acheteur qu'il doit renvoyer le colis.
 * *3b.* L'acheteur renvoie le colis ; le vendeur confirme la réception dans le système.
-* *4b.* Le système déclenche le remboursement (FS-P03) ; la commande passe en état `annulée`.
+* *4b-carte.* Si paiement par carte : le système déclenche le remboursement via le prestataire (FS-P03) ; la commande passe en état `annulée`.
+* *4b-virement.* Si paiement par virement : le système passe en état `remboursement_virement_en_cours` et notifie le vendeur d'émettre un virement inverse (IBAN + montant fournis). Le vendeur confirme l'émission (FS-V10) ; la commande passe en état `annulée`.
 
 | *Scénario alternatif — annulation après expédition, sans condition de renvoi*
 a|
-* *2c.* Le colis est déjà expédié. Le vendeur accepte l'annulation **sans condition de renvoi** : le système déclenche immédiatement le remboursement (FS-P03) sans exiger le retour du colis.
-* *3c.* Le prestataire confirme le remboursement ; la commande passe en état `annulée`.
+* *2c-carte.* Le colis est déjà expédié. Le vendeur accepte **sans condition de renvoi**, paiement par carte : le système déclenche immédiatement le remboursement (FS-P03) ; la commande passe en état `annulée`.
+* *2c-virement.* Le vendeur accepte **sans condition de renvoi**, paiement par virement : le système passe en état `remboursement_virement_en_cours` et notifie le vendeur d'émettre un virement inverse. Le vendeur confirme l'émission (FS-V10) ; la commande passe en état `annulée`.
 
 | *Scénarios d'erreur*
 a|
-* *3d.* Le vendeur refuse la demande d'annulation (toutes situations) : le système notifie l'acheteur du refus ; la commande reste dans son état courant.
+* *3d.* Le vendeur refuse la demande d'annulation après expédition : le système notifie l'acheteur du refus ; la commande reste dans son état courant.
 
 | *Postconditions*
-| Commande en état `en_attente_retour` (attente du retour) ou `annulée` (remboursement confirmé) ; stock libéré si applicable.
+| Commande en état `en_attente_retour` (attente du retour), `remboursement_virement_en_cours` (virement inverse en attente de confirmation vendeur) ou `annulée` (remboursement confirmé) ; stock libéré si applicable.
 
 | *Exigences liées*
-| FS-B09, FS-V08, FS-P03
+| FS-B09, FS-V08, FS-P03, FS-V10
 |===
 
 === UCSA-02 : Gérer son compte
@@ -391,7 +417,7 @@ a|
 | UCSA-02
 
 | *Acteurs*
-| Acheteur ou Vendeur (principal)
+| Acheteur ou Vendeur (principal) ; Administrateur (secondaire — mot de passe uniquement)
 
 | *Préconditions*
 | Utilisateur authentifié
@@ -402,20 +428,20 @@ a|
 | *Scénario nominal*
 a|
 . L'utilisateur accède au formulaire de mise à jour de son profil.
-. Il modifie les champs souhaités (nom, adresse, mot de passe, etc.).
-. Le système valide les données saisies (unicité de l'email, format du mot de passe).
+. Il modifie les champs souhaités (nom, prénom, adresse postale, mot de passe). L'adresse email n'est pas modifiable.
+. Le système valide les données saisies (format du mot de passe, cohérence de l'adresse).
 . Le système enregistre les modifications et confirme la mise à jour.
 
 | *Scénarios alternatifs*
 a|
-* *3a.* L'adresse email est déjà utilisée par un autre compte : le système retourne une erreur sans modifier le compte.
-* *3b.* Les données saisies sont invalides (format incorrect) : le système signale les champs en erreur.
+* *2a.* L'acteur est Administrateur : seul le champ « mot de passe » est disponible ; les autres champs sont masqués.
+* *3a.* Les données saisies sont invalides (format incorrect) : le système signale les champs en erreur.
 
 | *Postconditions*
 | Données du compte mises à jour en base.
 
 | *Exigences liées*
-| FS-V01, FS-B02
+| FS-V01, FS-B02, FS-A04
 |===
 
 === UCSA-03 : Parcourir et rechercher le catalogue
@@ -750,6 +776,87 @@ a|
 | FS-V09, CS-02
 |===
 
+=== UCSA-14 : Basculer en mode maintenance
+
+[cols="1,3", options="header"]
+|===
+| Champ | Description
+
+| *Identifiant*
+| UCSA-14
+
+| *Acteurs*
+| Administrateur (principal)
+
+| *Préconditions*
+| Administrateur authentifié
+
+| *Déclencheur*
+| L'administrateur souhaite activer ou désactiver le mode maintenance de la boutique
+
+| *Scénario nominal — Activation*
+a|
+. L'administrateur accède au panneau d'administration et active le commutateur « Mode maintenance » (FS-A05).
+. Le système enregistre l'état `maintenance = actif`.
+. Toute requête d'un internaute non administrateur est interceptée ; le système retourne la page « Site en maintenance ».
+. Les autres pages de la boutique (catalogue, panier, commande, compte) sont inaccessibles.
+
+| *Scénario nominal — Désactivation*
+a|
+. L'administrateur désactive le commutateur « Mode maintenance » (FS-A05).
+. Le système enregistre l'état `maintenance = inactif`.
+. La boutique redevient normalement accessible à tous les internautes.
+
+| *Scénarios alternatifs*
+a|
+* *1a.* L'administrateur tente d'accéder à la boutique en mode maintenance : l'accès au panneau d'administration reste disponible sans redirection.
+
+| *Postconditions*
+| État de maintenance mis à jour ; internautes redirigés ou non selon l'état actif.
+
+| *Exigences liées*
+| FS-A05
+|===
+
+=== UCSA-15 : Gérer les annonces défilantes
+
+[cols="1,3", options="header"]
+|===
+| Champ | Description
+
+| *Identifiant*
+| UCSA-15
+
+| *Acteurs*
+| Vendeur (principal)
+
+| *Préconditions*
+| Vendeur authentifié
+
+| *Déclencheur*
+| Le vendeur souhaite publier, modifier ou retirer une annonce défilante sur la page d'accueil
+
+| *Scénario nominal*
+a|
+. Le vendeur accède à la section « Annonces défilantes » du back-office.
+. Il crée une nouvelle annonce en choisissant le type de contenu : texte, image ou les deux (FS-V11).
+. Il saisit le texte et/ou téléverse une image selon le type choisi, indique un lien de redirection optionnel et un ordre d'affichage.
+. Le système enregistre l'annonce et l'affiche immédiatement dans le carrousel de la page d'accueil. Un clic sur l'annonce redirige l'internaute vers le lien si celui-ci est renseigné.
+
+| *Scénarios alternatifs*
+a|
+* *2a.* Le vendeur modifie une annonce existante : il sélectionne l'annonce, met à jour les champs souhaités et valide.
+* *2b.* Le vendeur supprime une annonce : le système la retire du carrousel immédiatement.
+* *2c.* Le vendeur réordonne les annonces : il modifie les positions relatives et valide.
+* *3a.* Le type est « texte » et le champ texte est vide, ou le type contient « image » et aucune image n'est téléversée : le système bloque la validation et signale le champ manquant.
+
+| *Postconditions*
+| La page d'accueil affiche le carrousel mis à jour.
+
+| *Exigences liées*
+| FS-V11
+|===
+
 == Diagramme d'activité système — Flux de commande complet
 
 Ce diagramme modélise le flux système de bout en bout, depuis la connexion de l'acheteur jusqu'à la clôture de la commande, en faisant apparaître les échanges avec les systèmes externes.
@@ -767,19 +874,21 @@ start
 
 |Système|
 :Générer token d'activation (CS-07);
-:Envoyer email avec lien tokenisé\n(IFS-06 / FS-B10);
 
-|Acheteur|
-:Cliquer sur le lien d'activation;
+repeat
+  |Service de messagerie|
+  :Acheminer le lien d'activation\n(IFS-06 / FS-B10);
 
-|Système|
-if (Token valide et non expiré ?) then (oui)
-  :Activer le compte (FS-B10);
-else (non)
-  :Notifier l'acheteur — token expiré;
-  :Proposer le renvoi du lien;
-  stop
-endif
+  |Acheteur|
+  :Cliquer sur le lien d'activation;
+
+  |Système|
+  :Vérifier le token;
+
+backward :Notifier l'acheteur — token expiré\nProposer le renvoi du lien;
+repeat while (Token valide et non expiré ?) is (non) not (oui)
+
+:Activer le compte (FS-B10);
 
 |Acheteur|
 :S'authentifier (FS-B01);
@@ -794,7 +903,7 @@ endif
 
 |Système|
 :Afficher récapitulatif;
-:Contrôler adresse de livraison UE (CS-04);
+:Contrôler adresse de livraison zone euro (CS-04);
 
 |Acheteur|
 :Saisir adresse de livraison\n+ choisir mode de livraison;
@@ -980,8 +1089,8 @@ Sys --> Buyer : 200 OK — panier mis à jour (FS-B04)
 note right : Panier sauvegardé en base\npour la prochaine session (CS-03)
 
 == Tunnel d'achat et paiement (UCSA-05) ==
-Buyer -> Sys : POST /commandes {panier_id, adresse_UE, mode_livraison, mode_paiement}
-note right : CS-04 — adresse validée UE\nCS-02 — carte ou virement
+Buyer -> Sys : POST /commandes {panier_id, adresse_zone_euro, mode_livraison, mode_paiement}
+note right : CS-04 — adresse validée zone euro\nCS-02 — carte ou virement
 
 alt Paiement par carte
   Sys -> Payment : POST /authorize {montant, mode: carte, références}
@@ -1077,7 +1186,7 @@ class Produit {
   + id : UUID
   + nom : String
   + description : Text
-  + prixHT : Decimal
+  + prix : Decimal
   + photos : List<URL>
   + catégorie : String
   + statut : Enum {publié, archivé}
@@ -1145,7 +1254,7 @@ class Adresse {
   + rue : String
   + ville : String
   + codePostal : String
-  + paysUE : CodeISO
+  + paysZoneEuro : CodeISO
 }
 
 CompteUtilisateur "1" --> "0..1" Panier : possède
@@ -1161,8 +1270,8 @@ Commande "1" --> "1" Adresse : livrée à
 Expédition "0..*" --> "1" Transporteur : acheminée par
 
 note bottom of Commande
-  CS-04 : adresse.paysUE
-  doit être dans l'UE
+  CS-04 : adresse.paysZoneEuro
+  doit être dans la zone euro
 end note
 
 note bottom of Paiement
@@ -1292,6 +1401,8 @@ La matrice ci-dessous assure la couverture complète de chaque besoin opération
 
 | UC_A1 | Gérer les comptes utilisateurs | FS-A01, FS-A02 | UCSA-12
 | UC_A2 | Gérer les transporteurs | FS-A03 | UCSA-12
+| UC_A3 | Basculer en mode maintenance | FS-A05 | UCSA-14
+| UC_A_ACC | Modifier son mot de passe (administrateur) | FS-A04 | UCSA-02
 | UC_B0 | S'inscrire / activer son compte via lien email | FS-B01, FS-B10, CS-07 | UCSA-01, UCSA-02
 | UC_B_ACC | Mettre à jour son compte (acheteur) | FS-B02 | UCSA-02
 | UC_B1 | Parcourir le catalogue | FS-B03 | UCSA-03
@@ -1301,10 +1412,11 @@ La matrice ci-dessous assure la couverture complète de chaque besoin opération
 | UC_B5 | Suivre la livraison (numéro de suivi + lien site transporteur) | FS-B08, FS-C01 | UCSA-08
 | UC_B6 / UC_V7 | Annuler une commande | FS-B09, FS-V08, FS-P03 | UCSA-06
 | UC_V0 | Mettre à jour son compte (vendeur) | FS-V01 | UCSA-02
+| UC_V9 | Gérer les annonces défilantes | FS-V11 | UCSA-15
 | UC_V1 | Gérer le catalogue produits | FS-V02 | UCSA-10
 | UC_V2 | Gérer les stocks | FS-V03 | UCSA-10
 | UC_V3 | Traiter les commandes reçues | FS-V04 | UCSA-07
-| UC_V4 | Expédier vers l'UE — dépôt physique + saisie manuelle du numéro de suivi | FS-V05 | UCSA-07
+| UC_V4 | Expédier vers la zone euro — dépôt physique + saisie manuelle du numéro de suivi | FS-V05 | UCSA-07
 | UC_V5 | Traiter les litiges et réclamations | FS-V06, FS-P03 | UCSA-09
 | UC_V6 | Consulter les rapports de ventes | FS-V07 | UCSA-11
 | — | Confirmer réception d'un virement bancaire | FS-V09 | UCSA-13
