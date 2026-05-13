@@ -152,7 +152,7 @@ Les fonctions système (FS) sont dérivées des cas d'utilisation opérationnels
 
 | FS-P01 | Soumettre une demande d'autorisation de transaction au prestataire de paiement | UC_P1
 | FS-P02 | Recevoir la confirmation ou le refus de transaction et notifier les parties | UC_P2
-| FS-P03 | Déclencher et confirmer un remboursement via le prestataire | UC_P3
+| FS-P03 | Annuler une transaction et déclencher un remboursement via le prestataire de paiement | UC_P3
 | FS-C01 | Afficher à l'acheteur le numéro de suivi et l'URL du site de suivi du transporteur depuis son espace commandes | UC_C3
 |===
 
@@ -208,7 +208,8 @@ rectangle "Système — Boutique en ligne" {
   }
 
   package "Interfaces externes" {
-    usecase (Autoriser / Confirmer\nune transaction) as UC_P
+    usecase (Autoriser / Confirmer\nune transaction) as UC_P1
+    usecase (Annuler une transaction /\nRembourser) as UC_P3
     usecase (Remettre un colis /\nSuivre le statut) as UC_C
   }
 }
@@ -221,7 +222,7 @@ Vendor --> UC07
 Vendor --> UC09
 Vendor --> UC11
 Vendor --> UC13
-Vendor --> UC06 : accepte/refuse
+Vendor --> UC06 : virement inverse
 
 Buyer --> UC01
 Buyer --> UC02
@@ -231,12 +232,14 @@ Buyer --> UC05
 Buyer --> UC06
 Buyer --> UC08
 
-UC05 --> UC_P : IFS-04
-UC09 --> UC_P : remboursement
+UC05 --> UC_P1 : IFS-04
+UC06 --> UC_P3 : annulation / remboursement
+UC09 --> UC_P3 : remboursement
 UC07 --> UC_C : IFS-05
 UC08 --> UC_C : statuts
 
-Payment --> UC_P
+Payment --> UC_P1
+Payment --> UC_P3
 Carrier --> UC_C
 ----
 
