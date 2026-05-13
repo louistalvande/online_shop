@@ -91,6 +91,10 @@ Les contraintes opérationnelles (COp) de l'OA sont traduites en contraintes sys
 | CS-07
 | Activation de compte par email
 | À l'issue de l'inscription, le système doit envoyer automatiquement un email contenant un lien d'activation tokenisé à usage unique. Le compte est activé uniquement sur clic de ce lien. Le token doit avoir une durée de validité limitée (ex. 24 h) au-delà de laquelle un renvoi est possible.
+
+| CS-08
+| Prix TTC — pas de TVA
+| Tous les prix affichés sur la boutique sont exprimés en TTC. Aucune TVA n'est calculée ni affichée en sus ; le prix saisi par le vendeur est le prix final payé par l'acheteur.
 |===
 
 == Exigences fonctionnelles système
@@ -1177,7 +1181,7 @@ class Produit {
   + id : UUID
   + nom : String
   + description : Text
-  + prixHT : Decimal
+  + prix : Decimal
   + photos : List<URL>
   + catégorie : String
   + statut : Enum {publié, archivé}

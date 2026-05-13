@@ -605,7 +605,7 @@ package "Entités métier (SA)" #F0F8FF {
     + id : UUID
     + nom : String
     + description : Text
-    + prixHT : Decimal
+    + prix : Decimal
     + photos : List<URL>
     + catégorie : String
     + statut : Enum {publié, archivé}
