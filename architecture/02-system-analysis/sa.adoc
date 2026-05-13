@@ -112,7 +112,7 @@ Les fonctions système (FS) sont dérivées des cas d'utilisation opérationnels
 |===
 | ID | Fonction système | Origine UC (OA)
 
-| FS-A01 | Créer, suspendre et supprimer les comptes vendeur et acheteur | UC_A1
+| FS-A01 | Créer, suspendre et supprimer les comptes vendeur et acheteur ; à la création, le compte est en statut `en_attente_activation` et le système envoie un email contenant un lien permettant à l'utilisateur de définir son mot de passe et d'activer son compte (même flux que FS-B01 / CS-07) | UC_A1
 | FS-A02 | Gérer les droits d'accès (rôles) sur la plateforme | UC_A1
 | FS-A03 | Ajouter, modifier et supprimer les transporteurs disponibles | UC_A2
 | FS-A04 | Permettre à l'administrateur de modifier son mot de passe | UC_A_ACC
@@ -723,13 +723,14 @@ a|
 | *Scénario nominal*
 a|
 . L'administrateur consulte la liste des comptes utilisateurs (vendeurs et acheteurs).
-. Il peut créer, modifier, suspendre ou supprimer un compte (FS-A01), et ajuster les rôles (FS-A02).
+. Il peut créer, suspendre ou supprimer un compte (FS-A01), et ajuster les rôles (FS-A02). À la création, le système génère un lien d'activation tokenisé (CS-07) et l'envoie par email à l'utilisateur ; celui-ci définit son mot de passe via ce lien avant de pouvoir se connecter.
 . Il accède à la liste des transporteurs configurés.
 . Il peut ajouter, modifier ou supprimer un transporteur (FS-A03).
 
 | *Scénarios alternatifs*
 a|
 * *2a.* L'adresse email du nouveau compte est déjà utilisée : le système retourne une erreur de duplication.
+* *2b.* L'utilisateur n'a pas cliqué le lien d'activation : l'administrateur peut renvoyer un nouveau lien depuis la fiche utilisateur.
 * *4a.* Le transporteur est référencé dans des expéditions en cours : le système bloque la suppression et propose la désactivation.
 
 | *Postconditions*

@@ -25,9 +25,12 @@ _Fonctions ARCADIA : FS-A01, FS-A02, FS-A03 — UCSA-12 — LA : Console Adminis
 | *US-ADM-01*
 | En tant qu'administrateur, je peux créer un compte acheteur ou vendeur depuis la console d'administration.
 a|
-- [ ] Formulaire : email, rôle (acheteur / vendeur), informations de profil
+- [ ] Formulaire : email, rôle (acheteur / vendeur), informations de profil (sans champ mot de passe)
 - [ ] Erreur si l'email est déjà utilisé (pas de doublon)
-- [ ] Compte créé avec statut `actif`
+- [ ] Compte créé avec statut `en_attente_activation`
+- [ ] Le système envoie automatiquement un email à l'adresse saisie contenant un lien d'activation
+- [ ] Le lien permet à l'utilisateur de définir son mot de passe et d'activer son compte (même flux que UCSA-01)
+- [ ] Le lien est à usage unique et expire après 24 h ; l'admin peut renvoyer un lien depuis la fiche utilisateur
 | À faire
 
 | *US-ADM-02*
