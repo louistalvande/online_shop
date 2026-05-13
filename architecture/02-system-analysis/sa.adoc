@@ -126,6 +126,7 @@ Les fonctions système (FS) sont dérivées des cas d'utilisation opérationnels
 | FS-V08 | Traiter les demandes d'annulation après expédition : accepter ou refuser ; en cas d'acceptation, choisir entre annulation avec condition de renvoi ou annulation directe sans renvoi | UC_V7
 | FS-V09 | Confirmer manuellement la réception d'un virement bancaire et déclencher la prise en charge de la commande correspondante | —
 | FS-V10 | Confirmer l'émission d'un virement inverse de remboursement vers l'acheteur à la suite d'une annulation de commande réglée par virement bancaire | UC_V7
+| FS-V11 | Créer, modifier, réordonner et supprimer les annonces défilantes affichées sur la page d'accueil ; chaque annonce comporte un contenu texte, une image ou les deux, et un lien de redirection optionnel au clic | UC_V9
 |===
 
 === Expérience d'achat (Acheteur)
@@ -202,6 +203,7 @@ rectangle "Système — Boutique en ligne" {
     usecase (UCSA-09\nTraiter un litige\nou une réclamation) as UC09
     usecase (UCSA-11\nConsulter les rapports\nde ventes) as UC11
     usecase (UCSA-13\nConfirmer la réception\nd'un virement bancaire) as UC13
+    usecase (UCSA-15\nGérer les annonces\ndéfilantes) as UC15
   }
 
   package "Expérience d'achat" {
@@ -230,6 +232,7 @@ Vendor --> UC07
 Vendor --> UC09
 Vendor --> UC11
 Vendor --> UC13
+Vendor --> UC15
 Vendor --> UC06 : virement inverse
 
 Buyer --> UC01
@@ -806,6 +809,45 @@ a|
 | FS-A05
 |===
 
+=== UCSA-15 : Gérer les annonces défilantes
+
+[cols="1,3", options="header"]
+|===
+| Champ | Description
+
+| *Identifiant*
+| UCSA-15
+
+| *Acteurs*
+| Vendeur (principal)
+
+| *Préconditions*
+| Vendeur authentifié
+
+| *Déclencheur*
+| Le vendeur souhaite publier, modifier ou retirer une annonce défilante sur la page d'accueil
+
+| *Scénario nominal*
+a|
+. Le vendeur accède à la section « Annonces défilantes » du back-office.
+. Il crée une nouvelle annonce en choisissant le type de contenu : texte, image ou les deux (FS-V11).
+. Il saisit le texte et/ou téléverse une image selon le type choisi, indique un lien de redirection optionnel et un ordre d'affichage.
+. Le système enregistre l'annonce et l'affiche immédiatement dans le carrousel de la page d'accueil. Un clic sur l'annonce redirige l'internaute vers le lien si celui-ci est renseigné.
+
+| *Scénarios alternatifs*
+a|
+* *2a.* Le vendeur modifie une annonce existante : il sélectionne l'annonce, met à jour les champs souhaités et valide.
+* *2b.* Le vendeur supprime une annonce : le système la retire du carrousel immédiatement.
+* *2c.* Le vendeur réordonne les annonces : il modifie les positions relatives et valide.
+* *3a.* Le type est « texte » et le champ texte est vide, ou le type contient « image » et aucune image n'est téléversée : le système bloque la validation et signale le champ manquant.
+
+| *Postconditions*
+| La page d'accueil affiche le carrousel mis à jour.
+
+| *Exigences liées*
+| FS-V11
+|===
+
 == Diagramme d'activité système — Flux de commande complet
 
 Ce diagramme modélise le flux système de bout en bout, depuis la connexion de l'acheteur jusqu'à la clôture de la commande, en faisant apparaître les échanges avec les systèmes externes.
@@ -1361,6 +1403,7 @@ La matrice ci-dessous assure la couverture complète de chaque besoin opération
 | UC_B5 | Suivre la livraison (numéro de suivi + lien site transporteur) | FS-B08, FS-C01 | UCSA-08
 | UC_B6 / UC_V7 | Annuler une commande | FS-B09, FS-V08, FS-P03 | UCSA-06
 | UC_V0 | Mettre à jour son compte (vendeur) | FS-V01 | UCSA-02
+| UC_V9 | Gérer les annonces défilantes | FS-V11 | UCSA-15
 | UC_V1 | Gérer le catalogue produits | FS-V02 | UCSA-10
 | UC_V2 | Gérer les stocks | FS-V03 | UCSA-10
 | UC_V3 | Traiter les commandes reçues | FS-V04 | UCSA-07

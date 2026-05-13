@@ -161,6 +161,9 @@ rectangle "Boutique en ligne" {
     usecase (Consulter les rapports\nde ventes) as UC_V6
     usecase (Traiter un retour\naprès expédition) as UC_V8
   }
+  package "Vitrine" {
+    usecase (Gérer les annonces\ndéfilantes) as UC_V9
+  }
 }
 
 Vendor --> UC_V_AUTH
@@ -172,6 +175,7 @@ Vendor --> UC_V4
 Vendor --> UC_V5
 Vendor --> UC_V6
 Vendor --> UC_V8
+Vendor --> UC_V9
 UC_V0 ..> UC_V_AUTH : <<include>>
 UC_V1 ..> UC_V_AUTH : <<include>>
 UC_V2 ..> UC_V_AUTH : <<include>>
@@ -180,6 +184,7 @@ UC_V4 ..> UC_V_AUTH : <<include>>
 UC_V5 ..> UC_V_AUTH : <<include>>
 UC_V6 ..> UC_V_AUTH : <<include>>
 UC_V8 ..> UC_V_AUTH : <<include>>
+UC_V9 ..> UC_V_AUTH : <<include>>
 UC_V4 --> Carrier
 ----
 
@@ -580,6 +585,9 @@ end
 
 | Consulter les rapports de ventes
 | Analyser les performances commerciales, le chiffre d'affaires, les produits les plus vendus
+
+| Gérer les annonces défilantes
+| Créer, modifier et supprimer des annonces défilantes affichées sur la page d'accueil de la boutique (texte, lien, ordre d'affichage)
 |===
 
 === Acheteur
