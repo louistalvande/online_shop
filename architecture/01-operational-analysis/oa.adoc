@@ -11,7 +11,7 @@
 
 L'Analyse du Besoin Opérationnel (OA) décrit le contexte métier réel d'une boutique en ligne, indépendamment de tout système à construire. Elle identifie les acteurs impliqués, leurs activités opérationnelles et les échanges entre eux.
 
-La boutique repose sur trois acteurs distincts. L'**administrateur** est l'unique responsable de la gestion des comptes utilisateurs. Le **vendeur** (propriétaire du site) prend en charge l'ensemble des opérations commerciales : catalogue, stocks, commandes et expéditions. L'**acheteur** est le client final qui navigue et passe commande. La boutique propose une livraison à destination de l'ensemble des pays de l'**Union Européenne**, via un ou plusieurs services de transport externes. Les paiements sont traités par un **prestataire de paiement externe** et acceptés par **carte bancaire** ou **virement bancaire**. L'activation du compte acheteur s'effectue via un lien envoyé par un **service de messagerie externe**.
+La boutique repose sur trois acteurs distincts. L'**administrateur** est l'unique responsable de la gestion des comptes utilisateurs. Le **vendeur** (propriétaire du site) prend en charge l'ensemble des opérations commerciales : catalogue, stocks, commandes et expéditions. L'**acheteur** est le client final qui navigue et passe commande. La boutique propose une livraison à destination des pays de la **zone euro**, via un ou plusieurs services de transport externes. Les paiements sont traités par un **prestataire de paiement externe** et acceptés par **carte bancaire** ou **virement bancaire**. L'activation du compte acheteur s'effectue via un lien envoyé par un **service de messagerie externe**.
 
 === Acteurs opérationnels
 
@@ -25,15 +25,15 @@ La boutique repose sur trois acteurs distincts. L'**administrateur** est l'uniqu
 
 | *Vendeur*
 | Propriétaire et exploitant de la boutique
-| Mettre à jour ses données de compte, gérer le catalogue produits, administrer les stocks, traiter les commandes reçues, gérer les expéditions vers les pays de l'UE (déposer le colis auprès du transporteur, récupérer le numéro de suivi sur le reçu et le saisir dans la boutique), confirmer manuellement la réception des virements bancaires, consulter les rapports de ventes, traiter les litiges et réclamations, traiter les annulations après expédition en choisissant entre annulation avec condition de renvoi du colis ou annulation directe sans renvoi
+| Mettre à jour ses données de compte, gérer le catalogue produits, administrer les stocks, traiter les commandes reçues, gérer les expéditions vers les pays de la zone euro (déposer le colis auprès du transporteur, récupérer le numéro de suivi sur le reçu et le saisir dans la boutique), confirmer manuellement la réception des virements bancaires, consulter les rapports de ventes, traiter les litiges et réclamations, traiter les annulations après expédition en choisissant entre annulation avec condition de renvoi du colis ou annulation directe sans renvoi
 
 | *Acheteur*
-| Client de la boutique (résidant dans l'UE)
+| Client de la boutique (résidant dans la zone euro)
 | S'inscrire, activer son compte via le lien reçu par email, mettre à jour ses données de compte, parcourir le catalogue, sélectionner des produits, gérer et sauvegarder son panier, passer des commandes, effectuer les paiements (carte ou virement), choisir le mode de livraison, suivre et réceptionner les livraisons, annuler une commande en autonomie depuis son compte (avant expédition), demander un retour par email au vendeur (après expédition)
 
 | *Transporteur*
 | Service externe de livraison
-| Prendre en charge les colis déposés physiquement par le vendeur, assurer la livraison dans les pays de l'UE, fournir un numéro de suivi sur le reçu de dépôt, permettre le suivi en ligne via ce numéro
+| Prendre en charge les colis déposés physiquement par le vendeur, assurer la livraison dans les pays de la zone euro, fournir un numéro de suivi sur le reçu de dépôt, permettre le suivi en ligne via ce numéro
 
 | *Prestataire de paiement*
 | Système externe de traitement des paiements
@@ -94,6 +94,7 @@ actor "Administrateur" as Admin
 actor "Transporteur\n(système externe)" as Carrier
 
 rectangle "Boutique en ligne" {
+  usecase (S'authentifier) as UC_A0
   package "Gestion des comptes" {
     usecase (Créer / suspendre /\nsupprimer un compte\nacheteur ou vendeur) as UC_A1
     usecase (Gérer les droits\nd'accès à la plateforme) as UC_A1b
@@ -102,12 +103,22 @@ rectangle "Boutique en ligne" {
     usecase (Ajouter un\ntransporteur) as UC_A2a
     usecase (Modifier / supprimer\nun transporteur) as UC_A2b
   }
+  package "Administration de la plateforme" {
+    usecase (Basculer en mode\nmaintenance) as UC_A3
+  }
 }
 
+Admin --> UC_A0
 Admin --> UC_A1
 Admin --> UC_A1b
 Admin --> UC_A2a
 Admin --> UC_A2b
+Admin --> UC_A3
+UC_A1 ..> UC_A0 : <<include>>
+UC_A1b ..> UC_A0 : <<include>>
+UC_A2a ..> UC_A0 : <<include>>
+UC_A2b ..> UC_A0 : <<include>>
+UC_A3 ..> UC_A0 : <<include>>
 UC_A2a --> Carrier
 UC_A2b --> Carrier
 ----
@@ -133,6 +144,7 @@ actor "Vendeur" as Vendor
 actor "Transporteur\n(système externe)" as Carrier
 
 rectangle "Boutique en ligne" {
+  usecase (S'authentifier) as UC_V_AUTH
   package "Gestion du compte" {
     usecase (Mettre à jour\nson compte) as UC_V0
   }
@@ -142,15 +154,19 @@ rectangle "Boutique en ligne" {
   }
   package "Commandes et expéditions" {
     usecase (Traiter les commandes\nreçues) as UC_V3
-    usecase (Expédier vers\nl'UE) as UC_V4
+    usecase (Expédier vers\nla zone euro) as UC_V4
   }
   package "Service client et reporting" {
     usecase (Traiter les litiges\net réclamations) as UC_V5
     usecase (Consulter les rapports\nde ventes) as UC_V6
     usecase (Traiter un retour\naprès expédition) as UC_V8
   }
+  package "Vitrine" {
+    usecase (Gérer les annonces\ndéfilantes) as UC_V9
+  }
 }
 
+Vendor --> UC_V_AUTH
 Vendor --> UC_V0
 Vendor --> UC_V1
 Vendor --> UC_V2
@@ -159,6 +175,16 @@ Vendor --> UC_V4
 Vendor --> UC_V5
 Vendor --> UC_V6
 Vendor --> UC_V8
+Vendor --> UC_V9
+UC_V0 ..> UC_V_AUTH : <<include>>
+UC_V1 ..> UC_V_AUTH : <<include>>
+UC_V2 ..> UC_V_AUTH : <<include>>
+UC_V3 ..> UC_V_AUTH : <<include>>
+UC_V4 ..> UC_V_AUTH : <<include>>
+UC_V5 ..> UC_V_AUTH : <<include>>
+UC_V6 ..> UC_V_AUTH : <<include>>
+UC_V8 ..> UC_V_AUTH : <<include>>
+UC_V9 ..> UC_V_AUTH : <<include>>
 UC_V4 --> Carrier
 ----
 
@@ -188,6 +214,7 @@ rectangle "Boutique en ligne" {
   package "Inscription et compte" {
     usecase (S'inscrire) as UC_B0
     usecase (Activer son compte\nvia email) as UC_B0B
+    usecase (S'authentifier) as UC_B_AUTH
     usecase (Mettre à jour\nson compte) as UC_B_ACC
   }
   package "Navigation et panier" {
@@ -209,6 +236,7 @@ rectangle "Boutique en ligne" {
 
 Buyer --> UC_B0
 Buyer --> UC_B0B
+Buyer --> UC_B_AUTH
 Buyer --> UC_B_ACC
 Buyer --> UC_B1
 Buyer --> UC_B2
@@ -219,6 +247,15 @@ Buyer --> UC_B4
 Buyer --> UC_B5
 Buyer --> UC_B6
 Buyer --> UC_B7
+
+UC_B_ACC ..> UC_B_AUTH : <<include>>
+UC_B2B ..> UC_B_AUTH : <<include>>
+UC_B3 ..> UC_B_AUTH : <<include>>
+UC_B4B ..> UC_B_AUTH : <<include>>
+UC_B4 ..> UC_B_AUTH : <<include>>
+UC_B5 ..> UC_B_AUTH : <<include>>
+UC_B6 ..> UC_B_AUTH : <<include>>
+UC_B7 ..> UC_B_AUTH : <<include>>
 
 UC_B0 --> Mail
 Mail --> UC_B0B
@@ -241,19 +278,18 @@ skinparam swimlaneBorderColor #AAAAAA
 start
 :S'inscrire;
 
-|Service de messagerie|
-:Acheminer le lien\nd'activation vers\nla boîte mail de l'acheteur;
+repeat
+  |Service de messagerie|
+  :Acheminer le lien\nd'activation vers\nla boîte mail de l'acheteur;
 
-|Acheteur|
-:Consulter sa boîte mail;
-:Cliquer sur le lien\nd'activation;
+  |Acheteur|
+  :Consulter sa boîte mail;
+  :Cliquer sur le lien\nd'activation;
 
-if (Lien valide ?) then (oui)
-  :Compte activé;
-else (non)
-  :Demander le renvoi\ndu lien;
-  stop
-endif
+backward :Demander le renvoi\ndu lien;
+repeat while (Lien valide ?) is (non) not (oui)
+
+:Compte activé;
 
 :Se connecter;
 :Parcourir le catalogue;
@@ -293,10 +329,20 @@ else (virement)
 endif
 
 if (Annulation souhaitée\navant expédition ?) then (oui)
-  :Annuler la commande\ndepuis son compte;
+  if (Mode de paiement ?) then (virement)
+    :Renseigner son IBAN\ndans le formulaire\nd'annulation;
+  else (carte)
+  endif
+  :Soumettre la demande\nd'annulation;
 
-  |Prestataire de paiement|
-  :Traiter le remboursement\nautomatique;
+  if (Mode de paiement ?) then (carte)
+    |Prestataire de paiement|
+    :Traiter le remboursement\nautomatique;
+  else (virement)
+    |Vendeur|
+    :Émettre un virement inverse\nvers l'IBAN de l'acheteur;
+    :Confirmer l'émission du\nremboursement dans la boutique;
+  endif
 
   |Acheteur|
   :Recevoir confirmation\nd'annulation et remboursement;
@@ -324,7 +370,7 @@ endif
 |Transporteur|
 :Prendre en charge\nle colis;
 :Mettre à jour\nle statut de livraison;
-:Livrer dans le pays\nde l'acheteur (UE);
+:Livrer dans le pays\nde l'acheteur (zone euro);
 
 |Acheteur|
 :Suivre la livraison;
@@ -393,7 +439,7 @@ participant "Boutique\nen ligne" as Shop
 actor Vendeur as Vendor
 actor Administrateur as Admin
 participant "Service de\nmessagerie" as Mail
-participant "Transporteur\n(UE)" as Carrier
+participant "Transporteur\n(zone euro)" as Carrier
 participant "Prestataire\nde paiement" as Payment
 
 == Inscription et activation ==
@@ -498,7 +544,10 @@ end
 | Créer, suspendre et supprimer les comptes du vendeur et des acheteurs ; gérer les droits d'accès à la plateforme
 
 | Gérer les transporteurs
-| Ajouter, modifier et supprimer les transporteurs disponibles sur la plateforme pour les expéditions UE
+| Ajouter, modifier et supprimer les transporteurs disponibles sur la plateforme pour les expéditions zone euro
+
+| Basculer en mode maintenance
+| Activer ou désactiver le mode maintenance de la boutique ; lorsqu'il est actif, tout internaute non administrateur est redirigé vers une page « Site en maintenance » et les autres pages sont inaccessibles
 |===
 
 === Vendeur
@@ -519,20 +568,26 @@ end
 | Traiter les commandes
 | Prendre en charge les commandes reçues, vérifier le stock, préparer les colis
 
-| Gérer les expéditions vers l'UE
+| Gérer les expéditions vers la zone euro
 | Préparer le colis, le déposer auprès d'un transporteur (ex. La Poste), récupérer le numéro de suivi sur le reçu, puis saisir ce numéro dans la boutique pour marquer la commande comme expédiée et notifier l'acheteur
 
 | Traiter les litiges et réclamations
 | Répondre aux demandes de remboursement, gérer les retours produits
 
 | Traiter une annulation après expédition
-| Recevoir la demande d'annulation de l'acheteur ; accepter ou refuser la demande. En cas d'acceptation, choisir entre deux modalités : (1) **avec condition de renvoi** — notifier l'acheteur qu'il doit renvoyer le colis, attendre la réception du retour, puis déclencher le remboursement ; (2) **sans condition de renvoi** — déclencher le remboursement directement, sans exiger le retour du colis.
+| Recevoir la demande d'annulation de l'acheteur ; accepter ou refuser la demande. En cas d'acceptation, choisir entre deux modalités : (1) **avec condition de renvoi** — notifier l'acheteur qu'il doit renvoyer le colis, attendre la réception du retour, puis déclencher le remboursement ; (2) **sans condition de renvoi** — déclencher le remboursement directement, sans exiger le retour du colis. Si le paiement initial était par virement bancaire, le remboursement ne peut pas être traité automatiquement par le prestataire : le vendeur doit émettre un virement inverse vers l'acheteur et confirmer l'émission dans la boutique.
+
+| Émettre un virement inverse de remboursement
+| Lorsqu'une commande réglée par virement est annulée (avant ou après expédition), effectuer un virement bancaire du montant de la commande vers le compte de l'acheteur, puis confirmer manuellement l'émission dans la boutique pour clôturer le remboursement.
 
 | Confirmer la réception d'un virement bancaire
 | Après réception effective des fonds sur le compte bancaire du vendeur, confirmer manuellement dans la boutique la réception du virement pour déclencher la prise en charge de la commande correspondante
 
 | Consulter les rapports de ventes
 | Analyser les performances commerciales, le chiffre d'affaires, les produits les plus vendus
+
+| Gérer les annonces défilantes
+| Créer, modifier et supprimer des annonces défilantes affichées sur la page d'accueil de la boutique (texte, lien, ordre d'affichage)
 |===
 
 === Acheteur
@@ -563,7 +618,7 @@ end
 | Le panier est automatiquement sauvegardé sur le compte de l'acheteur ; à la reconnexion, son contenu est restauré tel quel
 
 | Passer une commande
-| Saisir l'adresse de livraison dans un pays de l'UE, choisir le mode de livraison, valider la commande
+| Saisir l'adresse de livraison dans un pays de la zone euro, choisir le mode de livraison, valider la commande
 
 | Effectuer un paiement
 | Régler la commande par **carte bancaire** (autorisation immédiate) ou par **virement bancaire** (la commande reste en attente de la confirmation manuelle du vendeur jusqu'à réception effective des fonds)
@@ -585,9 +640,9 @@ end
 | Activité | Description
 
 | Prendre en charge le colis
-| Réceptionner les colis déposés physiquement par le vendeur pour expédition vers un pays de l'UE ; remettre un reçu avec numéro de suivi
+| Réceptionner les colis déposés physiquement par le vendeur pour expédition vers un pays de la zone euro ; remettre un reçu avec numéro de suivi
 
-| Acheminer et livrer dans l'UE
+| Acheminer et livrer dans la zone euro
 | Assurer le transport et la livraison du colis à l'adresse de l'acheteur dans le pays de destination
 
 | Permettre le suivi en ligne

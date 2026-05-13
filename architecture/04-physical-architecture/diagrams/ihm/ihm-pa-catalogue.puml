@@ -20,7 +20,7 @@ title Portail Acheteur — Catalogue produits
     |
     {
       {#
-        Produit                  | Prix HT | Stock      | Action
+        Produit                  | Prix    | Stock      | Action
         Chaussures cuir brun     | 89,00 € | Disponible | [Ajouter]
         Veste laine grise        | 149,00 €| Disponible | [Ajouter]
         Sac à dos toile          | 59,00 € | Rupture    | [Indisponible]

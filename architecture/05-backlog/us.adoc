@@ -61,9 +61,9 @@ a|
 | À faire
 
 | *US-ADM-06*
-| En tant qu'administrateur, je peux ajouter un transporteur avec son nom, les pays de l'UE couverts et l'URL de son site de suivi.
+| En tant qu'administrateur, je peux ajouter un transporteur avec son nom, les pays de la zone euro couverts et l'URL de son site de suivi.
 a|
-- [ ] Formulaire : nom, pays UE couverts (multi-sélect restreint à l'UE), URL de suivi
+- [ ] Formulaire : nom, pays de la zone euro couverts (multi-sélect restreint à la zone euro), URL de suivi
 - [ ] Transporteur créé avec statut `actif` et disponible immédiatement dans le back-office vendeur
 | À faire
 
@@ -254,10 +254,10 @@ _Fonctions ARCADIA : FS-B06, FS-B07, FS-P01, FS-P02, CS-02, CS-04 — UCSA-05 �
 | ID | User story | Critères d'acceptation | Statut
 
 | *US-ORD-01*
-| En tant qu'acheteur, je peux saisir une adresse de livraison restreinte aux pays membres de l'Union Européenne.
+| En tant qu'acheteur, je peux saisir une adresse de livraison restreinte aux pays de la zone euro.
 a|
-- [ ] Liste déroulante limitée aux pays de l'UE (CS-04)
-- [ ] Adresse hors UE bloquée avec message d'erreur
+- [ ] Liste déroulante limitée aux pays de la zone euro (CS-04)
+- [ ] Adresse hors zone euro bloquée avec message d'erreur
 | À faire
 
 | *US-ORD-02*
@@ -352,19 +352,21 @@ _Fonctions ARCADIA : FS-B09, FS-V08, FS-P03 — UCSA-06 — LA : Service Command
 | ID | User story | Critères d'acceptation | Statut
 
 | *US-CAN-01*
-| En tant qu'acheteur, je peux annuler une commande en attente ou en préparation depuis mon espace commandes.
+| En tant qu'acheteur, je peux annuler une commande en attente ou en préparation depuis mon espace commandes sans que le vendeur puisse s'y opposer.
 a|
 - [ ] Bouton d'annulation disponible sur les commandes aux statuts `en_attente` et `en_préparation`
 - [ ] Confirmation obligatoire avant annulation
-- [ ] Demande transmise au vendeur pour acceptation
+- [ ] Si paiement par virement : champ « IBAN de remboursement » obligatoire dans le formulaire d'annulation, avec validation du format IBAN
+- [ ] Si paiement par carte : aucun champ bancaire requis
+- [ ] Annulation effective immédiatement ; stock libéré ; vendeur notifié
 | À faire
 
 | *US-CAN-02*
-| En tant que vendeur, je peux accepter ou refuser une demande d'annulation reçue avant expédition.
+| En tant que vendeur, je suis notifié d'une annulation avant expédition et dois procéder au remboursement si le paiement était par virement.
 a|
-- [ ] Notification de la demande d'annulation dans le back-office
-- [ ] Acceptation → remboursement déclenché via Stripe (FS-P03) ; stock libéré ; acheteur notifié
-- [ ] Refus → acheteur notifié du refus ; commande maintenue dans son statut courant
+- [ ] Notification de l'annulation dans le back-office (lecture seule — aucun refus possible)
+- [ ] Paiement carte → remboursement déclenché automatiquement par le système via Stripe (FS-P03) ; aucune action requise du vendeur
+- [ ] Paiement virement → IBAN de l'acheteur et montant affichés au vendeur pour virement inverse ; commande en `remboursement_virement_en_cours`
 | À faire
 
 | *US-CAN-03*
@@ -372,14 +374,23 @@ a|
 a|
 - [ ] Commande passe en statut `en_attente_retour` ; acheteur notifié du renvoi requis
 - [ ] Vendeur confirme la réception du colis retourné dans le back-office
-- [ ] Remboursement déclenché uniquement après confirmation de réception
+- [ ] Remboursement carte → déclenché via Stripe (FS-P03) après confirmation de réception
+- [ ] Remboursement virement → commande passe en `remboursement_virement_en_cours` ; IBAN + montant fournis au vendeur pour virement inverse
 | À faire
 
 | *US-CAN-04*
 | En tant que vendeur, je peux accepter une annulation après expédition sans exiger le retour du colis.
 a|
-- [ ] Remboursement déclenché immédiatement via Stripe (FS-P03)
-- [ ] Commande passe directement en statut `annulée` ; acheteur notifié
+- [ ] Paiement carte → remboursement déclenché immédiatement via Stripe (FS-P03) ; commande passe en `annulée` ; acheteur notifié
+- [ ] Paiement virement → commande passe en `remboursement_virement_en_cours` ; IBAN + montant fournis au vendeur pour virement inverse
+| À faire
+
+| *US-CAN-05*
+| En tant que vendeur, je peux confirmer l'émission d'un virement inverse de remboursement vers l'acheteur.
+a|
+- [ ] Bouton « Confirmer le virement de remboursement » accessible depuis la commande en statut `remboursement_virement_en_cours`
+- [ ] Confirmation → commande passe en `annulée` (FS-V10) ; acheteur notifié que le virement de remboursement a été émis
+- [ ] IBAN de l'acheteur et montant rappelés sur l'écran de confirmation
 | À faire
 
 |===

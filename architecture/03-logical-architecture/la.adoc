@@ -69,8 +69,8 @@ Le système est structuré en cinq couches logiques : *Présentation*, *Applicat
 
 | *Service Paiement*
 | Application
-| Soumission des demandes d'autorisation (carte), gestion des paiements par virement en attente de confirmation manuelle (FS-V09), traitement des confirmations et refus, déclenchement des remboursements, journalisation
-| FS-B07, FS-P01, FS-P02, FS-P03, FS-V09
+| Soumission des demandes d'autorisation (carte), gestion des paiements par virement en attente de confirmation manuelle (FS-V09), traitement des confirmations et refus, déclenchement des remboursements carte via le prestataire (FS-P03), coordination des virements inverses de remboursement pour les paiements par virement (FS-V10), journalisation
+| FS-B07, FS-P01, FS-P02, FS-P03, FS-V09, FS-V10
 
 | *Service Expédition*
 | Application
@@ -323,6 +323,13 @@ alt Token valide et non expiré
 else Token expiré
   SvcAccount --> UI : 410 Gone — token expiré
   UI --> Buyer : Proposer le renvoi du lien
+  Buyer -> UI : Demander le renvoi du lien
+  UI -> SvcAccount : IFL-01 — renvoyerLienActivation(email)
+  SvcAccount -> DB : IFL-13 — INSERT nouveau token_activation
+  SvcAccount -> SvcNotif : IFL-09 — notifier(ACTIVATION_EMAIL, email, {token})
+  SvcNotif -> AdpMail : IFL-12 — envoyerEmail(destinataire, template:activation, {lienToken})
+  AdpMail -> ExtMail : IFS-06 — SMTP / API POST
+  note right : Reprend le flux d'acheminement\ndu lien d'activation
 else Token déjà utilisé
   SvcAccount --> UI : 409 Conflict — compte déjà activé
   UI --> Buyer : "Votre compte est déjà actif"
@@ -358,7 +365,7 @@ UI -> SvcCart : IFL-03 — getPanier(acheteur_id)
 SvcCart -> DB : IFL-13 — SELECT lignes panier
 SvcCart --> UI : Lignes panier + montants
 
-Buyer -> UI : Soumettre commande (adresse UE, mode livraison, mode paiement)
+Buyer -> UI : Soumettre commande (adresse zone euro, mode livraison, mode paiement)
 note right : CS-04 — adresse validée côté UI\nCS-02 — mode ∈ {carte, virement}
 
 UI -> SvcOrder : IFL-04 — creerCommande(panier_id, adresse, modeLivraison, modePaiement)
@@ -491,15 +498,22 @@ Expediee --> Livree : SvcOrder.confirmerReception()\n[acheteur confirme la réce
 
 Livree --> [*]
 
-En_attente --> Annulee : SvcOrder.annuler()\n[acheteur demande + vendeur accepte\navant expédition]
-En_preparation --> Annulee : SvcOrder.annuler()\n[acheteur demande + vendeur accepte\navant expédition]
+En_attente --> Annulee : SvcOrder.annuler()\n[carte — acheteur demande avant expédition]
+En_attente --> Remboursement_virement_en_cours : SvcOrder.annuler()\n[virement — acheteur demande avant expédition]
+En_preparation --> Annulee : SvcOrder.annuler()\n[carte — acheteur demande avant expédition]
+En_preparation --> Remboursement_virement_en_cours : SvcOrder.annuler()\n[virement — acheteur demande avant expédition]
 
 Expediee --> En_attente_retour : SvcOrder.annuler()\n[vendeur accepte avec condition_renvoi]
-Expediee --> Annulee : SvcOrder.annuler()\n[vendeur accepte sans condition_renvoi]
+Expediee --> Annulee : SvcOrder.annuler()\n[carte + vendeur accepte sans condition_renvoi]
+Expediee --> Remboursement_virement_en_cours : SvcOrder.annuler()\n[virement + vendeur accepte sans condition_renvoi]
 
-En_attente_retour --> Annulee : SvcShipping.confirmerRetour()\n[vendeur confirme réception du colis retourné]
+En_attente_retour --> Annulee : SvcShipping.confirmerRetour()\n[carte + vendeur confirme réception retour]
+En_attente_retour --> Remboursement_virement_en_cours : SvcShipping.confirmerRetour()\n[virement + vendeur confirme réception retour]
 
-Annulee --> [*] : SvcPayment.rembourser()
+Remboursement_virement_en_cours --> Annulee : SvcPayment.confirmerVirementInverse()\n[vendeur confirme émission virement inverse]
+
+Annulee --> [*] : SvcPayment.rembourser()\n[carte — via prestataire]
+Annulee --> [*] : [virement — après confirmation FS-V10]
 
 note right of Paiement_en_attente_virement
   Stock pré-réservé
@@ -517,6 +531,13 @@ note right of En_attente_retour
   Annulation post-expédition avec renvoi :
   l'acheteur doit renvoyer le colis
   avant que le remboursement soit déclenché
+end note
+
+note right of Remboursement_virement_en_cours
+  Paiement initial par virement —
+  le vendeur doit émettre un virement inverse
+  vers l'IBAN de l'acheteur (FS-V10)
+  et confirmer l'émission dans la boutique
 end note
 
 note right of Expediee
@@ -584,7 +605,7 @@ package "Entités métier (SA)" #F0F8FF {
     + id : UUID
     + nom : String
     + description : Text
-    + prixHT : Decimal
+    + prix : Decimal
     + photos : List<URL>
     + catégorie : String
     + statut : Enum {publié, archivé}
@@ -607,7 +628,7 @@ package "Entités métier (SA)" #F0F8FF {
     + adresseLivraison : Adresse
     + modeLivraison : String
     + montantTotal : Decimal
-    + statut : Enum {paiement_en_attente_virement,\nen_attente, en_préparation,\nexpédiée, en_attente_retour,\nlivrée, annulée}
+    + statut : Enum {paiement_en_attente_virement,\nen_attente, en_préparation,\nexpédiée, en_attente_retour,\nremboursement_virement_en_cours,\nlivrée, annulée}
     + dateCommande : DateTime
   }
 
@@ -620,8 +641,9 @@ package "Entités métier (SA)" #F0F8FF {
     + id : UUID
     + montant : Decimal
     + mode : Enum {carte, virement}
-    + statut : Enum {en_attente_virement,\nautorisé, refusé, remboursé}
+    + statut : Enum {en_attente_virement,\nautorisé, refusé, remboursé,\nvirement_inverse_en_cours}
     + référencePrestataire : String
+    + ibanAcheteur : String
     + date : DateTime
   }
 

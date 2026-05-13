@@ -1,0 +1,18 @@
+@startuml ihm-bov-annonce-form
+' Composant PA : front-vendeur (Back-office Vendeur)
+' Fonctions allouées : FS-V11 (création / édition d'une annonce défilante)
+salt
+{+
+  == Nouvelle annonce
+  Type de contenu | (X) Texte  ( ) Image  ( ) Texte + image
+  --
+  Texte *         | "                                        "
+  --
+  Image *         | [Choisir un fichier]  aucun fichier sélectionné
+  --
+  Lien (au clic)  | "/catalogue                             "
+  Ordre           | "1            "
+  --
+  [Annuler]  [Enregistrer]
+}
+@enduml

@@ -1,0 +1,42 @@
+@startuml ihm-bov-annonces
+' Composant PA : front-vendeur (Back-office Vendeur)
+' Fonctions allouées : FS-V11 (CRUD annonces défilantes, réordonnancement)
+salt
+{+
+  {+
+    == Annonce 1
+    Type    | (X) Texte  ( ) Image  ( ) Texte + image
+    --
+    Texte * | "Soldes d'été : -20% sur tout !         "
+    Lien    | "/catalogue?promo=1                      "
+    Ordre   | "1  "
+    --
+    [↑] [↓]  [Enregistrer]  [Supprimer]
+  }
+  --
+  {+
+    == Annonce 2
+    Type    | ( ) Texte  ( ) Image  (X) Texte + image
+    --
+    Texte * | "Livraison offerte dès 50 €              "
+    Image * | [banniere-ete.jpg ✓]
+    Lien    | "/catalogue                              "
+    Ordre   | "2  "
+    --
+    [↑] [↓]  [Enregistrer]  [Supprimer]
+  }
+  --
+  {+
+    == Annonce 3
+    Type    | ( ) Texte  (X) Image  ( ) Texte + image
+    --
+    Image * | [Choisir un fichier]  aucun fichier sélectionné
+    Lien    | "                                         "
+    Ordre   | "3  "
+    --
+    [↑] [↓]  [Enregistrer]  [Supprimer]
+  }
+  ==
+  [+ Ajouter une annonce]
+}
+@enduml
