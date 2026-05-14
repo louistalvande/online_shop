@@ -1,0 +1,39 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "java",
+            "name": "ShopApplication",
+            "request": "launch",
+            "mainClass": "com.shop.ShopApplication",
+            "projectName": "shop-api",
+            "env": {
+                "DB_HOST": "db",
+                "DB_NAME": "shop",
+                "DB_USER": "shop",
+                "DB_PASSWORD": "dev",
+                "REDIS_HOST": "redis",
+                "REDIS_PORT": "6379",
+                "JWT_SECRET": "7Dir87ACMLA5aa9lDTydDPuoodj2VSCrBysALKDiDQA="
+            },
+            "vmArgs": "-Dspring.profiles.active=default"
+        },
+{
+            "type": "java",
+            "name": "ShopApplication (debug)",
+            "request": "launch",
+            "mainClass": "com.shop.ShopApplication",
+            "projectName": "shop-api",
+            "env": {
+                "DB_HOST": "db",
+                "DB_NAME": "shop",
+                "DB_USER": "shop",
+                "DB_PASSWORD": "dev",
+                "REDIS_HOST": "redis",
+                "REDIS_PORT": "6379",
+                "JWT_SECRET": "7Dir87ACMLA5aa9lDTydDPuoodj2VSCrBysALKDiDQA="
+            },
+            "vmArgs": "-Dspring.profiles.active=default -Dlogging.level.com.shop=DEBUG -Dspring.jpa.show-sql=true"
+        }
+    ]
+}

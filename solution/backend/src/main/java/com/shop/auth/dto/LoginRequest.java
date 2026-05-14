@@ -12,8 +12,7 @@ public class LoginRequest {
     @NotBlank
     private String email;
 
-    @Schema(description = "Account password")
-    @NotBlank
+    @Schema(description = "Account password — omit on first login")
     private String password;
 
     /** @return the email address */

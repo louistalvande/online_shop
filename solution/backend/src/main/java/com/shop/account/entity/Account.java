@@ -18,8 +18,8 @@ public class Account {
     @Column(nullable = false, unique = true, length = 255)
     private String email;
 
-    /** BCrypt-hashed password — never exposed in responses. */
-    @Column(name = "password_hash", nullable = false, length = 255)
+    /** BCrypt-hashed password — null until the account completes first-login setup. */
+    @Column(nullable = false, name = "password_hash", length = 255)
     private String passwordHash;
 
     /** Given name of the account holder. */

@@ -2,6 +2,7 @@ package com.shop.common;
 
 import com.shop.account.exception.EmailAlreadyUsedException;
 import com.shop.auth.exception.InvalidCredentialsException;
+import com.shop.auth.exception.PasswordsMismatchException;
 import org.springframework.context.MessageSource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -56,6 +57,14 @@ public class GlobalExceptionHandler {
         String message = messageSource.getMessage("error.invalidCredentials", null, locale);
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                 .body(Map.of("error", "INVALID_CREDENTIALS", "message", message));
+    }
+
+    @ExceptionHandler(PasswordsMismatchException.class)
+    public ResponseEntity<Map<String, String>> handlePasswordsMismatch(
+            PasswordsMismatchException ex, Locale locale) {
+        String message = messageSource.getMessage("error.passwords.mismatch", null, ex.getMessage(), locale);
+        return ResponseEntity.badRequest()
+                .body(Map.of("error", "PASSWORDS_MISMATCH", "message", message));
     }
 
     /**

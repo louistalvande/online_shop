@@ -13,10 +13,6 @@ export default function App() {
   const [accounts, setAccounts] = useState<AccountResponse[]>([])
   const [showModal, setShowModal] = useState(false)
 
-  if (!session) {
-    return <LoginPage onLogin={() => setSession(getSession())} />
-  }
-
   async function fetchAccounts() {
     try {
       setAccounts(await listAccounts())
@@ -25,7 +21,13 @@ export default function App() {
     }
   }
 
-  useEffect(() => { fetchAccounts() }, [])
+  useEffect(() => {
+    if (session) fetchAccounts()
+  }, [session])
+
+  if (!session) {
+    return <LoginPage onLogin={() => setSession(getSession())} />
+  }
 
   const stats = [
     { label: t('stats.users'), value: String(accounts.length), icon: <UserIcon size={18} /> },
