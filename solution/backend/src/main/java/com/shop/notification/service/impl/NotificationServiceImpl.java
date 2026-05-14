@@ -12,6 +12,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.MessageSource;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -55,6 +56,7 @@ public class NotificationServiceImpl implements NotificationService {
     }
 
     /** {@inheritDoc} */
+    @Async
     @Override
     public void sendActivationEmail(String toEmail, String activationLink, Locale locale) {
         if (!sendGridConfigured) {
