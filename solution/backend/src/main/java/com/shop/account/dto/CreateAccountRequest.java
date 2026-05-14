@@ -1,5 +1,6 @@
 package com.shop.account.dto;
 
+import com.shop.account.entity.AccountLanguage;
 import com.shop.account.entity.AccountRole;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Email;
@@ -30,6 +31,10 @@ public class CreateAccountRequest {
     @NotNull
     private AccountRole role;
 
+    /** Preferred notification language — defaults to FR if absent (CS-10). */
+    @Schema(description = "Notification language: FR (French, default) or EN (English)")
+    private AccountLanguage language = AccountLanguage.FR;
+
     /** @return the email */
     public String getEmail() { return email; }
 
@@ -53,4 +58,10 @@ public class CreateAccountRequest {
 
     /** @param role the role to set */
     public void setRole(AccountRole role) { this.role = role; }
+
+    /** @return the notification language */
+    public AccountLanguage getLanguage() { return language; }
+
+    /** @param language the notification language to set */
+    public void setLanguage(AccountLanguage language) { this.language = language; }
 }

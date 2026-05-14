@@ -2,6 +2,7 @@ package com.shop.account.controller;
 
 import com.shop.account.dto.AccountResponse;
 import com.shop.account.dto.CreateAccountRequest;
+import com.shop.account.dto.UpdateAccountRequest;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -10,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.UUID;
 
 /** Admin endpoints for managing platform accounts (FS-A01, FS-A02). */
 @Tag(name = "Admin — Accounts", description = "Account management for administrators")
@@ -38,4 +40,20 @@ public interface AccountController {
     @ApiResponse(responseCode = "200", description = "Account list returned")
     @GetMapping
     ResponseEntity<List<AccountResponse>> listAccounts();
+
+    /**
+     * Updates the editable fields of an account (FS-A01 / FS-A02 / CS-10).
+     * Only non-null fields in the request are applied.
+     *
+     * @param id      the account UUID
+     * @param request the fields to update
+     * @return the updated account with HTTP 200
+     */
+    @Operation(summary = "Update an account's editable fields (name, role, language)")
+    @ApiResponse(responseCode = "200", description = "Account updated")
+    @ApiResponse(responseCode = "404", description = "Account not found")
+    @ApiResponse(responseCode = "400", description = "Invalid input")
+    @PatchMapping("/{id}")
+    ResponseEntity<AccountResponse> updateAccount(@PathVariable UUID id,
+                                                  @Valid @RequestBody UpdateAccountRequest request);
 }

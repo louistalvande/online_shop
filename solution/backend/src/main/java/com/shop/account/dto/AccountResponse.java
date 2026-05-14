@@ -1,6 +1,7 @@
 package com.shop.account.dto;
 
 import com.shop.account.entity.Account;
+import com.shop.account.entity.AccountLanguage;
 import com.shop.account.entity.AccountRole;
 import com.shop.account.entity.AccountStatus;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -35,6 +36,10 @@ public class AccountResponse {
     @Schema(description = "Account status")
     private AccountStatus status;
 
+    /** Preferred notification language (CS-10). */
+    @Schema(description = "Notification language preference: FR or EN")
+    private AccountLanguage language;
+
     /** Creation timestamp. */
     @Schema(description = "Creation timestamp")
     private LocalDateTime createdAt;
@@ -53,6 +58,7 @@ public class AccountResponse {
         r.lastName  = account.getLastName();
         r.role      = account.getRole();
         r.status    = account.getStatus();
+        r.language  = account.getLanguage();
         r.createdAt = account.getCreatedAt();
         return r;
     }
@@ -74,6 +80,9 @@ public class AccountResponse {
 
     /** @return the status */
     public AccountStatus getStatus() { return status; }
+
+    /** @return the notification language */
+    public AccountLanguage getLanguage() { return language; }
 
     /** @return the creation timestamp */
     public LocalDateTime getCreatedAt() { return createdAt; }

@@ -2,21 +2,23 @@ package com.shop.account.service.impl;
 
 import com.shop.account.dto.AccountResponse;
 import com.shop.account.dto.CreateAccountRequest;
+import com.shop.account.dto.UpdateAccountRequest;
 import com.shop.account.entity.Account;
 import com.shop.account.entity.AccountStatus;
 import com.shop.account.entity.ActivationToken;
+import com.shop.account.exception.AccountNotFoundException;
 import com.shop.account.exception.EmailAlreadyUsedException;
 import com.shop.account.repository.AccountRepository;
 import com.shop.account.repository.ActivationTokenRepository;
 import com.shop.account.service.AccountService;
 import com.shop.notification.service.NotificationService;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Locale;
 import java.util.UUID;
 
 /** Default implementation of {@link AccountService}. */
@@ -67,6 +69,7 @@ public class AccountServiceImpl implements AccountService {
         account.setFirstName(request.getFirstName());
         account.setLastName(request.getLastName());
         account.setRole(request.getRole());
+        account.setLanguage(request.getLanguage());
         account.setStatus(AccountStatus.PENDING);
         accountRepository.save(account);
 
@@ -82,6 +85,18 @@ public class AccountServiceImpl implements AccountService {
         return accountRepository.findAll().stream()
                 .map(AccountResponse::from)
                 .toList();
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public AccountResponse updateAccount(UUID id, UpdateAccountRequest request) {
+        Account account = accountRepository.findById(id)
+                .orElseThrow(() -> new AccountNotFoundException(id));
+        if (request.getFirstName() != null) account.setFirstName(request.getFirstName());
+        if (request.getLastName()  != null) account.setLastName(request.getLastName());
+        if (request.getRole()      != null) account.setRole(request.getRole());
+        if (request.getLanguage()  != null) account.setLanguage(request.getLanguage());
+        return AccountResponse.from(accountRepository.save(account));
     }
 
     /**
@@ -100,6 +115,7 @@ public class AccountServiceImpl implements AccountService {
         activationTokenRepository.save(token);
 
         String link = activationBaseUrl + "/activate?token=" + token.getToken();
-        notificationService.sendActivationEmail(account.getEmail(), link, LocaleContextHolder.getLocale());
+        notificationService.sendActivationEmail(account.getEmail(), link,
+                Locale.forLanguageTag(account.getLanguage().name().toLowerCase()));
     }
 }

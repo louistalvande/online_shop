@@ -2,9 +2,12 @@ package com.shop.account.service;
 
 import com.shop.account.dto.AccountResponse;
 import com.shop.account.dto.CreateAccountRequest;
+import com.shop.account.dto.UpdateAccountRequest;
+import com.shop.account.exception.AccountNotFoundException;
 import com.shop.account.exception.EmailAlreadyUsedException;
 
 import java.util.List;
+import java.util.UUID;
 
 /** Business operations on platform accounts. */
 public interface AccountService {
@@ -25,4 +28,15 @@ public interface AccountService {
      * @return list of all accounts
      */
     List<AccountResponse> listAccounts();
+
+    /**
+     * Updates the editable fields of an account (FS-A01 / FS-A02 / CS-10).
+     * Only non-null fields in the request are applied.
+     *
+     * @param id      the account UUID
+     * @param request the fields to update
+     * @return the updated account
+     * @throws AccountNotFoundException if no account exists with the given ID
+     */
+    AccountResponse updateAccount(UUID id, UpdateAccountRequest request);
 }

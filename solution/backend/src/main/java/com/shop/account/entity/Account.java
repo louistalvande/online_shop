@@ -40,6 +40,11 @@ public class Account {
     @Column(nullable = false, length = 20)
     private AccountStatus status;
 
+    /** Preferred language for notification emails (CS-10). */
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 2)
+    private AccountLanguage language = AccountLanguage.FR;
+
     /** Timestamp when the account was created. */
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
@@ -88,6 +93,12 @@ public class Account {
 
     /** @param status the status to set */
     public void setStatus(AccountStatus status) { this.status = status; }
+
+    /** @return the preferred notification language */
+    public AccountLanguage getLanguage() { return language; }
+
+    /** @param language the notification language to set */
+    public void setLanguage(AccountLanguage language) { this.language = language; }
 
     /** @return the creation timestamp */
     public LocalDateTime getCreatedAt() { return createdAt; }

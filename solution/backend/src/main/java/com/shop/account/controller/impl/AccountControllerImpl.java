@@ -3,6 +3,7 @@ package com.shop.account.controller.impl;
 import com.shop.account.controller.AccountController;
 import com.shop.account.dto.AccountResponse;
 import com.shop.account.dto.CreateAccountRequest;
+import com.shop.account.dto.UpdateAccountRequest;
 import com.shop.account.service.AccountService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
@@ -10,6 +11,7 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
 import java.util.List;
+import java.util.UUID;
 
 /** {@link AccountController} implementation. */
 @RestController
@@ -41,5 +43,11 @@ public class AccountControllerImpl implements AccountController {
     @Override
     public ResponseEntity<List<AccountResponse>> listAccounts() {
         return ResponseEntity.ok(accountService.listAccounts());
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public ResponseEntity<AccountResponse> updateAccount(UUID id, UpdateAccountRequest request) {
+        return ResponseEntity.ok(accountService.updateAccount(id, request));
     }
 }

@@ -8,6 +8,7 @@ CREATE TABLE accounts (
     last_name     VARCHAR(100) NOT NULL,
     role          VARCHAR(20)  NOT NULL,
     status        VARCHAR(20)  NOT NULL,
+    language      VARCHAR(2)   NOT NULL DEFAULT 'FR',
     created_at    TIMESTAMP    NOT NULL DEFAULT NOW()
 );
 

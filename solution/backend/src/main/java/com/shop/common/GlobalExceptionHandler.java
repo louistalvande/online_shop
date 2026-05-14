@@ -1,5 +1,6 @@
 package com.shop.common;
 
+import com.shop.account.exception.AccountNotFoundException;
 import com.shop.account.exception.EmailAlreadyUsedException;
 import com.shop.auth.exception.InvalidActivationTokenException;
 import com.shop.auth.exception.InvalidCredentialsException;
@@ -27,6 +28,21 @@ public class GlobalExceptionHandler {
      */
     public GlobalExceptionHandler(MessageSource messageSource) {
         this.messageSource = messageSource;
+    }
+
+    /**
+     * Handles account not found — returns HTTP 404.
+     *
+     * @param ex     the exception
+     * @param locale the request locale
+     * @return a 404 response with a localised error body
+     */
+    @ExceptionHandler(AccountNotFoundException.class)
+    public ResponseEntity<Map<String, String>> handleAccountNotFound(
+            AccountNotFoundException ex, Locale locale) {
+        String message = messageSource.getMessage("error.account.not.found", null, locale);
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(Map.of("error", "ACCOUNT_NOT_FOUND", "message", message));
     }
 
     /**
