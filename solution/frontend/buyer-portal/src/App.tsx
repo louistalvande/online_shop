@@ -1,6 +1,6 @@
 import './index.css'
 import { useTranslation } from 'react-i18next'
-import { AppShell, CartIcon, UserIcon, Button, Card, LangToggle, IconButton } from '@workspace/theme'
+import { AppShell, CartIcon, Button, Card, LangToggle, UserMenu } from '@workspace/theme'
 
 const WORKS = [
   { id: 1, title: 'Forêt en automne', category: 'Paysage', price: '4,90 €' },
@@ -29,7 +29,11 @@ export default function App() {
             lang={i18n.language}
             onToggle={() => i18n.changeLanguage(i18n.language === 'fr' ? 'en' : 'fr')}
           />
-          <IconButton aria-label={t('nav.account')}><UserIcon size={22} /></IconButton>
+          <UserMenu
+            label={t('nav.account')}
+            settingsLabel={t('nav.configuration')}
+            logoutLabel={t('nav.logout')}
+          />
           <IconButton aria-label={t('nav.cart')}><CartIcon size={22} /></IconButton>
         </div>
       }

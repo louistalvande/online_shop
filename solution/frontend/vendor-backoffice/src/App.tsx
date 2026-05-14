@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import './index.css'
 import { useTranslation } from 'react-i18next'
-import { AppShell, Button, Card, PackageIcon, UserIcon, LangToggle, IconButton } from '@workspace/theme'
+import { AppShell, Button, Card, PackageIcon, LangToggle, UserMenu } from '@workspace/theme'
 import LoginPage from './LoginPage'
 import { getSession, logout } from './api/authApi'
 
@@ -55,8 +55,12 @@ export default function App() {
             lang={i18n.language}
             onToggle={() => i18n.changeLanguage(i18n.language === 'fr' ? 'en' : 'fr')}
           />
-          <IconButton aria-label={t('nav.profile')}><UserIcon size={22} /></IconButton>
-          <Button variant="ghost" size="sm" onClick={handleLogout}>{t('nav.logout')}</Button>
+          <UserMenu
+            label={t('nav.account')}
+            settingsLabel={t('nav.configuration')}
+            logoutLabel={t('nav.logout')}
+            onLogout={handleLogout}
+          />
         </div>
       }
     >

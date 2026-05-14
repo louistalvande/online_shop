@@ -8,5 +8,8 @@
   "home.featured": "Featured Works",
   "home.viewAll": "View full catalogue",
   "product.addToCart": "Add",
-  "lang.toggle": "Switch language"
+  "lang.toggle": "Switch language",
+  "nav.account": "My account",
+  "nav.logout": "Log out",
+  "nav.configuration": "Settings"
 }

@@ -1,7 +1,7 @@
 import './index.css'
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { AppShell, Button, Card, SettingsIcon, UserIcon, PackageIcon, LangToggle, IconButton } from '@workspace/theme'
+import { AppShell, Button, Card, UserIcon, PackageIcon, LangToggle, UserMenu } from '@workspace/theme'
 import CreateAccountModal from './components/CreateAccountModal'
 import LoginPage from './LoginPage'
 import { getSession, logout } from './api/authApi'
@@ -58,7 +58,6 @@ export default function App() {
         navLinks={[
           { label: t('nav.overview'), href: '#' },
           { label: t('nav.users'), href: '#users' },
-          { label: t('nav.settings'), href: '#settings' },
         ]}
         actions={
           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
@@ -66,11 +65,13 @@ export default function App() {
               lang={i18n.language}
               onToggle={() => i18n.changeLanguage(i18n.language === 'fr' ? 'en' : 'fr')}
             />
-            <span style={{ fontSize: 13, color: 'var(--text-muted)' }}>{session.email}</span>
-            <IconButton aria-label={t('nav.settings')}><SettingsIcon size={20} /></IconButton>
-            <IconButton aria-label={t('nav.logout')} onClick={() => { logout(); setSession(null) }}>
-              <UserIcon size={22} />
-            </IconButton>
+            <UserMenu
+              label={t('nav.account')}
+              email={session.email}
+              settingsLabel={t('nav.configuration')}
+              logoutLabel={t('nav.logout')}
+              onLogout={() => { logout(); setSession(null) }}
+            />
           </div>
         }
       >

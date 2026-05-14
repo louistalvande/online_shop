@@ -8,5 +8,8 @@
   "home.featured": "Œuvres en Vedette",
   "home.viewAll": "Voir tout le catalogue",
   "product.addToCart": "Ajouter",
-  "lang.toggle": "Changer de langue"
+  "lang.toggle": "Changer de langue",
+  "nav.account": "Mon compte",
+  "nav.logout": "Se déconnecter",
+  "nav.configuration": "Configuration"
 }
