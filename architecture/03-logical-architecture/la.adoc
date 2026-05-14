@@ -79,8 +79,8 @@ Le système est structuré en cinq couches logiques : *Présentation*, *Applicat
 
 | *Service Notification*
 | Application
-| Émission de toutes les notifications sortantes (email d'activation, confirmations, alertes)
-| FS-B01 (token), FS-B10 (activation), notifications liées à FS-V04, FS-P02, FS-V05
+| Émission de toutes les notifications sortantes (email d'activation, confirmations, alertes) ; sélection de la langue du template selon la préférence `langue` du compte destinataire (CS-10)
+| FS-B01 (token), FS-B10 (activation), FS-A06, notifications liées à FS-V04, FS-P02, FS-V05
 
 | *Service Rapport*
 | Application
@@ -254,7 +254,7 @@ Les interfaces logiques définissent les contrats d'échange entre composants, i
 | *IFL-09*
 | Services (Commande, Compte, Paiement, Expédition)
 | Service Notification
-| Émettre une notification (type, destinataire, données variables)
+| Émettre une notification (type, destinataire, données variables, langue du destinataire issue de `compte.langue` — CS-10)
 | Toutes notifications
 
 | *IFL-10*
@@ -266,7 +266,7 @@ Les interfaces logiques définissent les contrats d'échange entre composants, i
 | *IFL-12*
 | Service Notification
 | Adaptateur Messagerie
-| Envoyer un email (destinataire, template, variables) — traduit vers IFS-06
+| Envoyer un email (destinataire, template localisé, variables) — sélection du template selon la langue du destinataire (CS-10) — traduit vers IFS-06
 | FS-B01, toutes notifications email
 
 | *IFL-13*
@@ -598,6 +598,7 @@ package "Entités métier (SA)" #F0F8FF {
     + motDePasseHaché : String
     + rôle : Enum {admin, vendeur, acheteur}
     + statut : Enum {en_attente, actif, suspendu, supprimé}
+    + langue : Enum {fr, en}
     + dateCreation : DateTime
   }
 
@@ -731,6 +732,7 @@ end note
 | FS-A01 | Gérer les comptes utilisateurs | Service Compte | IFL-01, IFL-13
 | FS-A02 | Gérer les rôles et droits d'accès | Service Compte | IFL-01, IFL-13
 | FS-A03 | Gérer les transporteurs | Service Compte, Référentiel | IFL-01, IFL-13
+| FS-A06 | Configurer la langue de notification d'un compte | Service Compte | IFL-01, IFL-13
 | FS-B01 | Inscription + envoi email d'activation | Service Compte, Service Notification, Adaptateur Messagerie | IFL-01, IFL-09, IFL-12
 | FS-B02 | Mise à jour du profil acheteur | Service Compte | IFL-01, IFL-13
 | FS-B03 | Afficher et filtrer le catalogue | Service Catalogue | IFL-02, IFL-13

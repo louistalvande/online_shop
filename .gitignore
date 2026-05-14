@@ -8,3 +8,4 @@ solution/frontend/vendor-backoffice/node_modules/*
 solution/frontend/vendor-backoffice/dist/*
 solution/backend/target/*
 solution/frontend/node_modules/*
+.claude/*

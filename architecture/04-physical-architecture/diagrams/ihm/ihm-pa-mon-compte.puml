@@ -11,6 +11,7 @@ title Portail Acheteur — Mon compte
   Nom          | "Dupont              "
   Email        | "marie@email.fr      "
   Téléphone    | "                    "
+  Langue       | ^Français^
   ==
   == Adresse de livraison par défaut
   Adresse      | "12 rue des Lilas    "

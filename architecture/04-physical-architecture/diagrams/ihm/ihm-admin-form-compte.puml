@@ -11,9 +11,10 @@ salt
   Nom *     | "                    "
   Email *   | "                    "
   Rôle *    | ^Acheteur            ^
+  Langue *  | ^Français            ^
   --
   {
-    <i>Un email d'activation sera envoyé automatiquement.
+    <i>Un email d'activation sera envoyé automatiquement dans la langue choisie.
     <i>Le compte sera actif après validation par le destinataire.
   }
   --

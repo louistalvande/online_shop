@@ -109,7 +109,7 @@ Les contraintes physiques complètent les contraintes système (CS) en ajoutant 
 
 | Service Notification
 | Module Spring Boot (Java)
-| File d'envoi des emails transactionnels via SendGrid Java SDK
+| Envoi des emails transactionnels via SendGrid Java SDK ; sélection du template par langue du destinataire (`compte.langue` — CS-10) ; bascule en console-logging si `SENDGRID_API_KEY` absent (développement)
 
 | Service Rapport
 | Module Spring Boot (Java)
@@ -586,7 +586,7 @@ include::diagrams/ihm/ihm-pa-reclamation.puml[]
 
 ==== Mon compte
 
-Gestion du profil acheteur (FS-B02). Réunit sur trois onglets les informations personnelles, l'adresse de livraison par défaut et la modification du mot de passe. La mise à jour de l'email est soumise à validation d'unicité côté Service Compte.
+Gestion du profil acheteur (FS-B02). Réunit sur trois onglets les informations personnelles, l'adresse de livraison par défaut et la modification du mot de passe. La mise à jour de l'email est soumise à validation d'unicité côté Service Compte. L'onglet « Informations personnelles » inclut un champ `Langue` (liste déroulante `Français` / `English`) permettant à l'acheteur de configurer la langue de ses emails de notification (CS-10).
 
 .Maquette filaire : Portail Acheteur — Mon compte
 [plantuml, ihm-pa-mon-compte, svg]
@@ -726,12 +726,22 @@ include::diagrams/ihm/ihm-admin-comptes.puml[]
 
 ==== Formulaire de création de compte
 
-Formulaire modal déclenché par le bouton « + Créer un compte » de la liste (FS-A01). Conforme à US-ADM-01 : l'administrateur saisit uniquement le prénom, le nom, l'email et le rôle — aucun mot de passe n'est demandé. À la soumission, le système crée le compte avec le statut `EN_ATTENTE_ACTIVATION` et envoie automatiquement un email d'activation (CS-07). Le lien expire après 24 h ; l'administrateur peut le renvoyer depuis la liste si nécessaire.
+Formulaire modal déclenché par le bouton « + Créer un compte » de la liste (FS-A01). Conforme à US-ADM-01 : l'administrateur saisit le prénom, le nom, l'email, le rôle et la langue de notification (FS-A06 / CS-10) — aucun mot de passe n'est demandé. La langue est initialisée à `Français` par défaut. À la soumission, le système crée le compte avec le statut `EN_ATTENTE_ACTIVATION` et envoie automatiquement un email d'activation dans la langue choisie (CS-07 / CS-10). Le lien expire après 24 h ; l'administrateur peut le renvoyer depuis la liste si nécessaire.
 
 .Maquette filaire : Console Admin — Formulaire de création de compte
 [plantuml, ihm-admin-form-compte, svg]
 ----
 include::diagrams/ihm/ihm-admin-form-compte.puml[]
+----
+
+==== Fiche d'un compte
+
+Écran de détail d'un compte existant, accessible depuis le bouton « Modifier » de la liste (FS-A01 / FS-A06). Affiche les informations du compte en lecture seule (email, rôle, statut) et expose le champ `Langue` en édition (CS-10). L'administrateur peut mettre à jour la préférence de langue de notification sans modifier les autres données du compte. La modification est effective immédiatement pour les prochains emails sortants.
+
+.Maquette filaire : Console Admin — Fiche d'un compte
+[plantuml, ihm-admin-detail-compte, svg]
+----
+include::diagrams/ihm/ihm-admin-detail-compte.puml[]
 ----
 
 ==== Gestion des transporteurs
