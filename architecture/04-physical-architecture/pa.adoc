@@ -751,6 +751,16 @@ Liste de tous les comptes utilisateurs (FS-A01 / FS-A02). Les filtres par rôle 
 include::diagrams/ihm/ihm-admin-comptes.puml[]
 ----
 
+==== Formulaire de création de compte
+
+Formulaire modal déclenché par le bouton « + Créer un compte » de la liste (FS-A01). Conforme à US-ADM-01 : l'administrateur saisit uniquement le prénom, le nom, l'email et le rôle — aucun mot de passe n'est demandé. À la soumission, le système crée le compte avec le statut `EN_ATTENTE_ACTIVATION` et envoie automatiquement un email d'activation (CS-07). Le lien expire après 24 h ; l'administrateur peut le renvoyer depuis la liste si nécessaire.
+
+.Maquette filaire : Console Admin — Formulaire de création de compte
+[plantuml, ihm-admin-form-compte, svg]
+----
+include::diagrams/ihm/ihm-admin-form-compte.puml[]
+----
+
 ==== Gestion des transporteurs
 
 Configuration des transporteurs disponibles sur la plateforme (FS-A03). La désactivation masque le transporteur lors de la déclaration d'expédition sans supprimer les expéditions existantes. La suppression est bloquée si des expéditions actives référencent ce transporteur.

@@ -31,6 +31,7 @@
   "createAccount.role": "Rôle",
   "createAccount.role.BUYER": "Acheteur",
   "createAccount.role.VENDOR": "Vendeur",
+  "createAccount.activationNote": "Un email d'activation sera envoyé automatiquement. Le compte sera actif après validation par le destinataire.",
   "createAccount.submit": "Créer le compte",
   "createAccount.cancel": "Annuler",
   "createAccount.error.emailUsed": "Cette adresse email est déjà utilisée.",

@@ -10,7 +10,6 @@ interface Props {
 
 const EMPTY: CreateAccountRequest = {
   email: '',
-  password: '',
   firstName: '',
   lastName: '',
   role: 'BUYER',
@@ -102,12 +101,6 @@ export default function CreateAccountModal({ onClose, onCreated }: Props) {
           </div>
 
           <div style={field}>
-            <span style={label}>{t('createAccount.password')}</span>
-            <input style={input} type="password" required minLength={8} value={form.password}
-              onChange={e => set('password', e.target.value)} />
-          </div>
-
-          <div style={field}>
             <span style={label}>{t('createAccount.role')}</span>
             <select style={input} value={form.role}
               onChange={e => set('role', e.target.value as AccountRole)}>
@@ -115,6 +108,10 @@ export default function CreateAccountModal({ onClose, onCreated }: Props) {
               <option value="VENDOR">{t('createAccount.role.VENDOR')}</option>
             </select>
           </div>
+
+          <p style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 16 }}>
+            {t('createAccount.activationNote')}
+          </p>
 
           <div style={{ display: 'flex', gap: 12, justifyContent: 'flex-end', marginTop: 8 }}>
             <Button type="button" variant="ghost" size="sm" onClick={onClose}>

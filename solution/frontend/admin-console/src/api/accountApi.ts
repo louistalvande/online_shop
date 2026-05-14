@@ -13,7 +13,6 @@ export interface AccountResponse {
 
 export interface CreateAccountRequest {
   email: string
-  password: string
   firstName: string
   lastName: string
   role: AccountRole
