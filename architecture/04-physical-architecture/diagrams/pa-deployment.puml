@@ -1,0 +1,71 @@
+@startuml pa-deployment
+!theme plain
+skinparam shadowing false
+skinparam defaultFontSize 11
+skinparam defaultFontName "DejaVu Sans"
+left to right direction
+
+skinparam node {
+  BackgroundColor #F0F8FF
+  BorderColor #2E75B6
+  FontSize 11
+}
+skinparam component {
+  BackgroundColor #E8F4FD
+  BorderColor #2E75B6
+  FontSize 10
+}
+skinparam frame {
+  BackgroundColor #FAFAFA
+  BorderColor #AAAAAA
+}
+skinparam note {
+  BackgroundColor #FFFBE6
+  BorderColor #F0A500
+}
+skinparam ArrowColor #2E75B6
+
+actor "Acheteur / Vendeur / Admin" as User
+
+node "Container Frontend-nginx\n Reverse proxy (CPA-02)" as Nginx {
+  component "front-acheteur (React SPA)" as FrontB
+  component "front-vendeur  (React SPA)" as FrontV
+  component "front-admin    (React SPA)" as FrontA
+  FrontB -[hidden]down-> FrontV
+  FrontV -[hidden]down-> FrontA
+}
+
+node "Container - Back-end\nSpring Boot — API REST stateless (CPA-05)" as AppServer {
+  frame "Modules métier" as ModulesFrame {
+    component "compte · catalogue · panier\ncommande · paiement\nexpédition · notification · rapport" as Modules
+  }
+  frame "Adaptateurs SDK" as AdaptersFrame {
+    component "Stripe Java SDK  |  SendGrid Java SDK" as Adapters
+  }
+}
+
+node "Container - Base de données\nPostgreSQL 16 (CPA-03)" as DB {
+  database "boutique_db\n(Flyway)" as PgDB
+}
+
+node "Container Redis\nCache Session et JWT (CPA-04)" as Cache {
+  database "Paniers (CS-03)\nBlacklist tokens JWT" as RedisDB
+}
+
+component "Stripe API\nPaiement par carte (IFS-04)" as Stripe #D5E8F0
+component "SendGrid\nE-mails transactionnels (IFS-06)" as SendGrid #D5E8F0
+
+User        -right->  Nginx      : HTTPS :443 (CPA-02)
+Nginx       -right->  AppServer  : HTTP :8080 (proxy interne)
+AppServer   -down->   DB         : TCP :5432 (IFL-13)
+AppServer   -down->   Cache      : TCP :6379 (CPA-04)
+Adapters    -right->  Stripe     : HTTPS :443 (IFS-04)
+Stripe      -right->  Adapters   : HTTPS :443 — webhook signé
+Adapters    -down->   SendGrid   : HTTPS :443 (IFS-06)
+
+note bottom of AppServer
+  CPA-05 : stateless
+  État dans postgres et redis
+end note
+
+@enduml
