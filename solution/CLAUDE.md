@@ -10,6 +10,8 @@ The full ARCADIA specification lives in `../architecture/`. Read it before gener
 - `03-logical-architecture/la.adoc` — logical components, interfaces, class diagram
 - `04-physical-architecture/pa.adoc` — physical stack, deployment, API sequences, UI wireframes
 
+If what is asked is missing or in opposition to the specification, suggest to update it before generating code.
+
 ---
 
 ## Tech stack
