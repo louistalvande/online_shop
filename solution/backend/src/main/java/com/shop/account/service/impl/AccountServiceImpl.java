@@ -11,6 +11,7 @@ import com.shop.account.repository.ActivationTokenRepository;
 import com.shop.account.service.AccountService;
 import com.shop.notification.service.NotificationService;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -99,6 +100,6 @@ public class AccountServiceImpl implements AccountService {
         activationTokenRepository.save(token);
 
         String link = activationBaseUrl + "/activate?token=" + token.getToken();
-        notificationService.sendActivationEmail(account.getEmail(), link);
+        notificationService.sendActivationEmail(account.getEmail(), link, LocaleContextHolder.getLocale());
     }
 }

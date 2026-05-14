@@ -48,3 +48,8 @@ jwt:
 app:
   activation-base-url: ${APP_ACTIVATION_BASE_URL:http://localhost}
   activation-expiry-hours: 24
+
+sendgrid:
+  api-key: ${SENDGRID_API_KEY:}
+  from-email: ${SENDGRID_FROM_EMAIL:noreply@shop.example.com}
+  from-name: ${SENDGRID_FROM_NAME:Online Shop}
