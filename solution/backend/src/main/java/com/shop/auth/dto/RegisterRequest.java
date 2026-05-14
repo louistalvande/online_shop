@@ -1,13 +1,12 @@
-package com.shop.account.dto;
+package com.shop.auth.dto;
 
-import com.shop.account.entity.AccountRole;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 
-/** Payload for admin account creation (US-ADM-01). No password — user sets it via activation email. */
-public class CreateAccountRequest {
+/** Payload for buyer self-registration (US-REG-01 / FS-B01). Role is always BUYER — set server-side. */
+public class RegisterRequest {
 
     /** Email address — must be unique on the platform. */
     @Schema(description = "Email address, unique across the platform")
@@ -15,26 +14,33 @@ public class CreateAccountRequest {
     @NotBlank
     private String email;
 
-    /** First name of the account holder. */
-    @Schema(description = "First name of the account holder")
+    /** Chosen password — hashed before storage. */
+    @Schema(description = "Chosen password — minimum 8 characters")
+    @NotBlank
+    @Size(min = 8)
+    private String password;
+
+    /** First name. */
+    @Schema(description = "First name")
     @NotBlank
     private String firstName;
 
-    /** Last name of the account holder. */
-    @Schema(description = "Last name of the account holder")
+    /** Last name. */
+    @Schema(description = "Last name")
     @NotBlank
     private String lastName;
-
-    /** Role to assign — BUYER or VENDOR (ADMIN may not be created via this endpoint). */
-    @Schema(description = "Role to assign: BUYER or VENDOR")
-    @NotNull
-    private AccountRole role;
 
     /** @return the email */
     public String getEmail() { return email; }
 
     /** @param email the email to set */
     public void setEmail(String email) { this.email = email; }
+
+    /** @return the plain-text password */
+    public String getPassword() { return password; }
+
+    /** @param password the password to set */
+    public void setPassword(String password) { this.password = password; }
 
     /** @return the first name */
     public String getFirstName() { return firstName; }
@@ -47,10 +53,4 @@ public class CreateAccountRequest {
 
     /** @param lastName the last name to set */
     public void setLastName(String lastName) { this.lastName = lastName; }
-
-    /** @return the role */
-    public AccountRole getRole() { return role; }
-
-    /** @param role the role to set */
-    public void setRole(AccountRole role) { this.role = role; }
 }

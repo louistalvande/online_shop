@@ -22,3 +22,14 @@ VALUES (
   'ACTIVE',
   NOW()
 );
+
+-- US-ADM-01: admin-created accounts have no password until email activation
+ALTER TABLE accounts ALTER COLUMN password_hash DROP NOT NULL;
+
+-- Activation tokens for admin-created accounts (US-ADM-01) and buyer self-registration (US-REG-01)
+CREATE TABLE activation_tokens (
+    token      VARCHAR(36)  PRIMARY KEY,
+    account_id UUID         NOT NULL REFERENCES accounts(id) ON DELETE CASCADE,
+    expires_at TIMESTAMP    NOT NULL
+);
+

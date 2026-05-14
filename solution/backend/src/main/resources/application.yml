@@ -44,3 +44,7 @@ management:
 jwt:
   secret: ${JWT_SECRET:7Dir87ACMLA5aa9lDTydDPuoodj2VSCrBysALKDiDQA=}
   expiration-ms: 86400000
+
+app:
+  activation-base-url: ${APP_ACTIVATION_BASE_URL:http://localhost}
+  activation-expiry-hours: 24

@@ -1,6 +1,7 @@
 package com.shop.common;
 
 import com.shop.account.exception.EmailAlreadyUsedException;
+import com.shop.auth.exception.InvalidActivationTokenException;
 import com.shop.auth.exception.InvalidCredentialsException;
 import com.shop.auth.exception.PasswordsMismatchException;
 import org.springframework.context.MessageSource;
@@ -57,6 +58,21 @@ public class GlobalExceptionHandler {
         String message = messageSource.getMessage("error.invalidCredentials", null, locale);
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                 .body(Map.of("error", "INVALID_CREDENTIALS", "message", message));
+    }
+
+    /**
+     * Handles expired or unknown activation token — returns HTTP 410 Gone (CS-07).
+     *
+     * @param ex     the exception
+     * @param locale the request locale
+     * @return a 410 response with a localised error body
+     */
+    @ExceptionHandler(InvalidActivationTokenException.class)
+    public ResponseEntity<Map<String, String>> handleInvalidActivationToken(
+            InvalidActivationTokenException ex, Locale locale) {
+        String message = messageSource.getMessage("error.activation.token.invalid", null, locale);
+        return ResponseEntity.status(HttpStatus.GONE)
+                .body(Map.of("error", "TOKEN_EXPIRED", "message", message));
     }
 
     @ExceptionHandler(PasswordsMismatchException.class)

@@ -10,8 +10,8 @@ import java.util.List;
 public interface AccountService {
 
     /**
-     * Creates a new account from the given request.
-     * The account is immediately set to {@code ACTIVE} status.
+     * Creates a new account and sends an activation email (US-ADM-01 / CS-07).
+     * Account starts with status {@code PENDING} until the recipient clicks the link.
      *
      * @param request the account creation payload
      * @return the created account
