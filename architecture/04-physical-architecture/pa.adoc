@@ -461,6 +461,24 @@ API --> SPABuyer : 200 OK {tracking_number, carrier_tracking_url}
 note right : Buyer clicks the link\nto track the parcel (IFS-05 — outbound)
 ----
 
+== Diagramme de séquence technique — Création de compte par l'admin et activation
+
+Deux acteurs distincts interviennent : l'administrateur qui crée le compte, et le nouvel utilisateur qui reçoit l'email et définit son mot de passe. Le compte reste en statut `PENDING` jusqu'à l'activation (US-ADM-01 / FS-A01 / CS-07).
+
+[plantuml, pa-sequence-activation-admin, svg]
+----
+include::diagrams/pa-sequence-activation-admin.puml[]
+----
+
+== Diagramme de séquence technique — Auto-inscription acheteur et activation
+
+L'acheteur choisit son mot de passe dès l'inscription ; l'email d'activation sert uniquement à vérifier l'adresse. Le token d'activation ne transporte pas de mot de passe — seul l'acheteur en est porteur (US-REG-01 / US-REG-02 / FS-B01 / CS-07).
+
+[plantuml, pa-sequence-inscription-acheteur, svg]
+----
+include::diagrams/pa-sequence-inscription-acheteur.puml[]
+----
+
 == Maquettes IHM
 
 Les maquettes filaires ci-dessous illustrent les interfaces utilisateur de chaque composant frontend. Elles sont rattachées aux fonctions logiques (LA) allouées à chaque composant et restent indépendantes de toute charte graphique — Salt modélise la structure, non le rendu final.
@@ -485,6 +503,16 @@ Ce formulaire couvre FS-B01 (création de compte) et FS-B10 (activation par emai
 [plantuml, ihm-pa-inscription, svg]
 ----
 include::diagrams/ihm/ihm-pa-inscription.puml[]
+----
+
+==== Activation de compte
+
+Page atteinte depuis le lien envoyé par email (CS-07). Deux cas d'usage convergent ici : l'acheteur auto-inscrit (US-REG-02 — seul le token est requis, le mot de passe étant déjà défini) et le compte créé par l'admin (US-ADM-01 — l'utilisateur doit définir son mot de passe via ce formulaire). La maquette couvre le second cas, plus complet. Si le token est expiré, la page propose un lien de renvoi (US-REG-03).
+
+.Maquette filaire : Activation de compte — Définition du mot de passe
+[plantuml, ihm-pa-activation, svg]
+----
+include::diagrams/ihm/ihm-pa-activation.puml[]
 ----
 
 ==== Page d'accueil

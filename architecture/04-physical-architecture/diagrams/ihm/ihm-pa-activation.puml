@@ -1,0 +1,25 @@
+@startuml ihm-pa-activation
+' Composant PA : front-buyer (Portail Acheteur) + front-admin (selon rôle)
+' Fonctions allouées : FS-B01 (activation acheteur), FS-A01 (activation compte créé par admin)
+' CS-07 : token UUID à usage unique, TTL 24 h
+salt
+
+{+
+  == Activation de votre compte
+
+  {
+    <b>Définissez votre mot de passe
+    <i>Ce lien vous a été envoyé par email suite à la création de votre compte.
+  }
+  --
+  Mot de passe *          | "                         "
+  Confirmer le mot de passe * | "                     "
+  --
+  {
+    <i>Minimum 8 caractères.
+  }
+  --
+  [Activer mon compte]
+}
+
+@enduml
