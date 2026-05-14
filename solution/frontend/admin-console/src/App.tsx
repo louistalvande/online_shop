@@ -1,7 +1,7 @@
 import './index.css'
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { AppShell, Button, Card, UserIcon, PackageIcon, LangToggle, UserMenu } from '@workspace/theme'
+import { AppShell, Button, Card, UserIcon, PackageIcon, LangToggle, UserMenu, Snackbar } from '@workspace/theme'
 import CreateAccountModal from './components/CreateAccountModal'
 import LoginPage from './LoginPage'
 import { getSession, logout } from './api/authApi'
@@ -12,6 +12,12 @@ export default function App() {
   const [session, setSession] = useState(getSession)
   const [accounts, setAccounts] = useState<AccountResponse[]>([])
   const [showModal, setShowModal] = useState(false)
+  const [snackbar, setSnackbar] = useState<string | null>(null)
+
+  function showSnackbar(message: string) {
+    setSnackbar(message)
+    setTimeout(() => setSnackbar(null), 3000)
+  }
 
   async function fetchAccounts() {
     try {
@@ -46,10 +52,12 @@ export default function App() {
 
   return (
     <>
+      {snackbar && <Snackbar message={snackbar} onDismiss={() => setSnackbar(null)} />}
+
       {showModal && (
         <CreateAccountModal
           onClose={() => setShowModal(false)}
-          onCreated={() => { setShowModal(false); fetchAccounts() }}
+          onCreated={() => { setShowModal(false); fetchAccounts(); showSnackbar(t('snackbar.accountCreated')) }}
         />
       )}
 

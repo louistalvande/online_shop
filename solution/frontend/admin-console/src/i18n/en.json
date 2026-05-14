@@ -47,5 +47,6 @@
   "login.submit": "Sign in",
   "login.loading": "Signing in…",
   "login.error.invalid": "Incorrect email or password.",
-  "login.error.generic": "An error occurred. Please try again."
+  "login.error.generic": "An error occurred. Please try again.",
+  "snackbar.accountCreated": "Account created successfully."
 }

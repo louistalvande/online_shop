@@ -3,7 +3,7 @@
 CREATE TABLE accounts (
     id            UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
     email         VARCHAR(255) NOT NULL UNIQUE,
-    password_hash VARCHAR(255) NOT NULL,
+    password_hash VARCHAR(255),
     first_name    VARCHAR(100) NOT NULL,
     last_name     VARCHAR(100) NOT NULL,
     role          VARCHAR(20)  NOT NULL,
@@ -24,8 +24,6 @@ VALUES (
   NOW()
 );
 
--- US-ADM-01: admin-created accounts have no password until email activation
-ALTER TABLE accounts ALTER COLUMN password_hash DROP NOT NULL;
 
 -- Activation tokens for admin-created accounts (US-ADM-01) and buyer self-registration (US-REG-01)
 CREATE TABLE activation_tokens (
