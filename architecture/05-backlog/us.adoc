@@ -25,13 +25,13 @@ _Fonctions ARCADIA : FS-A01, FS-A02, FS-A03 — UCSA-12 — LA : Console Adminis
 | *US-ADM-01*
 | En tant qu'administrateur, je peux créer un compte acheteur ou vendeur depuis la console d'administration.
 a|
-- [ ] Formulaire : email, rôle (acheteur / vendeur), informations de profil (sans champ mot de passe)
-- [ ] Erreur si l'email est déjà utilisé (pas de doublon)
-- [ ] Compte créé avec statut `en_attente_activation`
-- [ ] Le système envoie automatiquement un email à l'adresse saisie contenant un lien d'activation
-- [ ] Le lien permet à l'utilisateur de définir son mot de passe et d'activer son compte (même flux que UCSA-01)
+- [x] Formulaire : email, rôle (acheteur / vendeur), informations de profil (sans champ mot de passe)
+- [x] Erreur si l'email est déjà utilisé (pas de doublon)
+- [x] Compte créé avec statut `en_attente_activation`
+- [x] Le système envoie automatiquement un email à l'adresse saisie contenant un lien d'activation
+- [x] Le lien permet à l'utilisateur de définir son mot de passe et d'activer son compte (même flux que UCSA-01)
 - [ ] Le lien est à usage unique et expire après 24 h ; l'admin peut renvoyer un lien depuis la fiche utilisateur
-| À faire
+| Terminée
 
 | *US-ADM-02*
 | En tant qu'administrateur, je peux suspendre un compte actif (acheteur ou vendeur).
@@ -51,17 +51,17 @@ a|
 | *US-ADM-04*
 | En tant qu'administrateur, je peux supprimer un compte (actif ou suspendu).
 a|
-- [ ] Confirmation obligatoire avant suppression
-- [ ] Compte passe en statut `supprimé`
-- [ ] L'utilisateur ne peut plus se connecter ni récupérer son compte
-| À faire
+- [x] Confirmation obligatoire avant suppression
+- [x] Compte passe en statut `supprimé`
+- [x] L'utilisateur ne peut plus se connecter ni récupérer son compte
+| Terminée
 
 | *US-ADM-05*
 | En tant qu'administrateur, je peux modifier le rôle d'un utilisateur (acheteur ↔ vendeur).
 a|
-- [ ] Sélecteur de rôle disponible sur la fiche utilisateur
-- [ ] Modification effective immédiatement
-| À faire
+- [x] Sélecteur de rôle disponible sur la fiche utilisateur
+- [x] Modification effective immédiatement
+| Terminée
 
 | *US-ADM-06*
 | En tant qu'administrateur, je peux ajouter un transporteur avec son nom, les pays de la zone euro couverts et l'URL de son site de suivi.
@@ -104,20 +104,20 @@ _Fonctions ARCADIA : FS-B01, FS-B10, CS-07 — UCSA-01 — LA : Service Compte /
 | *US-REG-01*
 | En tant que visiteur, je peux créer un compte acheteur en saisissant mon email, mon mot de passe et mes informations de profil.
 a|
-- [ ] Formulaire : email, mot de passe (+ confirmation), nom, prénom
-- [ ] Erreur si l'email est déjà utilisé
-- [ ] Compte créé en statut `en_attente_activation`
-- [ ] Email d'activation envoyé automatiquement via SendGrid (CS-07)
-| À faire
+- [x] Formulaire : email, mot de passe (+ confirmation), nom, prénom
+- [x] Erreur si l'email est déjà utilisé
+- [x] Compte créé en statut `en_attente_activation`
+- [x] Email d'activation envoyé automatiquement via SendGrid (CS-07)
+| Terminée
 
 | *US-REG-02*
 | En tant que nouvel acheteur, je peux activer mon compte en cliquant sur le lien reçu par email.
 a|
-- [ ] Token UUID à usage unique, TTL 24 h (CS-07)
-- [ ] Clic valide → compte passe en statut `actif`, redirection vers la page de connexion
+- [x] Token UUID à usage unique, TTL 24 h (CS-07)
+- [x] Clic valide → compte passe en statut `actif`, redirection vers la page de connexion
 - [ ] Token expiré (> 24 h) → message d'erreur + proposition de renvoi du lien
 - [ ] Token déjà utilisé → message « votre compte est déjà actif »
-| À faire
+| En cours
 
 | *US-REG-03*
 | En tant que nouvel acheteur dont le token a expiré, je peux demander le renvoi d'un nouveau lien d'activation.
