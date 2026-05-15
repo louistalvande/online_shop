@@ -1,0 +1,54 @@
+@startuml pa-sequence-activation-admin
+skinparam sequenceArrowColor #2E75B6
+skinparam sequenceParticipantBackgroundColor #E8F4FD
+skinparam sequenceParticipantBorderColor #2E75B6
+skinparam sequenceLifeLineBorderColor #2E75B6
+skinparam noteBorderColor #F0A500
+skinparam noteBackgroundColor #FFFBE6
+skinparam shadowing false
+
+title Création de compte par l'admin et activation (US-ADM-01 / FS-A01 / CS-07)
+
+participant "Console Admin\n(SPA React)" as SPA
+participant "API\n(Spring Boot)" as API
+participant "PostgreSQL" as PG
+participant "SendGrid\n(IFS-06)" as Mail
+participant "Navigateur\ndu nouvel utilisateur" as User
+
+== Étape 1 — L'admin crée le compte ==
+
+SPA -> API : POST /api/admin/accounts\n{firstName, lastName, email, role}\nAuthorization: Bearer {JWT admin}
+note right : FS-A01 — rôle : BUYER ou VENDOR\nAucun mot de passe saisi
+
+API -> PG : INSERT accounts\n{email, role, status: PENDING, password_hash: NULL}
+PG --> API : account_id
+
+API -> PG : INSERT activation_tokens\n{token: UUID, account_id, expires_at: now+24h}
+note right : CS-07 — token UUID à usage unique, TTL 24 h
+
+API -> Mail : POST /v3/mail/send\n{to: email, template: "activation",\nlink: https://[portal]/activate?token={UUID}}
+note right : SendGrid Java SDK\nIFS-06
+
+Mail --> API : 202 Accepted
+API --> SPA : 201 Created {account}
+
+== Étape 2 — Le nouvel utilisateur définit son mot de passe ==
+
+User -> User : Reçoit l'email, clique le lien\nhttps://[portal]/activate?token={UUID}
+User -> API : POST /api/auth/activate\n{token, password, confirmPassword}
+note right : Mot de passe choisi par l'utilisateur
+
+API -> PG : SELECT * FROM activation_tokens WHERE token = ?
+PG --> API : {account_id, expires_at}
+
+alt Token valide (non expiré)
+  API -> PG : UPDATE accounts\nSET password_hash = BCrypt(password), status = ACTIVE\nWHERE id = account_id
+  API -> PG : DELETE FROM activation_tokens WHERE account_id = ?
+  API --> User : 204 No Content
+  User -> User : Redirection vers /login
+else Token expiré ou inconnu
+  API --> User : 410 Gone {error: "TOKEN_EXPIRED"}
+  note right : L'admin peut renvoyer un lien\ndepuis la fiche utilisateur (UCSA-12 — scénario 2b)
+end
+
+@enduml

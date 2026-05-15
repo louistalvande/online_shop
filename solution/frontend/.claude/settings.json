@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(redis-server --version)",
+      "Bash(ls /)",
+      "Read(//home/**)",
+      "Read(//opt/**)",
+      "Read(//srv/**)",
+      "Bash(ls /app)"
+    ]
+  }
+}

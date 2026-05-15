@@ -1,6 +1,9 @@
+import { useState } from 'react'
 import './index.css'
 import { useTranslation } from 'react-i18next'
-import { AppShell, Button, Card, PackageIcon, UserIcon, LangToggle } from '@workspace/theme'
+import { AppShell, Button, Card, PackageIcon, LangToggle, UserMenu } from '@workspace/theme'
+import LoginPage from './LoginPage'
+import { getSession, logout } from './api/authApi'
 
 const ORDERS = [
   { id: 'CMD-001', buyer: 'Marie Dupont', items: 3, total: '14,70 €', status: 'En attente' },
@@ -16,6 +19,16 @@ const statusColor: Record<string, string> = {
 
 export default function App() {
   const { t, i18n } = useTranslation()
+  const [session, setSession] = useState(getSession)
+
+  if (!session) {
+    return <LoginPage onLogin={() => setSession(getSession())} />
+  }
+
+  function handleLogout() {
+    logout()
+    setSession(null)
+  }
 
   const stats = [
     { label: t('stats.pendingOrders'), value: '3', icon: <PackageIcon size={20} /> },
@@ -42,12 +55,12 @@ export default function App() {
             lang={i18n.language}
             onToggle={() => i18n.changeLanguage(i18n.language === 'fr' ? 'en' : 'fr')}
           />
-          <button
-            style={{ background: 'none', border: 'none', display: 'flex', color: 'var(--text)' }}
-            aria-label={t('nav.profile')}
-          >
-            <UserIcon size={22} />
-          </button>
+          <UserMenu
+            label={t('nav.account')}
+            settingsLabel={t('nav.configuration')}
+            logoutLabel={t('nav.logout')}
+            onLogout={handleLogout}
+          />
         </div>
       }
     >

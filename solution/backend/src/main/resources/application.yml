@@ -16,10 +16,15 @@ spring:
   flyway:
     enabled: true
     locations: classpath:db/migration
+    clean-disabled: false
   data:
     redis:
       host: ${REDIS_HOST:localhost}
       port: ${REDIS_PORT:6379}
+
+spring.messages:
+  basename: messages
+  encoding: UTF-8
 
 server:
   port: 8080
@@ -35,3 +40,16 @@ management:
     web:
       exposure:
         include: health,info
+
+jwt:
+  secret: ${JWT_SECRET:7Dir87ACMLA5aa9lDTydDPuoodj2VSCrBysALKDiDQA=}
+  expiration-ms: 600000
+
+app:
+  activation-base-url: ${APP_ACTIVATION_BASE_URL:http://localhost:5173}
+  activation-expiry-hours: 24
+
+sendgrid:
+  api-key: ${SENDGRID_API_KEY:}
+  from-email: ${SENDGRID_FROM_EMAIL:noreply@shop.example.com}
+  from-name: ${SENDGRID_FROM_NAME:Online Shop}

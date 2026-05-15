@@ -1,0 +1,57 @@
+@startuml pa-sequence-inscription-acheteur
+skinparam sequenceArrowColor #2E75B6
+skinparam sequenceParticipantBackgroundColor #E8F4FD
+skinparam sequenceParticipantBorderColor #2E75B6
+skinparam sequenceLifeLineBorderColor #2E75B6
+skinparam noteBorderColor #F0A500
+skinparam noteBackgroundColor #FFFBE6
+skinparam shadowing false
+
+title Auto-inscription acheteur et activation (US-REG-01 / US-REG-02 / FS-B01 / CS-07)
+
+participant "Portail Acheteur\n(SPA React)" as SPA
+participant "API\n(Spring Boot)" as API
+participant "PostgreSQL" as PG
+participant "SendGrid\n(IFS-06)" as Mail
+
+== Étape 1 — L'acheteur s'inscrit ==
+
+SPA -> API : POST /api/auth/register\n{email, password, confirmPassword, firstName, lastName}
+note right : FS-B01 — rôle fixé à BUYER côté serveur
+
+alt Email déjà utilisé
+  API --> SPA : 409 Conflict {error: "EMAIL_ALREADY_USED"}
+else Email disponible
+  API -> PG : INSERT accounts\n{email, role: BUYER, status: PENDING,\npassword_hash: BCrypt(password)}
+  note right : Mot de passe haché BCrypt\nCompte inaccessible tant que non activé
+
+  API -> PG : INSERT activation_tokens\n{token: UUID, account_id, expires_at: now+24h}
+  note right : CS-07 — token UUID à usage unique, TTL 24 h
+
+  API -> Mail : POST /v3/mail/send\n{to: email, template: "activation",\nlink: https://buyer.localhost/activate?token={UUID}}
+  note right : SendGrid Java SDK\nIFS-06
+
+  Mail --> API : 202 Accepted
+  API --> SPA : 201 Created
+  SPA -> SPA : Afficher "Vérifiez votre email\npour activer votre compte"
+end
+
+== Étape 2 — L'acheteur active son compte ==
+
+SPA -> API : POST /api/auth/activate\n{token}
+note right : Mot de passe déjà défini à l'inscription\n→ seul le token est requis
+
+API -> PG : SELECT * FROM activation_tokens WHERE token = ?
+PG --> API : {account_id, expires_at}
+
+alt Token valide (non expiré)
+  API -> PG : UPDATE accounts SET status = ACTIVE WHERE id = account_id
+  API -> PG : DELETE FROM activation_tokens WHERE account_id = ?
+  API --> SPA : 204 No Content
+  SPA -> SPA : Redirection vers /login
+else Token expiré
+  API --> SPA : 410 Gone {error: "TOKEN_EXPIRED"}
+  SPA -> SPA : Afficher lien "Renvoyer le lien"\n(US-REG-03)
+end
+
+@enduml

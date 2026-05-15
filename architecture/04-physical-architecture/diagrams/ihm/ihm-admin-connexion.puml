@@ -1,0 +1,17 @@
+@startsalt
+' Console Administrateur — Écran de connexion
+' Illustre CS-08 / CPA-08 : TokenAuthentification
+title Console Administrateur — Connexion
+
+{+
+  == Connexion administrateur
+  --
+  Adresse email  | "admin@onlineshop.com"
+  Mot de passe   | "**************      "
+  --
+  [      Se connecter      ]
+  --
+  <i>Accès réservé aux administrateurs</i>
+}
+
+@endsalt

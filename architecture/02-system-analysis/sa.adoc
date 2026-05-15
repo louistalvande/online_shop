@@ -93,8 +93,17 @@ Les contraintes opérationnelles (COp) de l'OA sont traduites en contraintes sys
 | À l'issue de l'inscription, le système doit envoyer automatiquement un email contenant un lien d'activation tokenisé à usage unique. Le compte est activé uniquement sur clic de ce lien. Le token doit avoir une durée de validité limitée (ex. 24 h) au-delà de laquelle un renvoi est possible.
 
 | CS-08
+| TokenAuthentification
+| L'accès aux back-offices vendeur et administrateur est conditionné à une authentification par email et mot de passe ; le système émet un jeton d'authentification que le client présente à chaque requête protégée.
+Un compte suspendu ou supprimé ne peut pas s'authentifier. Les messages d'erreur ne distinguent pas un email inconnu d'un mot de passe incorrect (sécurité contre l'énumération de comptes).
+
+| CS-09
 | Prix TTC — pas de TVA
 | Tous les prix affichés sur la boutique sont exprimés en TTC. Aucune TVA n'est calculée ni affichée en sus ; le prix saisi par le vendeur est le prix final payé par l'acheteur.
+
+| CS-10
+| Préférence de langue par compte
+| Chaque compte (acheteur, vendeur) dispose d'une préférence de langue (`fr` ou `en`), initialisée à la création et modifiable ultérieurement par le titulaire ou l'administrateur. Cette préférence détermine la langue des emails transactionnels envoyés par le système (IFS-06).
 |===
 
 == Exigences fonctionnelles système
@@ -107,11 +116,12 @@ Les fonctions système (FS) sont dérivées des cas d'utilisation opérationnels
 |===
 | ID | Fonction système | Origine UC (OA)
 
-| FS-A01 | Créer, suspendre et supprimer les comptes vendeur et acheteur | UC_A1
+| FS-A01 | Créer, suspendre et supprimer les comptes vendeur et acheteur ; à la création, le compte est en statut `en_attente_activation` et le système envoie un email contenant un lien permettant à l'utilisateur de définir son mot de passe et d'activer son compte (même flux que FS-B01 / CS-07) | UC_A1
 | FS-A02 | Gérer les droits d'accès (rôles) sur la plateforme | UC_A1
 | FS-A03 | Ajouter, modifier et supprimer les transporteurs disponibles | UC_A2
 | FS-A04 | Permettre à l'administrateur de modifier son mot de passe | UC_A_ACC
 | FS-A05 | Basculer en mode maintenance de la plateforme : activer ou désactiver la redirection de tous les internautes non administrateurs vers la page « Site en maintenance » | UC_A3
+| FS-A06 | Configurer la langue de notification d'un compte vendeur ou acheteur — à la création et en modification ultérieure — parmi les valeurs supportées : `fr` (français, défaut) et `en` (anglais) (CS-10) | UC_A1
 |===
 
 === Gestion de la boutique (Vendeur)
@@ -120,7 +130,7 @@ Les fonctions système (FS) sont dérivées des cas d'utilisation opérationnels
 |===
 | ID | Fonction système | Origine UC (OA)
 
-| FS-V01 | Permettre au vendeur de mettre à jour ses données de compte | UC_V0
+| FS-V01 | Permettre au vendeur de mettre à jour ses données de compte, y compris sa préférence de langue de notification (CS-10) | UC_V0
 | FS-V02 | Gérer le catalogue produits — CRUD : photos, descriptions, prix, catégories | UC_V1
 | FS-V03 | Gérer les niveaux de stock et alerter en cas de rupture imminente | UC_V2
 | FS-V04 | Recevoir et traiter les nouvelles commandes (notification, vérification stock) | UC_V3
@@ -141,7 +151,7 @@ Les fonctions système (FS) sont dérivées des cas d'utilisation opérationnels
 
 | FS-B01 | Gérer l'inscription de l'acheteur et envoyer un email d'activation avec lien tokenisé | UC_B0
 | FS-B10 | Valider et activer le compte acheteur sur clic du lien d'activation (token à usage unique, expirant) | UC_B0
-| FS-B02 | Permettre à l'acheteur de mettre à jour ses données de compte | UC_B_ACC
+| FS-B02 | Permettre à l'acheteur de mettre à jour ses données de compte, y compris sa préférence de langue de notification (CS-10) | UC_B_ACC
 | FS-B03 | Afficher et filtrer le catalogue produits disponibles | UC_B1
 | FS-B04 | Gérer le panier (ajout, modification de quantité, suppression) | UC_B2
 | FS-B05 | Sauvegarder et restaurer le panier entre sessions (CS-03) | UC_B2B
@@ -423,7 +433,7 @@ a|
 | *Scénario nominal*
 a|
 . L'utilisateur accède au formulaire de mise à jour de son profil.
-. Il modifie les champs souhaités (nom, prénom, adresse postale, mot de passe). L'adresse email n'est pas modifiable.
+. Il modifie les champs souhaités (nom, prénom, adresse postale, mot de passe, langue de notification). L'adresse email n'est pas modifiable.
 . Le système valide les données saisies (format du mot de passe, cohérence de l'adresse).
 . Le système enregistre les modifications et confirme la mise à jour.
 
@@ -718,13 +728,15 @@ a|
 | *Scénario nominal*
 a|
 . L'administrateur consulte la liste des comptes utilisateurs (vendeurs et acheteurs).
-. Il peut créer, modifier, suspendre ou supprimer un compte (FS-A01), et ajuster les rôles (FS-A02).
+. Il peut créer, suspendre ou supprimer un compte (FS-A01), et ajuster les rôles (FS-A02). À la création, le système génère un lien d'activation tokenisé (CS-07) et l'envoie par email à l'utilisateur ; celui-ci définit son mot de passe via ce lien avant de pouvoir se connecter. La langue de notification est initialisée à la valeur saisie dans le formulaire (`fr` par défaut) (FS-A06 / CS-10).
 . Il accède à la liste des transporteurs configurés.
 . Il peut ajouter, modifier ou supprimer un transporteur (FS-A03).
 
 | *Scénarios alternatifs*
 a|
 * *2a.* L'adresse email du nouveau compte est déjà utilisée : le système retourne une erreur de duplication.
+* *2b.* L'utilisateur n'a pas cliqué le lien d'activation : l'administrateur peut renvoyer un nouveau lien depuis la fiche utilisateur.
+* *2c.* L'administrateur souhaite modifier la langue de notification d'un compte existant : il accède à la fiche du compte et met à jour le champ `Langue` (FS-A06 / CS-10).
 * *4a.* Le transporteur est référencé dans des expéditions en cours : le système bloque la suppression et propose la désactivation.
 
 | *Postconditions*
@@ -1174,6 +1186,7 @@ class CompteUtilisateur {
   + motDePasseHaché : String
   + rôle : Enum {admin, vendeur, acheteur}
   + statut : Enum {en_attente, actif, suspendu, supprimé}
+  + langue : Enum {fr, en}
   + dateCreation : DateTime
 }
 
@@ -1394,19 +1407,19 @@ La matrice ci-dessous assure la couverture complète de chaque besoin opération
 |===
 | UC / COp (OA) | Besoin opérationnel | Fonctions SA | UCSA
 
-| UC_A1 | Gérer les comptes utilisateurs | FS-A01, FS-A02 | UCSA-12
+| UC_A1 | Gérer les comptes utilisateurs | FS-A01, FS-A02, FS-A06 | UCSA-12
 | UC_A2 | Gérer les transporteurs | FS-A03 | UCSA-12
 | UC_A3 | Basculer en mode maintenance | FS-A05 | UCSA-14
 | UC_A_ACC | Modifier son mot de passe (administrateur) | FS-A04 | UCSA-02
 | UC_B0 | S'inscrire / activer son compte via lien email | FS-B01, FS-B10, CS-07 | UCSA-01, UCSA-02
-| UC_B_ACC | Mettre à jour son compte (acheteur) | FS-B02 | UCSA-02
+| UC_B_ACC | Mettre à jour son compte (acheteur), dont la langue de notification (CS-10) | FS-B02 | UCSA-02
 | UC_B1 | Parcourir le catalogue | FS-B03 | UCSA-03
 | UC_B2 / UC_B2B | Gérer et persister le panier | FS-B04, FS-B05 | UCSA-04
 | UC_B3 / UC_B4B | Passer une commande / choisir la livraison | FS-B06 | UCSA-05
 | UC_B4 | Effectuer un paiement | FS-B07, FS-P01, FS-P02 | UCSA-05
 | UC_B5 | Suivre la livraison (numéro de suivi + lien site transporteur) | FS-B08, FS-C01 | UCSA-08
 | UC_B6 / UC_V7 | Annuler une commande | FS-B09, FS-V08, FS-P03 | UCSA-06
-| UC_V0 | Mettre à jour son compte (vendeur) | FS-V01 | UCSA-02
+| UC_V0 | Mettre à jour son compte (vendeur), dont la langue de notification (CS-10) | FS-V01 | UCSA-02
 | UC_V9 | Gérer les annonces défilantes | FS-V11 | UCSA-15
 | UC_V1 | Gérer le catalogue produits | FS-V02 | UCSA-10
 | UC_V2 | Gérer les stocks | FS-V03 | UCSA-10

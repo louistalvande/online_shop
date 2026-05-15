@@ -1,0 +1,22 @@
+@startsalt ihm-admin-detail-compte
+' Composant PA : front-admin (Console Administrateur)
+' Fonctions allouées : Service Compte — FS-A01, FS-A02, FS-A06 (modifier compte — CS-10)
+title Console Admin — Fiche d'un compte
+
+{+
+  == Informations du compte
+  Email   | "marie.dupont@email.com"
+  Statut  | Actif
+  Créé le | 2026-01-15
+  --
+  == Informations modifiables
+  Prénom  | "Marie          "
+  Nom     | "Dupont         "
+  Rôle    | ^Acheteur^
+  --
+  == Préférences de notification
+  Langue  | ^Français^
+  --
+  [Annuler]                    | [Enregistrer]
+}
+@endsalt

@@ -50,6 +50,10 @@ Les contraintes physiques complètent les contraintes système (CS) en ajoutant 
 | CPA-07
 | Journalisation des transactions financières
 | Toutes les transactions (paiement, remboursement) sont journalisées en base avec horodatage, montant, statut et référence prestataire — issu de CS-06.
+
+| CPA-08
+| Implémentation de la TokenAuthentification (CS-08)
+| Les jetons sont signés avec HMAC-SHA-256 (JJWT), ont une validité de 24 h et sont transmis dans l'en-tête `Authorization: Bearer`. Les mots de passe sont hachés avec BCrypt (coût 10). La clé de signature est injectée par variable d'environnement (`JWT_SECRET`). Les jetons révoqués sont inscrits dans Redis (CPA-04).
 |===
 
 == Pile technologique retenue
@@ -70,7 +74,7 @@ Les contraintes physiques complètent les contraintes système (CS) en ajoutant 
 
 | Console Administrateur
 | React 18 — TypeScript — Vite
-| SPA desktop, gestion des comptes et transporteurs
+| SPA desktop-first, accès HTTPS authentifié par jeton JWT (CS-08 / CPA-08) ; gestion des comptes et transporteurs
 |===
 
 === Application et domaine
@@ -81,7 +85,7 @@ Les contraintes physiques complètent les contraintes système (CS) en ajoutant 
 
 | Service Compte
 | Module Spring Boot (Java)
-| Authentification JWT (Spring Security), hachage BCrypt, gestion des tokens d'activation (CS-07)
+| Authentification JWT — Spring Security + JJWT (CS-08 / CPA-08), hachage BCrypt, gestion des tokens d'activation (CS-07)
 
 | Service Catalogue
 | Module Spring Boot (Java)
@@ -105,7 +109,7 @@ Les contraintes physiques complètent les contraintes système (CS) en ajoutant 
 
 | Service Notification
 | Module Spring Boot (Java)
-| File d'envoi des emails transactionnels via SendGrid Java SDK
+| Envoi des emails transactionnels via SendGrid Java SDK ; sélection du template par langue du destinataire (`compte.langue` — CS-10) ; bascule en console-logging si `SENDGRID_API_KEY` absent (développement)
 
 | Service Rapport
 | Module Spring Boot (Java)
@@ -156,62 +160,7 @@ Ce diagramme représente la topologie des nœuds physiques et l'allocation des c
 
 [plantuml, pa-deployment, svg]
 ----
-skinparam nodeBackgroundColor #FEFEFE
-skinparam nodeBorderColor #2E75B6
-skinparam componentBackgroundColor #E8F4FD
-skinparam componentBorderColor #2E75B6
-skinparam arrowColor #2E75B6
-skinparam noteBackgroundColor #FFFBE6
-skinparam noteBorderColor #F0A500
-skinparam defaultFontSize 10
-skinparam packageBackgroundColor #F0F8FF
-skinparam packageBorderColor #AAAAAA
-
-actor "Acheteur /\nVendeur /\nAdmin" as User
-
-node "Navigateur Web\n(Client)" as Browser {
-  component "SPA React\n(front-acheteur | front-vendeur | front-admin)" as SPA
-}
-
-node "Conteneur Nginx\n(Reverse Proxy — HTTPS / TLS)" as Nginx {
-  component "Terminaison TLS\nService assets statiques\nProxy → API" as NginxComp
-}
-
-node "Conteneur API\n(Spring Boot — Java)" as AppServer {
-  frame "Modules métier" {
-    component "compte | catalogue\npanier | commande | paiement\nexpédition | notification | rapport" as Modules
-  }
-  frame "Adaptateurs" {
-    component "Stripe Java SDK\nSendGrid Java SDK" as Adapters
-  }
-}
-
-node "Conteneur PostgreSQL 16" as DB {
-  component "boutique_db\n(entités métier)" as PgDB
-}
-
-node "Conteneur Redis 7" as Cache {
-  component "Sessions & paniers\n(CS-03 / CPA-04)" as RedisDB
-}
-
-component "Stripe API\n(prestataire paiement)" as Stripe #D5E8F0
-component "SendGrid\n(e-mail — IFS-06)" as SendGrid #D5E8F0
-
-note "IFS-05 : lien vers site transporteur\n(consulté par l'acheteur via son navigateur)" as NCarrier
-
-User --> Browser : HTTPS
-Browser --> Nginx : HTTPS (CPA-02)
-Nginx --> AppServer : HTTP — proxy interne
-AppServer --> DB : TCP 5432 (IFL-13)
-AppServer --> Cache : TCP 6379 (CPA-04)
-Adapters --> Stripe : REST/HTTPS (IFS-04)
-Stripe --> Adapters : webhook HTTPS signé
-Adapters --> SendGrid : HTTPS (IFS-06)
-
-note bottom of AppServer
-  CPA-05 : stateless
-  tout l'état dans PostgreSQL ou Redis
-end note
+include::diagrams/pa-deployment.puml[]
 ----
 
 == Diagramme de composants physiques
@@ -457,6 +406,24 @@ API --> SPABuyer : 200 OK {tracking_number, carrier_tracking_url}
 note right : Buyer clicks the link\nto track the parcel (IFS-05 — outbound)
 ----
 
+== Diagramme de séquence technique — Création de compte par l'admin et activation
+
+Deux acteurs distincts interviennent : l'administrateur qui crée le compte, et le nouvel utilisateur qui reçoit l'email et définit son mot de passe. Le compte reste en statut `PENDING` jusqu'à l'activation (US-ADM-01 / FS-A01 / CS-07).
+
+[plantuml, pa-sequence-activation-admin, svg]
+----
+include::diagrams/pa-sequence-activation-admin.puml[]
+----
+
+== Diagramme de séquence technique — Auto-inscription acheteur et activation
+
+L'acheteur choisit son mot de passe dès l'inscription ; l'email d'activation sert uniquement à vérifier l'adresse. Le token d'activation ne transporte pas de mot de passe — seul l'acheteur en est porteur (US-REG-01 / US-REG-02 / FS-B01 / CS-07).
+
+[plantuml, pa-sequence-inscription-acheteur, svg]
+----
+include::diagrams/pa-sequence-inscription-acheteur.puml[]
+----
+
 == Maquettes IHM
 
 Les maquettes filaires ci-dessous illustrent les interfaces utilisateur de chaque composant frontend. Elles sont rattachées aux fonctions logiques (LA) allouées à chaque composant et restent indépendantes de toute charte graphique — Salt modélise la structure, non le rendu final.
@@ -481,6 +448,16 @@ Ce formulaire couvre FS-B01 (création de compte) et FS-B10 (activation par emai
 [plantuml, ihm-pa-inscription, svg]
 ----
 include::diagrams/ihm/ihm-pa-inscription.puml[]
+----
+
+==== Activation de compte
+
+Page atteinte depuis le lien envoyé par email (CS-07). Deux cas d'usage convergent ici : l'acheteur auto-inscrit (US-REG-02 — seul le token est requis, le mot de passe étant déjà défini) et le compte créé par l'admin (US-ADM-01 — l'utilisateur doit définir son mot de passe via ce formulaire). La maquette couvre le second cas, plus complet. Si le token est expiré, la page propose un lien de renvoi (US-REG-03).
+
+.Maquette filaire : Activation de compte — Définition du mot de passe
+[plantuml, ihm-pa-activation, svg]
+----
+include::diagrams/ihm/ihm-pa-activation.puml[]
 ----
 
 ==== Page d'accueil
@@ -609,7 +586,7 @@ include::diagrams/ihm/ihm-pa-reclamation.puml[]
 
 ==== Mon compte
 
-Gestion du profil acheteur (FS-B02). Réunit sur trois onglets les informations personnelles, l'adresse de livraison par défaut et la modification du mot de passe. La mise à jour de l'email est soumise à validation d'unicité côté Service Compte.
+Gestion du profil acheteur (FS-B02). Réunit sur trois onglets les informations personnelles, l'adresse de livraison par défaut et la modification du mot de passe. La mise à jour de l'email est soumise à validation d'unicité côté Service Compte. L'onglet « Informations personnelles » inclut un champ `Langue` (liste déroulante `Français` / `English`) permettant à l'acheteur de configurer la langue de ses emails de notification (CS-10).
 
 .Maquette filaire : Portail Acheteur — Mon compte
 [plantuml, ihm-pa-mon-compte, svg]
@@ -727,6 +704,16 @@ include::diagrams/ihm/ihm-bov-rapports.puml[]
 
 === Console Administrateur
 
+==== Connexion
+
+Formulaire d'authentification de l'administrateur (CS-08 / CPA-08). Le système vérifie les identifiants, contrôle que le compte est actif et porte le rôle `ADMIN`, puis émet un jeton JWT signé valable 24 h. Le message d'erreur est délibérément générique pour éviter l'énumération de comptes.
+
+.Maquette filaire : Console Admin — Connexion
+[plantuml, ihm-admin-connexion, svg]
+----
+include::diagrams/ihm/ihm-admin-connexion.puml[]
+----
+
 ==== Gestion des comptes
 
 Liste de tous les comptes utilisateurs (FS-A01 / FS-A02). Les filtres par rôle et par statut permettent de cibler rapidement les comptes en attente d'activation ou suspendus. Les actions disponibles varient selon le statut : un compte suspendu peut être réactivé ; un compte en attente peut être supprimé.
@@ -735,6 +722,26 @@ Liste de tous les comptes utilisateurs (FS-A01 / FS-A02). Les filtres par rôle 
 [plantuml, ihm-admin-comptes, svg]
 ----
 include::diagrams/ihm/ihm-admin-comptes.puml[]
+----
+
+==== Formulaire de création de compte
+
+Formulaire modal déclenché par le bouton « + Créer un compte » de la liste (FS-A01). Conforme à US-ADM-01 : l'administrateur saisit le prénom, le nom, l'email, le rôle et la langue de notification (FS-A06 / CS-10) — aucun mot de passe n'est demandé. La langue est initialisée à `Français` par défaut. À la soumission, le système crée le compte avec le statut `EN_ATTENTE_ACTIVATION` et envoie automatiquement un email d'activation dans la langue choisie (CS-07 / CS-10). Le lien expire après 24 h ; l'administrateur peut le renvoyer depuis la liste si nécessaire.
+
+.Maquette filaire : Console Admin — Formulaire de création de compte
+[plantuml, ihm-admin-form-compte, svg]
+----
+include::diagrams/ihm/ihm-admin-form-compte.puml[]
+----
+
+==== Fiche d'un compte
+
+Écran de détail d'un compte existant, accessible depuis le bouton « Modifier » de la liste (FS-A01 / FS-A06). Affiche les informations du compte en lecture seule (email, rôle, statut) et expose le champ `Langue` en édition (CS-10). L'administrateur peut mettre à jour la préférence de langue de notification sans modifier les autres données du compte. La modification est effective immédiatement pour les prochains emails sortants.
+
+.Maquette filaire : Console Admin — Fiche d'un compte
+[plantuml, ihm-admin-detail-compte, svg]
+----
+include::diagrams/ihm/ihm-admin-detail-compte.puml[]
 ----
 
 ==== Gestion des transporteurs

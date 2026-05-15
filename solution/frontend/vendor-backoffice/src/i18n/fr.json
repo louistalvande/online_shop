@@ -16,5 +16,16 @@
   "orders.total": "Total",
   "orders.status": "Statut",
   "orders.details": "Détails",
-  "lang.toggle": "Changer de langue"
+  "lang.toggle": "Changer de langue",
+  "nav.account": "Mon compte",
+  "nav.logout": "Se déconnecter",
+  "nav.configuration": "Configuration",
+  "login.title": "Connexion vendeur",
+  "login.subtitle": "Accès réservé aux vendeurs de la plateforme.",
+  "login.email": "Adresse email",
+  "login.password": "Mot de passe",
+  "login.submit": "Se connecter",
+  "login.loading": "Connexion…",
+  "login.error.invalid": "Email ou mot de passe incorrect.",
+  "login.error.generic": "Une erreur est survenue. Veuillez réessayer."
 }

@@ -1,7 +1,11 @@
 architecture/.asciidoctor/*
 .asciidoctor
 solution/frontend/admin-console/node_modules/*
+solution/frontend/admin-console/dist/*
 solution/frontend/buyer-portal/node_modules/*
+solution/frontend/buyer-portal/dist/*
 solution/frontend/vendor-backoffice/node_modules/*
+solution/frontend/vendor-backoffice/dist/*
 solution/backend/target/*
 solution/frontend/node_modules/*
+.claude/*
