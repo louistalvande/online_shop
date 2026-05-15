@@ -4,6 +4,7 @@ import { Button } from '@workspace/theme'
 import {
   createAccount,
   updateAccount,
+  deleteAccount,
   type AccountResponse,
   type AccountRole,
   type AccountLanguage,
@@ -12,6 +13,7 @@ import {
 type Props =
   | { mode: 'create'; onClose: () => void; onSuccess: () => void }
   | { mode: 'edit'; account: AccountResponse; onClose: () => void; onSuccess: () => void }
+  | { mode: 'delete'; account: AccountResponse; onClose: () => void; onSuccess: () => void }
 
 const overlay: React.CSSProperties = {
   position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.4)',
@@ -54,6 +56,19 @@ export default function AccountModal(props: Props) {
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
 
+  async function handleDelete() {
+    setError(null)
+    setLoading(true)
+    try {
+      if (props.mode === 'delete') await deleteAccount(props.account.id)
+      props.onSuccess()
+    } catch {
+      setError(t('accountModal.error.generic'))
+    } finally {
+      setLoading(false)
+    }
+  }
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     setError(null)
@@ -82,14 +97,31 @@ export default function AccountModal(props: Props) {
         <h2 style={{ fontFamily: 'var(--font-serif)', fontSize: 20, fontWeight: 700, marginBottom: 4 }}>
           {t(`accountModal.title.${props.mode}`)}
         </h2>
-        {isEdit && (
+        {(isEdit || props.mode === 'delete') && (
           <p style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 24 }}>{props.account.email}</p>
         )}
-        {!isEdit && <div style={{ marginBottom: 24 }} />}
+        {props.mode === 'create' && <div style={{ marginBottom: 24 }} />}
 
         {error && <div style={errorBox}>{error}</div>}
 
-        <form onSubmit={handleSubmit}>
+        {props.mode === 'delete' && (
+          <>
+            <p style={{ fontSize: 14, marginBottom: 24 }}>
+              {t('accountModal.delete.confirm', { name: `${props.account.firstName} ${props.account.lastName}` })}
+            </p>
+            <div style={{ display: 'flex', gap: 12, justifyContent: 'flex-end' }}>
+              <Button type="button" variant="ghost" size="sm" onClick={props.onClose}>
+                {t('accountModal.cancel')}
+              </Button>
+              <Button type="button" size="sm" disabled={loading} onClick={handleDelete}
+                style={{ background: '#dc2626', borderColor: '#dc2626' }}>
+                {loading ? '…' : t('accountModal.delete.submit')}
+              </Button>
+            </div>
+          </>
+        )}
+
+        {props.mode !== 'delete' && <form onSubmit={handleSubmit}>
           <div style={fieldStyle}>
             <span style={labelStyle}>{t('accountModal.firstName')}</span>
             <input style={inputStyle} required value={firstName} onChange={e => setFirstName(e.target.value)} />
@@ -139,7 +171,7 @@ export default function AccountModal(props: Props) {
               {loading ? '…' : t(`accountModal.submit.${props.mode}`)}
             </Button>
           </div>
-        </form>
+        </form>}
       </div>
     </div>
   )

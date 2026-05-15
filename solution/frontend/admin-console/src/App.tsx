@@ -5,7 +5,7 @@ import { AppShell, Button, Card, UserIcon, PackageIcon, LangToggle, UserMenu, Sn
 import AccountModal from './components/AccountModal'
 import LoginPage from './LoginPage'
 import { getSession, logout } from './api/authApi'
-import { listAccounts, deleteAccount, type AccountResponse } from './api/accountApi'
+import { listAccounts, type AccountResponse } from './api/accountApi'
 
 export default function App() {
   const { t, i18n } = useTranslation()
@@ -13,22 +13,12 @@ export default function App() {
   const [accounts, setAccounts] = useState<AccountResponse[]>([])
   const [showModal, setShowModal] = useState(false)
   const [editAccount, setEditAccount] = useState<AccountResponse | null>(null)
+  const [deleteAccount, setDeleteAccount] = useState<AccountResponse | null>(null)
   const [snackbar, setSnackbar] = useState<string | null>(null)
 
   function showSnackbar(message: string) {
     setSnackbar(message)
     setTimeout(() => setSnackbar(null), 3000)
-  }
-
-  async function handleDelete(account: AccountResponse) {
-    if (!confirm(t('users.deleteConfirm', { name: `${account.firstName} ${account.lastName}` }))) return
-    try {
-      await deleteAccount(account.id)
-      fetchAccounts()
-      showSnackbar(t('snackbar.accountDeleted'))
-    } catch {
-      showSnackbar(t('snackbar.error'))
-    }
   }
 
   async function fetchAccounts() {
@@ -85,6 +75,15 @@ export default function App() {
           account={editAccount}
           onClose={() => setEditAccount(null)}
           onSuccess={() => { setEditAccount(null); fetchAccounts(); showSnackbar(t('snackbar.accountUpdated')) }}
+        />
+      )}
+
+      {deleteAccount && (
+        <AccountModal
+          mode="delete"
+          account={deleteAccount}
+          onClose={() => setDeleteAccount(null)}
+          onSuccess={() => { setDeleteAccount(null); fetchAccounts(); showSnackbar(t('snackbar.accountDeleted')) }}
         />
       )}
 
@@ -156,7 +155,7 @@ export default function App() {
                     </td>
                     <td style={{ padding: '14px 16px', display: 'flex', gap: 8 }}>
                       <Button variant="ghost" size="sm" onClick={() => setEditAccount(a)}>{t('users.edit')}</Button>
-                      <Button variant="ghost" size="sm" onClick={() => handleDelete(a)}>{t('users.delete')}</Button>
+                      <Button variant="ghost" size="sm" onClick={() => setDeleteAccount(a)}>{t('users.delete')}</Button>
                     </td>
                   </tr>
                 ))}
