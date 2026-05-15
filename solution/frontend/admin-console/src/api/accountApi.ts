@@ -38,6 +38,8 @@ function authHeader(): HeadersInit {
 
 export async function listAccounts(): Promise<AccountResponse[]> {
   const res = await fetch(BASE, { headers: authHeader() })
+  if (res.status === 401) throw Object.assign(new Error('Unauthorized'), { code: 'UNAUTHORIZED' })
+  if (res.status === 403) throw Object.assign(new Error('Forbidden'), { code: 'FORBIDDEN' })
   if (!res.ok) throw new Error('Failed to fetch accounts')
   return res.json()
 }

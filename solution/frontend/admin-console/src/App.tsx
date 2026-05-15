@@ -34,8 +34,13 @@ export default function App() {
   async function fetchAccounts() {
     try {
       setAccounts(await listAccounts())
-    } catch {
-      // backend may be unreachable in dev — keep current list
+    } catch (err: unknown) {
+      const code = err instanceof Error ? (err as { code?: string }).code : undefined
+      if (code === 'UNAUTHORIZED' || code === 'FORBIDDEN') {
+        logout()
+        setSession(null)
+      }
+      // other errors: backend may be unreachable in dev — keep current list
     }
   }
 

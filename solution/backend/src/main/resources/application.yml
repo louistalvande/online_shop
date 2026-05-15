@@ -46,7 +46,7 @@ jwt:
   expiration-ms: 600000
 
 app:
-  activation-base-url: ${APP_ACTIVATION_BASE_URL:http://localhost}
+  activation-base-url: ${APP_ACTIVATION_BASE_URL:http://localhost:5173}
   activation-expiry-hours: 24
 
 sendgrid:
