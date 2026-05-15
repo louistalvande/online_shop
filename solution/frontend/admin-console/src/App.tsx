@@ -1,7 +1,7 @@
 import './index.css'
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { AppShell, Button, Card, UserIcon, PackageIcon, LangToggle, UserMenu, Snackbar } from '@workspace/theme'
+import { AppShell, Button, Card, UserIcon, PackageIcon, LangToggle, UserMenu, Snackbar, IconButton, TrashIcon } from '@workspace/theme'
 import AccountModal from './components/AccountModal'
 import LoginPage from './LoginPage'
 import { getSession, logout } from './api/authApi'
@@ -155,7 +155,7 @@ export default function App() {
                     </td>
                     <td style={{ padding: '14px 16px', display: 'flex', gap: 8 }}>
                       <Button variant="ghost" size="sm" onClick={() => setEditAccount(a)}>{t('users.edit')}</Button>
-                      <Button variant="ghost" size="sm" onClick={() => setDeleteAccount(a)}>{t('users.delete')}</Button>
+                      <IconButton onClick={() => setDeleteAccount(a)} title={t('users.delete')} style={{ color: 'var(--text-muted)' }}><TrashIcon size={16} /></IconButton>
                     </td>
                   </tr>
                 ))}
