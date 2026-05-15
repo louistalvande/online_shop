@@ -36,17 +36,17 @@ a|
 | *US-ADM-02*
 | En tant qu'administrateur, je peux suspendre un compte actif (acheteur ou vendeur).
 a|
-- [ ] Action disponible uniquement sur les comptes au statut `actif`
-- [ ] Compte passe en statut `suspendu` ; l'utilisateur ne peut plus se connecter
-- [ ] Action réversible (voir US-ADM-03)
-| À faire
+- [x] Action disponible uniquement sur les comptes au statut `actif`
+- [x] Compte passe en statut `suspendu` ; l'utilisateur ne peut plus se connecter
+- [x] Action réversible (voir US-ADM-03)
+| Terminée
 
 | *US-ADM-03*
 | En tant qu'administrateur, je peux réactiver un compte suspendu.
 a|
-- [ ] Action disponible uniquement sur les comptes au statut `suspendu`
-- [ ] Compte repasse en statut `actif` ; l'utilisateur peut de nouveau se connecter
-| À faire
+- [x] Action disponible uniquement sur les comptes au statut `suspendu`
+- [x] Compte repasse en statut `actif` ; l'utilisateur peut de nouveau se connecter
+| Terminée
 
 | *US-ADM-04*
 | En tant qu'administrateur, je peux supprimer un compte (actif ou suspendu).

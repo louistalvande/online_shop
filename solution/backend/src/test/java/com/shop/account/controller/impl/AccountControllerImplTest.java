@@ -1,6 +1,11 @@
 package com.shop.account.controller.impl;
 
+import com.shop.account.dto.AccountResponse;
+import com.shop.account.entity.AccountLanguage;
+import com.shop.account.entity.AccountRole;
+import com.shop.account.entity.AccountStatus;
 import com.shop.account.exception.AccountNotFoundException;
+import com.shop.account.exception.InvalidAccountStateException;
 import com.shop.account.service.AccountService;
 import com.shop.common.GlobalExceptionHandler;
 import org.junit.jupiter.api.BeforeEach;
@@ -67,5 +72,86 @@ class AccountControllerImplTest {
         mvc.perform(get("/api/admin/accounts"))
                 .andExpect(status().isOk())
                 .andExpect(content().json("[]"));
+    }
+
+    private AccountResponse buildResponse(AccountStatus status) {
+        com.shop.account.entity.Account a = new com.shop.account.entity.Account();
+        a.setEmail("bob@example.com");
+        a.setFirstName("Bob");
+        a.setLastName("Doe");
+        a.setRole(AccountRole.BUYER);
+        a.setStatus(status);
+        a.setLanguage(AccountLanguage.FR);
+        return AccountResponse.from(a);
+    }
+
+    /** PATCH /{id}/suspend returns 200 with the updated account when the account is ACTIVE. */
+    @Test
+    void suspendAccount_returns200_whenActive() throws Exception {
+        UUID id = UUID.randomUUID();
+        given(accountService.suspendAccount(id)).willReturn(buildResponse(AccountStatus.SUSPENDED));
+
+        mvc.perform(patch("/api/admin/accounts/{id}/suspend", id))
+                .andExpect(status().isOk());
+
+        then(accountService).should().suspendAccount(id);
+    }
+
+    /** PATCH /{id}/suspend returns 409 when the service throws InvalidAccountStateException. */
+    @Test
+    void suspendAccount_returns409_whenNotActive() throws Exception {
+        UUID id = UUID.randomUUID();
+        willThrow(new InvalidAccountStateException(id, AccountStatus.ACTIVE))
+                .given(accountService).suspendAccount(id);
+        given(messageSource.getMessage(anyString(), any(), any(Locale.class))).willReturn("Invalid state");
+
+        mvc.perform(patch("/api/admin/accounts/{id}/suspend", id))
+                .andExpect(status().isConflict());
+    }
+
+    /** PATCH /{id}/suspend returns 404 when the service throws AccountNotFoundException. */
+    @Test
+    void suspendAccount_returns404_whenNotFound() throws Exception {
+        UUID id = UUID.randomUUID();
+        willThrow(new AccountNotFoundException(id)).given(accountService).suspendAccount(id);
+        given(messageSource.getMessage(anyString(), any(), any(Locale.class))).willReturn("Not found");
+
+        mvc.perform(patch("/api/admin/accounts/{id}/suspend", id))
+                .andExpect(status().isNotFound());
+    }
+
+    /** PATCH /{id}/reactivate returns 200 with the updated account when the account is SUSPENDED. */
+    @Test
+    void reactivateAccount_returns200_whenSuspended() throws Exception {
+        UUID id = UUID.randomUUID();
+        given(accountService.reactivateAccount(id)).willReturn(buildResponse(AccountStatus.ACTIVE));
+
+        mvc.perform(patch("/api/admin/accounts/{id}/reactivate", id))
+                .andExpect(status().isOk());
+
+        then(accountService).should().reactivateAccount(id);
+    }
+
+    /** PATCH /{id}/reactivate returns 409 when the service throws InvalidAccountStateException. */
+    @Test
+    void reactivateAccount_returns409_whenNotSuspended() throws Exception {
+        UUID id = UUID.randomUUID();
+        willThrow(new InvalidAccountStateException(id, AccountStatus.SUSPENDED))
+                .given(accountService).reactivateAccount(id);
+        given(messageSource.getMessage(anyString(), any(), any(Locale.class))).willReturn("Invalid state");
+
+        mvc.perform(patch("/api/admin/accounts/{id}/reactivate", id))
+                .andExpect(status().isConflict());
+    }
+
+    /** PATCH /{id}/reactivate returns 404 when the service throws AccountNotFoundException. */
+    @Test
+    void reactivateAccount_returns404_whenNotFound() throws Exception {
+        UUID id = UUID.randomUUID();
+        willThrow(new AccountNotFoundException(id)).given(accountService).reactivateAccount(id);
+        given(messageSource.getMessage(anyString(), any(), any(Locale.class))).willReturn("Not found");
+
+        mvc.perform(patch("/api/admin/accounts/{id}/reactivate", id))
+                .andExpect(status().isNotFound());
     }
 }

@@ -53,6 +53,18 @@ public class AccountControllerImpl implements AccountController {
 
     /** {@inheritDoc} */
     @Override
+    public ResponseEntity<AccountResponse> suspendAccount(UUID id) {
+        return ResponseEntity.ok(accountService.suspendAccount(id));
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public ResponseEntity<AccountResponse> reactivateAccount(UUID id) {
+        return ResponseEntity.ok(accountService.reactivateAccount(id));
+    }
+
+    /** {@inheritDoc} */
+    @Override
     public ResponseEntity<Void> deleteAccount(UUID id) {
         accountService.deleteAccount(id);
         return ResponseEntity.noContent().build();

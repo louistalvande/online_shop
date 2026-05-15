@@ -91,6 +91,16 @@ export function GlobeIcon({ size = 16, ...p }: IconProps) {
   )
 }
 
+export function DotsHorizontalIcon({ size = 16, ...p }: IconProps) {
+  return (
+    <svg {...base(size)} {...p}>
+      <circle cx="5" cy="12" r="1" fill="currentColor" stroke="none" />
+      <circle cx="12" cy="12" r="1" fill="currentColor" stroke="none" />
+      <circle cx="19" cy="12" r="1" fill="currentColor" stroke="none" />
+    </svg>
+  )
+}
+
 export function TrashIcon({ size = 16, ...p }: IconProps) {
   return (
     <svg {...base(size)} {...p}>

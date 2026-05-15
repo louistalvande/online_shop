@@ -1,7 +1,7 @@
 import './index.css'
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { AppShell, Button, Card, UserIcon, PackageIcon, LangToggle, UserMenu, Snackbar, IconButton, TrashIcon } from '@workspace/theme'
+import { AppShell, Button, Card, UserIcon, PackageIcon, LangToggle, UserMenu, Snackbar, IconButton, TrashIcon, DotsHorizontalIcon } from '@workspace/theme'
 import AccountModal from './components/AccountModal'
 import LoginPage from './LoginPage'
 import { getSession, logout } from './api/authApi'
@@ -14,6 +14,8 @@ export default function App() {
   const [showModal, setShowModal] = useState(false)
   const [editAccount, setEditAccount] = useState<AccountResponse | null>(null)
   const [deleteAccount, setDeleteAccount] = useState<AccountResponse | null>(null)
+  const [suspendAccount, setSuspendAccount] = useState<AccountResponse | null>(null)
+  const [reactivateAccount, setReactivateAccount] = useState<AccountResponse | null>(null)
   const [snackbar, setSnackbar] = useState<string | null>(null)
 
   function showSnackbar(message: string) {
@@ -41,6 +43,8 @@ export default function App() {
   if (!session) {
     return <LoginPage onLogin={() => setSession(getSession())} />
   }
+
+  const activeAdminCount = accounts.filter(a => a.role === 'ADMIN' && a.status === 'ACTIVE').length
 
   const stats = [
     { label: t('stats.users'), value: String(accounts.length), icon: <UserIcon size={18} /> },
@@ -84,6 +88,24 @@ export default function App() {
           account={deleteAccount}
           onClose={() => setDeleteAccount(null)}
           onSuccess={() => { setDeleteAccount(null); fetchAccounts(); showSnackbar(t('snackbar.accountDeleted')) }}
+        />
+      )}
+
+      {suspendAccount && (
+        <AccountModal
+          mode="suspend"
+          account={suspendAccount}
+          onClose={() => setSuspendAccount(null)}
+          onSuccess={() => { setSuspendAccount(null); fetchAccounts(); showSnackbar(t('snackbar.accountSuspended')) }}
+        />
+      )}
+
+      {reactivateAccount && (
+        <AccountModal
+          mode="reactivate"
+          account={reactivateAccount}
+          onClose={() => setReactivateAccount(null)}
+          onSuccess={() => { setReactivateAccount(null); fetchAccounts(); showSnackbar(t('snackbar.accountReactivated')) }}
         />
       )}
 
@@ -147,14 +169,31 @@ export default function App() {
                     <td style={{ padding: '14px 16px' }}>
                       <span style={{ fontWeight: 600, fontSize: 13 }}>{t(`users.role.${a.role}`)}</span>
                     </td>
-                    <td style={{ padding: '14px 16px', color: 'var(--text-muted)' }}>
-                      {t(`users.status.${a.status}`)}
+                    <td style={{ padding: '14px 16px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                        {(a.status === 'ACTIVE' || a.status === 'SUSPENDED') && (() => {
+                          const isLastAdmin = a.role === 'ADMIN' && activeAdminCount === 1
+                          const isSuspended = a.status === 'SUSPENDED'
+                          return (
+                            <Button variant="ghost" size="sm"
+                              onClick={() => !isLastAdmin && (isSuspended ? setReactivateAccount(a) : setSuspendAccount(a))}
+                              disabled={isLastAdmin}
+                              title={isLastAdmin ? t('users.suspend.lastAdmin') : undefined}
+                              style={{
+                                color: isLastAdmin ? 'var(--text-muted)' : isSuspended ? '#16a34a' : '#d97706',
+                                cursor: isLastAdmin ? 'not-allowed' : undefined,
+                              }}>
+                              {isSuspended ? t('users.reactivate') : t('users.suspend')}
+                            </Button>
+                          )
+                        })()}
+                      </div>
                     </td>
                     <td style={{ padding: '14px 16px', color: 'var(--text-muted)' }}>
                       {a.createdAt.slice(0, 7)}
                     </td>
                     <td style={{ padding: '14px 16px', display: 'flex', gap: 8 }}>
-                      <Button variant="ghost" size="sm" onClick={() => setEditAccount(a)}>{t('users.edit')}</Button>
+                      <IconButton onClick={() => setEditAccount(a)} title={t('users.edit')} style={{ color: 'var(--text-muted)' }}><DotsHorizontalIcon size={16} /></IconButton>
                       <IconButton onClick={() => setDeleteAccount(a)} title={t('users.delete')} style={{ color: 'var(--text-muted)' }}><TrashIcon size={16} /></IconButton>
                     </td>
                   </tr>

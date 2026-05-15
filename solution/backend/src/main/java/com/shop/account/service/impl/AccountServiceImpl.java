@@ -8,6 +8,7 @@ import com.shop.account.entity.AccountStatus;
 import com.shop.account.entity.ActivationToken;
 import com.shop.account.exception.AccountNotFoundException;
 import com.shop.account.exception.EmailAlreadyUsedException;
+import com.shop.account.exception.InvalidAccountStateException;
 import com.shop.account.repository.AccountRepository;
 import com.shop.account.repository.ActivationTokenRepository;
 import com.shop.account.service.AccountService;
@@ -96,6 +97,30 @@ public class AccountServiceImpl implements AccountService {
         if (request.getLastName()  != null) account.setLastName(request.getLastName());
         if (request.getRole()      != null) account.setRole(request.getRole());
         if (request.getLanguage()  != null) account.setLanguage(request.getLanguage());
+        return AccountResponse.from(accountRepository.save(account));
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public AccountResponse suspendAccount(UUID id) {
+        Account account = accountRepository.findById(id)
+                .orElseThrow(() -> new AccountNotFoundException(id));
+        if (account.getStatus() != AccountStatus.ACTIVE) {
+            throw new InvalidAccountStateException(id, AccountStatus.ACTIVE);
+        }
+        account.setStatus(AccountStatus.SUSPENDED);
+        return AccountResponse.from(accountRepository.save(account));
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public AccountResponse reactivateAccount(UUID id) {
+        Account account = accountRepository.findById(id)
+                .orElseThrow(() -> new AccountNotFoundException(id));
+        if (account.getStatus() != AccountStatus.SUSPENDED) {
+            throw new InvalidAccountStateException(id, AccountStatus.SUSPENDED);
+        }
+        account.setStatus(AccountStatus.ACTIVE);
         return AccountResponse.from(accountRepository.save(account));
     }
 

@@ -75,3 +75,23 @@ export async function deleteAccount(id: string): Promise<void> {
   })
   if (!res.ok) throw new Error('Failed to delete account')
 }
+
+export async function suspendAccount(id: string): Promise<AccountResponse> {
+  const res = await fetch(`${BASE}/${id}/suspend`, {
+    method: 'PATCH',
+    headers: authHeader(),
+  })
+  if (res.status === 409) throw Object.assign(new Error('Invalid account state'), { code: 'INVALID_ACCOUNT_STATE' })
+  if (!res.ok) throw new Error('Failed to suspend account')
+  return res.json()
+}
+
+export async function reactivateAccount(id: string): Promise<AccountResponse> {
+  const res = await fetch(`${BASE}/${id}/reactivate`, {
+    method: 'PATCH',
+    headers: authHeader(),
+  })
+  if (res.status === 409) throw Object.assign(new Error('Invalid account state'), { code: 'INVALID_ACCOUNT_STATE' })
+  if (!res.ok) throw new Error('Failed to reactivate account')
+  return res.json()
+}
