@@ -2,21 +2,33 @@ import './index.css'
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { AppShell, Button, Card, UserIcon, PackageIcon, LangToggle, UserMenu, Snackbar } from '@workspace/theme'
-import CreateAccountModal from './components/CreateAccountModal'
+import AccountModal from './components/AccountModal'
 import LoginPage from './LoginPage'
 import { getSession, logout } from './api/authApi'
-import { listAccounts, type AccountResponse } from './api/accountApi'
+import { listAccounts, deleteAccount, type AccountResponse } from './api/accountApi'
 
 export default function App() {
   const { t, i18n } = useTranslation()
   const [session, setSession] = useState(getSession)
   const [accounts, setAccounts] = useState<AccountResponse[]>([])
   const [showModal, setShowModal] = useState(false)
+  const [editAccount, setEditAccount] = useState<AccountResponse | null>(null)
   const [snackbar, setSnackbar] = useState<string | null>(null)
 
   function showSnackbar(message: string) {
     setSnackbar(message)
     setTimeout(() => setSnackbar(null), 3000)
+  }
+
+  async function handleDelete(account: AccountResponse) {
+    if (!confirm(t('users.deleteConfirm', { name: `${account.firstName} ${account.lastName}` }))) return
+    try {
+      await deleteAccount(account.id)
+      fetchAccounts()
+      showSnackbar(t('snackbar.accountDeleted'))
+    } catch {
+      showSnackbar(t('snackbar.error'))
+    }
   }
 
   async function fetchAccounts() {
@@ -55,9 +67,19 @@ export default function App() {
       {snackbar && <Snackbar message={snackbar} onDismiss={() => setSnackbar(null)} />}
 
       {showModal && (
-        <CreateAccountModal
+        <AccountModal
+          mode="create"
           onClose={() => setShowModal(false)}
-          onCreated={() => { setShowModal(false); fetchAccounts(); showSnackbar(t('snackbar.accountCreated')) }}
+          onSuccess={() => { setShowModal(false); fetchAccounts(); showSnackbar(t('snackbar.accountCreated')) }}
+        />
+      )}
+
+      {editAccount && (
+        <AccountModal
+          mode="edit"
+          account={editAccount}
+          onClose={() => setEditAccount(null)}
+          onSuccess={() => { setEditAccount(null); fetchAccounts(); showSnackbar(t('snackbar.accountUpdated')) }}
         />
       )}
 
@@ -127,8 +149,9 @@ export default function App() {
                     <td style={{ padding: '14px 16px', color: 'var(--text-muted)' }}>
                       {a.createdAt.slice(0, 7)}
                     </td>
-                    <td style={{ padding: '14px 16px' }}>
-                      <Button variant="ghost" size="sm">{t('users.edit')}</Button>
+                    <td style={{ padding: '14px 16px', display: 'flex', gap: 8 }}>
+                      <Button variant="ghost" size="sm" onClick={() => setEditAccount(a)}>{t('users.edit')}</Button>
+                      <Button variant="ghost" size="sm" onClick={() => handleDelete(a)}>{t('users.delete')}</Button>
                     </td>
                   </tr>
                 ))}

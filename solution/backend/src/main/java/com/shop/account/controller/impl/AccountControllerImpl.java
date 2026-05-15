@@ -50,4 +50,11 @@ public class AccountControllerImpl implements AccountController {
     public ResponseEntity<AccountResponse> updateAccount(UUID id, UpdateAccountRequest request) {
         return ResponseEntity.ok(accountService.updateAccount(id, request));
     }
+
+    /** {@inheritDoc} */
+    @Override
+    public ResponseEntity<Void> deleteAccount(UUID id) {
+        accountService.deleteAccount(id);
+        return ResponseEntity.noContent().build();
+    }
 }

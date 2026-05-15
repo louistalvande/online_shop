@@ -56,4 +56,16 @@ public interface AccountController {
     @PatchMapping("/{id}")
     ResponseEntity<AccountResponse> updateAccount(@PathVariable UUID id,
                                                   @Valid @RequestBody UpdateAccountRequest request);
+
+    /**
+     * Soft-deletes an account by setting its status to {@code DELETED}.
+     *
+     * @param id the account UUID
+     * @return HTTP 204 No Content
+     */
+    @Operation(summary = "Soft-delete an account (sets status to DELETED)")
+    @ApiResponse(responseCode = "204", description = "Account deleted")
+    @ApiResponse(responseCode = "404", description = "Account not found")
+    @DeleteMapping("/{id}")
+    ResponseEntity<Void> deleteAccount(@PathVariable UUID id);
 }

@@ -99,6 +99,15 @@ public class AccountServiceImpl implements AccountService {
         return AccountResponse.from(accountRepository.save(account));
     }
 
+    /** {@inheritDoc} */
+    @Override
+    public void deleteAccount(UUID id) {
+        Account account = accountRepository.findById(id)
+                .orElseThrow(() -> new AccountNotFoundException(id));
+        account.setStatus(AccountStatus.DELETED);
+        accountRepository.save(account);
+    }
+
     /**
      * Generates a fresh activation token for the account, replacing any previous one,
      * then sends the activation email.

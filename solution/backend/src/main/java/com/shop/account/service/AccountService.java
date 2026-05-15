@@ -39,4 +39,12 @@ public interface AccountService {
      * @throws AccountNotFoundException if no account exists with the given ID
      */
     AccountResponse updateAccount(UUID id, UpdateAccountRequest request);
+
+    /**
+     * Soft-deletes an account by setting its status to {@code DELETED}.
+     *
+     * @param id the account UUID
+     * @throws AccountNotFoundException if no account exists with the given ID
+     */
+    void deleteAccount(UUID id);
 }

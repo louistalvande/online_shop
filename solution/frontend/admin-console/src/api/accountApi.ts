@@ -1,5 +1,6 @@
 export type AccountRole = 'BUYER' | 'VENDOR'
 export type AccountStatus = 'PENDING' | 'ACTIVE' | 'SUSPENDED' | 'DELETED'
+export type AccountLanguage = 'FR' | 'EN'
 
 export interface AccountResponse {
   id: string
@@ -8,6 +9,7 @@ export interface AccountResponse {
   lastName: string
   role: AccountRole | 'ADMIN'
   status: AccountStatus
+  language: AccountLanguage
   createdAt: string
 }
 
@@ -16,6 +18,13 @@ export interface CreateAccountRequest {
   firstName: string
   lastName: string
   role: AccountRole
+}
+
+export interface UpdateAccountRequest {
+  firstName?: string
+  lastName?: string
+  role?: AccountRole
+  language?: AccountLanguage
 }
 
 import { getSession } from './authApi'
@@ -45,4 +54,22 @@ export async function createAccount(payload: CreateAccountRequest): Promise<Acco
   }
   if (!res.ok) throw new Error('Failed to create account')
   return res.json()
+}
+
+export async function updateAccount(id: string, payload: UpdateAccountRequest): Promise<AccountResponse> {
+  const res = await fetch(`${BASE}/${id}`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', ...authHeader() },
+    body: JSON.stringify(payload),
+  })
+  if (!res.ok) throw new Error('Failed to update account')
+  return res.json()
+}
+
+export async function deleteAccount(id: string): Promise<void> {
+  const res = await fetch(`${BASE}/${id}`, {
+    method: 'DELETE',
+    headers: authHeader(),
+  })
+  if (!res.ok) throw new Error('Failed to delete account')
 }
