@@ -1,18 +1,19 @@
 -- V1: initial schema — account domain (US-ADM-01)
 
 CREATE TABLE accounts (
-    id            UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
-    email         VARCHAR(255) NOT NULL UNIQUE,
-    password_hash VARCHAR(255),
-    first_name    VARCHAR(100) NOT NULL,
-    last_name     VARCHAR(100) NOT NULL,
-    role          VARCHAR(20)  NOT NULL,
-    status        VARCHAR(20)  NOT NULL,
-    language      VARCHAR(2)   NOT NULL DEFAULT 'FR',
-    created_at    TIMESTAMP    NOT NULL DEFAULT NOW()
+    id                   UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
+    email                VARCHAR(255) NOT NULL UNIQUE,
+    password_hash        VARCHAR(255),
+    first_name           VARCHAR(100) NOT NULL,
+    last_name            VARCHAR(100) NOT NULL,
+    role                 VARCHAR(20)  NOT NULL,
+    status               VARCHAR(20)  NOT NULL,
+    language             VARCHAR(2)   NOT NULL DEFAULT 'FR',
+    must_change_password BOOLEAN      NOT NULL DEFAULT FALSE,
+    created_at           TIMESTAMP    NOT NULL DEFAULT NOW()
 );
 
-INSERT INTO accounts (id, email, password_hash, first_name, last_name, role, status, created_at)
+INSERT INTO accounts (id, email, password_hash, first_name, last_name, role, status, must_change_password, created_at)
 VALUES (
   gen_random_uuid(),
   'admin@onlineshop.com',
@@ -21,6 +22,7 @@ VALUES (
   'System',
   'ADMIN',
   'ACTIVE',
+  TRUE,
   NOW()
 );
 

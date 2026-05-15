@@ -5,7 +5,11 @@ export interface AdminSession {
   token: string
 }
 
-export async function login(email: string, password: string): Promise<AdminSession> {
+export interface LoginResponse extends AdminSession {
+  requiresPasswordSetup: boolean
+}
+
+export async function login(email: string, password: string): Promise<LoginResponse> {
   const res = await fetch('/api/auth/login', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -13,9 +17,19 @@ export async function login(email: string, password: string): Promise<AdminSessi
   })
   if (res.status === 401) throw Object.assign(new Error('Invalid credentials'), { code: 'INVALID_CREDENTIALS' })
   if (!res.ok) throw new Error('Login failed')
-  const session: AdminSession = await res.json()
-  localStorage.setItem(SESSION_KEY, JSON.stringify(session))
-  return session
+  const data: LoginResponse = await res.json()
+  localStorage.setItem(SESSION_KEY, JSON.stringify({ email: data.email, token: data.token }))
+  return data
+}
+
+export async function setupPassword(password: string, confirmPassword: string): Promise<void> {
+  const session = getSession()
+  const res = await fetch('/api/auth/setup-password', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session?.token}` },
+    body: JSON.stringify({ password, confirmPassword }),
+  })
+  if (!res.ok) throw new Error('Password setup failed')
 }
 
 export function logout() {

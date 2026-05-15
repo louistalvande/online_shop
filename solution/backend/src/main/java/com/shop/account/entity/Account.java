@@ -45,6 +45,10 @@ public class Account {
     @Column(nullable = false, length = 2)
     private AccountLanguage language = AccountLanguage.FR;
 
+    /** Whether the account must change its password on next login. */
+    @Column(name = "must_change_password", nullable = false)
+    private boolean mustChangePassword = false;
+
     /** Timestamp when the account was created. */
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
@@ -99,6 +103,12 @@ public class Account {
 
     /** @param language the notification language to set */
     public void setLanguage(AccountLanguage language) { this.language = language; }
+
+    /** @return {@code true} if the account must change its password on next login */
+    public boolean isMustChangePassword() { return mustChangePassword; }
+
+    /** @param mustChangePassword whether a password change is required on next login */
+    public void setMustChangePassword(boolean mustChangePassword) { this.mustChangePassword = mustChangePassword; }
 
     /** @return the creation timestamp */
     public LocalDateTime getCreatedAt() { return createdAt; }

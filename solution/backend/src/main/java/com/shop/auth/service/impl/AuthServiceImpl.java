@@ -17,8 +17,6 @@ import com.shop.auth.exception.InvalidCredentialsException;
 import com.shop.auth.exception.PasswordsMismatchException;
 import com.shop.auth.service.AuthService;
 import com.shop.common.JwtUtil;
-import com.shop.notification.service.NotificationService;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -123,7 +121,7 @@ public class AuthServiceImpl implements AuthService {
         }
 
         String token = jwtUtil.generateToken(account.getEmail(), account.getRole().name());
-        return new AuthResponse(token, account.getEmail(), false);
+        return new AuthResponse(token, account.getEmail(), account.isMustChangePassword());
     }
 
     /** {@inheritDoc} */
@@ -138,5 +136,6 @@ public class AuthServiceImpl implements AuthService {
                 .orElseThrow(InvalidCredentialsException::new);
 
         account.setPasswordHash(passwordEncoder.encode(request.getPassword()));
+        account.setMustChangePassword(false);
     }
 }
