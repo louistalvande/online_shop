@@ -344,7 +344,7 @@ docker compose up --build
 - Verify identifiers against the architecture before creating new entities or endpoints.
 - Before implementing a feature, verify it in the architecture document, and ask to update it before generating code.
 - After architecture changes approved, implement modify code, and add TU for Controller and Service with Mockito framework. Add end2end test with playwright in js.
-- At the end of the code generation, review the entire changes, and fix or improve if possible.
+- At the end of the code generation, review the entire changes, test if it compiles, and fix or improve if possible.
 - Never deviate from the domain model and business rules defined in the architecture — read it first.
 - **All code and all comments must be in English** — class names, method names, variables, field names, inline comments, Javadoc, SQL columns, API paths, Git commit messages.
 - User-facing strings (UI labels, email templates, API error messages) must be localised in both **fr** and **en** — never hardcoded in a single language.

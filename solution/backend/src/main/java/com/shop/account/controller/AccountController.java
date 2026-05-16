@@ -58,6 +58,32 @@ public interface AccountController {
                                                   @Valid @RequestBody UpdateAccountRequest request);
 
     /**
+     * Suspends an active account (US-ADM-02 / FS-A01).
+     *
+     * @param id the account UUID
+     * @return the updated account with HTTP 200
+     */
+    @Operation(summary = "Suspend an active account (sets status to SUSPENDED)")
+    @ApiResponse(responseCode = "200", description = "Account suspended")
+    @ApiResponse(responseCode = "404", description = "Account not found")
+    @ApiResponse(responseCode = "409", description = "Account is not in ACTIVE status")
+    @PatchMapping("/{id}/suspend")
+    ResponseEntity<AccountResponse> suspendAccount(@PathVariable UUID id);
+
+    /**
+     * Reactivates a suspended account (US-ADM-03 / FS-A01).
+     *
+     * @param id the account UUID
+     * @return the updated account with HTTP 200
+     */
+    @Operation(summary = "Reactivate a suspended account (sets status to ACTIVE)")
+    @ApiResponse(responseCode = "200", description = "Account reactivated")
+    @ApiResponse(responseCode = "404", description = "Account not found")
+    @ApiResponse(responseCode = "409", description = "Account is not in SUSPENDED status")
+    @PatchMapping("/{id}/reactivate")
+    ResponseEntity<AccountResponse> reactivateAccount(@PathVariable UUID id);
+
+    /**
      * Soft-deletes an account by setting its status to {@code DELETED}.
      *
      * @param id the account UUID

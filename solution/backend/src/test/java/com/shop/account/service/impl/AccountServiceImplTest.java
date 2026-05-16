@@ -6,6 +6,7 @@ import com.shop.account.entity.AccountLanguage;
 import com.shop.account.entity.AccountRole;
 import com.shop.account.entity.AccountStatus;
 import com.shop.account.exception.AccountNotFoundException;
+import com.shop.account.exception.InvalidAccountStateException;
 import com.shop.account.repository.AccountRepository;
 import com.shop.account.repository.ActivationTokenRepository;
 import com.shop.notification.service.NotificationService;
@@ -90,6 +91,82 @@ class AccountServiceImplTest {
         given(accountRepository.findById(id)).willReturn(Optional.empty());
 
         assertThatThrownBy(() -> service.deleteAccount(id))
+                .isInstanceOf(AccountNotFoundException.class);
+        then(accountRepository).should(never()).save(any());
+    }
+
+    /** suspendAccount must set status to SUSPENDED and persist the account. */
+    @Test
+    void suspendAccount_setsStatusSuspended_andSaves() {
+        UUID id = UUID.randomUUID();
+        Account account = activeAccount();
+        given(accountRepository.findById(id)).willReturn(Optional.of(account));
+        given(accountRepository.save(account)).willReturn(account);
+
+        AccountResponse result = service.suspendAccount(id);
+
+        assertThat(result.getStatus()).isEqualTo(AccountStatus.SUSPENDED);
+        then(accountRepository).should().save(account);
+    }
+
+    /** suspendAccount must throw InvalidAccountStateException when the account is not ACTIVE. */
+    @Test
+    void suspendAccount_throwsInvalidAccountStateException_whenNotActive() {
+        UUID id = UUID.randomUUID();
+        Account account = activeAccount();
+        account.setStatus(AccountStatus.SUSPENDED);
+        given(accountRepository.findById(id)).willReturn(Optional.of(account));
+
+        assertThatThrownBy(() -> service.suspendAccount(id))
+                .isInstanceOf(InvalidAccountStateException.class);
+        then(accountRepository).should(never()).save(any());
+    }
+
+    /** suspendAccount must throw AccountNotFoundException when no account matches the id. */
+    @Test
+    void suspendAccount_throwsAccountNotFoundException_whenNotFound() {
+        UUID id = UUID.randomUUID();
+        given(accountRepository.findById(id)).willReturn(Optional.empty());
+
+        assertThatThrownBy(() -> service.suspendAccount(id))
+                .isInstanceOf(AccountNotFoundException.class);
+        then(accountRepository).should(never()).save(any());
+    }
+
+    /** reactivateAccount must set status to ACTIVE and persist the account. */
+    @Test
+    void reactivateAccount_setsStatusActive_andSaves() {
+        UUID id = UUID.randomUUID();
+        Account account = activeAccount();
+        account.setStatus(AccountStatus.SUSPENDED);
+        given(accountRepository.findById(id)).willReturn(Optional.of(account));
+        given(accountRepository.save(account)).willReturn(account);
+
+        AccountResponse result = service.reactivateAccount(id);
+
+        assertThat(result.getStatus()).isEqualTo(AccountStatus.ACTIVE);
+        then(accountRepository).should().save(account);
+    }
+
+    /** reactivateAccount must throw InvalidAccountStateException when the account is not SUSPENDED. */
+    @Test
+    void reactivateAccount_throwsInvalidAccountStateException_whenNotSuspended() {
+        UUID id = UUID.randomUUID();
+        Account account = activeAccount();
+        given(accountRepository.findById(id)).willReturn(Optional.of(account));
+
+        assertThatThrownBy(() -> service.reactivateAccount(id))
+                .isInstanceOf(InvalidAccountStateException.class);
+        then(accountRepository).should(never()).save(any());
+    }
+
+    /** reactivateAccount must throw AccountNotFoundException when no account matches the id. */
+    @Test
+    void reactivateAccount_throwsAccountNotFoundException_whenNotFound() {
+        UUID id = UUID.randomUUID();
+        given(accountRepository.findById(id)).willReturn(Optional.empty());
+
+        assertThatThrownBy(() -> service.reactivateAccount(id))
                 .isInstanceOf(AccountNotFoundException.class);
         then(accountRepository).should(never()).save(any());
     }

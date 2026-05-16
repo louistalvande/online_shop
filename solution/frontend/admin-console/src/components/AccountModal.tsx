@@ -5,6 +5,8 @@ import {
   createAccount,
   updateAccount,
   deleteAccount,
+  suspendAccount,
+  reactivateAccount,
   type AccountResponse,
   type AccountRole,
   type AccountLanguage,
@@ -14,6 +16,8 @@ type Props =
   | { mode: 'create'; onClose: () => void; onSuccess: () => void }
   | { mode: 'edit'; account: AccountResponse; onClose: () => void; onSuccess: () => void }
   | { mode: 'delete'; account: AccountResponse; onClose: () => void; onSuccess: () => void }
+  | { mode: 'suspend'; account: AccountResponse; onClose: () => void; onSuccess: () => void }
+  | { mode: 'reactivate'; account: AccountResponse; onClose: () => void; onSuccess: () => void }
 
 const overlay: React.CSSProperties = {
   position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.4)',
@@ -47,6 +51,7 @@ const errorBox: React.CSSProperties = {
 export default function AccountModal(props: Props) {
   const { t } = useTranslation()
   const isEdit = props.mode === 'edit'
+  const isConfirmAction = props.mode === 'delete' || props.mode === 'suspend' || props.mode === 'reactivate'
 
   const [firstName, setFirstName] = useState(isEdit ? props.account.firstName : '')
   const [lastName, setLastName] = useState(isEdit ? props.account.lastName : '')
@@ -56,12 +61,14 @@ export default function AccountModal(props: Props) {
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
 
-  async function handleDelete() {
-    if (props.mode !== 'delete') return
+  async function handleConfirmAction() {
+    if (!isConfirmAction) return
     setError(null)
     setLoading(true)
     try {
-      await deleteAccount(props.account.id)
+      if (props.mode === 'delete') await deleteAccount(props.account.id)
+      else if (props.mode === 'suspend') await suspendAccount(props.account.id)
+      else await reactivateAccount(props.account.id)
       props.onSuccess()
     } catch {
       setError(t('accountModal.error.generic'))
@@ -92,32 +99,42 @@ export default function AccountModal(props: Props) {
     }
   }
 
-  if (props.mode === 'delete') {
+  if (isConfirmAction) {
+    const accentColor =
+      props.mode === 'delete' ? '#dc2626' :
+      props.mode === 'suspend' ? '#d97706' : '#16a34a'
+    const accentBg =
+      props.mode === 'delete' ? '#fef2f2' :
+      props.mode === 'suspend' ? '#fffbeb' : '#f0fdf4'
+    const accentBorder =
+      props.mode === 'delete' ? '#fca5a5' :
+      props.mode === 'suspend' ? '#fcd34d' : '#86efac'
     const initials = `${props.account.firstName[0]}${props.account.lastName[0]}`.toUpperCase()
+    const name = `${props.account.firstName} ${props.account.lastName}`
     return (
       <div style={overlay} onClick={props.onClose}>
         <div style={{ ...modal, maxWidth: 420 }} onClick={e => e.stopPropagation()}>
-          <div style={{ height: 4, background: '#dc2626', borderRadius: '8px 8px 0 0', margin: '-32px -32px 28px' }} />
+          <div style={{ height: 4, background: accentColor, borderRadius: '8px 8px 0 0', margin: '-32px -32px 28px' }} />
 
           <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 20 }}>
             <div style={{
-              width: 44, height: 44, borderRadius: '50%', background: '#fef2f2',
-              border: '2px solid #fca5a5', display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontSize: 15, fontWeight: 700, color: '#dc2626', flexShrink: 0,
+              width: 44, height: 44, borderRadius: '50%', background: accentBg,
+              border: `2px solid ${accentBorder}`, display: 'flex', alignItems: 'center', justifyContent: 'center',
+              fontSize: 15, fontWeight: 700, color: accentColor, flexShrink: 0,
             }}>
               {initials}
             </div>
             <div>
-              <div style={{ fontWeight: 600, fontSize: 15 }}>{props.account.firstName} {props.account.lastName}</div>
+              <div style={{ fontWeight: 600, fontSize: 15 }}>{name}</div>
               <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>{props.account.email}</div>
             </div>
           </div>
 
           <h2 style={{ fontFamily: 'var(--font-serif)', fontSize: 18, fontWeight: 700, marginBottom: 8 }}>
-            {t('accountModal.title.delete')}
+            {t(`accountModal.title.${props.mode}`)}
           </h2>
           <p style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 24, lineHeight: 1.5 }}>
-            {t('accountModal.delete.confirm', { name: `${props.account.firstName} ${props.account.lastName}` })}
+            {t(`accountModal.${props.mode}.confirm`, { name })}
           </p>
 
           {error && <div style={errorBox}>{error}</div>}
@@ -126,9 +143,9 @@ export default function AccountModal(props: Props) {
             <Button type="button" variant="ghost" size="sm" onClick={props.onClose}>
               {t('accountModal.cancel')}
             </Button>
-            <Button type="button" size="sm" disabled={loading} onClick={handleDelete}
-              style={{ background: '#dc2626', borderColor: '#dc2626', color: '#fff' }}>
-              {loading ? '…' : t('accountModal.delete.submit')}
+            <Button type="button" size="sm" disabled={loading} onClick={handleConfirmAction}
+              style={{ background: accentColor, borderColor: accentColor, color: '#fff' }}>
+              {loading ? '…' : t(`accountModal.${props.mode}.submit`)}
             </Button>
           </div>
         </div>

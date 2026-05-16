@@ -5,6 +5,7 @@ import com.shop.account.dto.CreateAccountRequest;
 import com.shop.account.dto.UpdateAccountRequest;
 import com.shop.account.exception.AccountNotFoundException;
 import com.shop.account.exception.EmailAlreadyUsedException;
+import com.shop.account.exception.InvalidAccountStateException;
 
 import java.util.List;
 import java.util.UUID;
@@ -39,6 +40,28 @@ public interface AccountService {
      * @throws AccountNotFoundException if no account exists with the given ID
      */
     AccountResponse updateAccount(UUID id, UpdateAccountRequest request);
+
+    /**
+     * Suspends an active account (US-ADM-02 / FS-A01).
+     * The account must currently have status {@code ACTIVE}.
+     *
+     * @param id the account UUID
+     * @return the updated account
+     * @throws AccountNotFoundException      if no account exists with the given ID
+     * @throws InvalidAccountStateException  if the account is not in {@code ACTIVE} status
+     */
+    AccountResponse suspendAccount(UUID id);
+
+    /**
+     * Reactivates a suspended account (US-ADM-03 / FS-A01).
+     * The account must currently have status {@code SUSPENDED}.
+     *
+     * @param id the account UUID
+     * @return the updated account
+     * @throws AccountNotFoundException      if no account exists with the given ID
+     * @throws InvalidAccountStateException  if the account is not in {@code SUSPENDED} status
+     */
+    AccountResponse reactivateAccount(UUID id);
 
     /**
      * Soft-deletes an account by setting its status to {@code DELETED}.

@@ -2,6 +2,7 @@ package com.shop.common;
 
 import com.shop.account.exception.AccountNotFoundException;
 import com.shop.account.exception.EmailAlreadyUsedException;
+import com.shop.account.exception.InvalidAccountStateException;
 import com.shop.auth.exception.InvalidActivationTokenException;
 import com.shop.auth.exception.InvalidCredentialsException;
 import com.shop.auth.exception.PasswordsMismatchException;
@@ -43,6 +44,21 @@ public class GlobalExceptionHandler {
         String message = messageSource.getMessage("error.account.not.found", null, locale);
         return ResponseEntity.status(HttpStatus.NOT_FOUND)
                 .body(Map.of("error", "ACCOUNT_NOT_FOUND", "message", message));
+    }
+
+    /**
+     * Handles invalid account state transitions (suspend/reactivate on wrong status) — returns HTTP 409.
+     *
+     * @param ex     the exception
+     * @param locale the request locale
+     * @return a 409 response with a localised error body
+     */
+    @ExceptionHandler(InvalidAccountStateException.class)
+    public ResponseEntity<Map<String, String>> handleInvalidAccountState(
+            InvalidAccountStateException ex, Locale locale) {
+        String message = messageSource.getMessage("error.account.invalid.state", null, locale);
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(Map.of("error", "INVALID_ACCOUNT_STATE", "message", message));
     }
 
     /**
