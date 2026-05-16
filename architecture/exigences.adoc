@@ -1,0 +1,264 @@
+= Boutique en ligne - Exigences métier
+:doctype: article
+:toc: left
+:toclevels: 3
+:sectnums:
+:icons: font
+:source-highlighter: rouge
+
+== Objectif et périmètre
+
+Ce document recense les **besoins opérationnels** de la boutique en ligne, c'est-à-dire ce que les acteurs ont besoin de pouvoir faire dans leur contexte métier réel, indépendamment de tout système à construire.
+
+Les besoins sont dérivés directement de l'Analyse du Besoin Opérationnel (OA — voir `01-operational-analysis/oa.adoc`). Ils constituent la référence à satisfaire ; la manière dont le système y répond est documentée aux niveaux SA, LA et PA de l'architecture ARCADIA.
+
+Un besoin opérationnel exprime **la nécessité d'un acteur** (ce qu'il doit pouvoir accomplir dans son activité), non une fonction système.
+
+---
+
+== Acteurs concernés
+
+[cols="1,1,3", options="header"]
+|===
+| Acteur | Type | Rôle dans l'opération
+
+| Administrateur
+| Acteur principal interne
+| Gestionnaire des comptes utilisateurs et des transporteurs ; garant de la disponibilité de la plateforme
+
+| Vendeur
+| Acteur principal interne
+| Exploitant de la boutique : catalogue, stocks, commandes, expéditions, facturation et service client
+
+| Acheteur
+| Acteur principal externe
+| Client final résidant dans la zone euro : navigation, achat, paiement, suivi et retour
+
+| Transporteur
+| Acteur externe
+| Prestataire logistique ; prend en charge les colis déposés par le vendeur et assure la livraison dans la zone euro
+
+| Prestataire de paiement
+| Système externe
+| Autorisation et confirmation des transactions bancaires ; traitement des remboursements
+
+| Service de messagerie
+| Système externe
+| Acheminement des emails vers les boîtes mail des acteurs (activation, notifications, confirmations)
+|===
+
+---
+
+== Besoins de l'Administrateur
+
+[cols="1,4,1", options="header"]
+|===
+| Identifiant | Besoin | Source OA
+
+| BES-ADM-001
+| L'administrateur a besoin de créer des comptes utilisateurs (acheteurs et vendeurs) sur la plateforme.
+| UC_A1, Acteurs opérationnels
+
+| BES-ADM-002
+| L'administrateur a besoin de suspendre un compte utilisateur pour en bloquer temporairement l'accès.
+| UC_A1, Activités administrateur
+
+| BES-ADM-003
+| L'administrateur a besoin de supprimer un compte utilisateur de la plateforme.
+| UC_A1, Activités administrateur
+
+| BES-ADM-004
+| L'administrateur a besoin de gérer les droits d'accès des utilisateurs à la plateforme.
+| UC_A1b, Acteurs opérationnels
+
+| BES-ADM-005
+| L'administrateur a besoin d'ajouter des transporteurs disponibles pour les expéditions vers la zone euro.
+| UC_A2a, Activités administrateur
+
+| BES-ADM-006
+| L'administrateur a besoin de modifier ou supprimer les transporteurs existants.
+| UC_A2b, Activités administrateur
+
+| BES-ADM-007
+| L'administrateur a besoin d'activer ou de désactiver le mode maintenance de la boutique, rendant toutes les pages inaccessibles aux utilisateurs non-administrateurs pendant la maintenance.
+| UC_A3, Activités administrateur
+|===
+
+---
+
+== Besoins du Vendeur
+
+[cols="1,4,1", options="header"]
+|===
+| Identifiant | Besoin | Source OA
+
+| BES-VND-001
+| Le vendeur a besoin de mettre à jour ses informations personnelles de compte (nom, adresse, mot de passe, coordonnées).
+| UC_V0, Activités vendeur
+
+| BES-VND-002
+| Le vendeur a besoin de créer, modifier et supprimer des fiches produits dans le catalogue (photos, descriptions, prix, catégories).
+| UC_V1, Activités vendeur
+
+| BES-VND-003
+| Le vendeur a besoin de suivre les niveaux de stock, d'anticiper les ruptures et d'effectuer les réapprovisionnements.
+| UC_V2, Activités vendeur
+
+| BES-VND-004
+| Le vendeur a besoin de prendre en charge les commandes reçues, de vérifier la disponibilité du stock et de préparer les colis.
+| UC_V3, Activités vendeur
+
+| BES-VND-005
+| Le vendeur a besoin de marquer une commande comme expédiée en saisissant le numéro de suivi obtenu sur le reçu du transporteur lors du dépôt physique du colis.
+| UC_V4, Activités vendeur, Diagramme d'activité
+
+| BES-VND-006
+| Le vendeur a besoin de confirmer manuellement dans la boutique la réception effective d'un virement bancaire afin de déclencher la prise en charge de la commande correspondante.
+| Activités vendeur, COp-02, Diagramme de séquence
+
+| BES-VND-007
+| Le vendeur a besoin de traiter les réclamations et litiges des acheteurs (répondre aux demandes de remboursement, gérer les retours produits).
+| UC_V5, Activités vendeur
+
+| BES-VND-008
+| Le vendeur a besoin d'accepter ou de refuser une demande d'annulation soumise par un acheteur après expédition, en choisissant entre deux modalités : avec condition de renvoi du colis ou sans condition de renvoi.
+| UC_V8, Activités vendeur, Diagramme d'activité
+
+| BES-VND-009
+| Le vendeur a besoin d'émettre un virement bancaire inverse vers l'acheteur et de confirmer son émission dans la boutique lorsqu'une commande réglée par virement est annulée.
+| Activités vendeur, Diagramme d'activité
+
+| BES-VND-010
+| Le vendeur a besoin de consulter des rapports de ventes (chiffre d'affaires, produits les plus vendus, statistiques commerciales).
+| UC_V6, Activités vendeur
+
+| BES-VND-011
+| Le vendeur a besoin de créer, modifier et supprimer des annonces défilantes affichées sur la page d'accueil de la boutique.
+| UC_V9, Activités vendeur
+|===
+
+---
+
+== Besoins de l'Acheteur
+
+[cols="1,4,1", options="header"]
+|===
+| Identifiant | Besoin | Source OA
+
+| BES-ACH-001
+| L'acheteur a besoin de créer un compte sur la boutique en saisissant ses informations personnelles.
+| UC_B0, Activités acheteur
+
+| BES-ACH-002
+| L'acheteur a besoin d'activer son compte en consultant sa boîte mail et en cliquant sur le lien d'activation qui lui est adressé après inscription, avant de pouvoir utiliser la boutique.
+| UC_B0B, Activités acheteur, COp-04
+
+| BES-ACH-003
+| L'acheteur a besoin de s'authentifier pour accéder aux fonctionnalités d'achat (panier, commande, suivi, annulation).
+| UC_B_AUTH, Activités acheteur
+
+| BES-ACH-004
+| L'acheteur a besoin de mettre à jour ses informations personnelles (adresse de livraison, mot de passe, coordonnées).
+| UC_B_ACC, Activités acheteur
+
+| BES-ACH-005
+| L'acheteur a besoin de parcourir, rechercher et filtrer les produits disponibles dans le catalogue.
+| UC_B1, Activités acheteur
+
+| BES-ACH-006
+| L'acheteur a besoin de gérer son panier : ajouter des produits, modifier les quantités, retirer des articles.
+| UC_B2, Activités acheteur
+
+| BES-ACH-007
+| L'acheteur a besoin que son panier soit automatiquement sauvegardé lorsqu'il quitte la boutique et restauré tel quel à la reconnexion.
+| UC_B2B, Activités acheteur, COp-03
+
+| BES-ACH-008
+| L'acheteur a besoin de passer une commande en saisissant une adresse de livraison dans un pays de la zone euro et en choisissant le mode de livraison disponible.
+| UC_B3, UC_B4B, Activités acheteur
+
+| BES-ACH-009
+| L'acheteur a besoin de régler ses commandes par carte bancaire (autorisation immédiate) ou par virement bancaire (la commande reste en attente de confirmation manuelle du vendeur jusqu'à réception effective des fonds).
+| UC_B4, Activités acheteur, COp-02
+
+| BES-ACH-010
+| L'acheteur a besoin de suivre l'état d'expédition de sa commande et de consulter le numéro de suivi de son colis.
+| UC_B5, Activités acheteur
+
+| BES-ACH-011
+| L'acheteur a besoin d'annuler en autonomie depuis son espace compte une commande dont le colis n'a pas encore été remis au transporteur, avec déclenchement automatique du remboursement sans intervention du vendeur.
+| UC_B6, Activités acheteur, Diagramme d'activité
+
+| BES-ACH-012
+| L'acheteur a besoin de contacter le vendeur pour demander l'annulation ou le retour d'une commande déjà expédiée, et d'être informé de l'acceptation ou du refus de sa demande.
+| UC_B7, Activités acheteur, Diagramme de séquence
+|===
+
+---
+
+== Contraintes opérationnelles
+
+Les contraintes suivantes s'imposent indépendamment des acteurs et de toute décision d'architecture. Elles proviennent du contexte d'usage réel.
+
+[cols="1,2,3", options="header"]
+|===
+| Identifiant | Contrainte | Description
+
+| COp-01
+| Interface responsive (PC / smartphone)
+| Les acteurs interagissent avec la boutique depuis des environnements variés. L'acheteur utilise principalement un smartphone ; le vendeur et l'administrateur opèrent depuis un ordinateur. L'interface doit s'adapter à toutes ces résolutions sans dégradation de l'expérience utilisateur.
+
+| COp-02
+| Modes de paiement acceptés
+| L'acheteur doit pouvoir régler par **carte bancaire** (traitement automatique via le prestataire externe) ou par **virement bancaire** (la commande reste en attente de confirmation manuelle du vendeur jusqu'à réception effective des fonds).
+
+| COp-03
+| Persistance du panier entre sessions
+| Le panier d'un acheteur authentifié est automatiquement sauvegardé sur son compte et restauré tel quel à la reconnexion.
+
+| COp-04
+| Activation de compte par email
+| Le compte d'un acheteur n'est accessible qu'après activation via un lien reçu par email suite à l'inscription.
+|===
+
+---
+
+== Matrice de traçabilité
+
+Le tableau ci-dessous relie chaque besoin opérationnel aux activités et cas d'utilisation de l'OA dont il est issu.
+
+[cols="1,2,3", options="header"]
+|===
+| Besoin | Acteur | Origine OA (activité / cas d'utilisation)
+
+| BES-ADM-001 | Administrateur | UC_A1 — Créer / suspendre / supprimer un compte
+| BES-ADM-002 | Administrateur | UC_A1 — Activité « Gérer les comptes utilisateurs »
+| BES-ADM-003 | Administrateur | UC_A1 — Activité « Gérer les comptes utilisateurs »
+| BES-ADM-004 | Administrateur | UC_A1b — Gérer les droits d'accès
+| BES-ADM-005 | Administrateur | UC_A2a — Ajouter un transporteur
+| BES-ADM-006 | Administrateur | UC_A2b — Modifier / supprimer un transporteur
+| BES-ADM-007 | Administrateur | UC_A3 — Basculer en mode maintenance
+| BES-VND-001 | Vendeur | UC_V0 — Mettre à jour son compte
+| BES-VND-002 | Vendeur | UC_V1 — Gérer le catalogue produits
+| BES-VND-003 | Vendeur | UC_V2 — Gérer les stocks
+| BES-VND-004 | Vendeur | UC_V3 — Traiter les commandes reçues
+| BES-VND-005 | Vendeur | UC_V4 — Expédier vers la zone euro
+| BES-VND-006 | Vendeur | COp-02 — Confirmer réception virement bancaire
+| BES-VND-007 | Vendeur | UC_V5 — Traiter les litiges et réclamations
+| BES-VND-008 | Vendeur | UC_V8 — Traiter un retour après expédition
+| BES-VND-009 | Vendeur | Activité « Émettre un virement inverse de remboursement »
+| BES-VND-010 | Vendeur | UC_V6 — Consulter les rapports de ventes
+| BES-VND-011 | Vendeur | UC_V9 — Gérer les annonces défilantes
+| BES-ACH-001 | Acheteur | UC_B0 — S'inscrire
+| BES-ACH-002 | Acheteur | UC_B0B — Activer son compte via email ; COp-04
+| BES-ACH-003 | Acheteur | UC_B_AUTH — S'authentifier
+| BES-ACH-004 | Acheteur | UC_B_ACC — Mettre à jour son compte
+| BES-ACH-005 | Acheteur | UC_B1 — Parcourir le catalogue
+| BES-ACH-006 | Acheteur | UC_B2 — Gérer le panier
+| BES-ACH-007 | Acheteur | UC_B2B — Sauvegarder / restaurer le panier ; COp-03
+| BES-ACH-008 | Acheteur | UC_B3, UC_B4B — Passer une commande
+| BES-ACH-009 | Acheteur | UC_B4 — Effectuer un paiement ; COp-02
+| BES-ACH-010 | Acheteur | UC_B5 — Suivre la livraison
+| BES-ACH-011 | Acheteur | UC_B6 — Annuler une commande (avant expédition)
+| BES-ACH-012 | Acheteur | UC_B7 — Demander une annulation après expédition
+|===

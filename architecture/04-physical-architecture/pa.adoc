@@ -5,7 +5,8 @@
 :sectnums:
 :icons: font
 :source-highlighter: rouge
-:imagesdir: architecture/04-physical-architecture/diagrams
+:imagesdir: 04-physical-architecture/diagrams
+:imagesoutdir: 04-physical-architecture/diagrams
 
 == Contexte et objectif
 

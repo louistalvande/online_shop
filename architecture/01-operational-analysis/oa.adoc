@@ -5,7 +5,8 @@
 :sectnums:
 :icons: font
 :source-highlighter: rouge
-:imagesdir: architecture/01-operational-analysis/diagrams
+:imagesdir: 01-operational-analysis/diagrams
+:imagesoutdir: 01-operational-analysis/diagrams
 
 == Contexte et objectif
 

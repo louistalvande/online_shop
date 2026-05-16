@@ -5,7 +5,8 @@
 :sectnums:
 :icons: font
 :source-highlighter: rouge
-:imagesdir: architecture/03-logical-architecture/diagrams
+:imagesdir: 03-logical-architecture/diagrams
+:imagesoutdir: 03-logical-architecture/diagrams
 
 == Contexte et objectif
 
