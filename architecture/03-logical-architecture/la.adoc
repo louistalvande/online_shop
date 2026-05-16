@@ -102,6 +102,16 @@ Le système est structuré en cinq couches logiques : *Présentation*, *Applicat
 | Infrastructure
 | Persistance de toutes les entités métier (comptes, produits avec stock, paniers, commandes, paiements, expéditions, réclamations)
 | Support de toutes les FS
+
+| *Service Sécurité*
+| Infrastructure
+| Contrôle transverse d'authentification et d'autorisation : validation de la politique de mots de passe, détection des attaques par force brute (temporisation), gestion du cycle de vie des sessions, protection CSRF, application des en-têtes de sécurité HTTP (CSP, HSTS, X-Frame-Options), validation et assainissement des entrées
+| FS-S01, FS-S02, FS-S03, FS-S04, FS-S05, FS-S06
+
+| *Service Journalisation*
+| Infrastructure
+| Centralisation et persistance des événements de sécurité (connexions, échecs d'authentification, actions d'administration, transactions) ; horodatage, identifiant utilisateur, adresse IP ; conservation ≥ 12 mois ; accès restreint aux administrateurs
+| FS-S07
 |===
 
 == Diagramme de composants logiques

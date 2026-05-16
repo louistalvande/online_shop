@@ -17,5 +17,5 @@ asciidoctor -r asciidoctor-diagram -o "Boutique en ligne - Documentation d'Archi
 ## Document des besoins opérationnels (HTML)
 
 ```bash
-asciidoctor -o exigences.html exigences.adoc
+asciidoctor -o "Boutique en ligne - Exigences utilisateurs.html" "Boutique en ligne - Exigences utilisateurs.adoc"
 ```

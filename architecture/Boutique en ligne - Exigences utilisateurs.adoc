@@ -262,3 +262,125 @@ Le tableau ci-dessous relie chaque besoin opérationnel aux activités et cas d'
 | BES-ACH-011 | Acheteur | UC_B6 — Annuler une commande (avant expédition)
 | BES-ACH-012 | Acheteur | UC_B7 — Demander une annulation après expédition
 |===
+
+---
+
+== Exigences de sécurité
+
+Les exigences suivantes sont issues des guides et recommandations publiés par l'ANSSI (Agence nationale de la sécurité des systèmes d'information). Elles s'appliquent à la plateforme indépendamment des besoins métier.
+
+=== Authentification et gestion des accès
+_Référence : ANSSI-BP-076 — Recommandations relatives à l'authentification multifacteur et aux mots de passe_
+
+[cols="1,4,1", options="header"]
+|===
+| Identifiant | Exigence | Référence ANSSI
+
+| SEC-AUTH-001
+| Les mots de passe des comptes doivent comporter au minimum 12 caractères et combiner majuscules, minuscules, chiffres et caractères spéciaux.
+| ANSSI-BP-076 §3.1
+
+| SEC-AUTH-002
+| Les mots de passe doivent être stockés sous forme hachée avec un algorithme résistant (bcrypt, Argon2id ou scrypt) ; le stockage en clair ou en MD5/SHA-1 est interdit.
+| ANSSI-BP-076 §3.3
+
+| SEC-AUTH-003
+| Les tentatives d'authentification échouées répétées doivent déclencher un mécanisme de protection (temporisation progressive, verrouillage temporaire ou CAPTCHA) afin de prévenir les attaques par force brute.
+| ANSSI-BP-076 §3.2
+
+| SEC-AUTH-004
+| Les sessions authentifiées doivent expirer après une période d'inactivité de 30 minutes maximum. La déconnexion explicite doit invalider immédiatement le jeton de session côté serveur.
+| ANSSI-BP-076 §4.1
+
+| SEC-AUTH-005
+| Les droits d'accès doivent respecter le principe du moindre privilège : chaque rôle (administrateur, vendeur, acheteur) ne doit accéder qu'aux ressources strictement nécessaires à ses activités.
+| ANSSI-BP-076 §2.1
+|===
+
+=== Sécurité des communications
+_Référence : ANSSI-BP-113 — Recommandations de sécurité relatives à TLS_
+
+[cols="1,4,1", options="header"]
+|===
+| Identifiant | Exigence | Référence ANSSI
+
+| SEC-TLS-001
+| Toutes les communications entre les clients (navigateurs, API) et la plateforme doivent être chiffrées via TLS 1.2 au minimum ; TLS 1.3 est recommandé. Les versions SSLv3, TLS 1.0 et TLS 1.1 sont interdites.
+| ANSSI-BP-113 §3.1
+
+| SEC-TLS-002
+| Les certificats TLS doivent être émis par une autorité de certification reconnue, valides et renouvelés avant expiration.
+| ANSSI-BP-113 §4.1
+
+| SEC-TLS-003
+| Le cookie de session doit porter les attributs `Secure`, `HttpOnly` et `SameSite=Strict` afin d'empêcher son interception ou sa lecture par des scripts.
+| ANSSI-BP-113 §5.2
+|===
+
+=== Sécurité applicative
+_Référence : ANSSI — Recommandations pour la sécurisation des sites web_
+
+[cols="1,4,1", options="header"]
+|===
+| Identifiant | Exigence | Référence ANSSI
+
+| SEC-APP-001
+| Toutes les données saisies par les utilisateurs doivent être validées et assainies côté serveur avant tout traitement ou persistance, afin de prévenir les injections (SQL, commandes, LDAP) et les attaques XSS.
+| ANSSI Web §3.1
+
+| SEC-APP-002
+| Les formulaires et requêtes d'état (commande, paiement, modification de compte) doivent être protégés contre les attaques CSRF par jeton anti-forgery ou vérification de l'en-tête `Origin`.
+| ANSSI Web §3.3
+
+| SEC-APP-003
+| Les messages d'erreur retournés aux utilisateurs ne doivent pas exposer d'informations techniques internes (traces de pile, noms de tables, chemins de fichiers).
+| ANSSI Web §4.2
+
+| SEC-APP-004
+| Les composants tiers (bibliothèques, frameworks, dépendances) doivent être maintenus à jour et exempts de vulnérabilités critiques connues (CVE de score CVSS ≥ 7.0).
+| ANSSI Web §5.1
+
+| SEC-APP-005
+| Une politique de sécurité du contenu (Content Security Policy) doit être définie et appliquée via l'en-tête HTTP `Content-Security-Policy` pour restreindre les sources de scripts et ressources chargées par le navigateur.
+| ANSSI Web §3.4
+|===
+
+=== Protection des données
+_Référence : ANSSI — Guide de sécurité des systèmes d'information_
+
+[cols="1,4,1", options="header"]
+|===
+| Identifiant | Exigence | Référence ANSSI
+
+| SEC-DAT-001
+| Les données personnelles et financières des utilisateurs doivent être chiffrées au repos (chiffrement de la base de données ou des colonnes sensibles).
+| ANSSI SI §6.1
+
+| SEC-DAT-002
+| Les données de carte bancaire ne doivent jamais être stockées en clair sur la plateforme ; leur traitement doit être délégué intégralement au prestataire de paiement certifié PCI-DSS.
+| ANSSI SI §6.2
+
+| SEC-DAT-003
+| La durée de conservation des données personnelles doit être limitée aux besoins métier ; les données des comptes supprimés doivent être anonymisées ou effacées dans un délai défini.
+| ANSSI SI §6.3
+|===
+
+=== Journalisation et surveillance
+_Référence : ANSSI — Recommandations de sécurité pour l'administration des systèmes d'information_
+
+[cols="1,4,1", options="header"]
+|===
+| Identifiant | Exigence | Référence ANSSI
+
+| SEC-LOG-001
+| Les événements de sécurité suivants doivent être journalisés avec horodatage, identifiant utilisateur et adresse IP : connexions réussies et échouées, modifications de compte, actions d'administration, transactions de paiement.
+| ANSSI Admin §4.1
+
+| SEC-LOG-002
+| Les journaux de sécurité doivent être conservés pendant une durée minimale de 12 mois et protégés contre toute modification ou suppression non autorisée.
+| ANSSI Admin §4.2
+
+| SEC-LOG-003
+| Les accès aux journaux doivent être restreints aux seuls administrateurs de la plateforme.
+| ANSSI Admin §4.3
+|===

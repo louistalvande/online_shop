@@ -55,6 +55,30 @@ Les contraintes physiques complètent les contraintes système (CS) en ajoutant 
 | CPA-08
 | Implémentation de la TokenAuthentification (CS-08)
 | Les jetons sont signés avec HMAC-SHA-256 (JJWT), ont une validité de 24 h et sont transmis dans l'en-tête `Authorization: Bearer`. Les mots de passe sont hachés avec BCrypt (coût 10). La clé de signature est injectée par variable d'environnement (`JWT_SECRET`). Les jetons révoqués sont inscrits dans Redis (CPA-04).
+
+| CPA-09
+| TLS et en-têtes de sécurité HTTP (CS-13 / SEC-TLS-001..003)
+| Nginx termine TLS 1.3 (TLS 1.2 minimum autorisé ; SSLv3, TLS 1.0, TLS 1.1 interdits) avec des certificats valides. Les en-têtes `Strict-Transport-Security`, `Content-Security-Policy`, `X-Frame-Options: DENY` et `X-Content-Type-Options: nosniff` sont appliqués sur toutes les réponses. Les cookies de session portent les attributs `Secure; HttpOnly; SameSite=Strict`.
+
+| CPA-10
+| Politique de mots de passe et hachage (CS-11 / SEC-AUTH-001..002)
+| Spring Security enforces une longueur minimale de 12 caractères et une complexité requise à la création et au changement de mot de passe. Le hachage utilise BCrypt avec un coût de 12 (upgrade depuis coût 10 à l'occasion d'une prochaine migration).
+
+| CPA-11
+| Protection contre la force brute (CS-12 / SEC-AUTH-003)
+| Spring Security + filtre personnalisé comptabilise les échecs d'authentification par adresse IP et par compte. Au-delà de 5 tentatives consécutives échouées, une temporisation exponentielle est appliquée (30 s, 1 min, 5 min). Le compteur est stocké dans Redis (TTL 15 min).
+
+| CPA-12
+| Validation des entrées et protection CSRF (CS-14 / SEC-APP-001..002)
+| Tous les contrôleurs Spring Boot valident les DTOs entrants via Jakarta Bean Validation (`@Valid`). La protection CSRF est assurée par le mécanisme `SameSite=Strict` des cookies de session pour les requêtes navigateur, et par la validation du jeton JWT Bearer pour les appels API.
+
+| CPA-13
+| Journalisation de sécurité (CS-15 / SEC-LOG-001..003)
+| Spring AOP intercepte les événements de sécurité (connexion, échec d'auth, action admin, transaction) et les persiste en base (`audit_log`) avec horodatage UTC, `user_id`, `ip_address` et `action`. La table `audit_log` est en lecture seule pour tous les rôles applicatifs sauf le composant de journalisation. Conservation : partition mensuelle, purge après 13 mois.
+
+| CPA-14
+| Protection des données sensibles au repos (CS-16 / SEC-DAT-001..003)
+| Les colonnes sensibles de la base PostgreSQL (données personnelles) sont chiffrées via `pgcrypto`. Les données bancaires ne sont jamais persistées sur la plateforme ; Stripe (certifié PCI-DSS Level 1) gère intégralement le stockage et le traitement des données de carte (délégation IFS-04).
 |===
 
 == Pile technologique retenue

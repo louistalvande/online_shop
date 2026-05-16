@@ -448,6 +448,15 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <li><a href="#_besoins_de_lacheteur">5. Besoins de l&#8217;Acheteur</a></li>
 <li><a href="#_contraintes_opérationnelles">6. Contraintes opérationnelles</a></li>
 <li><a href="#_matrice_de_traçabilité">7. Matrice de traçabilité</a></li>
+<li><a href="#_exigences_de_sécurité">8. Exigences de sécurité</a>
+<ul class="sectlevel2">
+<li><a href="#_authentification_et_gestion_des_accès">8.1. Authentification et gestion des accès</a></li>
+<li><a href="#_sécurité_des_communications">8.2. Sécurité des communications</a></li>
+<li><a href="#_sécurité_applicative">8.3. Sécurité applicative</a></li>
+<li><a href="#_protection_des_données">8.4. Protection des données</a></li>
+<li><a href="#_journalisation_et_surveillance">8.5. Journalisation et surveillance</a></li>
+</ul>
+</li>
 </ul>
 </div>
 </div>
@@ -952,12 +961,226 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </tr>
 </tbody>
 </table>
+<hr>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_exigences_de_sécurité">8. Exigences de sécurité</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Les exigences suivantes sont issues des guides et recommandations publiés par l&#8217;ANSSI (Agence nationale de la sécurité des systèmes d&#8217;information). Elles s&#8217;appliquent à la plateforme indépendamment des besoins métier.</p>
+</div>
+<div class="sect2">
+<h3 id="_authentification_et_gestion_des_accès">8.1. Authentification et gestion des accès</h3>
+<div class="paragraph">
+<p><em>Référence : ANSSI-BP-076 — Recommandations relatives à l&#8217;authentification multifacteur et aux mots de passe</em></p>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 16.6666%;">
+<col style="width: 66.6666%;">
+<col style="width: 16.6668%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Identifiant</th>
+<th class="tableblock halign-left valign-top">Exigence</th>
+<th class="tableblock halign-left valign-top">Référence ANSSI</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">SEC-AUTH-001</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Les mots de passe des comptes doivent comporter au minimum 12 caractères et combiner majuscules, minuscules, chiffres et caractères spéciaux.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">ANSSI-BP-076 §3.1</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">SEC-AUTH-002</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Les mots de passe doivent être stockés sous forme hachée avec un algorithme résistant (bcrypt, Argon2id ou scrypt) ; le stockage en clair ou en MD5/SHA-1 est interdit.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">ANSSI-BP-076 §3.3</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">SEC-AUTH-003</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Les tentatives d&#8217;authentification échouées répétées doivent déclencher un mécanisme de protection (temporisation progressive, verrouillage temporaire ou CAPTCHA) afin de prévenir les attaques par force brute.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">ANSSI-BP-076 §3.2</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">SEC-AUTH-004</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Les sessions authentifiées doivent expirer après une période d&#8217;inactivité de 30 minutes maximum. La déconnexion explicite doit invalider immédiatement le jeton de session côté serveur.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">ANSSI-BP-076 §4.1</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">SEC-AUTH-005</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Les droits d&#8217;accès doivent respecter le principe du moindre privilège : chaque rôle (administrateur, vendeur, acheteur) ne doit accéder qu&#8217;aux ressources strictement nécessaires à ses activités.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">ANSSI-BP-076 §2.1</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sect2">
+<h3 id="_sécurité_des_communications">8.2. Sécurité des communications</h3>
+<div class="paragraph">
+<p><em>Référence : ANSSI-BP-113 — Recommandations de sécurité relatives à TLS</em></p>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 16.6666%;">
+<col style="width: 66.6666%;">
+<col style="width: 16.6668%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Identifiant</th>
+<th class="tableblock halign-left valign-top">Exigence</th>
+<th class="tableblock halign-left valign-top">Référence ANSSI</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">SEC-TLS-001</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Toutes les communications entre les clients (navigateurs, API) et la plateforme doivent être chiffrées via TLS 1.2 au minimum ; TLS 1.3 est recommandé. Les versions SSLv3, TLS 1.0 et TLS 1.1 sont interdites.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">ANSSI-BP-113 §3.1</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">SEC-TLS-002</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Les certificats TLS doivent être émis par une autorité de certification reconnue, valides et renouvelés avant expiration.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">ANSSI-BP-113 §4.1</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">SEC-TLS-003</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Le cookie de session doit porter les attributs <code>Secure</code>, <code>HttpOnly</code> et <code>SameSite=Strict</code> afin d&#8217;empêcher son interception ou sa lecture par des scripts.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">ANSSI-BP-113 §5.2</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sect2">
+<h3 id="_sécurité_applicative">8.3. Sécurité applicative</h3>
+<div class="paragraph">
+<p><em>Référence : ANSSI — Recommandations pour la sécurisation des sites web</em></p>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 16.6666%;">
+<col style="width: 66.6666%;">
+<col style="width: 16.6668%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Identifiant</th>
+<th class="tableblock halign-left valign-top">Exigence</th>
+<th class="tableblock halign-left valign-top">Référence ANSSI</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">SEC-APP-001</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Toutes les données saisies par les utilisateurs doivent être validées et assainies côté serveur avant tout traitement ou persistance, afin de prévenir les injections (SQL, commandes, LDAP) et les attaques XSS.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">ANSSI Web §3.1</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">SEC-APP-002</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Les formulaires et requêtes d&#8217;état (commande, paiement, modification de compte) doivent être protégés contre les attaques CSRF par jeton anti-forgery ou vérification de l&#8217;en-tête <code>Origin</code>.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">ANSSI Web §3.3</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">SEC-APP-003</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Les messages d&#8217;erreur retournés aux utilisateurs ne doivent pas exposer d&#8217;informations techniques internes (traces de pile, noms de tables, chemins de fichiers).</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">ANSSI Web §4.2</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">SEC-APP-004</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Les composants tiers (bibliothèques, frameworks, dépendances) doivent être maintenus à jour et exempts de vulnérabilités critiques connues (CVE de score CVSS ≥ 7.0).</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">ANSSI Web §5.1</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">SEC-APP-005</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Une politique de sécurité du contenu (Content Security Policy) doit être définie et appliquée via l&#8217;en-tête HTTP <code>Content-Security-Policy</code> pour restreindre les sources de scripts et ressources chargées par le navigateur.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">ANSSI Web §3.4</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sect2">
+<h3 id="_protection_des_données">8.4. Protection des données</h3>
+<div class="paragraph">
+<p><em>Référence : ANSSI — Guide de sécurité des systèmes d&#8217;information</em></p>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 16.6666%;">
+<col style="width: 66.6666%;">
+<col style="width: 16.6668%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Identifiant</th>
+<th class="tableblock halign-left valign-top">Exigence</th>
+<th class="tableblock halign-left valign-top">Référence ANSSI</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">SEC-DAT-001</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Les données personnelles et financières des utilisateurs doivent être chiffrées au repos (chiffrement de la base de données ou des colonnes sensibles).</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">ANSSI SI §6.1</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">SEC-DAT-002</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Les données de carte bancaire ne doivent jamais être stockées en clair sur la plateforme ; leur traitement doit être délégué intégralement au prestataire de paiement certifié PCI-DSS.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">ANSSI SI §6.2</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">SEC-DAT-003</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">La durée de conservation des données personnelles doit être limitée aux besoins métier ; les données des comptes supprimés doivent être anonymisées ou effacées dans un délai défini.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">ANSSI SI §6.3</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sect2">
+<h3 id="_journalisation_et_surveillance">8.5. Journalisation et surveillance</h3>
+<div class="paragraph">
+<p><em>Référence : ANSSI — Recommandations de sécurité pour l&#8217;administration des systèmes d&#8217;information</em></p>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 16.6666%;">
+<col style="width: 66.6666%;">
+<col style="width: 16.6668%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Identifiant</th>
+<th class="tableblock halign-left valign-top">Exigence</th>
+<th class="tableblock halign-left valign-top">Référence ANSSI</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">SEC-LOG-001</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Les événements de sécurité suivants doivent être journalisés avec horodatage, identifiant utilisateur et adresse IP : connexions réussies et échouées, modifications de compte, actions d&#8217;administration, transactions de paiement.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">ANSSI Admin §4.1</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">SEC-LOG-002</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Les journaux de sécurité doivent être conservés pendant une durée minimale de 12 mois et protégés contre toute modification ou suppression non autorisée.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">ANSSI Admin §4.2</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">SEC-LOG-003</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Les accès aux journaux doivent être restreints aux seuls administrateurs de la plateforme.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">ANSSI Admin §4.3</p></td>
+</tr>
+</tbody>
+</table>
+</div>
 </div>
 </div>
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2026-05-16 15:15:38 +0200
+Last updated 2026-05-16 15:31:38 +0200
 </div>
 </div>
 </body>

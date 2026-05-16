@@ -68,6 +68,14 @@ Les contraintes suivantes sont issues du contexte d'usage réel des acteurs et s
 | COp-04
 | Activation de compte par email
 | L'acheteur doit activer son compte en consultant sa boîte mail et en cliquant sur le lien qui lui est adressé après inscription. Le compte n'est accessible qu'après cette activation.
+
+| COp-05
+| Protection des accès et des données personnelles
+| Les acteurs ont besoin que leurs comptes soient protégés contre tout accès non autorisé et que leurs données personnelles (coordonnées, historique de commandes) ne soient accessibles qu'à eux-mêmes et aux rôles légitimes de la plateforme. Cette contrainte découle des recommandations ANSSI-BP-076 (authentification) et des obligations légales RGPD. _(SEC-AUTH-001..005, SEC-DAT-001..003)_
+
+| COp-06
+| Sécurité des communications et des transactions financières
+| Toutes les communications entre les acteurs et la plateforme doivent être protégées contre l'interception et la falsification. Les données bancaires des acheteurs ne transitent jamais en clair et ne sont pas stockées sur la plateforme. _(SEC-TLS-001..003, SEC-DAT-002)_
 |===
 
 == Diagrammes de cas d'utilisation opérationnels

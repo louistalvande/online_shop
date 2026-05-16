@@ -485,6 +485,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <li><a href="#_gestion_de_la_boutique_vendeur">3.3.2. Gestion de la boutique (Vendeur)</a></li>
 <li><a href="#_expérience_dachat_acheteur">3.3.3. Expérience d&#8217;achat (Acheteur)</a></li>
 <li><a href="#_interfaces_externes">3.3.4. Interfaces externes</a></li>
+<li><a href="#_sécurité_transverse">3.3.5. Sécurité transverse</a></li>
 </ul>
 </li>
 <li><a href="#_diagramme_de_cas_dutilisation_système">3.4. Diagramme de cas d&#8217;utilisation système</a></li>
@@ -722,6 +723,16 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <td class="tableblock halign-left valign-top"><p class="tableblock">COp-04</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Activation de compte par email</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">L&#8217;acheteur doit activer son compte en consultant sa boîte mail et en cliquant sur le lien qui lui est adressé après inscription. Le compte n&#8217;est accessible qu&#8217;après cette activation.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">COp-05</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Protection des accès et des données personnelles</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Les acteurs ont besoin que leurs comptes soient protégés contre tout accès non autorisé et que leurs données personnelles (coordonnées, historique de commandes) ne soient accessibles qu&#8217;à eux-mêmes et aux rôles légitimes de la plateforme. Cette contrainte découle des recommandations ANSSI-BP-076 (authentification) et des obligations légales RGPD. <em>(SEC-AUTH-001..005, SEC-DAT-001..003)</em></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">COp-06</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Sécurité des communications et des transactions financières</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Toutes les communications entre les acteurs et la plateforme doivent être protégées contre l&#8217;interception et la falsification. Les données bancaires des acheteurs ne transitent jamais en clair et ne sont pas stockées sur la plateforme. <em>(SEC-TLS-001..003, SEC-DAT-002)</em></p></td>
 </tr>
 </tbody>
 </table>
@@ -1186,6 +1197,36 @@ Un compte suspendu ou supprimé ne peut pas s&#8217;authentifier. Les messages d
 <td class="tableblock halign-left valign-top"><p class="tableblock">Préférence de langue par compte</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Chaque compte (acheteur, vendeur) dispose d&#8217;une préférence de langue (<code>fr</code> ou <code>en</code>), initialisée à la création et modifiable ultérieurement par le titulaire ou l&#8217;administrateur. Cette préférence détermine la langue des emails transactionnels envoyés par le système (IFS-06).</p></td>
 </tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">CS-11</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Politique de mots de passe robuste (COp-05 / SEC-AUTH-001..002)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Les mots de passe doivent comporter au minimum 12 caractères et être stockés sous forme hachée avec un algorithme résistant (bcrypt, Argon2id). Le stockage en clair ou avec MD5/SHA-1 est interdit.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">CS-12</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Protection contre la force brute (COp-05 / SEC-AUTH-003)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Après un nombre configurable de tentatives d&#8217;authentification échouées consécutives, le système doit appliquer une temporisation progressive ou bloquer temporairement le compte afin de prévenir les attaques par force brute.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">CS-13</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Chiffrement des communications (COp-06 / SEC-TLS-001..003)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Toutes les communications entre les clients et la plateforme doivent être chiffrées via TLS 1.2 au minimum. Les cookies de session doivent porter les attributs <code>Secure</code>, <code>HttpOnly</code> et <code>SameSite=Strict</code>.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">CS-14</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Protection contre les vulnérabilités web (COp-06 / SEC-APP-001..005)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Le système doit valider et assainir toutes les données saisies côté serveur, protéger les formulaires d&#8217;état contre le CSRF, et appliquer une politique CSP pour restreindre les ressources chargées par le navigateur. Les messages d&#8217;erreur ne doivent pas exposer d&#8217;informations techniques internes.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">CS-15</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Journalisation des événements de sécurité (SEC-LOG-001..003)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Les connexions réussies et échouées, les modifications de compte, les actions d&#8217;administration et les transactions de paiement doivent être journalisées avec horodatage, identifiant utilisateur et adresse IP. Les journaux sont conservés 12 mois minimum.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">CS-16</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Protection des données sensibles au repos (COp-05 / SEC-DAT-001..003)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Les données personnelles et les données de paiement sont protégées au repos. Les données bancaires ne sont jamais stockées sur la plateforme ; leur traitement est délégué intégralement au prestataire certifié PCI-DSS.</p></td>
+</tr>
 </tbody>
 </table>
 </div>
@@ -1421,6 +1462,60 @@ Un compte suspendu ou supprimé ne peut pas s&#8217;authentifier. Les messages d
 <td class="tableblock halign-left valign-top"><p class="tableblock">FS-C01</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Afficher à l&#8217;acheteur le numéro de suivi et l&#8217;URL du site de suivi du transporteur depuis son espace commandes</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">UC_C3</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sect3">
+<h4 id="_sécurité_transverse">3.3.5. Sécurité transverse</h4>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 20%;">
+<col style="width: 60%;">
+<col style="width: 20%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">ID</th>
+<th class="tableblock halign-left valign-top">Fonction système</th>
+<th class="tableblock halign-left valign-top">Contrainte source</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">FS-S01</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Enforcer la politique de mots de passe à la création et au changement de mot de passe (longueur, complexité, hachage bcrypt/Argon2id)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">CS-11</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">FS-S02</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Détecter les tentatives d&#8217;authentification répétées échouées et appliquer une temporisation progressive</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">CS-12</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">FS-S03</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Invalider la session côté serveur à la déconnexion explicite et après 30 minutes d&#8217;inactivité</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">CS-08, CS-13</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">FS-S04</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Valider et assainir toutes les entrées utilisateur côté serveur avant tout traitement ou persistance</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">CS-14</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">FS-S05</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Protéger les requêtes d&#8217;état (commande, paiement, modification de compte) contre le CSRF</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">CS-14</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">FS-S06</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Appliquer les en-têtes de sécurité HTTP (CSP, Strict-Transport-Security, X-Frame-Options) sur toutes les réponses</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">CS-13, CS-14</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">FS-S07</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Journaliser les événements de sécurité (connexion, échec d&#8217;auth, action admin, transaction) avec horodatage, identifiant et IP</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">CS-15</p></td>
 </tr>
 </tbody>
 </table>
@@ -3075,6 +3170,18 @@ Chaque composant logique de la LA est tracé vers une ou plusieurs fonctions sys
 <td class="tableblock halign-left valign-top"><p class="tableblock">Persistance de toutes les entités métier (comptes, produits avec stock, paniers, commandes, paiements, expéditions, réclamations)</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Support de toutes les FS</p></td>
 </tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>Service Sécurité</strong></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Infrastructure</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Contrôle transverse d&#8217;authentification et d&#8217;autorisation : validation de la politique de mots de passe, détection des attaques par force brute (temporisation), gestion du cycle de vie des sessions, protection CSRF, application des en-têtes de sécurité HTTP (CSP, HSTS, X-Frame-Options), validation et assainissement des entrées</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">FS-S01, FS-S02, FS-S03, FS-S04, FS-S05, FS-S06</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>Service Journalisation</strong></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Infrastructure</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Centralisation et persistance des événements de sécurité (connexions, échecs d&#8217;authentification, actions d&#8217;administration, transactions) ; horodatage, identifiant utilisateur, adresse IP ; conservation ≥ 12 mois ; accès restreint aux administrateurs</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">FS-S07</p></td>
+</tr>
 </tbody>
 </table>
 </div>
@@ -3524,6 +3631,36 @@ Les choix technologiques retenus ci-dessous sont des recommandations architectur
 <td class="tableblock halign-left valign-top"><p class="tableblock">CPA-08</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Implémentation de la TokenAuthentification (CS-08)</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Les jetons sont signés avec HMAC-SHA-256 (JJWT), ont une validité de 24 h et sont transmis dans l&#8217;en-tête <code>Authorization: Bearer</code>. Les mots de passe sont hachés avec BCrypt (coût 10). La clé de signature est injectée par variable d&#8217;environnement (<code>JWT_SECRET</code>). Les jetons révoqués sont inscrits dans Redis (CPA-04).</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">CPA-09</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">TLS et en-têtes de sécurité HTTP (CS-13 / SEC-TLS-001..003)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Nginx termine TLS 1.3 (TLS 1.2 minimum autorisé ; SSLv3, TLS 1.0, TLS 1.1 interdits) avec des certificats valides. Les en-têtes <code>Strict-Transport-Security</code>, <code>Content-Security-Policy</code>, <code>X-Frame-Options: DENY</code> et <code>X-Content-Type-Options: nosniff</code> sont appliqués sur toutes les réponses. Les cookies de session portent les attributs <code>Secure; HttpOnly; SameSite=Strict</code>.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">CPA-10</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Politique de mots de passe et hachage (CS-11 / SEC-AUTH-001..002)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Spring Security enforces une longueur minimale de 12 caractères et une complexité requise à la création et au changement de mot de passe. Le hachage utilise BCrypt avec un coût de 12 (upgrade depuis coût 10 à l&#8217;occasion d&#8217;une prochaine migration).</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">CPA-11</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Protection contre la force brute (CS-12 / SEC-AUTH-003)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Spring Security + filtre personnalisé comptabilise les échecs d&#8217;authentification par adresse IP et par compte. Au-delà de 5 tentatives consécutives échouées, une temporisation exponentielle est appliquée (30 s, 1 min, 5 min). Le compteur est stocké dans Redis (TTL 15 min).</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">CPA-12</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Validation des entrées et protection CSRF (CS-14 / SEC-APP-001..002)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Tous les contrôleurs Spring Boot valident les DTOs entrants via Jakarta Bean Validation (<code>@Valid</code>). La protection CSRF est assurée par le mécanisme <code>SameSite=Strict</code> des cookies de session pour les requêtes navigateur, et par la validation du jeton JWT Bearer pour les appels API.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">CPA-13</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Journalisation de sécurité (CS-15 / SEC-LOG-001..003)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Spring AOP intercepte les événements de sécurité (connexion, échec d&#8217;auth, action admin, transaction) et les persiste en base (<code>audit_log</code>) avec horodatage UTC, <code>user_id</code>, <code>ip_address</code> et <code>action</code>. La table <code>audit_log</code> est en lecture seule pour tous les rôles applicatifs sauf le composant de journalisation. Conservation : partition mensuelle, purge après 13 mois.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">CPA-14</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Protection des données sensibles au repos (CS-16 / SEC-DAT-001..003)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Les colonnes sensibles de la base PostgreSQL (données personnelles) sont chiffrées via <code>pgcrypto</code>. Les données bancaires ne sont jamais persistées sur la plateforme ; Stripe (certifié PCI-DSS Level 1) gère intégralement le stockage et le traitement des données de carte (délégation IFS-04).</p></td>
 </tr>
 </tbody>
 </table>

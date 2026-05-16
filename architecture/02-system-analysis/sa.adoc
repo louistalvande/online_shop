@@ -105,6 +105,30 @@ Un compte suspendu ou supprimé ne peut pas s'authentifier. Les messages d'erreu
 | CS-10
 | Préférence de langue par compte
 | Chaque compte (acheteur, vendeur) dispose d'une préférence de langue (`fr` ou `en`), initialisée à la création et modifiable ultérieurement par le titulaire ou l'administrateur. Cette préférence détermine la langue des emails transactionnels envoyés par le système (IFS-06).
+
+| CS-11
+| Politique de mots de passe robuste (COp-05 / SEC-AUTH-001..002)
+| Les mots de passe doivent comporter au minimum 12 caractères et être stockés sous forme hachée avec un algorithme résistant (bcrypt, Argon2id). Le stockage en clair ou avec MD5/SHA-1 est interdit.
+
+| CS-12
+| Protection contre la force brute (COp-05 / SEC-AUTH-003)
+| Après un nombre configurable de tentatives d'authentification échouées consécutives, le système doit appliquer une temporisation progressive ou bloquer temporairement le compte afin de prévenir les attaques par force brute.
+
+| CS-13
+| Chiffrement des communications (COp-06 / SEC-TLS-001..003)
+| Toutes les communications entre les clients et la plateforme doivent être chiffrées via TLS 1.2 au minimum. Les cookies de session doivent porter les attributs `Secure`, `HttpOnly` et `SameSite=Strict`.
+
+| CS-14
+| Protection contre les vulnérabilités web (COp-06 / SEC-APP-001..005)
+| Le système doit valider et assainir toutes les données saisies côté serveur, protéger les formulaires d'état contre le CSRF, et appliquer une politique CSP pour restreindre les ressources chargées par le navigateur. Les messages d'erreur ne doivent pas exposer d'informations techniques internes.
+
+| CS-15
+| Journalisation des événements de sécurité (SEC-LOG-001..003)
+| Les connexions réussies et échouées, les modifications de compte, les actions d'administration et les transactions de paiement doivent être journalisées avec horodatage, identifiant utilisateur et adresse IP. Les journaux sont conservés 12 mois minimum.
+
+| CS-16
+| Protection des données sensibles au repos (COp-05 / SEC-DAT-001..003)
+| Les données personnelles et les données de paiement sont protégées au repos. Les données bancaires ne sont jamais stockées sur la plateforme ; leur traitement est délégué intégralement au prestataire certifié PCI-DSS.
 |===
 
 == Exigences fonctionnelles système
@@ -172,6 +196,21 @@ Les fonctions système (FS) sont dérivées des cas d'utilisation opérationnels
 | FS-P02 | Recevoir la confirmation ou le refus de transaction et notifier les parties | UC_P2
 | FS-P03 | Annuler une transaction et déclencher un remboursement via le prestataire de paiement | UC_P3
 | FS-C01 | Afficher à l'acheteur le numéro de suivi et l'URL du site de suivi du transporteur depuis son espace commandes | UC_C3
+|===
+
+=== Sécurité transverse
+
+[cols="1,3,1", options="header"]
+|===
+| ID | Fonction système | Contrainte source
+
+| FS-S01 | Enforcer la politique de mots de passe à la création et au changement de mot de passe (longueur, complexité, hachage bcrypt/Argon2id) | CS-11
+| FS-S02 | Détecter les tentatives d'authentification répétées échouées et appliquer une temporisation progressive | CS-12
+| FS-S03 | Invalider la session côté serveur à la déconnexion explicite et après 30 minutes d'inactivité | CS-08, CS-13
+| FS-S04 | Valider et assainir toutes les entrées utilisateur côté serveur avant tout traitement ou persistance | CS-14
+| FS-S05 | Protéger les requêtes d'état (commande, paiement, modification de compte) contre le CSRF | CS-14
+| FS-S06 | Appliquer les en-têtes de sécurité HTTP (CSP, Strict-Transport-Security, X-Frame-Options) sur toutes les réponses | CS-13, CS-14
+| FS-S07 | Journaliser les événements de sécurité (connexion, échec d'auth, action admin, transaction) avec horodatage, identifiant et IP | CS-15
 |===
 
 == Diagramme de cas d'utilisation système
