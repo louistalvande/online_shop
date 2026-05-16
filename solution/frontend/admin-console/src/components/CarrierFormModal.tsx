@@ -103,13 +103,13 @@ export default function CarrierFormModal({ carrier, onClose, onSuccess }: Props)
 
         <form onSubmit={handleSubmit}>
           <div style={fieldStyle}>
-            <span style={labelStyle}>{t('carrierModal.name')}</span>
-            <input style={inputStyle} required value={name} onChange={e => setName(e.target.value)} />
+            <label htmlFor="carrier-name" style={labelStyle}>{t('carrierModal.name')}</label>
+            <input id="carrier-name" style={inputStyle} required value={name} onChange={e => setName(e.target.value)} />
           </div>
 
           <div style={fieldStyle}>
-            <span style={labelStyle}>{t('carrierModal.trackingUrl')}</span>
-            <input style={inputStyle} required type="url" value={trackingUrl} onChange={e => setTrackingUrl(e.target.value)} />
+            <label htmlFor="carrier-trackingUrl" style={labelStyle}>{t('carrierModal.trackingUrl')}</label>
+            <input id="carrier-trackingUrl" style={inputStyle} required type="url" value={trackingUrl} onChange={e => setTrackingUrl(e.target.value)} />
           </div>
 
           <div style={fieldStyle}>

@@ -64,6 +64,17 @@ public interface AccountService {
     AccountResponse reactivateAccount(UUID id);
 
     /**
+     * Force-activates a pending account by setting its status directly to {@code ACTIVE},
+     * bypassing the email verification flow. Intended for admin override and test setup.
+     *
+     * @param id the account UUID
+     * @return the updated account
+     * @throws AccountNotFoundException     if no account exists with the given ID
+     * @throws InvalidAccountStateException if the account is not in {@code PENDING} status
+     */
+    AccountResponse forceActivateAccount(UUID id);
+
+    /**
      * Soft-deletes an account by setting its status to {@code DELETED}.
      *
      * @param id the account UUID

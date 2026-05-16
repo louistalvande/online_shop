@@ -168,25 +168,25 @@ export default function AccountModal(props: Props) {
 
         <form onSubmit={handleSubmit}>
           <div style={fieldStyle}>
-            <span style={labelStyle}>{t('accountModal.firstName')}</span>
-            <input style={inputStyle} required value={firstName} onChange={e => setFirstName(e.target.value)} />
+            <label htmlFor="account-firstName" style={labelStyle}>{t('accountModal.firstName')}</label>
+            <input id="account-firstName" style={inputStyle} required value={firstName} onChange={e => setFirstName(e.target.value)} />
           </div>
 
           <div style={fieldStyle}>
-            <span style={labelStyle}>{t('accountModal.lastName')}</span>
-            <input style={inputStyle} required value={lastName} onChange={e => setLastName(e.target.value)} />
+            <label htmlFor="account-lastName" style={labelStyle}>{t('accountModal.lastName')}</label>
+            <input id="account-lastName" style={inputStyle} required value={lastName} onChange={e => setLastName(e.target.value)} />
           </div>
 
           {props.mode === 'create' && (
             <div style={fieldStyle}>
-              <span style={labelStyle}>{t('accountModal.email')}</span>
-              <input style={inputStyle} type="email" required value={email} onChange={e => setEmail(e.target.value)} />
+              <label htmlFor="account-email" style={labelStyle}>{t('accountModal.email')}</label>
+              <input id="account-email" style={inputStyle} type="email" required value={email} onChange={e => setEmail(e.target.value)} />
             </div>
           )}
 
           <div style={fieldStyle}>
-            <span style={labelStyle}>{t('accountModal.role')}</span>
-            <select style={inputStyle} value={role} onChange={e => setRole(e.target.value as AccountRole)}>
+            <label htmlFor="account-role" style={labelStyle}>{t('accountModal.role')}</label>
+            <select id="account-role" style={inputStyle} value={role} onChange={e => setRole(e.target.value as AccountRole)}>
               <option value="BUYER">{t('users.role.BUYER')}</option>
               <option value="VENDOR">{t('users.role.VENDOR')}</option>
             </select>
@@ -194,8 +194,8 @@ export default function AccountModal(props: Props) {
 
           {props.mode === 'edit' && (
             <div style={fieldStyle}>
-              <span style={labelStyle}>{t('accountModal.language')}</span>
-              <select style={inputStyle} value={language} onChange={e => setLanguage(e.target.value as AccountLanguage)}>
+              <label htmlFor="account-language" style={labelStyle}>{t('accountModal.language')}</label>
+              <select id="account-language" style={inputStyle} value={language} onChange={e => setLanguage(e.target.value as AccountLanguage)}>
                 <option value="FR">{t('accountModal.language.FR')}</option>
                 <option value="EN">{t('accountModal.language.EN')}</option>
               </select>

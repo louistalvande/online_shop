@@ -1,4 +1,4 @@
-# Solution — Online Shop
+﻿# Solution — Online Shop
 
 ## Démarrage de l'environnement de développement
 
@@ -57,3 +57,30 @@ cd /workspace && ./mvnw test -Popenapi
 ```
 
 Démarre un contexte Spring avec H2 (sans PostgreSQL ni Redis) et écrit `openapi.yaml` à côté du `pom.xml`.
+
+
+## Tests end-to-end (Playwright)
+
+Les tests s'exécutent dans le conteneur `frontend` via `docker compose exec`. Les conteneurs Docker doivent être démarrés et le backend Spring Boot doit être lancé.
+
+### Première installation (une seule fois)
+
+```bash
+docker compose -f docker-compose.dev.yml exec frontend bash -c "cd /workspace/e2e && npm install && npx playwright install chromium --with-deps"
+```
+
+### Lancer les tests
+
+```bash
+docker compose -f docker-compose.dev.yml exec frontend bash -c "cd /workspace/e2e && npm test"
+```
+
+```bash
+# Console admin uniquement
+docker compose -f docker-compose.dev.yml exec frontend bash -c "cd /workspace/e2e && npm run test:admin"
+
+# Portail acheteur uniquement
+docker compose -f docker-compose.dev.yml exec frontend bash -c "cd /workspace/e2e && npm run test:buyer"
+```
+
+Les URLs et credentials sont configurés dans `frontend/e2e/.env`.

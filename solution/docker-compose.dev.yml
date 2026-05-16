@@ -31,7 +31,7 @@ services:
       DB_USER: shop
       DB_PASSWORD: dev
       REDIS_HOST: redis
-      JWT_SECRET: dev-secret-not-for-production
+      JWT_SECRET: 0va7bEp3sQZdN7oxr12ibeibvZOyPwnpV2qTCbRYhxg=
     volumes:
       - ./backend:/workspace
     depends_on:
