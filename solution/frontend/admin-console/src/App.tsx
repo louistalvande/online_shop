@@ -4,10 +4,13 @@ import { useTranslation } from 'react-i18next'
 import { AppShell, Button, Card, UserIcon, PackageIcon, LangToggle, UserMenu, Snackbar, PencilIcon, BanIcon, CheckCircleIcon, TrashIcon } from '@workspace/theme'
 import AccountModal from './components/AccountModal'
 import ActionMenu from './components/ActionMenu'
+import CarrierFormModal from './components/CarrierFormModal'
+import CarrierDeleteModal from './components/CarrierDeleteModal'
 import UserDetailModal from './components/UserDetailModal'
 import LoginPage from './LoginPage'
 import { getSession, logout } from './api/authApi'
 import { listAccounts, type AccountResponse } from './api/accountApi'
+import { listCarriers, deactivateCarrier, activateCarrier, type CarrierResponse } from './api/carrierApi'
 
 export default function App() {
   const { t, i18n } = useTranslation()
@@ -19,11 +22,19 @@ export default function App() {
   const [suspendAccount, setSuspendAccount] = useState<AccountResponse | null>(null)
   const [reactivateAccount, setReactivateAccount] = useState<AccountResponse | null>(null)
   const [viewAccount, setViewAccount] = useState<AccountResponse | null>(null)
+  const [carriers, setCarriers] = useState<CarrierResponse[]>([])
+  const [showCarrierModal, setShowCarrierModal] = useState(false)
+  const [editCarrier, setEditCarrier] = useState<CarrierResponse | null>(null)
+  const [deleteCarrierTarget, setDeleteCarrierTarget] = useState<CarrierResponse | null>(null)
   const [snackbar, setSnackbar] = useState<string | null>(null)
 
   function showSnackbar(message: string) {
     setSnackbar(message)
     setTimeout(() => setSnackbar(null), 3000)
+  }
+
+  async function fetchCarriers() {
+    try { setCarriers(await listCarriers()) } catch { /* keep current list */ }
   }
 
   async function fetchAccounts() {
@@ -40,7 +51,7 @@ export default function App() {
   }
 
   useEffect(() => {
-    if (session) fetchAccounts()
+    if (session) { fetchAccounts(); fetchCarriers() }
   }, [session])
 
   if (!session) {
@@ -116,11 +127,35 @@ export default function App() {
         <UserDetailModal account={viewAccount} onClose={() => setViewAccount(null)} />
       )}
 
+      {showCarrierModal && (
+        <CarrierFormModal
+          onClose={() => setShowCarrierModal(false)}
+          onSuccess={() => { setShowCarrierModal(false); fetchCarriers(); showSnackbar(t('snackbar.carrierCreated')) }}
+        />
+      )}
+
+      {editCarrier && (
+        <CarrierFormModal
+          carrier={editCarrier}
+          onClose={() => setEditCarrier(null)}
+          onSuccess={() => { setEditCarrier(null); fetchCarriers(); showSnackbar(t('snackbar.carrierUpdated')) }}
+        />
+      )}
+
+      {deleteCarrierTarget && (
+        <CarrierDeleteModal
+          carrier={deleteCarrierTarget}
+          onClose={() => setDeleteCarrierTarget(null)}
+          onSuccess={() => { setDeleteCarrierTarget(null); fetchCarriers(); showSnackbar(t('snackbar.carrierDeleted')) }}
+        />
+      )}
+
       <AppShell
         appName={t('app.name')}
         navLinks={[
           { label: t('nav.overview'), href: '#' },
           { label: t('nav.users'), href: '#users' },
+          { label: t('nav.carriers'), href: '#carriers' },
         ]}
         actions={
           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
@@ -218,6 +253,70 @@ export default function App() {
                           ]} />
                         )
                       })()}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </Card>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20, marginTop: 48 }} id="carriers">
+            <h2 style={{ fontFamily: 'var(--font-serif)', fontSize: 22, fontWeight: 700 }}>{t('carriers.title')}</h2>
+            <Button size="sm" onClick={() => setShowCarrierModal(true)}>{t('carriers.add')}</Button>
+          </div>
+
+          <Card>
+            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 14 }}>
+              <thead>
+                <tr style={{ borderBottom: '1px solid var(--border)' }}>
+                  {[t('carriers.col.name'), t('carriers.col.countries'), t('carriers.col.trackingUrl'), t('carriers.col.status'), t('carriers.col.since'), ''].map((h, i) => (
+                    <th key={i} style={{ padding: '12px 16px', textAlign: 'left', fontWeight: 600, color: 'var(--text-muted)', fontSize: 12 }}>{h}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {carriers.map(c => (
+                  <tr key={c.id} style={{ borderBottom: '1px solid var(--border)' }}>
+                    <td style={{ padding: '14px 16px', fontWeight: 600 }}>{c.name}</td>
+                    <td style={{ padding: '14px 16px', color: 'var(--text-muted)' }}>{c.supportedCountries.join(', ')}</td>
+                    <td style={{ padding: '14px 16px', color: 'var(--text-muted)', fontSize: 13 }}>
+                      <a href={c.trackingUrl} target="_blank" rel="noreferrer" style={{ color: 'var(--text-muted)' }}>{c.trackingUrl}</a>
+                    </td>
+                    <td style={{ padding: '14px 16px' }}>
+                      <span style={{
+                        fontSize: 12, fontWeight: 600, padding: '3px 8px', borderRadius: 4,
+                        background: c.active ? '#dcfce7' : '#f1f5f9',
+                        color: c.active ? '#16a34a' : 'var(--text-muted)',
+                      }}>
+                        {c.active ? t('carriers.status.active') : t('carriers.status.inactive')}
+                      </span>
+                    </td>
+                    <td style={{ padding: '14px 16px', color: 'var(--text-muted)' }}>{c.createdAt.slice(0, 7)}</td>
+                    <td style={{ padding: '14px 16px', textAlign: 'right' }}>
+                      <ActionMenu actions={[
+                        {
+                          label: t('carriers.edit'),
+                          icon: <PencilIcon size={15} />,
+                          onClick: () => setEditCarrier(c),
+                        },
+                        {
+                          label: c.active ? t('carriers.deactivate') : t('carriers.activate'),
+                          icon: c.active ? <BanIcon size={15} /> : <CheckCircleIcon size={15} />,
+                          onClick: async () => {
+                            try {
+                              if (c.active) await deactivateCarrier(c.id)
+                              else await activateCarrier(c.id)
+                              fetchCarriers()
+                              showSnackbar(c.active ? t('snackbar.carrierDeactivated') : t('snackbar.carrierActivated'))
+                            } catch { showSnackbar(t('snackbar.error')) }
+                          },
+                        },
+                        {
+                          label: t('carriers.delete'),
+                          icon: <TrashIcon size={15} />,
+                          onClick: () => setDeleteCarrierTarget(c),
+                          danger: true,
+                        },
+                      ]} />
                     </td>
                   </tr>
                 ))}

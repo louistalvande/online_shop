@@ -46,3 +46,14 @@ Accès via Nginx (nécessite `docker compose -f docker-compose.dev.yml up`) :
 | Portail acheteur | http://buyer.localhost |
 | Back-office vendeur | http://vendor.localhost |
 | Console admin | http://admin.localhost |
+
+
+## Générer `openapi.yaml`
+
+Se connecter au conteneur `shop-backend` via VS Code Remote SSH, puis exécuter :
+
+```bash
+cd /workspace && ./mvnw test -Popenapi
+```
+
+Démarre un contexte Spring avec H2 (sans PostgreSQL ni Redis) et écrit `openapi.yaml` à côté du `pom.xml`.

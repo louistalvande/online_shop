@@ -6,6 +6,7 @@ import com.shop.account.exception.InvalidAccountStateException;
 import com.shop.auth.exception.InvalidActivationTokenException;
 import com.shop.auth.exception.InvalidCredentialsException;
 import com.shop.auth.exception.PasswordsMismatchException;
+import com.shop.carrier.exception.CarrierNotFoundException;
 import org.springframework.context.MessageSource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -29,6 +30,21 @@ public class GlobalExceptionHandler {
      */
     public GlobalExceptionHandler(MessageSource messageSource) {
         this.messageSource = messageSource;
+    }
+
+    /**
+     * Handles carrier not found — returns HTTP 404.
+     *
+     * @param ex     the exception
+     * @param locale the request locale
+     * @return a 404 response with a localised error body
+     */
+    @ExceptionHandler(CarrierNotFoundException.class)
+    public ResponseEntity<Map<String, String>> handleCarrierNotFound(
+            CarrierNotFoundException ex, Locale locale) {
+        String message = messageSource.getMessage("error.carrier.not.found", null, locale);
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(Map.of("error", "CARRIER_NOT_FOUND", "message", message));
     }
 
     /**
