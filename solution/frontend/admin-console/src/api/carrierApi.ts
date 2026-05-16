@@ -17,6 +17,12 @@ export interface CreateCarrierPayload {
   supportedCountries: string[]
 }
 
+export interface UpdateCarrierPayload {
+  name: string
+  trackingUrl: string
+  supportedCountries: string[]
+}
+
 function authHeader(): HeadersInit {
   const session = getSession()
   return session ? { Authorization: `Bearer ${session.token}` } : {}
@@ -36,4 +42,40 @@ export async function createCarrier(payload: CreateCarrierPayload): Promise<Carr
   })
   if (!res.ok) throw new Error('Failed to create carrier')
   return res.json()
+}
+
+export async function updateCarrier(id: string, payload: UpdateCarrierPayload): Promise<CarrierResponse> {
+  const res = await fetch(`${BASE}/${id}`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', ...authHeader() },
+    body: JSON.stringify(payload),
+  })
+  if (!res.ok) throw new Error('Failed to update carrier')
+  return res.json()
+}
+
+export async function deactivateCarrier(id: string): Promise<CarrierResponse> {
+  const res = await fetch(`${BASE}/${id}/deactivate`, {
+    method: 'PATCH',
+    headers: authHeader(),
+  })
+  if (!res.ok) throw new Error('Failed to deactivate carrier')
+  return res.json()
+}
+
+export async function activateCarrier(id: string): Promise<CarrierResponse> {
+  const res = await fetch(`${BASE}/${id}/activate`, {
+    method: 'PATCH',
+    headers: authHeader(),
+  })
+  if (!res.ok) throw new Error('Failed to activate carrier')
+  return res.json()
+}
+
+export async function deleteCarrier(id: string): Promise<void> {
+  const res = await fetch(`${BASE}/${id}`, {
+    method: 'DELETE',
+    headers: authHeader(),
+  })
+  if (!res.ok) throw new Error('Failed to delete carrier')
 }

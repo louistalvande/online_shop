@@ -73,23 +73,23 @@ a|
 | *US-ADM-07*
 | En tant qu'administrateur, je peux modifier les informations d'un transporteur existant.
 a|
-- [ ] Tous les champs sont éditables (nom, pays, URL de suivi)
-- [ ] Modifications effectives immédiatement
-| À faire
+- [x] Tous les champs sont éditables (nom, pays, URL de suivi)
+- [x] Modifications effectives immédiatement
+| Terminée
 
 | *US-ADM-08*
 | En tant qu'administrateur, je peux désactiver un transporteur sans le supprimer.
 a|
-- [ ] Transporteur masqué du back-office vendeur pour les nouvelles expéditions
-- [ ] Les expéditions existantes référençant ce transporteur ne sont pas affectées
-| À faire
+- [x] Transporteur masqué du back-office vendeur pour les nouvelles expéditions
+- [x] Les expéditions existantes référençant ce transporteur ne sont pas affectées
+| Terminée
 
 | *US-ADM-09*
 | En tant qu'administrateur, je peux supprimer un transporteur qui n'est référencé dans aucune expédition active.
 a|
-- [ ] Suppression bloquée si des expéditions actives référencent ce transporteur, avec proposition de désactivation
-- [ ] Confirmation obligatoire avant suppression effective
-| À faire
+- [x] Suppression bloquée si des expéditions actives référencent ce transporteur, avec proposition de désactivation
+- [x] Confirmation obligatoire avant suppression effective
+| Terminée
 
 |===
 

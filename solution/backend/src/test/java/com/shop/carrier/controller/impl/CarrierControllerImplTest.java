@@ -2,6 +2,7 @@ package com.shop.carrier.controller.impl;
 
 import com.shop.carrier.dto.CarrierResponse;
 import com.shop.carrier.entity.Carrier;
+import com.shop.carrier.exception.CarrierNotFoundException;
 import com.shop.carrier.service.CarrierService;
 import com.shop.common.GlobalExceptionHandler;
 import org.junit.jupiter.api.BeforeEach;
@@ -16,11 +17,15 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Locale;
+import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.BDDMockito.given;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.mockito.BDDMockito.willThrow;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -96,5 +101,86 @@ class CarrierControllerImplTest {
         mvc.perform(get("/api/admin/carriers"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].name").value("La Poste"));
+    }
+
+    /** PATCH /{id} returns 200 with updated carrier. */
+    @Test
+    void updateCarrier_returns200_whenValid() throws Exception {
+        UUID id = UUID.randomUUID();
+        CarrierResponse updated = buildResponse("DHL");
+        given(carrierService.updateCarrier(eq(id), any())).willReturn(updated);
+
+        mvc.perform(patch("/api/admin/carriers/" + id)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"name":"DHL","trackingUrl":"https://dhl.com","supportedCountries":["FR","DE"]}
+                                """))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.name").value("DHL"));
+    }
+
+    /** PATCH /{id} returns 404 when carrier does not exist. */
+    @Test
+    void updateCarrier_returns404_whenNotFound() throws Exception {
+        UUID id = UUID.randomUUID();
+        given(carrierService.updateCarrier(eq(id), any())).willThrow(new CarrierNotFoundException(id));
+        given(messageSource.getMessage(eq("error.carrier.not.found"), isNull(), any(Locale.class)))
+                .willReturn("Carrier not found.");
+
+        mvc.perform(patch("/api/admin/carriers/" + id)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"name":"X","trackingUrl":"https://x.com","supportedCountries":["FR"]}
+                                """))
+                .andExpect(status().isNotFound());
+    }
+
+    /** PATCH /{id}/deactivate returns 200 with active=false. */
+    @Test
+    void deactivateCarrier_returns200_whenExists() throws Exception {
+        UUID id = UUID.randomUUID();
+        Carrier c = new Carrier();
+        c.setName("La Poste");
+        c.setTrackingUrl("https://example.com/track");
+        c.setSupportedCountries(List.of("FR"));
+        c.setActive(false);
+        c.setCreatedAt(LocalDateTime.now());
+        given(carrierService.deactivateCarrier(id)).willReturn(CarrierResponse.from(c));
+
+        mvc.perform(patch("/api/admin/carriers/" + id + "/deactivate"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.active").value(false));
+    }
+
+    /** PATCH /{id}/activate returns 200 with active=true. */
+    @Test
+    void activateCarrier_returns200_whenExists() throws Exception {
+        UUID id = UUID.randomUUID();
+        given(carrierService.activateCarrier(id)).willReturn(buildResponse("La Poste"));
+
+        mvc.perform(patch("/api/admin/carriers/" + id + "/activate"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.active").value(true));
+    }
+
+    /** DELETE /{id} returns 204. */
+    @Test
+    void deleteCarrier_returns204_whenExists() throws Exception {
+        UUID id = UUID.randomUUID();
+
+        mvc.perform(delete("/api/admin/carriers/" + id))
+                .andExpect(status().isNoContent());
+    }
+
+    /** DELETE /{id} returns 404 when carrier does not exist. */
+    @Test
+    void deleteCarrier_returns404_whenNotFound() throws Exception {
+        UUID id = UUID.randomUUID();
+        willThrow(new CarrierNotFoundException(id)).given(carrierService).deleteCarrier(id);
+        given(messageSource.getMessage(eq("error.carrier.not.found"), isNull(), any(Locale.class)))
+                .willReturn("Carrier not found.");
+
+        mvc.perform(delete("/api/admin/carriers/" + id))
+                .andExpect(status().isNotFound());
     }
 }

@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Button } from '@workspace/theme'
-import { createCarrier } from '../api/carrierApi'
+import { createCarrier, updateCarrier, type CarrierResponse } from '../api/carrierApi'
 import { listCountries, type CountryResponse } from '../api/countryApi'
 
 interface Props {
+  carrier?: CarrierResponse
   onClose: () => void
   onSuccess: () => void
 }
@@ -39,15 +40,17 @@ const errorBox: React.CSSProperties = {
   borderRadius: 4, padding: '8px 12px', fontSize: 13, color: '#b91c1c', marginBottom: 16,
 }
 
-export default function CarrierFormModal({ onClose, onSuccess }: Props) {
+export default function CarrierFormModal({ carrier, onClose, onSuccess }: Props) {
   const { t, i18n } = useTranslation()
-  const [name, setName] = useState('')
-  const [trackingUrl, setTrackingUrl] = useState('')
+  const [name, setName] = useState(carrier?.name ?? '')
+  const [trackingUrl, setTrackingUrl] = useState(carrier?.trackingUrl ?? '')
   const [countries, setCountries] = useState<CountryResponse[]>([])
-  const [selected, setSelected] = useState<Set<string>>(new Set())
+  const [selected, setSelected] = useState<Set<string>>(new Set(carrier?.supportedCountries ?? []))
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
   const [loadingCountries, setLoadingCountries] = useState(true)
+
+  const isEdit = carrier !== undefined
 
   useEffect(() => {
     listCountries()
@@ -76,7 +79,11 @@ export default function CarrierFormModal({ onClose, onSuccess }: Props) {
     setError(null)
     setLoading(true)
     try {
-      await createCarrier({ name, trackingUrl, supportedCountries: [...selected] })
+      if (isEdit) {
+        await updateCarrier(carrier.id, { name, trackingUrl, supportedCountries: [...selected] })
+      } else {
+        await createCarrier({ name, trackingUrl, supportedCountries: [...selected] })
+      }
       onSuccess()
     } catch {
       setError(t('carrierModal.error.generic'))
@@ -89,7 +96,7 @@ export default function CarrierFormModal({ onClose, onSuccess }: Props) {
     <div style={overlay} onClick={onClose}>
       <div style={modal} onClick={e => e.stopPropagation()}>
         <h2 style={{ fontFamily: 'var(--font-serif)', fontSize: 20, fontWeight: 700, marginBottom: 24 }}>
-          {t('carrierModal.title.create')}
+          {isEdit ? t('carrierModal.title.edit') : t('carrierModal.title.create')}
         </h2>
 
         {error && <div style={errorBox}>{error}</div>}
@@ -130,7 +137,7 @@ export default function CarrierFormModal({ onClose, onSuccess }: Props) {
               {t('accountModal.cancel')}
             </Button>
             <Button type="submit" size="sm" disabled={loading}>
-              {loading ? '…' : t('carrierModal.submit')}
+              {loading ? '…' : isEdit ? t('carrierModal.submit.edit') : t('carrierModal.submit')}
             </Button>
           </div>
         </form>
