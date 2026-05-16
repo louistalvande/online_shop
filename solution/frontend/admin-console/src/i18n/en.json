@@ -53,6 +53,7 @@
   "accountModal.title.reactivate": "Reactivate account",
   "accountModal.reactivate.confirm": "Reactivate {{name}}'s account? The user will be able to log in again.",
   "accountModal.reactivate.submit": "Reactivate",
+  "userDetail.close": "Close",
   "lang.toggle": "Switch language",
   "nav.account": "My account",
   "nav.logout": "Log out",

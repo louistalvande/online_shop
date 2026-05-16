@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { AppShell, Button, Card, UserIcon, PackageIcon, LangToggle, UserMenu, Snackbar, PencilIcon, BanIcon, CheckCircleIcon, TrashIcon } from '@workspace/theme'
 import AccountModal from './components/AccountModal'
 import ActionMenu from './components/ActionMenu'
+import UserDetailModal from './components/UserDetailModal'
 import LoginPage from './LoginPage'
 import { getSession, logout } from './api/authApi'
 import { listAccounts, type AccountResponse } from './api/accountApi'
@@ -17,6 +18,7 @@ export default function App() {
   const [deleteAccount, setDeleteAccount] = useState<AccountResponse | null>(null)
   const [suspendAccount, setSuspendAccount] = useState<AccountResponse | null>(null)
   const [reactivateAccount, setReactivateAccount] = useState<AccountResponse | null>(null)
+  const [viewAccount, setViewAccount] = useState<AccountResponse | null>(null)
   const [snackbar, setSnackbar] = useState<string | null>(null)
 
   function showSnackbar(message: string) {
@@ -110,6 +112,10 @@ export default function App() {
         />
       )}
 
+      {viewAccount && (
+        <UserDetailModal account={viewAccount} onClose={() => setViewAccount(null)} />
+      )}
+
       <AppShell
         appName={t('app.name')}
         navLinks={[
@@ -164,7 +170,7 @@ export default function App() {
               </thead>
               <tbody>
                 {accounts.map(a => (
-                  <tr key={a.id} style={{ borderBottom: '1px solid var(--border)' }}>
+                  <tr key={a.id} onClick={() => setViewAccount(a)} style={{ borderBottom: '1px solid var(--border)', cursor: 'pointer' }}>
                     <td style={{ padding: '14px 16px', fontWeight: 600 }}>{a.firstName} {a.lastName}</td>
                     <td style={{ padding: '14px 16px', color: 'var(--text-muted)' }}>{a.email}</td>
                     <td style={{ padding: '14px 16px' }}>
@@ -185,7 +191,7 @@ export default function App() {
                     <td style={{ padding: '14px 16px', color: 'var(--text-muted)' }}>
                       {a.createdAt.slice(0, 7)}
                     </td>
-                    <td style={{ padding: '14px 16px', textAlign: 'right' }}>
+                    <td style={{ padding: '14px 16px', textAlign: 'right' }} onClick={e => e.stopPropagation()}>
                       {(() => {
                         const isLastAdmin = a.role === 'ADMIN' && activeAdminCount === 1
                         const isSuspended = a.status === 'SUSPENDED'

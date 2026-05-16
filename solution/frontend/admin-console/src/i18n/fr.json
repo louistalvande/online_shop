@@ -53,6 +53,7 @@
   "accountModal.title.reactivate": "Réactiver le compte",
   "accountModal.reactivate.confirm": "Réactiver le compte de {{name}} ? L'utilisateur pourra de nouveau se connecter.",
   "accountModal.reactivate.submit": "Réactiver",
+  "userDetail.close": "Fermer",
   "lang.toggle": "Changer de langue",
   "nav.account": "Mon compte",
   "nav.logout": "Se déconnecter",
