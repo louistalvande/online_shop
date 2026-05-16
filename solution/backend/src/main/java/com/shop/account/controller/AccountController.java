@@ -84,6 +84,19 @@ public interface AccountController {
     ResponseEntity<AccountResponse> reactivateAccount(@PathVariable UUID id);
 
     /**
+     * Force-activates a pending account, bypassing the email verification flow (admin override).
+     *
+     * @param id the account UUID
+     * @return the updated account with HTTP 200
+     */
+    @Operation(summary = "Force-activate a pending account (admin bypass, skips email verification)")
+    @ApiResponse(responseCode = "200", description = "Account activated")
+    @ApiResponse(responseCode = "404", description = "Account not found")
+    @ApiResponse(responseCode = "409", description = "Account is not in PENDING status")
+    @PatchMapping("/{id}/force-activate")
+    ResponseEntity<AccountResponse> forceActivateAccount(@PathVariable UUID id);
+
+    /**
      * Soft-deletes an account by setting its status to {@code DELETED}.
      *
      * @param id the account UUID

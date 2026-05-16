@@ -84,6 +84,7 @@ public class AccountServiceImpl implements AccountService {
     @Transactional(readOnly = true)
     public List<AccountResponse> listAccounts() {
         return accountRepository.findAll().stream()
+                .filter(a -> a.getStatus() != AccountStatus.DELETED)
                 .map(AccountResponse::from)
                 .toList();
     }
@@ -120,6 +121,19 @@ public class AccountServiceImpl implements AccountService {
         if (account.getStatus() != AccountStatus.SUSPENDED) {
             throw new InvalidAccountStateException(id, AccountStatus.SUSPENDED);
         }
+        account.setStatus(AccountStatus.ACTIVE);
+        return AccountResponse.from(accountRepository.save(account));
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public AccountResponse forceActivateAccount(UUID id) {
+        Account account = accountRepository.findById(id)
+                .orElseThrow(() -> new AccountNotFoundException(id));
+        if (account.getStatus() != AccountStatus.PENDING) {
+            throw new InvalidAccountStateException(id, AccountStatus.PENDING);
+        }
+        activationTokenRepository.deleteByAccountId(id);
         account.setStatus(AccountStatus.ACTIVE);
         return AccountResponse.from(accountRepository.save(account));
     }

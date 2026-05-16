@@ -99,7 +99,7 @@ The backend exposes its full OpenAPI 3 spec via **springdoc-openapi**:
 
 - Every controller interface method must carry `@Operation(summary = "...")` and `@ApiResponse` annotations so the generated spec is self-documenting.
 - Every DTO field must carry `@Schema(description = "...")`.
-- The static `openapi.yaml` must be regenerated whenever an endpoint is added, removed, or changed (run `./mvnw springdoc-openapi:generate`).
+- The static `openapi.yaml` must be regenerated whenever an endpoint is added, removed, or changed (run `./mvnw test -Popenapi` from inside the `shop-backend` container — this uses `OpenApiGeneratorTest` with an H2 context, no running server required).
 - The frontend apps must import types from the generated spec (via `openapi-typescript` or equivalent) — do not hand-write API client types.
 
 ---
@@ -344,6 +344,8 @@ docker compose up --build
 - Verify identifiers against the architecture before creating new entities or endpoints.
 - Before implementing a feature, verify it in the architecture document, and ask to update it before generating code.
 - After architecture changes approved, implement modify code, and add TU for Controller and Service with Mockito framework. Add end2end test with playwright in js.
+- **After every feature implementation**, regenerate `openapi.yaml` by running `./mvnw test -Popenapi` inside the `shop-backend` container and commit the updated file alongside the code change.
+- **End-to-end tests** live in `frontend/e2e/` and are written in JavaScript with Playwright. One spec file per User Story: `e2e/<domain>/<us-id>.spec.js` (e.g. `e2e/carrier/adm-07.spec.js`). Each spec must cover the nominal path and the main error cases defined in the acceptance criteria. E2E tests must be updated or extended whenever the feature they cover is modified.
 - At the end of the code generation, review the entire changes, test if it compiles, and fix or improve if possible.
 - Never deviate from the domain model and business rules defined in the architecture — read it first.
 - **All code and all comments must be in English** — class names, method names, variables, field names, inline comments, Javadoc, SQL columns, API paths, Git commit messages.
