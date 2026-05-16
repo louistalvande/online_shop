@@ -66,9 +66,9 @@ a|
 | *US-ADM-06*
 | En tant qu'administrateur, je peux ajouter un transporteur avec son nom, les pays de la zone euro couverts et l'URL de son site de suivi.
 a|
-- [ ] Formulaire : nom, pays de la zone euro couverts (multi-sélect restreint à la zone euro), URL de suivi
-- [ ] Transporteur créé avec statut `actif` et disponible immédiatement dans le back-office vendeur
-| À faire
+- [x] Formulaire : nom, pays de la zone euro couverts (multi-sélect restreint à la zone euro), URL de suivi
+- [x] Transporteur créé avec statut `actif` et disponible immédiatement dans le back-office vendeur
+| Terminée
 
 | *US-ADM-07*
 | En tant qu'administrateur, je peux modifier les informations d'un transporteur existant.
