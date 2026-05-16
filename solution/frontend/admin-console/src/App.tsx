@@ -1,8 +1,9 @@
 import './index.css'
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { AppShell, Button, Card, UserIcon, PackageIcon, LangToggle, UserMenu, Snackbar, IconButton, TrashIcon, DotsHorizontalIcon } from '@workspace/theme'
+import { AppShell, Button, Card, UserIcon, PackageIcon, LangToggle, UserMenu, Snackbar, PencilIcon, BanIcon, CheckCircleIcon, TrashIcon } from '@workspace/theme'
 import AccountModal from './components/AccountModal'
+import ActionMenu from './components/ActionMenu'
 import LoginPage from './LoginPage'
 import { getSession, logout } from './api/authApi'
 import { listAccounts, type AccountResponse } from './api/accountApi'
@@ -170,31 +171,47 @@ export default function App() {
                       <span style={{ fontWeight: 600, fontSize: 13 }}>{t(`users.role.${a.role}`)}</span>
                     </td>
                     <td style={{ padding: '14px 16px' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                        {(a.status === 'ACTIVE' || a.status === 'SUSPENDED') && (() => {
-                          const isLastAdmin = a.role === 'ADMIN' && activeAdminCount === 1
-                          const isSuspended = a.status === 'SUSPENDED'
-                          return (
-                            <Button variant="ghost" size="sm"
-                              onClick={() => !isLastAdmin && (isSuspended ? setReactivateAccount(a) : setSuspendAccount(a))}
-                              disabled={isLastAdmin}
-                              title={isLastAdmin ? t('users.suspend.lastAdmin') : undefined}
-                              style={{
-                                color: isLastAdmin ? 'var(--text-muted)' : isSuspended ? '#16a34a' : '#d97706',
-                                cursor: isLastAdmin ? 'not-allowed' : undefined,
-                              }}>
-                              {isSuspended ? t('users.reactivate') : t('users.suspend')}
-                            </Button>
-                          )
-                        })()}
-                      </div>
+                      <span style={{
+                        fontSize: 12,
+                        fontWeight: 600,
+                        padding: '3px 8px',
+                        borderRadius: 4,
+                        background: a.status === 'ACTIVE' ? '#dcfce7' : a.status === 'SUSPENDED' ? '#fef9c3' : a.status === 'PENDING' ? '#dbeafe' : '#f1f5f9',
+                        color: a.status === 'ACTIVE' ? '#16a34a' : a.status === 'SUSPENDED' ? '#d97706' : a.status === 'PENDING' ? '#2563eb' : 'var(--text-muted)',
+                      }}>
+                        {t(`users.status.${a.status}`)}
+                      </span>
                     </td>
                     <td style={{ padding: '14px 16px', color: 'var(--text-muted)' }}>
                       {a.createdAt.slice(0, 7)}
                     </td>
-                    <td style={{ padding: '14px 16px', display: 'flex', gap: 8 }}>
-                      <IconButton onClick={() => setEditAccount(a)} title={t('users.edit')} style={{ color: 'var(--text-muted)' }}><DotsHorizontalIcon size={16} /></IconButton>
-                      <IconButton onClick={() => setDeleteAccount(a)} title={t('users.delete')} style={{ color: 'var(--text-muted)' }}><TrashIcon size={16} /></IconButton>
+                    <td style={{ padding: '14px 16px', textAlign: 'right' }}>
+                      {(() => {
+                        const isLastAdmin = a.role === 'ADMIN' && activeAdminCount === 1
+                        const isSuspended = a.status === 'SUSPENDED'
+                        const canToggle = a.status === 'ACTIVE' || a.status === 'SUSPENDED'
+                        return (
+                          <ActionMenu actions={[
+                            {
+                              label: t('users.edit'),
+                              icon: <PencilIcon size={15} />,
+                              onClick: () => setEditAccount(a),
+                            },
+                            ...(canToggle ? [{
+                              label: isSuspended ? t('users.reactivate') : t('users.suspend'),
+                              icon: isSuspended ? <CheckCircleIcon size={15} /> : <BanIcon size={15} />,
+                              onClick: () => isSuspended ? setReactivateAccount(a) : setSuspendAccount(a),
+                              disabled: isLastAdmin,
+                            }] : []),
+                            {
+                              label: t('users.delete'),
+                              icon: <TrashIcon size={15} />,
+                              onClick: () => setDeleteAccount(a),
+                              danger: true,
+                            },
+                          ]} />
+                        )
+                      })()}
                     </td>
                   </tr>
                 ))}

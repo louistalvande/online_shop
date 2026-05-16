@@ -111,3 +111,30 @@ export function TrashIcon({ size = 16, ...p }: IconProps) {
     </svg>
   )
 }
+
+export function PencilIcon({ size = 16, ...p }: IconProps) {
+  return (
+    <svg {...base(size)} {...p}>
+      <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" />
+      <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" />
+    </svg>
+  )
+}
+
+export function BanIcon({ size = 16, ...p }: IconProps) {
+  return (
+    <svg {...base(size)} {...p}>
+      <circle cx="12" cy="12" r="10" />
+      <line x1="4.93" y1="4.93" x2="19.07" y2="19.07" />
+    </svg>
+  )
+}
+
+export function CheckCircleIcon({ size = 16, ...p }: IconProps) {
+  return (
+    <svg {...base(size)} {...p}>
+      <path d="M22 11.08V12a10 10 0 11-5.93-9.14" />
+      <polyline points="22 4 12 14.01 9 11.01" />
+    </svg>
+  )
+}

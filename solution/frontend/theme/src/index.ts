@@ -1,4 +1,4 @@
-export { ChurchIcon, CartIcon, UserIcon, SettingsIcon, PackageIcon, GalleryIcon, GlobeIcon, TrashIcon, DotsHorizontalIcon } from './icons'
+export { ChurchIcon, CartIcon, UserIcon, SettingsIcon, PackageIcon, GalleryIcon, GlobeIcon, TrashIcon, DotsHorizontalIcon, PencilIcon, BanIcon, CheckCircleIcon } from './icons'
 export { Button } from './Button'
 export { IconButton } from './IconButton'
 export { Card } from './Card'
