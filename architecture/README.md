@@ -11,7 +11,7 @@ asciidoctor-pdf -r asciidoctor-diagram main.adoc -o "Boutique en ligne - Documen
 ## HTML
 
 ```bash
-asciidoctor -r asciidoctor-diagram -o "Boutique en ligne - Documentation d'Architecture.html" main.adoc
+asciidoctor -r asciidoctor-diagram -a data-uri -a webfonts! -o "Boutique en ligne - Documentation d'Architecture.html" main.adoc
 ```
 
 ## Document des besoins opérationnels (HTML)
