@@ -42,23 +42,7 @@ On modélise ici les acteurs (opérateurs, systèmes externes), leurs activités
 
 **Exemple de diagramme OA - Cas d'utilisation opérationnel:**
 
-[plantuml, oa-use-case, svg]
-----
-!define FONTSIZE 8
-skinparam fontSize FONTSIZE
-actor Client
-actor Magasinier
-actor Fournisseur
-
-Client --> (Consulter catalogue)
-Client --> (Commander)
-Client --> (Payer)
-Magasinier --> (Recevoir commande)
-Magasinier --> (Préparer livraison)
-Magasinier --> (Expédier)
-Fournisseur --> (Approvisionner stock)
-Magasinier --> (Approvisionner stock)
-----
+image::architecture/diagrams/readme/oa-use-case.svg[OA Use Case, 600]
 
 ===== 2. Analyse du Besoin Système (SA — System Need Analysis) [[2-analyse-du-besoin-système-sa--system-need-analysis]]
 Que doit faire le système pour satisfaire ce besoin ?
@@ -76,25 +60,7 @@ On définit les fonctions du système vues de l'extérieur (ce qu'il doit accomp
 
 **Exemple de diagramme SA - Contexte système:**
 
-[plantuml, sa-context, svg]
-----
-!define FONTSIZE 8
-skinparam fontSize FONTSIZE
-actor Client
-actor "Système de Paiement" as Payment
-rectangle "Online Shop System" {
-  usecase (Browse)
-  usecase (AddCart)
-  usecase (Checkout)
-  usecase (Process Payment)
-  usecase (Confirm Order)
-}
-Client --> (Browse)
-Client --> (AddCart)
-Client --> (Checkout)
-(Process Payment) --> Payment
-Payment --> (Confirm Order)
-----
+image::architecture/diagrams/readme/sa-context.svg[SA Context, 600]
 
 ==== Analyse du système [[analyse-du-système]]
 
@@ -115,25 +81,7 @@ On décompose le système en composants logiques (sans préjuger des technologie
 
 **Exemple de diagramme LA - Architecture logique des composants:**
 
-[plantuml, la-components, svg]
-----
-!define FONTSIZE 8
-skinparam fontSize FONTSIZE
-component [UI Controller]
-component [Catalog Service]
-component [Cart Service]
-component [Order Service]
-component [Payment Service]
-component [Notification Service]
-
-[UI Controller] --> [Catalog Service]
-[UI Controller] --> [Cart Service]
-[UI Controller] --> [Order Service]
-[Cart Service] --> [Catalog Service]
-[Order Service] --> [Cart Service]
-[Order Service] --> [Payment Service]
-[Order Service] --> [Notification Service]
-----
+image::architecture/diagrams/readme/la-components.svg[LA Components, 600]
 
 ===== 4. Architecture Physique (PA — Physical Architecture) [[4-architecture-physique-pa--physical-architecture]]
 Quelles solutions concrètes implémentent l'architecture logique ?
@@ -151,25 +99,7 @@ On mappe les composants logiques sur des composants physiques réels (matériel,
 
 **Exemple de diagramme PA - Architecture de déploiement:**
 
-[plantuml, pa-deployment, svg]
-----
-!define FONTSIZE 8
-skinparam fontSize FONTSIZE
-node "Client Browser"
-node "Load Balancer"
-node "Web Server 1"
-node "Web Server 2"
-node "API Server"
-node "PostgreSQL DB"
-node "Redis Cache"
-node "Stripe API"
-
-"Client Browser" --> "Load Balancer"
-"Load Balancer" --> "Web Server 1"
-"Load Balancer" --> "Web Server 2"
-"Web Server 1" --> "API Server"
-"Web Server 2" --> "API Server"
-"API Server" --> "PostgreSQL DB"
+image::architecture/diagrams/readme/pa-deployment.svg[PA Deployment, 600]
 "API Server" --> "Redis Cache"
 "API Server" --> "Stripe API"
 ----
@@ -231,20 +161,8 @@ This phase models the actors (operators, external systems), their operational ac
 | Communication Diagram | Highlights interactions between groups of actors
 |===
 OA Diagram Example — Operational Use Case:
-[plantuml, oa-use-case, svg]
-!define FONTSIZE 8
-skinparam fontSize FONTSIZE
-actor Client
-actor Magasinier
-actor Fournisseur
-Client --> (Consulter catalogue)
-Client --> (Commander)
-Client --> (Payer)
-Magasinier --> (Recevoir commande)
-Magasinier --> (Préparer livraison)
-Magasinier --> (Expédier)
-Fournisseur --> (Approvisionner stock)
-Magasinier --> (Approvisionner stock)
+
+image::architecture/diagrams/readme/oa-use-case.svg[OA Use Case, 600]
 
 ===== 2. System Need Analysis (SA) [[2-system-need-analysis-sa]]
 
@@ -261,23 +179,8 @@ This phase defines the system's functions as seen from the outside (what it must
 |===
 
 SA Diagram Example — System Context:
-[plantuml, sa-context, svg]
-!define FONTSIZE 8
-skinparam fontSize FONTSIZE
-actor Client
-actor "Système de Paiement" as Payment
-rectangle "Online Shop System" {
-usecase (Browse)
-usecase (AddCart)
-usecase (Checkout)
-usecase (Process Payment)
-usecase (Confirm Order)
-}
-Client --> (Browse)
-Client --> (AddCart)
-Client --> (Checkout)
-(Process Payment) --> Payment
-Payment --> (Confirm Order)
+
+image::architecture/diagrams/readme/sa-context.svg[SA Context, 600]
 
 
 ==== System Analysis [[system-analysis]]
@@ -299,22 +202,8 @@ The system is broken down into logical components (without assuming any specific
 |===
 
 LA Diagram Example — Logical Component Architecture:
-[plantuml, la-components, svg]
-!define FONTSIZE 8
-skinparam fontSize FONTSIZE
-component [UI Controller]
-component [Catalog Service]
-component [Cart Service]
-component [Order Service]
-component [Payment Service]
-component [Notification Service]
-[UI Controller] --> [Catalog Service]
-[UI Controller] --> [Cart Service]
-[UI Controller] --> [Order Service]
-[Cart Service] --> [Catalog Service]
-[Order Service] --> [Cart Service]
-[Order Service] --> [Payment Service]
-[Order Service] --> [Notification Service]
+
+image::architecture/diagrams/readme/la-components.svg[LA Components, 600]
 
 
 ===== 4. Physical Architecture (PA) [[4-physical-architecture-pa]]
@@ -332,25 +221,8 @@ Logical components are mapped onto real physical components (hardware, software,
 |===
 
 PA Diagram Example — Deployment Architecture:
-[plantuml, pa-deployment, svg]
-!define FONTSIZE 8
-skinparam fontSize FONTSIZE
-node "Client Browser"
-node "Load Balancer"
-node "Web Server 1"
-node "Web Server 2"
-node "API Server"
-node "PostgreSQL DB"
-node "Redis Cache"
-node "Stripe API"
-"Client Browser" --> "Load Balancer"
-"Load Balancer" --> "Web Server 1"
-"Load Balancer" --> "Web Server 2"
-"Web Server 1" --> "API Server"
-"Web Server 2" --> "API Server"
-"API Server" --> "PostgreSQL DB"
-"API Server" --> "Redis Cache"
-"API Server" --> "Stripe API"
+
+image::architecture/diagrams/readme/pa-deployment.svg[PA Deployment, 600]
 
 === II. Generating the Solution Infrastructure [[ii-generating-the-solution-infrastructure]]
 
