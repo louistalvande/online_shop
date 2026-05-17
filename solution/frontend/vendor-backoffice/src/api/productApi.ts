@@ -1,0 +1,119 @@
+import { getSession } from './authApi'
+
+export interface Product {
+  id: string
+  vendorId: string
+  name: string
+  description: string | null
+  priceExclTax: number
+  category: string | null
+  quantity: number
+  stockAlertThreshold: number
+  status: 'PUBLISHED' | 'ARCHIVED'
+  photoUrls: string[]
+  outOfStock: boolean
+  belowThreshold: boolean
+  createdAt: string
+  updatedAt: string
+}
+
+export interface StockAlert {
+  id: string
+  productId: string
+  productName: string
+  quantity: number
+  stockAlertThreshold: number
+  triggeredAt: string
+  acknowledged: boolean
+}
+
+export interface CreateProductPayload {
+  name: string
+  description?: string
+  priceExclTax: number
+  category?: string
+  quantity: number
+  stockAlertThreshold: number
+  photoUrls: string[]
+}
+
+export interface UpdateStockPayload {
+  quantity: number
+  stockAlertThreshold: number
+}
+
+function authHeaders(): Record<string, string> {
+  const session = getSession()
+  return {
+    'Content-Type': 'application/json',
+    ...(session ? { Authorization: `Bearer ${session.token}` } : {}),
+  }
+}
+
+async function handleResponse<T>(res: Response): Promise<T> {
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}))
+    throw Object.assign(new Error(body.message ?? 'Request failed'), { status: res.status, code: body.error })
+  }
+  return res.json()
+}
+
+/** Fetches all products for the authenticated vendor. */
+export async function listProducts(): Promise<Product[]> {
+  const res = await fetch('/api/vendor/products', { headers: authHeaders() })
+  return handleResponse<Product[]>(res)
+}
+
+/** Creates a new product. */
+export async function createProduct(payload: CreateProductPayload): Promise<Product> {
+  const res = await fetch('/api/vendor/products', {
+    method: 'POST',
+    headers: authHeaders(),
+    body: JSON.stringify(payload),
+  })
+  return handleResponse<Product>(res)
+}
+
+/** Updates an existing product. */
+export async function updateProduct(id: string, payload: CreateProductPayload): Promise<Product> {
+  const res = await fetch(`/api/vendor/products/${id}`, {
+    method: 'PUT',
+    headers: authHeaders(),
+    body: JSON.stringify(payload),
+  })
+  return handleResponse<Product>(res)
+}
+
+/** Archives a product. */
+export async function archiveProduct(id: string): Promise<Product> {
+  const res = await fetch(`/api/vendor/products/${id}/archive`, {
+    method: 'PATCH',
+    headers: authHeaders(),
+  })
+  return handleResponse<Product>(res)
+}
+
+/** Updates stock quantity and alert threshold for a product. */
+export async function updateStock(id: string, payload: UpdateStockPayload): Promise<Product> {
+  const res = await fetch(`/api/vendor/products/${id}/stock`, {
+    method: 'PATCH',
+    headers: authHeaders(),
+    body: JSON.stringify(payload),
+  })
+  return handleResponse<Product>(res)
+}
+
+/** Fetches all unacknowledged stock alerts for the vendor. */
+export async function listPendingAlerts(): Promise<StockAlert[]> {
+  const res = await fetch('/api/vendor/alerts', { headers: authHeaders() })
+  return handleResponse<StockAlert[]>(res)
+}
+
+/** Acknowledges a stock alert. */
+export async function acknowledgeAlert(alertId: string): Promise<StockAlert> {
+  const res = await fetch(`/api/vendor/alerts/${alertId}/acknowledge`, {
+    method: 'PATCH',
+    headers: authHeaders(),
+  })
+  return handleResponse<StockAlert>(res)
+}

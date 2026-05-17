@@ -10,6 +10,8 @@ import com.shop.auth.exception.PasswordsMismatchException;
 import com.shop.auth.exception.TokenNotFoundException;
 import com.shop.auth.exception.TooManyLoginAttemptsException;
 import com.shop.carrier.exception.CarrierNotFoundException;
+import com.shop.catalog.exception.ProductArchivedConflictException;
+import com.shop.catalog.exception.ProductNotFoundException;
 import org.springframework.context.MessageSource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -177,6 +179,36 @@ public class GlobalExceptionHandler {
         String message = messageSource.getMessage("error.too.many.attempts", null, locale);
         return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS)
                 .body(Map.of("error", "TOO_MANY_ATTEMPTS", "message", message));
+    }
+
+    /**
+     * Handles product not found — returns HTTP 404.
+     *
+     * @param ex     the exception
+     * @param locale the request locale
+     * @return a 404 response with a localised error body
+     */
+    @ExceptionHandler(ProductNotFoundException.class)
+    public ResponseEntity<Map<String, String>> handleProductNotFound(
+            ProductNotFoundException ex, Locale locale) {
+        String message = messageSource.getMessage("error.product.not.found", null, locale);
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(Map.of("error", "PRODUCT_NOT_FOUND", "message", message));
+    }
+
+    /**
+     * Handles archiving conflict (product referenced in an active order) — returns HTTP 409 (US-CAT-03).
+     *
+     * @param ex     the exception
+     * @param locale the request locale
+     * @return a 409 response with a localised error body
+     */
+    @ExceptionHandler(ProductArchivedConflictException.class)
+    public ResponseEntity<Map<String, String>> handleProductArchivedConflict(
+            ProductArchivedConflictException ex, Locale locale) {
+        String message = messageSource.getMessage("error.product.archive.conflict", null, locale);
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(Map.of("error", "PRODUCT_ARCHIVE_CONFLICT", "message", message));
     }
 
     /**

@@ -1,21 +1,29 @@
 import { useTranslation } from 'react-i18next'
 import { AppShell, LangToggle, UserMenu } from '@workspace/theme'
 
+export type Page = 'dashboard' | 'catalog'
+
 interface Props {
   onLogout: () => void
+  onNavigate: (page: Page) => void
+  currentPage: Page
+  alertCount: number
   children: React.ReactNode
 }
 
-export default function Header({ onLogout, children }: Props) {
+export default function Header({ onLogout, onNavigate, currentPage, alertCount, children }: Props) {
   const { t, i18n } = useTranslation()
 
   return (
     <AppShell
       appName={t('app.name')}
       navLinks={[
-        { label: t('nav.dashboard'), href: '#' },
-        { label: t('nav.orders'), href: '#orders' },
-        { label: t('nav.catalog'), href: '#catalogue' },
+        { label: t('nav.dashboard'), href: '#', onClick: () => onNavigate('dashboard') },
+        {
+          label: t('nav.catalog'), href: '#',
+          onClick: () => onNavigate('catalog'),
+          badge: currentPage !== 'catalog' ? alertCount : 0,
+        },
       ]}
       actions={
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>

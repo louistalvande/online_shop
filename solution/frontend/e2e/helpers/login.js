@@ -119,3 +119,70 @@ export async function createCarrierViaApi(page, payload) {
   });
   return res.json();
 }
+
+/**
+ * Creates an active vendor account by registering as a buyer (which sets the password),
+ * activating the account, then changing the role to VENDOR via admin API.
+ *
+ * @param {object} page      Playwright Page
+ * @param {string} email     the vendor's email
+ * @param {string} password  the plaintext password (min 12 chars)
+ */
+export async function createActiveVendorViaApi(page, email, password) {
+  await registerAndActivateBuyerViaApi(page, email, password);
+  const token = await getAdminToken(page);
+  const listRes = await page.request.get(`${API_URL}/api/admin/accounts`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  const accounts = await listRes.json();
+  const account = accounts.find((a) => a.email === email);
+  await page.request.patch(`${API_URL}/api/admin/accounts/${account.id}`, {
+    headers: { Authorization: `Bearer ${token}` },
+    data: { role: 'VENDOR' },
+  });
+  return account;
+}
+
+/**
+ * Obtains a vendor JWT by logging in via the REST API.
+ *
+ * @param {object} page      Playwright Page
+ * @param {string} email     vendor email
+ * @param {string} password  vendor password
+ */
+export async function getVendorToken(page, email, password) {
+  const res = await page.request.post(`${API_URL}/api/auth/login`, {
+    data: { email, password },
+  });
+  const body = await res.json();
+  return body.token;
+}
+
+/**
+ * Injects a vendor session into localStorage so tests can skip the UI login step.
+ *
+ * @param {object} page      Playwright Page
+ * @param {string} email     vendor email
+ * @param {string} token     vendor JWT
+ */
+export async function injectVendorSession(page, email, token) {
+  await page.goto('/');
+  await page.evaluate(({ email, token }) => {
+    localStorage.setItem('vendor_session', JSON.stringify({ email, token }));
+  }, { email, token });
+}
+
+/**
+ * Creates a product for a vendor via the REST API.
+ *
+ * @param {object} page      Playwright Page
+ * @param {string} token     vendor JWT
+ * @param {object} payload   product fields
+ */
+export async function createProductViaApi(page, token, payload) {
+  const res = await page.request.post(`${API_URL}/api/vendor/products`, {
+    headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+    data: payload,
+  });
+  return res.json();
+}
