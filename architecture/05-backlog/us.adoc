@@ -115,17 +115,17 @@ a|
 a|
 - [x] Token UUID à usage unique, TTL 24 h (CS-07)
 - [x] Clic valide → compte passe en statut `actif`, redirection vers la page de connexion
-- [ ] Token expiré (> 24 h) → message d'erreur + proposition de renvoi du lien
-- [ ] Token déjà utilisé → message « votre compte est déjà actif »
-| En cours
+- [x] Token expiré (> 24 h) → message d'erreur + proposition de renvoi du lien
+- [x] Token déjà utilisé → message « votre compte est déjà actif »
+| Terminée
 
 | *US-REG-03*
 | En tant que nouvel acheteur dont le token a expiré, je peux demander le renvoi d'un nouveau lien d'activation.
 a|
-- [ ] Lien « Renvoyer le lien » accessible depuis la page d'erreur de token expiré
-- [ ] Nouveau token généré ; l'ancien est invalidé
-- [ ] Email d'activation renvoyé
-| À faire
+- [x] Lien « Renvoyer le lien » accessible depuis la page d'erreur de token expiré
+- [x] Nouveau token généré ; l'ancien est invalidé
+- [x] Email d'activation renvoyé
+| Terminée
 
 |===
 

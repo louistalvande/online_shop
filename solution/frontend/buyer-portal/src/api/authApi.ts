@@ -32,6 +32,7 @@ export async function activate(token: string, password?: string, confirmPassword
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(body),
   })
+  if (res.status === 404) throw Object.assign(new Error('Token not found'), { code: 'TOKEN_NOT_FOUND' })
   if (res.status === 410) throw Object.assign(new Error('Token expired'), { code: 'TOKEN_EXPIRED' })
   if (res.status === 401) throw Object.assign(new Error('Password required'), { code: 'PASSWORD_REQUIRED' })
   if (res.status === 400) {
@@ -62,4 +63,13 @@ export function logout(): void {
 export function getSession(): BuyerSession | null {
   const raw = localStorage.getItem(SESSION_KEY)
   return raw ? JSON.parse(raw) : null
+}
+
+export async function resendActivation(email: string): Promise<void> {
+  const res = await fetch('/api/auth/resend-activation', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email }),
+  })
+  if (!res.ok) throw new Error('Resend failed')
 }

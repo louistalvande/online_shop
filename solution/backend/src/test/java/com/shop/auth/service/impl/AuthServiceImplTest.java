@@ -8,8 +8,13 @@ import com.shop.account.repository.ActivationTokenRepository;
 import com.shop.account.service.impl.AccountServiceImpl;
 import com.shop.audit.entity.AuditEventType;
 import com.shop.audit.service.AuditLogService;
+import com.shop.account.entity.ActivationToken;
+import com.shop.auth.dto.ActivateAccountRequest;
 import com.shop.auth.dto.LoginRequest;
+import com.shop.auth.dto.ResendActivationRequest;
+import com.shop.auth.exception.InvalidActivationTokenException;
 import com.shop.auth.exception.InvalidCredentialsException;
+import com.shop.auth.exception.TokenNotFoundException;
 import com.shop.auth.exception.TooManyLoginAttemptsException;
 import com.shop.auth.service.LoginAttemptService;
 import com.shop.common.JwtUtil;
@@ -20,6 +25,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -123,6 +129,78 @@ class AuthServiceImplTest {
 
         then(loginAttemptService).should().recordFailure(EMAIL);
         then(auditLogService).should().log(eq(AuditEventType.LOGIN_FAILURE), eq(EMAIL), any());
+    }
+
+    /** activate must throw TokenNotFoundException when the token is not found. */
+    @Test
+    void activate_tokenNotFound_throwsTokenNotFoundException() {
+        ActivateAccountRequest req = new ActivateAccountRequest();
+        req.setToken("unknown-token");
+        given(activationTokenRepository.findByToken("unknown-token")).willReturn(Optional.empty());
+
+        assertThatThrownBy(() -> service.activate(req))
+                .isInstanceOf(TokenNotFoundException.class);
+    }
+
+    /** activate must throw InvalidActivationTokenException when the token is found but expired. */
+    @Test
+    void activate_tokenExpired_throwsInvalidActivationTokenException() {
+        ActivateAccountRequest req = new ActivateAccountRequest();
+        req.setToken("expired-token");
+        Account account = activeAccount();
+        account.setStatus(AccountStatus.PENDING);
+        account.setPasswordHash("$2a$12$hash");
+
+        ActivationToken tokenRecord = new ActivationToken();
+        tokenRecord.setToken("expired-token");
+        tokenRecord.setAccount(account);
+        tokenRecord.setExpiresAt(LocalDateTime.now().minusHours(1));
+
+        given(activationTokenRepository.findByToken("expired-token")).willReturn(Optional.of(tokenRecord));
+
+        assertThatThrownBy(() -> service.activate(req))
+                .isInstanceOf(InvalidActivationTokenException.class);
+    }
+
+    /** resendActivation must call issueActivationToken when account is PENDING. */
+    @Test
+    void resendActivation_pendingAccount_issuesNewToken() {
+        ResendActivationRequest req = new ResendActivationRequest();
+        req.setEmail(EMAIL);
+        Account account = activeAccount();
+        account.setStatus(AccountStatus.PENDING);
+        given(accountRepository.findByEmail(EMAIL)).willReturn(Optional.of(account));
+
+        service.resendActivation(req);
+
+        then(accountServiceImpl).should().issueActivationToken(account);
+        then(auditLogService).should().log(eq(AuditEventType.RESEND_ACTIVATION), eq(EMAIL), any());
+    }
+
+    /** resendActivation must do nothing when the email is unknown (prevents enumeration). */
+    @Test
+    void resendActivation_unknownEmail_doesNothing() {
+        ResendActivationRequest req = new ResendActivationRequest();
+        req.setEmail("nobody@example.com");
+        given(accountRepository.findByEmail("nobody@example.com")).willReturn(Optional.empty());
+
+        service.resendActivation(req);
+
+        then(accountServiceImpl).shouldHaveNoInteractions();
+        then(auditLogService).shouldHaveNoInteractions();
+    }
+
+    /** resendActivation must do nothing when the account is already ACTIVE (prevents enumeration). */
+    @Test
+    void resendActivation_activeAccount_doesNothing() {
+        ResendActivationRequest req = new ResendActivationRequest();
+        req.setEmail(EMAIL);
+        given(accountRepository.findByEmail(EMAIL)).willReturn(Optional.of(activeAccount()));
+
+        service.resendActivation(req);
+
+        then(accountServiceImpl).shouldHaveNoInteractions();
+        then(auditLogService).shouldHaveNoInteractions();
     }
 
     /** login must clear the counter and log LOGIN_SUCCESS on valid credentials. */

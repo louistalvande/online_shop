@@ -5,10 +5,12 @@ import com.shop.auth.dto.ActivateAccountRequest;
 import com.shop.auth.dto.AuthResponse;
 import com.shop.auth.dto.LoginRequest;
 import com.shop.auth.dto.RegisterRequest;
+import com.shop.auth.dto.ResendActivationRequest;
 import com.shop.auth.dto.SetupPasswordRequest;
 import com.shop.auth.exception.InvalidActivationTokenException;
 import com.shop.auth.exception.InvalidCredentialsException;
 import com.shop.auth.exception.PasswordsMismatchException;
+import com.shop.auth.exception.TokenNotFoundException;
 
 /** Authenticates actors and issues JWT tokens. */
 public interface AuthService {
@@ -53,4 +55,12 @@ public interface AuthService {
      * @throws InvalidCredentialsException if the account is not found
      */
     void setupPassword(String email, SetupPasswordRequest request);
+
+    /**
+     * Resends an activation link to a PENDING account (US-REG-03 / CS-07).
+     * Always returns silently to prevent email enumeration — no exception if email is unknown.
+     *
+     * @param request payload containing the email address
+     */
+    void resendActivation(ResendActivationRequest request);
 }

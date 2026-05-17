@@ -5,6 +5,7 @@ import com.shop.auth.dto.ActivateAccountRequest;
 import com.shop.auth.dto.AuthResponse;
 import com.shop.auth.dto.LoginRequest;
 import com.shop.auth.dto.RegisterRequest;
+import com.shop.auth.dto.ResendActivationRequest;
 import com.shop.auth.dto.SetupPasswordRequest;
 import com.shop.auth.service.AuthService;
 import org.springframework.http.ResponseEntity;
@@ -41,6 +42,13 @@ public class AuthControllerImpl implements AuthController {
     @Override
     public ResponseEntity<AuthResponse> login(LoginRequest request) {
         return ResponseEntity.ok(authService.login(request));
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public ResponseEntity<Void> resendActivation(ResendActivationRequest request) {
+        authService.resendActivation(request);
+        return ResponseEntity.noContent().build();
     }
 
     /** {@inheritDoc} */
