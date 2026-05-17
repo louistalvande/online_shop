@@ -2,10 +2,13 @@ package com.shop.account.service;
 
 import com.shop.account.dto.AccountResponse;
 import com.shop.account.dto.CreateAccountRequest;
+import com.shop.account.dto.ProfileResponse;
 import com.shop.account.dto.UpdateAccountRequest;
+import com.shop.account.dto.UpdateProfileRequest;
 import com.shop.account.exception.AccountNotFoundException;
 import com.shop.account.exception.EmailAlreadyUsedException;
 import com.shop.account.exception.InvalidAccountStateException;
+import com.shop.account.exception.WrongCurrentPasswordException;
 
 import java.util.List;
 import java.util.UUID;
@@ -81,4 +84,25 @@ public interface AccountService {
      * @throws AccountNotFoundException if no account exists with the given ID
      */
     void deleteAccount(UUID id);
+
+    /**
+     * Returns the profile of the authenticated account identified by {@code email} (US-PRF-01, US-PRF-02).
+     *
+     * @param email the email of the authenticated user (JWT subject)
+     * @return the account's profile
+     */
+    ProfileResponse getProfile(String email);
+
+    /**
+     * Updates the profile of the authenticated account identified by {@code email} (US-PRF-01, US-PRF-02).
+     * Only non-null fields in the request are applied.
+     * If {@code currentPassword}, {@code newPassword} and {@code confirmPassword} are all set,
+     * the password is changed after verifying the current one.
+     *
+     * @param email   the email of the authenticated user (JWT subject)
+     * @param request the fields to update
+     * @return the updated profile
+     * @throws WrongCurrentPasswordException if the current password does not match
+     */
+    ProfileResponse updateProfile(String email, UpdateProfileRequest request);
 }

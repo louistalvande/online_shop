@@ -53,6 +53,26 @@ public class Account {
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
+    /** Phone number — optional contact info (UCSA-02). */
+    @Column(length = 20)
+    private String phone;
+
+    /** Street address line — default shipping address (UCSA-02). */
+    @Column(name = "address_line", length = 255)
+    private String addressLine;
+
+    /** City — default shipping address (UCSA-02). */
+    @Column(length = 100)
+    private String city;
+
+    /** Postal code — default shipping address (UCSA-02). */
+    @Column(name = "postal_code", length = 20)
+    private String postalCode;
+
+    /** ISO 3166-1 alpha-2 country code restricted to euro zone (CS-04 / UCSA-02). */
+    @Column(name = "country_code", length = 2)
+    private String countryCode;
+
     /** Sets creation timestamp before first persist. */
     @PrePersist
     protected void onCreate() {
@@ -112,4 +132,34 @@ public class Account {
 
     /** @return the creation timestamp */
     public LocalDateTime getCreatedAt() { return createdAt; }
+
+    /** @return the phone number, or {@code null} if not set */
+    public String getPhone() { return phone; }
+
+    /** @param phone the phone number to set */
+    public void setPhone(String phone) { this.phone = phone; }
+
+    /** @return the street address line, or {@code null} if not set */
+    public String getAddressLine() { return addressLine; }
+
+    /** @param addressLine the street address line to set */
+    public void setAddressLine(String addressLine) { this.addressLine = addressLine; }
+
+    /** @return the city, or {@code null} if not set */
+    public String getCity() { return city; }
+
+    /** @param city the city to set */
+    public void setCity(String city) { this.city = city; }
+
+    /** @return the postal code, or {@code null} if not set */
+    public String getPostalCode() { return postalCode; }
+
+    /** @param postalCode the postal code to set */
+    public void setPostalCode(String postalCode) { this.postalCode = postalCode; }
+
+    /** @return the ISO 3166-1 alpha-2 country code, or {@code null} if not set */
+    public String getCountryCode() { return countryCode; }
+
+    /** @param countryCode the ISO 3166-1 alpha-2 country code to set */
+    public void setCountryCode(String countryCode) { this.countryCode = countryCode; }
 }

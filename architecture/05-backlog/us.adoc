@@ -140,16 +140,16 @@ _Fonctions ARCADIA : FS-B02, FS-V01 — UCSA-02 — LA : Service Compte_
 | *US-PRF-01*
 | En tant qu'acheteur authentifié, je peux modifier mes informations personnelles (nom, adresse de livraison par défaut, mot de passe).
 a|
-- [ ] Formulaire pré-rempli avec les données actuelles
-- [ ] Unicité de l'email vérifiée si modification de l'email
-- [ ] Confirmation de succès après sauvegarde
-| À faire
+- [x] Formulaire pré-rempli avec les données actuelles
+- [x] Unicité de l'email vérifiée si modification de l'email
+- [x] Confirmation de succès après sauvegarde
+| Terminée
 
 | *US-PRF-02*
 | En tant que vendeur authentifié, je peux modifier mes informations personnelles (nom, adresse, mot de passe, coordonnées).
 a|
-- [ ] Même règles que US-PRF-01
-| À faire
+- [x] Même règles que US-PRF-01
+| Terminée
 
 |===
 

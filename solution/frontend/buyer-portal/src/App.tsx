@@ -50,8 +50,9 @@ export default function App({ openLogin = false }: Props) {
               <UserMenu
                 label={t('nav.account')}
                 email={session.email}
-                settingsLabel={t('nav.configuration')}
+                settingsLabel={t('nav.profile')}
                 logoutLabel={t('nav.logout')}
+                onSettings={() => { window.location.href = '/profile' }}
                 onLogout={() => { logout(); setSession(null) }}
               />
             ) : (

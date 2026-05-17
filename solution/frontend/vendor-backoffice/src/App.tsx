@@ -57,8 +57,9 @@ export default function App() {
           />
           <UserMenu
             label={t('nav.account')}
-            settingsLabel={t('nav.configuration')}
+            settingsLabel={t('nav.profile')}
             logoutLabel={t('nav.logout')}
+            onSettings={() => { window.location.href = `${import.meta.env.BASE_URL}profile` }}
             onLogout={handleLogout}
           />
         </div>
