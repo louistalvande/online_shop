@@ -4,6 +4,7 @@ import com.shop.auth.dto.ActivateAccountRequest;
 import com.shop.auth.dto.AuthResponse;
 import com.shop.auth.dto.LoginRequest;
 import com.shop.auth.dto.RegisterRequest;
+import com.shop.auth.dto.ResendActivationRequest;
 import com.shop.auth.dto.SetupPasswordRequest;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -47,6 +48,14 @@ public interface AuthController {
     })
     @PostMapping("/login")
     ResponseEntity<AuthResponse> login(@Valid @RequestBody LoginRequest request);
+
+    @Operation(summary = "Resend activation link to a PENDING account (US-REG-03)")
+    @ApiResponses({
+        @ApiResponse(responseCode = "204", description = "Request processed — email sent if account is PENDING"),
+        @ApiResponse(responseCode = "400", description = "Invalid email format")
+    })
+    @PostMapping("/resend-activation")
+    ResponseEntity<Void> resendActivation(@Valid @RequestBody ResendActivationRequest request);
 
     @Operation(summary = "Set password after first login (when requiresPasswordSetup=true)")
     @ApiResponses({

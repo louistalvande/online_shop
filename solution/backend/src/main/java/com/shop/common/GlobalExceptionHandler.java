@@ -6,6 +6,7 @@ import com.shop.account.exception.InvalidAccountStateException;
 import com.shop.auth.exception.InvalidActivationTokenException;
 import com.shop.auth.exception.InvalidCredentialsException;
 import com.shop.auth.exception.PasswordsMismatchException;
+import com.shop.auth.exception.TokenNotFoundException;
 import com.shop.auth.exception.TooManyLoginAttemptsException;
 import com.shop.carrier.exception.CarrierNotFoundException;
 import org.springframework.context.MessageSource;
@@ -122,6 +123,21 @@ public class GlobalExceptionHandler {
         String message = messageSource.getMessage("error.activation.token.invalid", null, locale);
         return ResponseEntity.status(HttpStatus.GONE)
                 .body(Map.of("error", "TOKEN_EXPIRED", "message", message));
+    }
+
+    /**
+     * Handles a missing activation token (already used or never issued) — returns HTTP 404 (CS-07).
+     *
+     * @param ex     the exception
+     * @param locale the request locale
+     * @return a 404 response with error code TOKEN_NOT_FOUND
+     */
+    @ExceptionHandler(TokenNotFoundException.class)
+    public ResponseEntity<Map<String, String>> handleTokenNotFound(
+            TokenNotFoundException ex, Locale locale) {
+        String message = messageSource.getMessage("error.activation.token.notfound", null, locale);
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(Map.of("error", "TOKEN_NOT_FOUND", "message", message));
     }
 
     @ExceptionHandler(PasswordsMismatchException.class)

@@ -11,12 +11,14 @@ import com.shop.auth.dto.ActivateAccountRequest;
 import com.shop.auth.dto.AuthResponse;
 import com.shop.auth.dto.LoginRequest;
 import com.shop.auth.dto.RegisterRequest;
+import com.shop.auth.dto.ResendActivationRequest;
 import com.shop.auth.dto.SetupPasswordRequest;
 import com.shop.audit.entity.AuditEventType;
 import com.shop.audit.service.AuditLogService;
 import com.shop.auth.exception.InvalidActivationTokenException;
 import com.shop.auth.exception.InvalidCredentialsException;
 import com.shop.auth.exception.PasswordsMismatchException;
+import com.shop.auth.exception.TokenNotFoundException;
 import com.shop.auth.exception.TooManyLoginAttemptsException;
 import com.shop.auth.service.AuthService;
 import com.shop.auth.service.LoginAttemptService;
@@ -91,7 +93,7 @@ public class AuthServiceImpl implements AuthService {
     @Transactional
     public void activate(ActivateAccountRequest request) {
         var tokenRecord = activationTokenRepository.findByToken(request.getToken())
-                .orElseThrow(InvalidActivationTokenException::new);
+                .orElseThrow(TokenNotFoundException::new);
 
         if (tokenRecord.getExpiresAt().isBefore(LocalDateTime.now())) {
             throw new InvalidActivationTokenException();
@@ -166,5 +168,17 @@ public class AuthServiceImpl implements AuthService {
         account.setPasswordHash(passwordEncoder.encode(request.getPassword()));
         account.setMustChangePassword(false);
         auditLogService.log(AuditEventType.PASSWORD_CHANGED, email, "First-login password setup");
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    @Transactional
+    public void resendActivation(ResendActivationRequest request) {
+        Account account = accountRepository.findByEmail(request.getEmail()).orElse(null);
+        if (account == null || account.getStatus() != AccountStatus.PENDING) {
+            return;
+        }
+        accountServiceImpl.issueActivationToken(account);
+        auditLogService.log(AuditEventType.RESEND_ACTIVATION, account.getEmail(), null);
     }
 }

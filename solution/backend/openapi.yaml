@@ -34,6 +34,23 @@ paths:
           description: Not authenticated
         "204":
           description: Password set
+  /api/auth/resend-activation:
+    post:
+      tags:
+      - Auth
+      summary: Resend activation link to a PENDING account (US-REG-03)
+      operationId: resendActivation
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ResendActivationRequest"
+        required: true
+      responses:
+        "204":
+          description: Request processed — email sent if account is PENDING
+        "400":
+          description: Invalid email format
   /api/auth/register:
     post:
       tags:
@@ -472,6 +489,15 @@ components:
         confirmPassword:
           type: string
           description: Password confirmation — must match password
+    ResendActivationRequest:
+      required:
+      - email
+      type: object
+      properties:
+        email:
+          type: string
+          description: Email address of the PENDING account requesting a new activation
+            link
     RegisterRequest:
       required:
       - email

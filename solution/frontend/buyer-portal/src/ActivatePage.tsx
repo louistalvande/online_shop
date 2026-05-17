@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Button, Card } from '@workspace/theme'
-import { activate } from './api/authApi'
+import { activate, resendActivation } from './api/authApi'
 
-type State = 'loading' | 'needs_password' | 'success' | 'expired' | 'error'
+type State = 'loading' | 'needs_password' | 'success' | 'expired' | 'already_active' | 'error'
+type ResendState = 'idle' | 'loading' | 'sent' | 'error'
 
 const overlay: React.CSSProperties = {
   minHeight: '100vh', background: 'var(--bg)',
@@ -28,6 +29,11 @@ const errorBox: React.CSSProperties = {
   borderRadius: 4, padding: '8px 12px', fontSize: 13, color: '#b91c1c', marginBottom: 16,
 }
 
+const successBox: React.CSSProperties = {
+  background: '#f0fdf4', border: '1px solid #86efac',
+  borderRadius: 4, padding: '8px 12px', fontSize: 13, color: '#166534', marginBottom: 16,
+}
+
 interface Props {
   token: string
 }
@@ -39,11 +45,12 @@ export default function ActivatePage({ token }: Props) {
   const [confirmPassword, setConfirmPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
+  const [resendState, setResendState] = useState<ResendState>('idle')
+  const [resendEmail, setResendEmail] = useState('')
 
   useEffect(() => {
     if (!token) { setState('error'); return }
 
-    // Attempt activation without password — succeeds for self-registered buyers
     activate(token).then(() => {
       setState('success')
       setTimeout(() => { window.location.href = '/login' }, 2000)
@@ -53,6 +60,8 @@ export default function ActivatePage({ token }: Props) {
         setState('needs_password')
       } else if (code === 'TOKEN_EXPIRED') {
         setState('expired')
+      } else if (code === 'TOKEN_NOT_FOUND') {
+        setState('already_active')
       } else {
         setState('error')
       }
@@ -77,11 +86,24 @@ export default function ActivatePage({ token }: Props) {
         setError(t('activate.error.mismatch'))
       } else if (code === 'TOKEN_EXPIRED') {
         setState('expired')
+      } else if (code === 'TOKEN_NOT_FOUND') {
+        setState('already_active')
       } else {
         setError(t('activate.error.generic'))
       }
     } finally {
       setLoading(false)
+    }
+  }
+
+  async function handleResend(e: React.FormEvent) {
+    e.preventDefault()
+    setResendState('loading')
+    try {
+      await resendActivation(resendEmail)
+      setResendState('sent')
+    } catch {
+      setResendState('error')
     }
   }
 
@@ -103,14 +125,49 @@ export default function ActivatePage({ token }: Props) {
     )
   }
 
+  if (state === 'already_active') {
+    return (
+      <div style={overlay}>
+        <Card style={cardStyle}>
+          <p style={{ fontSize: 15, marginBottom: 16 }}>{t('activate.error.alreadyActive')}</p>
+          <a href="/login" style={{ fontSize: 14, color: 'var(--text)', fontWeight: 600 }}>
+            {t('activate.alreadyActiveAction')}
+          </a>
+        </Card>
+      </div>
+    )
+  }
+
   if (state === 'expired') {
     return (
       <div style={overlay}>
         <Card style={cardStyle}>
-          <p style={{ fontSize: 15, marginBottom: 16 }}>{t('activate.error.expired')}</p>
-          <a href="/register" style={{ fontSize: 14, color: 'var(--text)', fontWeight: 600 }}>
-            {t('activate.resendLink')}
-          </a>
+          <p style={{ fontSize: 15, marginBottom: 20 }}>{t('activate.error.expired')}</p>
+
+          {resendState === 'sent' && (
+            <div style={successBox}>{t('activate.resend.success')}</div>
+          )}
+          {resendState === 'error' && (
+            <div style={errorBox}>{t('activate.resend.error')}</div>
+          )}
+
+          {resendState !== 'sent' && (
+            <form onSubmit={handleResend}>
+              <label style={fieldStyle}>
+                {t('activate.resend.label')}
+                <input
+                  style={inputStyle}
+                  type="email"
+                  required
+                  value={resendEmail}
+                  onChange={e => setResendEmail(e.target.value)}
+                />
+              </label>
+              <Button type="submit" style={{ width: '100%', justifyContent: 'center' }} disabled={resendState === 'loading'}>
+                {resendState === 'loading' ? '…' : t('activate.resend.submit')}
+              </Button>
+            </form>
+          )}
         </Card>
       </div>
     )
