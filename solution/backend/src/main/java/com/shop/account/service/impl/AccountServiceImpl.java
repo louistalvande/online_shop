@@ -83,8 +83,7 @@ public class AccountServiceImpl implements AccountService {
     @Override
     @Transactional(readOnly = true)
     public List<AccountResponse> listAccounts() {
-        return accountRepository.findAll().stream()
-                .filter(a -> a.getStatus() != AccountStatus.DELETED)
+        return accountRepository.findByStatusNot(AccountStatus.DELETED).stream()
                 .map(AccountResponse::from)
                 .toList();
     }

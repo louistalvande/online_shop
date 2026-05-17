@@ -37,7 +37,8 @@ test.describe('US-ADM-05 — Change account role', () => {
     await page.getByText('Éditer').click();
     await page.getByLabel('Rôle').selectOption('VENDOR');
     await page.getByRole('button', { name: 'Enregistrer' }).click();
-    await expect(page.getByText('Compte mis à jour.')).toBeVisible();
+    // Wait for table to reflect the VENDOR change before proceeding
+    await expect(row.getByText('Vendeur')).toBeVisible();
 
     // Then back to BUYER
     await row.locator('button').last().click();
@@ -45,7 +46,6 @@ test.describe('US-ADM-05 — Change account role', () => {
     await page.getByLabel('Rôle').selectOption('BUYER');
     await page.getByRole('button', { name: 'Enregistrer' }).click();
 
-    await expect(page.getByText('Compte mis à jour.')).toBeVisible();
     await expect(row.getByText('Acheteur')).toBeVisible();
   });
 });

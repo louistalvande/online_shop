@@ -25,5 +25,13 @@ export default defineConfig({
         baseURL: process.env.BUYER_URL ?? 'http://buyer.localhost',
       },
     },
+    {
+      name: 'auth',
+      testMatch: ['auth/**/*.spec.js'],
+      use: {
+        ...devices['Desktop Chrome'],
+        baseURL: process.env.BUYER_URL ?? 'http://buyer.localhost',
+      },
+    },
   ],
 });

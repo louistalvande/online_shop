@@ -1,0 +1,720 @@
+openapi: 3.0.1
+info:
+  title: OpenAPI definition
+  version: v0
+servers:
+- url: http://localhost
+  description: Generated server url
+tags:
+- name: Admin — Countries
+  description: Eurozone country reference list
+- name: Auth
+  description: Authentication — shared across all actors
+- name: Admin — Carriers
+  description: Carrier management for administrators
+- name: Admin — Accounts
+  description: Account management for administrators
+paths:
+  /api/auth/setup-password:
+    post:
+      tags:
+      - Auth
+      summary: Set password after first login (when requiresPasswordSetup=true)
+      operationId: setupPassword
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SetupPasswordRequest"
+        required: true
+      responses:
+        "400":
+          description: Passwords do not match
+        "401":
+          description: Not authenticated
+        "204":
+          description: Password set
+  /api/auth/register:
+    post:
+      tags:
+      - Auth
+      summary: Buyer self-registration (FS-B01) — sends activation email
+      operationId: register
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RegisterRequest"
+        required: true
+      responses:
+        "201":
+          description: Account created — activation email sent
+        "409":
+          description: Email already registered
+        "400":
+          description: Invalid input
+  /api/auth/login:
+    post:
+      tags:
+      - Auth
+      summary: Login — returns a signed JWT
+      operationId: login
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginRequest"
+        required: true
+      responses:
+        "401":
+          description: Invalid credentials or account not active
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/AuthResponse"
+        "200":
+          description: Authentication successful
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/AuthResponse"
+  /api/auth/activate:
+    post:
+      tags:
+      - Auth
+      summary: Activate account via email token (US-ADM-01 / US-REG-02)
+      operationId: activate
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ActivateAccountRequest"
+        required: true
+      responses:
+        "204":
+          description: Account activated
+        "410":
+          description: Token expired or not found
+        "400":
+          description: Password required or mismatch
+  /api/admin/carriers:
+    get:
+      tags:
+      - Admin — Carriers
+      summary: List all carriers
+      operationId: listCarriers
+      responses:
+        "200":
+          description: Carrier list returned
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/CarrierResponse"
+    post:
+      tags:
+      - Admin — Carriers
+      summary: Create a carrier
+      operationId: createCarrier
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateCarrierRequest"
+        required: true
+      responses:
+        "400":
+          description: Invalid input
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/CarrierResponse"
+        "201":
+          description: Carrier created
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/CarrierResponse"
+  /api/admin/accounts:
+    get:
+      tags:
+      - Admin — Accounts
+      summary: List all platform accounts
+      operationId: listAccounts
+      responses:
+        "200":
+          description: Account list returned
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/AccountResponse"
+    post:
+      tags:
+      - Admin — Accounts
+      summary: Create a buyer or vendor account
+      operationId: createAccount
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateAccountRequest"
+        required: true
+      responses:
+        "409":
+          description: Email already used
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/AccountResponse"
+        "201":
+          description: Account created
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/AccountResponse"
+        "400":
+          description: Invalid input
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/AccountResponse"
+  /api/admin/carriers/{id}:
+    delete:
+      tags:
+      - Admin — Carriers
+      summary: Delete a carrier
+      operationId: deleteCarrier
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "204":
+          description: Carrier deleted
+        "404":
+          description: Carrier not found
+    patch:
+      tags:
+      - Admin — Carriers
+      summary: Update a carrier
+      operationId: updateCarrier
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateCarrierRequest"
+        required: true
+      responses:
+        "200":
+          description: Carrier updated
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/CarrierResponse"
+        "400":
+          description: Invalid input
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/CarrierResponse"
+        "404":
+          description: Carrier not found
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/CarrierResponse"
+  /api/admin/carriers/{id}/deactivate:
+    patch:
+      tags:
+      - Admin — Carriers
+      summary: Deactivate a carrier
+      operationId: deactivateCarrier
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          description: Carrier deactivated
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/CarrierResponse"
+        "404":
+          description: Carrier not found
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/CarrierResponse"
+  /api/admin/carriers/{id}/activate:
+    patch:
+      tags:
+      - Admin — Carriers
+      summary: Activate a carrier
+      operationId: activateCarrier
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "404":
+          description: Carrier not found
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/CarrierResponse"
+        "200":
+          description: Carrier activated
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/CarrierResponse"
+  /api/admin/accounts/{id}:
+    delete:
+      tags:
+      - Admin — Accounts
+      summary: Soft-delete an account (sets status to DELETED)
+      operationId: deleteAccount
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "404":
+          description: Account not found
+        "204":
+          description: Account deleted
+    patch:
+      tags:
+      - Admin — Accounts
+      summary: "Update an account's editable fields (name, role, language)"
+      operationId: updateAccount
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateAccountRequest"
+        required: true
+      responses:
+        "404":
+          description: Account not found
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/AccountResponse"
+        "400":
+          description: Invalid input
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/AccountResponse"
+        "200":
+          description: Account updated
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/AccountResponse"
+  /api/admin/accounts/{id}/suspend:
+    patch:
+      tags:
+      - Admin — Accounts
+      summary: Suspend an active account (sets status to SUSPENDED)
+      operationId: suspendAccount
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "404":
+          description: Account not found
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/AccountResponse"
+        "200":
+          description: Account suspended
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/AccountResponse"
+        "409":
+          description: Account is not in ACTIVE status
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/AccountResponse"
+  /api/admin/accounts/{id}/reactivate:
+    patch:
+      tags:
+      - Admin — Accounts
+      summary: Reactivate a suspended account (sets status to ACTIVE)
+      operationId: reactivateAccount
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "404":
+          description: Account not found
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/AccountResponse"
+        "409":
+          description: Account is not in SUSPENDED status
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/AccountResponse"
+        "200":
+          description: Account reactivated
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/AccountResponse"
+  /api/admin/accounts/{id}/force-activate:
+    patch:
+      tags:
+      - Admin — Accounts
+      summary: "Force-activate a pending account (admin bypass, skips email verification)"
+      operationId: forceActivateAccount
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "404":
+          description: Account not found
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/AccountResponse"
+        "409":
+          description: Account is not in PENDING status
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/AccountResponse"
+        "200":
+          description: Account activated
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/AccountResponse"
+  /api/admin/countries:
+    get:
+      tags:
+      - Admin — Countries
+      summary: List all Eurozone countries
+      operationId: listCountries
+      responses:
+        "200":
+          description: Country list returned
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/CountryResponse"
+components:
+  schemas:
+    SetupPasswordRequest:
+      required:
+      - confirmPassword
+      - password
+      type: object
+      properties:
+        password:
+          maxLength: 2147483647
+          minLength: 12
+          pattern: "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&_\\-#]).{12,}$"
+          type: string
+          description: "Chosen password — minimum 12 characters, must contain uppercase,\
+            \ lowercase, digit and special character"
+        confirmPassword:
+          type: string
+          description: Password confirmation — must match password
+    RegisterRequest:
+      required:
+      - email
+      - firstName
+      - lastName
+      - password
+      type: object
+      properties:
+        email:
+          type: string
+          description: "Email address, unique across the platform"
+        password:
+          maxLength: 2147483647
+          minLength: 12
+          pattern: "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&_\\-#]).{12,}$"
+          type: string
+          description: "Chosen password — minimum 12 characters, must contain uppercase,\
+            \ lowercase, digit and special character"
+        firstName:
+          type: string
+          description: First name
+        lastName:
+          type: string
+          description: Last name
+    LoginRequest:
+      required:
+      - email
+      type: object
+      properties:
+        email:
+          type: string
+          description: Admin account email address
+        password:
+          type: string
+          description: Account password — omit on first login
+    AuthResponse:
+      type: object
+      properties:
+        token:
+          type: string
+          description: Signed JWT to include in subsequent requests as Bearer token
+        email:
+          type: string
+          description: Authenticated account email
+        requiresPasswordSetup:
+          type: boolean
+          description: True when the account has no password yet — client must call
+            /api/auth/setup-password
+    ActivateAccountRequest:
+      required:
+      - token
+      type: object
+      properties:
+        token:
+          type: string
+          description: Activation token received by email
+        password:
+          maxLength: 2147483647
+          minLength: 12
+          pattern: "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&_\\-#]).{12,}$"
+          type: string
+          description: "Chosen password (required when account has no password yet)\
+            \ — minimum 12 characters, must contain uppercase, lowercase, digit and\
+            \ special character"
+        confirmPassword:
+          type: string
+          description: Password confirmation
+    CreateCarrierRequest:
+      required:
+      - name
+      - supportedCountries
+      - trackingUrl
+      type: object
+      properties:
+        name:
+          maxLength: 100
+          minLength: 0
+          type: string
+          description: Carrier display name
+        trackingUrl:
+          maxLength: 500
+          minLength: 0
+          type: string
+          description: Parcel tracking URL
+        supportedCountries:
+          type: array
+          description: ISO 3166-1 alpha-2 codes of supported Eurozone countries (CS-04)
+          items:
+            type: string
+            description: ISO 3166-1 alpha-2 codes of supported Eurozone countries
+              (CS-04)
+    CarrierResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Carrier UUID
+          format: uuid
+        name:
+          type: string
+          description: Carrier display name
+        trackingUrl:
+          type: string
+          description: Parcel tracking URL
+        active:
+          type: boolean
+          description: Whether the carrier is currently active
+        supportedCountries:
+          type: array
+          description: ISO 3166-1 alpha-2 codes of supported Eurozone countries
+          items:
+            type: string
+            description: ISO 3166-1 alpha-2 codes of supported Eurozone countries
+        createdAt:
+          type: string
+          description: Creation timestamp
+          format: date-time
+    CreateAccountRequest:
+      required:
+      - email
+      - firstName
+      - lastName
+      - role
+      type: object
+      properties:
+        email:
+          type: string
+          description: "Email address, unique across the platform"
+        firstName:
+          type: string
+          description: First name of the account holder
+        lastName:
+          type: string
+          description: Last name of the account holder
+        role:
+          type: string
+          description: "Role to assign: BUYER or VENDOR"
+          enum:
+          - ADMIN
+          - VENDOR
+          - BUYER
+        language:
+          type: string
+          description: "Notification language: FR (French, default) or EN (English)"
+          enum:
+          - FR
+          - EN
+    AccountResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Unique account identifier
+          format: uuid
+        email:
+          type: string
+          description: Email address
+        firstName:
+          type: string
+          description: First name
+        lastName:
+          type: string
+          description: Last name
+        role:
+          type: string
+          description: Platform role
+          enum:
+          - ADMIN
+          - VENDOR
+          - BUYER
+        status:
+          type: string
+          description: Account status
+          enum:
+          - PENDING
+          - ACTIVE
+          - SUSPENDED
+          - DELETED
+        language:
+          type: string
+          description: "Notification language preference: FR or EN"
+          enum:
+          - FR
+          - EN
+        createdAt:
+          type: string
+          description: Creation timestamp
+          format: date-time
+    UpdateCarrierRequest:
+      required:
+      - name
+      - supportedCountries
+      - trackingUrl
+      type: object
+      properties:
+        name:
+          maxLength: 100
+          minLength: 0
+          type: string
+          description: Carrier display name
+        trackingUrl:
+          maxLength: 500
+          minLength: 0
+          type: string
+          description: Parcel tracking URL
+        supportedCountries:
+          type: array
+          description: ISO 3166-1 alpha-2 codes of supported Eurozone countries (CS-04)
+          items:
+            type: string
+            description: ISO 3166-1 alpha-2 codes of supported Eurozone countries
+              (CS-04)
+    UpdateAccountRequest:
+      type: object
+      properties:
+        firstName:
+          type: string
+          description: First name — null to leave unchanged
+        lastName:
+          type: string
+          description: Last name — null to leave unchanged
+        role:
+          type: string
+          description: "Platform role: BUYER or VENDOR — null to leave unchanged"
+          enum:
+          - ADMIN
+          - VENDOR
+          - BUYER
+        language:
+          type: string
+          description: "Notification language: FR or EN — null to leave unchanged"
+          enum:
+          - FR
+          - EN
+    CountryResponse:
+      type: object
+      properties:
+        code:
+          type: string
+          description: ISO 3166-1 alpha-2 country code
+        nameFr:
+          type: string
+          description: Country name in French
+        nameEn:
+          type: string
+          description: Country name in English

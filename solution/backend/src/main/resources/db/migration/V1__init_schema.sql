@@ -87,3 +87,18 @@ VALUES (gen_random_uuid(), 'La Poste', 'https://www.laposte.fr/outils/suivre-vos
 INSERT INTO carrier_countries (carrier_id, country_code)
 SELECT id, 'FR' FROM carriers WHERE name = 'La Poste';
 
+
+-- Security audit log (CS-15 / SEC-LOG-001 / CPA-13)
+CREATE TABLE audit_log (
+    id          BIGSERIAL    PRIMARY KEY,
+    event_type  VARCHAR(50)  NOT NULL,
+    email       VARCHAR(255),
+    ip_address  VARCHAR(45),
+    details     TEXT,
+    occurred_at TIMESTAMPTZ  NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX idx_audit_log_email       ON audit_log (email);
+CREATE INDEX idx_audit_log_event_type  ON audit_log (event_type);
+CREATE INDEX idx_audit_log_occurred_at ON audit_log (occurred_at);
+

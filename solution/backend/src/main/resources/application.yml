@@ -48,6 +48,9 @@ jwt:
 app:
   activation-base-url: ${APP_ACTIVATION_BASE_URL:http://localhost:5173}
   activation-expiry-hours: 24
+  security:
+    max-login-attempts: 5
+    lockout-duration-seconds: 900
 
 sendgrid:
   api-key: ${SENDGRID_API_KEY:}

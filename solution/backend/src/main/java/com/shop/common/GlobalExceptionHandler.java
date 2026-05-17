@@ -6,6 +6,7 @@ import com.shop.account.exception.InvalidAccountStateException;
 import com.shop.auth.exception.InvalidActivationTokenException;
 import com.shop.auth.exception.InvalidCredentialsException;
 import com.shop.auth.exception.PasswordsMismatchException;
+import com.shop.auth.exception.TooManyLoginAttemptsException;
 import com.shop.carrier.exception.CarrierNotFoundException;
 import org.springframework.context.MessageSource;
 import org.springframework.http.HttpStatus;
@@ -129,6 +130,21 @@ public class GlobalExceptionHandler {
         String message = messageSource.getMessage("error.passwords.mismatch", null, ex.getMessage(), locale);
         return ResponseEntity.badRequest()
                 .body(Map.of("error", "PASSWORDS_MISMATCH", "message", message));
+    }
+
+    /**
+     * Handles too many login attempts (account temporarily locked) — returns HTTP 429 (SEC-AUTH-003).
+     *
+     * @param ex     the exception
+     * @param locale the request locale
+     * @return a 429 response with a localised error body
+     */
+    @ExceptionHandler(TooManyLoginAttemptsException.class)
+    public ResponseEntity<Map<String, String>> handleTooManyAttempts(
+            TooManyLoginAttemptsException ex, Locale locale) {
+        String message = messageSource.getMessage("error.too.many.attempts", null, locale);
+        return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS)
+                .body(Map.of("error", "TOO_MANY_ATTEMPTS", "message", message));
     }
 
     /**
