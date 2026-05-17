@@ -133,7 +133,7 @@ L'objectif est de fournir une documentation claire, accessible et maintainable, 
 The project aims to develop an online shop web application. It will begin with the writing of an [architecture document](architecture/Boutique%20en%20ligne%20-%20Documentation%20d%27Architecture.pdf), with the various deliverables produced with the assistance of an AI.
 The project will be structured around several major phases, approached iteratively. Each of these phases will be applied in full for every User Story.
 
-### I. Generating the Architecture Document Using the MBSE ARCADIA Methodology
+### 1. Generating the Architecture Document Using the MBSE ARCADIA Methodology
 
 ![ARCADIA](architecture/arcadia.png)
 
@@ -215,12 +215,12 @@ PA Diagram Example — Deployment Architecture:
 
 ![PA Deployment](architecture/diagrams/readme/pa-deployment.svg)
 
-### II. Generating the Solution Infrastructure
+### 2. Generating the Solution Infrastructure
 
 Once the solution has been documented in detail, the application infrastructure will be built and deployed in a test environment.
 This phase covers the configuration of environments (development, staging, production), the setup of CI/CD tooling, and the provisioning of the required resources (servers, databases, cloud services, etc.). The infrastructure will be validated through a series of technical tests to ensure the platform's stability, availability, and security prior to the start of functional development.
 
-### III. Iterative Development of Use Cases
+### 3. Iterative Development of Use Cases
 
 [Use cases](architecture/05-backlog/us.adoc) will be implemented one by one in an iterative manner, following a structured and repeatable development cycle.
 For each User Story, the following cycle will be applied in full:
@@ -233,7 +233,7 @@ For each User Story, the following cycle will be applied in full:
 
 This approach ensures progressive, controlled delivery while minimising the risk of regression across iterations.
 
-### IV. Generating the User Documentation
+### 4. Generating the User Documentation
 
 Once all use cases have been developed and validated, end-user documentation will be produced with AI assistance, based on the implemented features.
 This documentation will include in particular:
