@@ -1,49 +1,20 @@
 import { useState } from 'react'
 import './index.css'
-import { useTranslation } from 'react-i18next'
-import { AppShell, LangToggle, UserMenu } from '@workspace/theme'
-import LoginPage from './LoginPage'
-import DashboardPage from './DashboardPage'
 import { getSession, logout } from './api/authApi'
+import LoginPage from './LoginPage'
+import Header from './Header'
+import DashboardPage from './DashboardPage'
 
 export default function App() {
-  const { t, i18n } = useTranslation()
   const [session, setSession] = useState(getSession)
 
   if (!session) {
     return <LoginPage onLogin={() => setSession(getSession())} />
   }
 
-  function handleLogout() {
-    logout()
-    setSession(null)
-  }
-
   return (
-    <AppShell
-      appName={t('app.name')}
-      navLinks={[
-        { label: t('nav.dashboard'), href: '#' },
-        { label: t('nav.orders'), href: '#orders' },
-        { label: t('nav.catalog'), href: '#catalogue' },
-      ]}
-      actions={
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-          <LangToggle
-            lang={i18n.language}
-            onToggle={() => i18n.changeLanguage(i18n.language === 'fr' ? 'en' : 'fr')}
-          />
-          <UserMenu
-            label={t('nav.account')}
-            settingsLabel={t('nav.profile')}
-            logoutLabel={t('nav.logout')}
-            onSettings={() => { window.location.href = `${import.meta.env.BASE_URL}profile` }}
-            onLogout={handleLogout}
-          />
-        </div>
-      }
-    >
+    <Header onLogout={() => { logout(); setSession(null) }}>
       <DashboardPage />
-    </AppShell>
+    </Header>
   )
 }

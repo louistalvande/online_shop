@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+﻿import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Button, Card, UserIcon, PackageIcon, Snackbar, PencilIcon, BanIcon, CheckCircleIcon, TrashIcon } from '@workspace/theme'
 import AccountModal from './components/AccountModal'
@@ -6,16 +6,15 @@ import ActionMenu from './components/ActionMenu'
 import CarrierFormModal from './components/CarrierFormModal'
 import CarrierDeleteModal from './components/CarrierDeleteModal'
 import UserDetailModal from './components/UserDetailModal'
-import { logout, type AdminSession } from './api/authApi'
+import { logout } from './api/authApi'
 import { listAccounts, type AccountResponse } from './api/accountApi'
 import { listCarriers, deactivateCarrier, activateCarrier, type CarrierResponse } from './api/carrierApi'
 
 interface Props {
-  session: AdminSession
   onUnauthorized: () => void
 }
 
-export default function DashboardPage({ session, onUnauthorized }: Props) {
+export default function DashboardPage({ onUnauthorized }: Props) {
   const { t } = useTranslation()
   const [accounts, setAccounts] = useState<AccountResponse[]>([])
   const [showModal, setShowModal] = useState(false)
@@ -65,8 +64,8 @@ export default function DashboardPage({ session, onUnauthorized }: Props) {
       value: String(accounts.filter(a => a.role === 'VENDOR' && a.status === 'ACTIVE').length),
       icon: <PackageIcon size={18} />,
     },
-    { label: t('stats.totalOrders'), value: '—', icon: null },
-    { label: t('stats.platformRevenue'), value: '—', icon: null },
+    { label: t('stats.totalOrders'), value: 'â€”', icon: null },
+    { label: t('stats.platformRevenue'), value: 'â€”', icon: null },
   ]
 
   const tableHeaders = [
@@ -303,3 +302,4 @@ export default function DashboardPage({ session, onUnauthorized }: Props) {
     </>
   )
 }
+
