@@ -3,7 +3,7 @@ import { GalleryIcon } from './icons'
 
 interface AppShellProps {
   appName: string
-  navLinks?: { label: string; href: string }[]
+  navLinks?: { label: string; href: string; onClick?: () => void; badge?: number }[]
   actions?: ReactNode
   children: ReactNode
 }
@@ -22,7 +22,23 @@ export function AppShell({ appName, navLinks = [], actions, children }: AppShell
           </div>
           <nav style={navStyle}>
             {navLinks.map(l => (
-              <a key={l.href} href={l.href} style={navLinkStyle}>{l.label}</a>
+              <a
+                key={l.href}
+                href={l.href}
+                style={navLinkStyle}
+                onClick={l.onClick ? (e) => { e.preventDefault(); l.onClick!() } : undefined}
+              >
+                {l.label}
+                {l.badge != null && l.badge > 0 && (
+                  <span style={{
+                    marginLeft: 6, background: '#b8431a', color: '#fff',
+                    borderRadius: 10, fontSize: 11, fontWeight: 700,
+                    padding: '1px 6px', verticalAlign: 'middle',
+                  }}>
+                    {l.badge}
+                  </span>
+                )}
+              </a>
             ))}
             {actions}
           </nav>

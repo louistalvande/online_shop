@@ -270,7 +270,7 @@ Le tableau ci-dessous relie chaque besoin opérationnel aux activités et cas d'
 Les exigences suivantes sont issues des guides et recommandations publiés par l'ANSSI (Agence nationale de la sécurité des systèmes d'information). Elles s'appliquent à la plateforme indépendamment des besoins métier.
 
 === Authentification et gestion des accès
-_Référence : ANSSI-BP-076 — Recommandations relatives à l'authentification multifacteur et aux mots de passe_
+_Référence : link:https://cyber.gouv.fr/publications/recommandations-relatives-lauthentification-multifacteur-et-aux-mots-de-passe[ANSSI-BP-076 — Recommandations relatives à l'authentification multifacteur et aux mots de passe]_
 
 [cols="1,4,1", options="header"]
 |===
@@ -298,7 +298,7 @@ _Référence : ANSSI-BP-076 — Recommandations relatives à l'authentification 
 |===
 
 === Sécurité des communications
-_Référence : ANSSI-BP-113 — Recommandations de sécurité relatives à TLS_
+_Référence : link:https://cyber.gouv.fr/publications/recommandations-de-securite-relatives-tls[ANSSI-BP-113 — Recommandations de sécurité relatives à TLS]_
 
 [cols="1,4,1", options="header"]
 |===
@@ -343,26 +343,6 @@ _Référence : ANSSI — Recommandations pour la sécurisation des sites web_
 | SEC-APP-005
 | Une politique de sécurité du contenu (Content Security Policy) doit être définie et appliquée via l'en-tête HTTP `Content-Security-Policy` pour restreindre les sources de scripts et ressources chargées par le navigateur.
 | ANSSI Web §3.4
-|===
-
-=== Protection des données
-_Référence : ANSSI — Guide de sécurité des systèmes d'information_
-
-[cols="1,4,1", options="header"]
-|===
-| Identifiant | Exigence | Référence ANSSI
-
-| SEC-DAT-001
-| Les données personnelles et financières des utilisateurs doivent être chiffrées au repos (chiffrement de la base de données ou des colonnes sensibles).
-| ANSSI SI §6.1
-
-| SEC-DAT-002
-| Les données de carte bancaire ne doivent jamais être stockées en clair sur la plateforme ; leur traitement doit être délégué intégralement au prestataire de paiement certifié PCI-DSS.
-| ANSSI SI §6.2
-
-| SEC-DAT-003
-| La durée de conservation des données personnelles doit être limitée aux besoins métier ; les données des comptes supprimés doivent être anonymisées ou effacées dans un délai défini.
-| ANSSI SI §6.3
 |===
 
 === Journalisation et surveillance

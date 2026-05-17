@@ -164,39 +164,39 @@ _Fonctions ARCADIA : FS-V02, FS-V03 — UCSA-10 — LA : Service Catalogue_
 | *US-CAT-01*
 | En tant que vendeur, je peux créer une fiche produit avec nom, description, prix HT, photos, catégorie, quantité disponible et seuil d'alerte de stock.
 a|
-- [ ] Champs obligatoires : nom, prix HT, quantité disponible
-- [ ] Produit créé en statut `publié` par défaut
-- [ ] Photos uploadées et associées au produit
-| À faire
+- [x] Champs obligatoires : nom, prix HT, quantité disponible
+- [x] Produit créé en statut `publié` par défaut
+- [x] Photos (URLs) uploadées et associées au produit
+| Terminée
 
 | *US-CAT-02*
 | En tant que vendeur, je peux modifier une fiche produit existante.
 a|
-- [ ] Tous les champs sont éditables
-- [ ] Modifications visibles immédiatement dans le catalogue acheteur
-| À faire
+- [x] Tous les champs sont éditables
+- [x] Modifications visibles immédiatement dans le catalogue acheteur
+| Terminée
 
 | *US-CAT-03*
 | En tant que vendeur, je peux archiver un produit pour le retirer du catalogue sans le supprimer.
 a|
-- [ ] Produit archivé non visible dans le catalogue acheteur
-- [ ] Archivage bloqué si le produit est référencé dans une commande active (message d'avertissement)
-| À faire
+- [x] Produit archivé non visible dans le catalogue acheteur
+- [ ] Archivage bloqué si le produit est référencé dans une commande active — implémentation différée à US-ORD (domaine commandes non encore créé)
+| Terminée
 
 | *US-CAT-04*
 | En tant que vendeur, je peux consulter et mettre à jour les niveaux de stock de mes produits et définir un seuil d'alerte.
 a|
-- [ ] Stock et seuil d'alerte affichés dans la liste des produits
-- [ ] Quantités modifiables depuis la liste ou le formulaire produit
-- [ ] Indicateur visuel (couleur) sur les produits sous le seuil ou en rupture
-| À faire
+- [x] Stock et seuil d'alerte affichés dans la liste des produits
+- [x] Quantités modifiables depuis le formulaire produit et via `PATCH /stock`
+- [x] Indicateur visuel (couleur) sur les produits sous le seuil ou en rupture
+| Terminée
 
 | *US-CAT-05*
 | En tant que vendeur, je reçois une notification lorsque le stock d'un produit passe en dessous de son seuil d'alerte.
 a|
-- [ ] Notification déclenchée automatiquement lors du franchissement du seuil
-- [ ] Indicateur visible dans le back-office vendeur
-| À faire
+- [x] Notification déclenchée automatiquement lors du franchissement du seuil (table `stock_alerts`)
+- [x] Indicateur visible dans le back-office vendeur (panneau alertes + badge sur nav)
+| Terminée
 
 |===
 

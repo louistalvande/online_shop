@@ -107,3 +107,43 @@ CREATE INDEX idx_audit_log_email       ON audit_log (email);
 CREATE INDEX idx_audit_log_event_type  ON audit_log (event_type);
 CREATE INDEX idx_audit_log_occurred_at ON audit_log (occurred_at);
 
+
+-- Product catalog domain (US-CAT-01..05)
+
+CREATE TABLE products (
+    id                    UUID          PRIMARY KEY DEFAULT gen_random_uuid(),
+    vendor_id             UUID          NOT NULL REFERENCES accounts(id),
+    name                  VARCHAR(200)  NOT NULL,
+    description           TEXT,
+    price_excl_tax        NUMERIC(10,2) NOT NULL,
+    category              VARCHAR(100),
+    quantity              INTEGER       NOT NULL DEFAULT 0,
+    stock_alert_threshold INTEGER       NOT NULL DEFAULT 0,
+    status                VARCHAR(20)   NOT NULL DEFAULT 'PUBLISHED',
+    created_at            TIMESTAMP     NOT NULL DEFAULT NOW(),
+    updated_at            TIMESTAMP     NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX idx_products_vendor_id ON products (vendor_id);
+CREATE INDEX idx_products_status    ON products (status);
+
+CREATE TABLE product_photos (
+    id         UUID         PRIMARY KEY DEFAULT gen_random_uuid(),
+    product_id UUID         NOT NULL REFERENCES products(id) ON DELETE CASCADE,
+    url        VARCHAR(500) NOT NULL,
+    sort_order INTEGER      NOT NULL DEFAULT 0
+);
+
+CREATE INDEX idx_product_photos_product_id ON product_photos (product_id);
+
+-- One alert record per threshold-crossing event (US-CAT-05)
+CREATE TABLE stock_alerts (
+    id           UUID      PRIMARY KEY DEFAULT gen_random_uuid(),
+    product_id   UUID      NOT NULL REFERENCES products(id) ON DELETE CASCADE,
+    triggered_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    acknowledged BOOLEAN   NOT NULL DEFAULT FALSE
+);
+
+CREATE INDEX idx_stock_alerts_product_id  ON stock_alerts (product_id);
+CREATE INDEX idx_stock_alerts_acknowledged ON stock_alerts (acknowledged);
+
