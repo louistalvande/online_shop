@@ -2,6 +2,7 @@ package com.shop.auth.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
 /**
@@ -17,8 +18,10 @@ public class ActivateAccountRequest {
     private String token;
 
     /** Chosen password — required only for admin-created accounts that have no password yet. */
-    @Schema(description = "Chosen password (required when account has no password yet)")
-    @Size(min = 8)
+    @Schema(description = "Chosen password (required when account has no password yet) — minimum 12 characters, must contain uppercase, lowercase, digit and special character")
+    @Size(min = 12, message = "{error.password.size}")
+    @Pattern(regexp = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&_\\-#]).{12,}$",
+             message = "{error.password.complexity}")
     private String password;
 
     /** Password confirmation — must match password when provided. */

@@ -3,6 +3,7 @@ package com.shop.auth.dto;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
 /** Payload for buyer self-registration (US-REG-01 / FS-B01). Role is always BUYER — set server-side. */
@@ -15,9 +16,11 @@ public class RegisterRequest {
     private String email;
 
     /** Chosen password — hashed before storage. */
-    @Schema(description = "Chosen password — minimum 8 characters")
+    @Schema(description = "Chosen password — minimum 12 characters, must contain uppercase, lowercase, digit and special character")
     @NotBlank
-    @Size(min = 8)
+    @Size(min = 12, message = "{error.password.size}")
+    @Pattern(regexp = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&_\\-#]).{12,}$",
+             message = "{error.password.complexity}")
     private String password;
 
     /** First name. */

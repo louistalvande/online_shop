@@ -61,13 +61,13 @@ class AccountServiceImplTest {
     @Test
     void listAccounts_callsFindByStatusNotDeleted() {
         Account active = activeAccount();
-        given(accountRepository.findAll()).willReturn(List.of(active));
+        given(accountRepository.findByStatusNot(AccountStatus.DELETED)).willReturn(List.of(active));
 
         List<AccountResponse> result = service.listAccounts();
 
         assertThat(result).hasSize(1);
         assertThat(result.get(0).getStatus()).isEqualTo(AccountStatus.ACTIVE);
-        then(accountRepository).should().findAll();
+        then(accountRepository).should().findByStatusNot(AccountStatus.DELETED);
         then(accountRepository).should(never()).findAll();
     }
 

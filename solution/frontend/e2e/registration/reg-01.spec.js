@@ -13,8 +13,8 @@ test.describe('US-REG-01 — Buyer registration', () => {
     await page.getByLabel('Prénom').fill('Alice');
     await page.getByLabel('Nom', { exact: true }).fill('Martin');
     await page.getByLabel('Email').fill(email);
-    await page.getByLabel('Mot de passe', { exact: true }).fill('Password1!');
-    await page.getByLabel('Confirmer le mot de passe').fill('Password1!');
+    await page.getByLabel('Mot de passe', { exact: true }).fill('Password123!');
+    await page.getByLabel('Confirmer le mot de passe').fill('Password123!');
 
     await page.getByRole('button', { name: 'Créer mon compte' }).click();
 
@@ -30,8 +30,8 @@ test.describe('US-REG-01 — Buyer registration', () => {
     await page.getByLabel('Prénom').fill('Alice');
     await page.getByLabel('Nom', { exact: true }).fill('Martin');
     await page.getByLabel('Email').fill(email);
-    await page.getByLabel('Mot de passe', { exact: true }).fill('Password1!');
-    await page.getByLabel('Confirmer le mot de passe').fill('Password1!');
+    await page.getByLabel('Mot de passe', { exact: true }).fill('Password123!');
+    await page.getByLabel('Confirmer le mot de passe').fill('Password123!');
     await page.getByRole('button', { name: 'Créer mon compte' }).click();
     await expect(page.getByText('Compte créé !')).toBeVisible();
 
@@ -40,8 +40,8 @@ test.describe('US-REG-01 — Buyer registration', () => {
     await page.getByLabel('Prénom').fill('Bob');
     await page.getByLabel('Nom', { exact: true }).fill('Dupont');
     await page.getByLabel('Email').fill(email);
-    await page.getByLabel('Mot de passe', { exact: true }).fill('Password1!');
-    await page.getByLabel('Confirmer le mot de passe').fill('Password1!');
+    await page.getByLabel('Mot de passe', { exact: true }).fill('Password123!');
+    await page.getByLabel('Confirmer le mot de passe').fill('Password123!');
     await page.getByRole('button', { name: 'Créer mon compte' }).click();
 
     await expect(page.getByText('Cette adresse email est déjà utilisée.')).toBeVisible();
@@ -51,7 +51,7 @@ test.describe('US-REG-01 — Buyer registration', () => {
     await page.getByLabel('Prénom').fill('Alice');
     await page.getByLabel('Nom', { exact: true }).fill('Martin');
     await page.getByLabel('Email').fill(`reg01-mismatch-${Date.now()}@shop-test.example`);
-    await page.getByLabel('Mot de passe', { exact: true }).fill('Password1!');
+    await page.getByLabel('Mot de passe', { exact: true }).fill('Password123!');
     await page.getByLabel('Confirmer le mot de passe').fill('Different1!');
 
     await page.getByRole('button', { name: 'Créer mon compte' }).click();
