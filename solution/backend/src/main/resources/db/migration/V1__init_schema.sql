@@ -1,4 +1,4 @@
--- V1: initial schema — account domain (US-ADM-01)
+-- V1: initial schema — account domain (US-ADM-01) + profile fields (US-PRF-01, US-PRF-02)
 
 CREATE TABLE accounts (
     id                   UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -10,7 +10,12 @@ CREATE TABLE accounts (
     status               VARCHAR(20)  NOT NULL,
     language             VARCHAR(2)   NOT NULL DEFAULT 'FR',
     must_change_password BOOLEAN      NOT NULL DEFAULT FALSE,
-    created_at           TIMESTAMP    NOT NULL DEFAULT NOW()
+    created_at           TIMESTAMP    NOT NULL DEFAULT NOW(),
+    phone                VARCHAR(20),
+    address_line         VARCHAR(255),
+    city                 VARCHAR(100),
+    postal_code          VARCHAR(20),
+    country_code         VARCHAR(2)
 );
 
 INSERT INTO accounts (id, email, password_hash, first_name, last_name, role, status, must_change_password, created_at)

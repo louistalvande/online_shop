@@ -13,4 +13,13 @@ public class AccountNotFoundException extends RuntimeException {
     public AccountNotFoundException(UUID id) {
         super("Account not found: " + id);
     }
+
+    /**
+     * Constructs the exception with the missing account email.
+     *
+     * @param email the email address that matched no account
+     */
+    public AccountNotFoundException(String email) {
+        super("Account not found: " + email);
+    }
 }

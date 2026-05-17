@@ -2,18 +2,23 @@ package com.shop.account.service.impl;
 
 import com.shop.account.dto.AccountResponse;
 import com.shop.account.dto.CreateAccountRequest;
+import com.shop.account.dto.ProfileResponse;
 import com.shop.account.dto.UpdateAccountRequest;
+import com.shop.account.dto.UpdateProfileRequest;
 import com.shop.account.entity.Account;
+import com.shop.account.entity.AccountRole;
 import com.shop.account.entity.AccountStatus;
 import com.shop.account.entity.ActivationToken;
 import com.shop.account.exception.AccountNotFoundException;
 import com.shop.account.exception.EmailAlreadyUsedException;
 import com.shop.account.exception.InvalidAccountStateException;
+import com.shop.account.exception.WrongCurrentPasswordException;
 import com.shop.account.repository.AccountRepository;
 import com.shop.account.repository.ActivationTokenRepository;
 import com.shop.account.service.AccountService;
 import com.shop.notification.service.NotificationService;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -30,6 +35,7 @@ public class AccountServiceImpl implements AccountService {
     private final AccountRepository accountRepository;
     private final ActivationTokenRepository activationTokenRepository;
     private final NotificationService notificationService;
+    private final PasswordEncoder passwordEncoder;
     private final String activationBaseUrl;
     private final int activationExpiryHours;
 
@@ -37,6 +43,7 @@ public class AccountServiceImpl implements AccountService {
      * @param accountRepository         account data access
      * @param activationTokenRepository token data access
      * @param notificationService       email sender
+     * @param passwordEncoder           BCrypt encoder for password change
      * @param activationBaseUrl         base URL for the activation link
      * @param activationExpiryHours     token TTL in hours (CS-07)
      */
@@ -44,11 +51,13 @@ public class AccountServiceImpl implements AccountService {
             AccountRepository accountRepository,
             ActivationTokenRepository activationTokenRepository,
             NotificationService notificationService,
+            PasswordEncoder passwordEncoder,
             @Value("${app.activation-base-url}") String activationBaseUrl,
             @Value("${app.activation-expiry-hours}") int activationExpiryHours) {
         this.accountRepository = accountRepository;
         this.activationTokenRepository = activationTokenRepository;
         this.notificationService = notificationService;
+        this.passwordEncoder = passwordEncoder;
         this.activationBaseUrl = activationBaseUrl;
         this.activationExpiryHours = activationExpiryHours;
     }
@@ -144,6 +153,52 @@ public class AccountServiceImpl implements AccountService {
                 .orElseThrow(() -> new AccountNotFoundException(id));
         account.setStatus(AccountStatus.DELETED);
         accountRepository.save(account);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    @Transactional(readOnly = true)
+    public ProfileResponse getProfile(String email) {
+        Account account = accountRepository.findByEmail(email)
+                .orElseThrow(() -> new AccountNotFoundException(email));
+        return account.getRole() == AccountRole.ADMIN
+                ? ProfileResponse.fromAdmin(account)
+                : ProfileResponse.from(account);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public ProfileResponse updateProfile(String email, UpdateProfileRequest request) {
+        Account account = accountRepository.findByEmail(email)
+                .orElseThrow(() -> new AccountNotFoundException(email));
+
+        boolean isAdmin = account.getRole() == AccountRole.ADMIN;
+
+        if (request.getFirstName() != null) account.setFirstName(request.getFirstName());
+        if (request.getLastName()  != null) account.setLastName(request.getLastName());
+        if (request.getLanguage()  != null) account.setLanguage(request.getLanguage());
+
+        if (!isAdmin) {
+            if (request.getPhone()       != null) account.setPhone(request.getPhone());
+            if (request.getAddressLine() != null) account.setAddressLine(request.getAddressLine());
+            if (request.getCity()        != null) account.setCity(request.getCity());
+            if (request.getPostalCode()  != null) account.setPostalCode(request.getPostalCode());
+            if (request.getCountryCode() != null) account.setCountryCode(request.getCountryCode());
+        }
+
+        if (request.getCurrentPassword() != null && request.getNewPassword() != null) {
+            if (!passwordEncoder.matches(request.getCurrentPassword(), account.getPasswordHash())) {
+                throw new WrongCurrentPasswordException();
+            }
+            if (!request.getNewPassword().equals(request.getConfirmPassword())) {
+                throw new IllegalArgumentException("Passwords do not match");
+            }
+            account.setPasswordHash(passwordEncoder.encode(request.getNewPassword()));
+        }
+
+        return isAdmin
+                ? ProfileResponse.fromAdmin(accountRepository.save(account))
+                : ProfileResponse.from(accountRepository.save(account));
     }
 
     /**

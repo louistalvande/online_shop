@@ -6,6 +6,8 @@ servers:
 - url: http://localhost
   description: Generated server url
 tags:
+- name: Profile
+  description: "Self-service profile management (US-PRF-01, US-PRF-02)"
 - name: Admin — Countries
   description: Eurozone country reference list
 - name: Auth
@@ -198,6 +200,61 @@ paths:
             '*/*':
               schema:
                 $ref: "#/components/schemas/AccountResponse"
+  /api/me:
+    get:
+      tags:
+      - Profile
+      summary: "Get own profile (US-PRF-01, US-PRF-02)"
+      operationId: getProfile
+      responses:
+        "200":
+          description: Profile returned
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ProfileResponse"
+        "401":
+          description: Not authenticated
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ProfileResponse"
+    patch:
+      tags:
+      - Profile
+      summary: "Update own profile (US-PRF-01, US-PRF-02)"
+      operationId: updateProfile
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateProfileRequest"
+        required: true
+      responses:
+        "400":
+          description: Validation error
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ProfileResponse"
+        "200":
+          description: Profile updated
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ProfileResponse"
+        "422":
+          description: Wrong current password
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ProfileResponse"
+        "401":
+          description: Not authenticated
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ProfileResponse"
   /api/admin/carriers/{id}:
     delete:
       tags:
@@ -685,6 +742,110 @@ components:
         createdAt:
           type: string
           description: Creation timestamp
+          format: date-time
+    UpdateProfileRequest:
+      type: object
+      properties:
+        firstName:
+          maxLength: 100
+          minLength: 0
+          type: string
+          description: Given name to set — omit to leave unchanged
+        lastName:
+          maxLength: 100
+          minLength: 0
+          type: string
+          description: Family name to set — omit to leave unchanged
+        phone:
+          maxLength: 20
+          minLength: 0
+          type: string
+          description: Phone number to set — omit to leave unchanged
+        addressLine:
+          maxLength: 255
+          minLength: 0
+          type: string
+          description: Street address line to set — omit to leave unchanged
+        city:
+          maxLength: 100
+          minLength: 0
+          type: string
+          description: City to set — omit to leave unchanged
+        postalCode:
+          maxLength: 20
+          minLength: 0
+          type: string
+          description: Postal code to set — omit to leave unchanged
+        countryCode:
+          maxLength: 2
+          minLength: 2
+          type: string
+          description: ISO 3166-1 alpha-2 country code (euro zone) — omit to leave
+            unchanged
+        language:
+          type: string
+          description: Preferred notification language to set — omit to leave unchanged
+          enum:
+          - FR
+          - EN
+        currentPassword:
+          type: string
+          description: Current password — required when changing password
+        newPassword:
+          maxLength: 2147483647
+          minLength: 8
+          type: string
+          description: New password — required with currentPassword and confirmPassword
+        confirmPassword:
+          type: string
+          description: New password confirmation — must match newPassword
+    ProfileResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Account UUID
+          format: uuid
+        email:
+          type: string
+          description: "Email address — read-only, cannot be changed"
+        firstName:
+          type: string
+          description: Given name
+        lastName:
+          type: string
+          description: Family name
+        phone:
+          type: string
+          description: Phone number
+        addressLine:
+          type: string
+          description: Street address line
+        city:
+          type: string
+          description: City
+        postalCode:
+          type: string
+          description: Postal code
+        countryCode:
+          type: string
+          description: ISO 3166-1 alpha-2 country code (euro zone only)
+        language:
+          type: string
+          description: Preferred notification language
+          enum:
+          - FR
+          - EN
+        role:
+          type: string
+          description: Account role
+          enum:
+          - ADMIN
+          - VENDOR
+          - BUYER
+        createdAt:
+          type: string
+          description: Account creation timestamp
           format: date-time
     UpdateCarrierRequest:
       required:

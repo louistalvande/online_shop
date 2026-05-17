@@ -1,12 +1,15 @@
 package com.shop.account.service.impl;
 
 import com.shop.account.dto.AccountResponse;
+import com.shop.account.dto.ProfileResponse;
+import com.shop.account.dto.UpdateProfileRequest;
 import com.shop.account.entity.Account;
 import com.shop.account.entity.AccountLanguage;
 import com.shop.account.entity.AccountRole;
 import com.shop.account.entity.AccountStatus;
 import com.shop.account.exception.AccountNotFoundException;
 import com.shop.account.exception.InvalidAccountStateException;
+import com.shop.account.exception.WrongCurrentPasswordException;
 import com.shop.account.repository.AccountRepository;
 import com.shop.account.repository.ActivationTokenRepository;
 import com.shop.notification.service.NotificationService;
@@ -15,6 +18,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.List;
 import java.util.Optional;
@@ -33,8 +37,13 @@ class AccountServiceImplTest {
     @Mock AccountRepository accountRepository;
     @Mock ActivationTokenRepository activationTokenRepository;
     @Mock NotificationService notificationService;
+    @Mock PasswordEncoder passwordEncoder;
 
     AccountServiceImpl service;
+
+    private static final String EMAIL    = "alice@example.com";
+    private static final String HASH     = "$2a$12$existingHash";
+    private static final String PASSWORD = "OldPass12!";
 
     @BeforeEach
     void setUp() {
@@ -42,13 +51,15 @@ class AccountServiceImplTest {
                 accountRepository,
                 activationTokenRepository,
                 notificationService,
+                passwordEncoder,
                 "http://localhost",
                 24);
     }
 
     private Account activeAccount() {
         Account a = new Account();
-        a.setEmail("alice@example.com");
+        a.setEmail(EMAIL);
+        a.setPasswordHash(HASH);
         a.setFirstName("Alice");
         a.setLastName("Smith");
         a.setRole(AccountRole.BUYER);
@@ -60,8 +71,7 @@ class AccountServiceImplTest {
     /** listAccounts must delegate to findByStatusNot(DELETED) and never call findAll. */
     @Test
     void listAccounts_callsFindByStatusNotDeleted() {
-        Account active = activeAccount();
-        given(accountRepository.findByStatusNot(AccountStatus.DELETED)).willReturn(List.of(active));
+        given(accountRepository.findByStatusNot(AccountStatus.DELETED)).willReturn(List.of(activeAccount()));
 
         List<AccountResponse> result = service.listAccounts();
 
@@ -169,5 +179,131 @@ class AccountServiceImplTest {
         assertThatThrownBy(() -> service.reactivateAccount(id))
                 .isInstanceOf(AccountNotFoundException.class);
         then(accountRepository).should(never()).save(any());
+    }
+
+    /** getProfile must return a ProfileResponse matching the stored account. */
+    @Test
+    void getProfile_returnsProfile() {
+        given(accountRepository.findByEmail(EMAIL)).willReturn(Optional.of(activeAccount()));
+
+        ProfileResponse profile = service.getProfile(EMAIL);
+
+        assertThat(profile.getEmail()).isEqualTo(EMAIL);
+        assertThat(profile.getFirstName()).isEqualTo("Alice");
+    }
+
+    /** updateProfile with scalar fields must persist only the supplied values. */
+    @Test
+    void updateProfile_scalarFields_updatesAccount() {
+        Account account = activeAccount();
+        given(accountRepository.findByEmail(EMAIL)).willReturn(Optional.of(account));
+        given(accountRepository.save(any())).willAnswer(inv -> inv.getArgument(0));
+
+        UpdateProfileRequest req = new UpdateProfileRequest();
+        req.setFirstName("Bob");
+        req.setPhone("0601020304");
+        req.setCity("Paris");
+
+        ProfileResponse result = service.updateProfile(EMAIL, req);
+
+        assertThat(result.getFirstName()).isEqualTo("Bob");
+        assertThat(result.getPhone()).isEqualTo("0601020304");
+        assertThat(result.getCity()).isEqualTo("Paris");
+        assertThat(result.getLastName()).isEqualTo("Smith"); // unchanged
+    }
+
+    /** updateProfile with correct currentPassword must update the hash. */
+    @Test
+    void updateProfile_correctCurrentPassword_changesHash() {
+        Account account = activeAccount();
+        given(accountRepository.findByEmail(EMAIL)).willReturn(Optional.of(account));
+        given(accountRepository.save(any())).willAnswer(inv -> inv.getArgument(0));
+        given(passwordEncoder.matches(PASSWORD, HASH)).willReturn(true);
+        given(passwordEncoder.encode("NewPass12!")).willReturn("$2a$12$newHash");
+
+        UpdateProfileRequest req = new UpdateProfileRequest();
+        req.setCurrentPassword(PASSWORD);
+        req.setNewPassword("NewPass12!");
+        req.setConfirmPassword("NewPass12!");
+
+        service.updateProfile(EMAIL, req);
+
+        then(passwordEncoder).should().encode("NewPass12!");
+        assertThat(account.getPasswordHash()).isEqualTo("$2a$12$newHash");
+    }
+
+    /** updateProfile with wrong currentPassword must throw WrongCurrentPasswordException. */
+    @Test
+    void updateProfile_wrongCurrentPassword_throws() {
+        Account account = activeAccount();
+        given(accountRepository.findByEmail(EMAIL)).willReturn(Optional.of(account));
+        given(passwordEncoder.matches("WrongPass!", HASH)).willReturn(false);
+
+        UpdateProfileRequest req = new UpdateProfileRequest();
+        req.setCurrentPassword("WrongPass!");
+        req.setNewPassword("NewPass12!");
+        req.setConfirmPassword("NewPass12!");
+
+        assertThatThrownBy(() -> service.updateProfile(EMAIL, req))
+                .isInstanceOf(WrongCurrentPasswordException.class);
+        then(accountRepository).should(never()).save(any());
+    }
+
+    /** updateProfile with mismatched confirmPassword must throw IllegalArgumentException. */
+    @Test
+    void updateProfile_mismatchedPasswords_throws() {
+        Account account = activeAccount();
+        given(accountRepository.findByEmail(EMAIL)).willReturn(Optional.of(account));
+        given(passwordEncoder.matches(PASSWORD, HASH)).willReturn(true);
+
+        UpdateProfileRequest req = new UpdateProfileRequest();
+        req.setCurrentPassword(PASSWORD);
+        req.setNewPassword("NewPass12!");
+        req.setConfirmPassword("DifferentPass12!");
+
+        assertThatThrownBy(() -> service.updateProfile(EMAIL, req))
+                .isInstanceOf(IllegalArgumentException.class);
+        then(accountRepository).should(never()).save(any());
+    }
+
+    /** getProfile for an admin must return a response without address fields. */
+    @Test
+    void getProfile_adminAccount_omitsAddressFields() {
+        Account admin = activeAccount();
+        admin.setRole(AccountRole.ADMIN);
+        admin.setPhone("0601020304");
+        admin.setAddressLine("1 rue de la Paix");
+        given(accountRepository.findByEmail(EMAIL)).willReturn(Optional.of(admin));
+
+        ProfileResponse profile = service.getProfile(EMAIL);
+
+        assertThat(profile.getRole()).isEqualTo(AccountRole.ADMIN);
+        assertThat(profile.getPhone()).isNull();
+        assertThat(profile.getAddressLine()).isNull();
+        assertThat(profile.getCity()).isNull();
+        assertThat(profile.getPostalCode()).isNull();
+        assertThat(profile.getCountryCode()).isNull();
+    }
+
+    /** updateProfile for an admin must ignore address field updates. */
+    @Test
+    void updateProfile_adminAccount_ignoresAddressFields() {
+        Account admin = activeAccount();
+        admin.setRole(AccountRole.ADMIN);
+        given(accountRepository.findByEmail(EMAIL)).willReturn(Optional.of(admin));
+        given(accountRepository.save(any())).willAnswer(inv -> inv.getArgument(0));
+
+        UpdateProfileRequest req = new UpdateProfileRequest();
+        req.setFirstName("Bob");
+        req.setPhone("0601020304");
+        req.setCity("Paris");
+
+        ProfileResponse result = service.updateProfile(EMAIL, req);
+
+        assertThat(result.getFirstName()).isEqualTo("Bob");
+        assertThat(result.getPhone()).isNull();
+        assertThat(result.getCity()).isNull();
+        assertThat(admin.getPhone()).isNull();
+        assertThat(admin.getCity()).isNull();
     }
 }

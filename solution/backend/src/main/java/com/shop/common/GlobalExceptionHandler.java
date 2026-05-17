@@ -3,6 +3,7 @@ package com.shop.common;
 import com.shop.account.exception.AccountNotFoundException;
 import com.shop.account.exception.EmailAlreadyUsedException;
 import com.shop.account.exception.InvalidAccountStateException;
+import com.shop.account.exception.WrongCurrentPasswordException;
 import com.shop.auth.exception.InvalidActivationTokenException;
 import com.shop.auth.exception.InvalidCredentialsException;
 import com.shop.auth.exception.PasswordsMismatchException;
@@ -138,6 +139,21 @@ public class GlobalExceptionHandler {
         String message = messageSource.getMessage("error.activation.token.notfound", null, locale);
         return ResponseEntity.status(HttpStatus.NOT_FOUND)
                 .body(Map.of("error", "TOKEN_NOT_FOUND", "message", message));
+    }
+
+    /**
+     * Handles wrong current password on profile update — returns HTTP 422 (US-PRF-01, US-PRF-02).
+     *
+     * @param ex     the exception
+     * @param locale the request locale
+     * @return a 422 response with a localised error body
+     */
+    @ExceptionHandler(WrongCurrentPasswordException.class)
+    public ResponseEntity<Map<String, String>> handleWrongCurrentPassword(
+            WrongCurrentPasswordException ex, Locale locale) {
+        String message = messageSource.getMessage("error.password.wrong", null, locale);
+        return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY)
+                .body(Map.of("error", "WRONG_PASSWORD", "message", message));
     }
 
     @ExceptionHandler(PasswordsMismatchException.class)
