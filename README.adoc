@@ -12,6 +12,17 @@
 ---
 
 == 🇫🇷 Français [[français]]
+
+=== Documents de référence
+
+[cols="3", options="header"]
+|===
+| Document | Lien | Description
+| Exigences utilisateurs | link:architecture/Boutique%20en%20ligne%20-%20Exigences%20utilisateurs.adoc[AsciiDoc] / link:architecture/Boutique%20en%20ligne%20-%20Exigences%20utilisateurs.html[HTML] | Besoins opérationnels et exigences de sécurité (ANSSI)
+| Documentation d'architecture | link:architecture/main.adoc[AsciiDoc] / link:architecture/Boutique%20en%20ligne%20-%20Documentation%20d%27Architecture.html[HTML] / link:architecture/Boutique%20en%20ligne%20-%20Documentation%20d%27Architecture.pdf[PDF] | Les quatre niveaux ARCADIA (OA → SA → LA → PA)
+| Backlog | link:architecture/05-backlog/us.adoc[AsciiDoc] | User Stories et critères d'acceptation
+|===
+
 Le projet a pour objectif de développer une application web de boutique en ligne. Il débutera par la rédaction d'un document d'architecture, les différents livrables étant produits avec l'assistance d'une IA.
 La réalisation du projet s'articulera autour de plusieurs grandes étapes, abordées de manière incrémentale. L'ensemble de ces étapes sera appliqué intégralement pour chaque User Story.
 
@@ -21,7 +32,7 @@ image::architecture/arcadia.png[ARCADIA, 600]
 
 La méthode ARCADIA sera suivie en s'appuyant uniquement sur le language de modélisation UML. Le document sera manipulé avec Asciidoc, et les diagrammes avec la notation textuelle de PlantUML, puis générés sous forme visuelle dans le document final.
 
-Le document d'architecture est produit à partir du *document des exigences utilisateurs* (_Boutique en ligne - Exigences utilisateurs_), qui constitue l'entrant formel de la démarche ARCADIA. Ce document recense les besoins opérationnels des acteurs (administrateur, vendeur, acheteur) ainsi que les exigences de sécurité issues des recommandations ANSSI, et sert de référence tout au long des quatre niveaux d'analyse.
+Le document d'architecture est produit à partir du link:architecture/Boutique%20en%20ligne%20-%20Exigences%20utilisateurs.adoc[*document des exigences utilisateurs*], qui constitue l'entrant formel de la démarche ARCADIA. Ce document recense les besoins opérationnels des acteurs (administrateur, vendeur, acheteur) ainsi que les exigences de sécurité issues des recommandations ANSSI, et sert de référence tout au long des quatre niveaux d'analyse.
 
 NOTE: La solution respecte les **recommandations de sécurité de l'https://www.ssi.gouv.fr/[ANSSI]** (Agence nationale de la sécurité des systèmes d'information). Ces recommandations sont déclinées sur les quatre niveaux ARCADIA de l'architecture — OA, SA, LA, PA — et implémentées dans le code : TLS 1.3, hachage BCrypt, protection contre la force brute, en-têtes HTTP de sécurité (CSP, HSTS, X-Frame-Options) et journalisation d'audit. Références : https://www.ssi.gouv.fr/guide/recommandations-relatives-a-lauthentification-multifacteur-et-aux-mots-de-passe/[ANSSI-BP-076] (authentification et mots de passe), https://www.ssi.gouv.fr/guide/recommandations-de-securite-relatives-a-tls/[ANSSI-BP-113] (TLS), https://www.ssi.gouv.fr/guide/recommandations-pour-la-securisation-des-sites-web/[guide de sécurisation des sites web], https://cyber.gouv.fr/guide-si-sensibles-cloud[guide SI sensibles — cloud].
 
@@ -203,6 +214,16 @@ L'objectif est de fournir une documentation claire, accessible et maintainable, 
 
 == 🇬🇧 English [[english]]
 
+=== Reference Documents
+
+[cols="3", options="header"]
+|===
+| Document | Link | Description
+| User requirements | link:architecture/Boutique%20en%20ligne%20-%20Exigences%20utilisateurs.adoc[AsciiDoc] / link:architecture/Boutique%20en%20ligne%20-%20Exigences%20utilisateurs.html[HTML] | Operational needs and ANSSI security requirements
+| Architecture document | link:architecture/main.adoc[AsciiDoc] / link:architecture/Boutique%20en%20ligne%20-%20Documentation%20d%27Architecture.html[HTML] / link:architecture/Boutique%20en%20ligne%20-%20Documentation%20d%27Architecture.pdf[PDF] | All four ARCADIA levels (OA → SA → LA → PA)
+| Backlog | link:architecture/05-backlog/us.adoc[AsciiDoc] | User Stories and acceptance criteria
+|===
+
 The project aims to develop an online shop web application. It will begin with the writing of an architecture document, with the various deliverables produced with the assistance of an AI.
 The project will be structured around several major phases, approached iteratively. Each of these phases will be applied in full for every User Story.
 === I. Generating the Architecture Document Using the MBSE ARCADIA Methodology [[i-generating-the-architecture-document-using-the-mbse-arcadia-methodology]]
@@ -211,7 +232,7 @@ image::arcadia.png[ARCADIA, 600]
 
 The ARCADIA method will be followed using exclusively UML modelling language. The document will be written in AsciiDoc, and diagrams will be expressed using PlantUML textual notation, then rendered visually in the final document.
 
-The architecture document is produced from the *user requirements document* (_Boutique en ligne - Exigences utilisateurs_), which constitutes the formal input to the ARCADIA process. This document captures the operational needs of all actors (administrator, vendor, buyer) as well as the security requirements derived from ANSSI recommendations, and serves as the reference throughout all four levels of analysis.
+The architecture document is produced from the link:architecture/Boutique%20en%20ligne%20-%20Exigences%20utilisateurs.adoc[*user requirements document*], which constitutes the formal input to the ARCADIA process. This document captures the operational needs of all actors (administrator, vendor, buyer) as well as the security requirements derived from ANSSI recommendations, and serves as the reference throughout all four levels of analysis.
 
 NOTE: The solution complies with **https://www.ssi.gouv.fr/en/[ANSSI] security recommendations** (French national cybersecurity agency). These recommendations are traced across all four ARCADIA levels — OA, SA, LA, PA — and implemented in the code: TLS 1.3, BCrypt hashing, brute-force protection, HTTP security headers (CSP, HSTS, X-Frame-Options), and audit logging. References: https://www.ssi.gouv.fr/guide/recommandations-relatives-a-lauthentification-multifacteur-et-aux-mots-de-passe/[ANSSI-BP-076] (authentication & passwords), https://www.ssi.gouv.fr/guide/recommandations-de-securite-relatives-a-tls/[ANSSI-BP-113] (TLS), https://www.ssi.gouv.fr/guide/recommandations-pour-la-securisation-des-sites-web/[web application security guide], https://cyber.gouv.fr/guide-si-sensibles-cloud[sensitive IS — cloud guide].
 
