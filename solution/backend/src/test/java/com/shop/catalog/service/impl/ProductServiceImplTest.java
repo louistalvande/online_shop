@@ -29,6 +29,7 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
 
@@ -95,7 +96,6 @@ class ProductServiceImplTest {
     void createProduct_savesPublishedProductAndReturnsDto() {
         given(accountRepository.findByEmail(VENDOR_EMAIL)).willReturn(Optional.of(vendorAccount()));
         given(productRepository.save(any(Product.class))).willAnswer(inv -> inv.getArgument(0));
-        given(stockAlertRepository.existsByProduct_IdAndAcknowledged(any(), any())).willReturn(false);
 
         ProductResponse result = service.createProduct(VENDOR_EMAIL, createRequest(10));
 
@@ -109,7 +109,7 @@ class ProductServiceImplTest {
     void createProduct_raisesStockAlert_whenQuantityBelowThreshold() {
         given(accountRepository.findByEmail(VENDOR_EMAIL)).willReturn(Optional.of(vendorAccount()));
         given(productRepository.save(any(Product.class))).willAnswer(inv -> inv.getArgument(0));
-        given(stockAlertRepository.existsByProduct_IdAndAcknowledged(any(), any())).willReturn(false);
+        given(stockAlertRepository.existsByProduct_IdAndAcknowledged(any(), anyBoolean())).willReturn(false);
 
         service.createProduct(VENDOR_EMAIL, createRequest(1));
 
@@ -121,7 +121,7 @@ class ProductServiceImplTest {
     void createProduct_doesNotRaiseDuplicateAlert_whenAlertAlreadyPending() {
         given(accountRepository.findByEmail(VENDOR_EMAIL)).willReturn(Optional.of(vendorAccount()));
         given(productRepository.save(any(Product.class))).willAnswer(inv -> inv.getArgument(0));
-        given(stockAlertRepository.existsByProduct_IdAndAcknowledged(any(), any())).willReturn(true);
+        given(stockAlertRepository.existsByProduct_IdAndAcknowledged(any(), anyBoolean())).willReturn(true);
 
         service.createProduct(VENDOR_EMAIL, createRequest(1));
 
@@ -179,7 +179,6 @@ class ProductServiceImplTest {
         given(productRepository.findByIdAndVendorId(PRODUCT_ID, VENDOR_ID))
                 .willReturn(Optional.of(publishedProduct()));
         given(productRepository.save(any(Product.class))).willAnswer(inv -> inv.getArgument(0));
-        given(stockAlertRepository.existsByProduct_IdAndAcknowledged(any(), any())).willReturn(false);
 
         UpdateProductRequest req = new UpdateProductRequest();
         req.setName("Huile sur toile");
@@ -216,7 +215,6 @@ class ProductServiceImplTest {
         given(productRepository.findByIdAndVendorId(PRODUCT_ID, VENDOR_ID))
                 .willReturn(Optional.of(publishedProduct()));
         given(productRepository.save(any(Product.class))).willAnswer(inv -> inv.getArgument(0));
-        given(stockAlertRepository.existsByProduct_IdAndAcknowledged(any(), any())).willReturn(false);
 
         UpdateStockRequest req = new UpdateStockRequest();
         req.setQuantity(20);

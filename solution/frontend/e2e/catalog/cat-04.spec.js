@@ -25,7 +25,7 @@ test.describe('US-CAT-04 — Stock management', () => {
 
     await injectVendorSession(page, email, token);
     await page.reload();
-    await page.getByText('Catalogue').click();
+    await page.getByRole('link', { name: 'Catalogue' }).click();
 
     // Stock and threshold columns visible
     await expect(page.getByRole('columnheader', { name: 'Qté' })).toBeVisible();
@@ -51,7 +51,7 @@ test.describe('US-CAT-04 — Stock management', () => {
 
     await injectVendorSession(page, email, token);
     await page.reload();
-    await page.getByText('Catalogue').click();
+    await page.getByRole('link', { name: 'Catalogue' }).click();
 
     await expect(page.getByText('Rupture')).toBeVisible();
   });
@@ -73,9 +73,9 @@ test.describe('US-CAT-04 — Stock management', () => {
 
     await injectVendorSession(page, email, token);
     await page.reload();
-    await page.getByText('Catalogue').click();
+    await page.getByRole('link', { name: 'Catalogue' }).click();
 
-    await expect(page.getByText('Stock bas')).toBeVisible();
+    await expect(page.getByText('Stock bas', { exact: true })).toBeVisible();
   });
 
   test('stock update via API is reflected in product list', async ({ page }) => {
@@ -101,9 +101,9 @@ test.describe('US-CAT-04 — Stock management', () => {
 
     await injectVendorSession(page, email, token);
     await page.reload();
-    await page.getByText('Catalogue').click();
+    await page.getByRole('link', { name: 'Catalogue' }).click();
 
-    await expect(page.getByText('20')).toBeVisible();
+    await expect(page.getByRole('cell', { name: '20' })).toBeVisible();
   });
 
 });

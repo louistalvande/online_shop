@@ -122,50 +122,50 @@ export default function ProductFormModal({ product, onSave, onClose }: Props) {
 
         <form onSubmit={handleSubmit}>
           <div style={{ marginBottom: 16 }}>
-            <label style={labelStyle}>{t('catalog.form.name')} *</label>
-            <input style={inputStyle} value={form.name}
+            <label htmlFor="pf-name" style={labelStyle}>{t('catalog.form.name')} *</label>
+            <input id="pf-name" style={inputStyle} value={form.name}
               onChange={e => set('name', e.target.value)} maxLength={200} />
           </div>
 
           <div style={{ marginBottom: 16 }}>
-            <label style={labelStyle}>{t('catalog.form.description')}</label>
-            <textarea style={{ ...inputStyle, minHeight: 80, resize: 'vertical' }}
+            <label htmlFor="pf-description" style={labelStyle}>{t('catalog.form.description')}</label>
+            <textarea id="pf-description" style={{ ...inputStyle, minHeight: 80, resize: 'vertical' }}
               value={form.description}
               onChange={e => set('description', e.target.value)} />
           </div>
 
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 16 }}>
             <div>
-              <label style={labelStyle}>{t('catalog.form.priceExclTax')} *</label>
-              <input style={inputStyle} type="number" step="0.01" min="0.01"
+              <label htmlFor="pf-price" style={labelStyle}>{t('catalog.form.priceExclTax')} *</label>
+              <input id="pf-price" style={inputStyle} type="number" step="0.01" min="0.01"
                 value={form.priceExclTax}
                 onChange={e => set('priceExclTax', e.target.value)} />
             </div>
             <div>
-              <label style={labelStyle}>{t('catalog.form.category')}</label>
-              <input style={inputStyle} value={form.category}
+              <label htmlFor="pf-category" style={labelStyle}>{t('catalog.form.category')}</label>
+              <input id="pf-category" style={inputStyle} value={form.category}
                 onChange={e => set('category', e.target.value)} maxLength={100} />
             </div>
           </div>
 
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 16 }}>
             <div>
-              <label style={labelStyle}>{t('catalog.form.quantity')} *</label>
-              <input style={inputStyle} type="number" min="0"
+              <label htmlFor="pf-quantity" style={labelStyle}>{t('catalog.form.quantity')} *</label>
+              <input id="pf-quantity" style={inputStyle} type="number" min="0"
                 value={form.quantity}
                 onChange={e => set('quantity', e.target.value)} />
             </div>
             <div>
-              <label style={labelStyle}>{t('catalog.form.stockAlertThreshold')}</label>
-              <input style={inputStyle} type="number" min="0"
+              <label htmlFor="pf-threshold" style={labelStyle}>{t('catalog.form.stockAlertThreshold')}</label>
+              <input id="pf-threshold" style={inputStyle} type="number" min="0"
                 value={form.stockAlertThreshold}
                 onChange={e => set('stockAlertThreshold', e.target.value)} />
             </div>
           </div>
 
           <div style={{ marginBottom: 24 }}>
-            <label style={labelStyle}>{t('catalog.form.photoUrls')}</label>
-            <textarea style={{ ...inputStyle, minHeight: 64, resize: 'vertical', fontSize: 12 }}
+            <label htmlFor="pf-photos" style={labelStyle}>{t('catalog.form.photoUrls')}</label>
+            <textarea id="pf-photos" style={{ ...inputStyle, minHeight: 64, resize: 'vertical', fontSize: 12 }}
               placeholder={t('catalog.form.photoUrlsPlaceholder')}
               value={form.photoUrls}
               onChange={e => set('photoUrls', e.target.value)} />

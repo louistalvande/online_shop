@@ -24,7 +24,7 @@ test.describe('US-CAT-03 — Archive product', () => {
 
     await injectVendorSession(page, email, token);
     await page.reload();
-    await page.getByText('Catalogue').click();
+    await page.getByRole('link', { name: 'Catalogue' }).click();
 
     await expect(page.getByText('Pastel à archiver')).toBeVisible();
 
@@ -39,7 +39,7 @@ test.describe('US-CAT-03 — Archive product', () => {
     // Enable "show archived" toggle
     await page.getByLabel('Afficher les produits archivés').check();
     await expect(page.getByText('Pastel à archiver')).toBeVisible();
-    await expect(page.getByText('Archivé')).toBeVisible();
+    await expect(page.getByText('Archivé', { exact: true })).toBeVisible();
   });
 
   test('archived product has no Archive button', async ({ page }) => {
@@ -59,7 +59,7 @@ test.describe('US-CAT-03 — Archive product', () => {
 
     await injectVendorSession(page, email, token);
     await page.reload();
-    await page.getByText('Catalogue').click();
+    await page.getByRole('link', { name: 'Catalogue' }).click();
 
     page.on('dialog', dialog => dialog.accept());
     const row = page.getByText('Produit à archiver').locator('..').locator('..');

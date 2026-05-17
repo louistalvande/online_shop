@@ -10,6 +10,8 @@ tags:
   description: "Self-service profile management (US-PRF-01, US-PRF-02)"
 - name: Admin — Countries
   description: Eurozone country reference list
+- name: Vendor — Catalog
+  description: Product and stock management for vendors
 - name: Auth
   description: Authentication — shared across all actors
 - name: Admin — Carriers
@@ -17,6 +19,108 @@ tags:
 - name: Admin — Accounts
   description: Account management for administrators
 paths:
+  /api/vendor/products/{id}:
+    get:
+      tags:
+      - Vendor — Catalog
+      summary: Get a product
+      operationId: getProduct
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "404":
+          description: Product not found
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ProductResponse"
+        "200":
+          description: Product returned
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ProductResponse"
+    put:
+      tags:
+      - Vendor — Catalog
+      summary: Update a product
+      operationId: updateProduct
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateProductRequest"
+        required: true
+      responses:
+        "200":
+          description: Product updated
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ProductResponse"
+        "400":
+          description: Invalid input
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ProductResponse"
+        "404":
+          description: Product not found
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ProductResponse"
+  /api/vendor/products:
+    get:
+      tags:
+      - Vendor — Catalog
+      summary: List vendor products
+      operationId: listProducts
+      responses:
+        "200":
+          description: Product list returned
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ProductResponse"
+    post:
+      tags:
+      - Vendor — Catalog
+      summary: Create a product
+      operationId: createProduct
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateProductRequest"
+        required: true
+      responses:
+        "201":
+          description: Product created
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ProductResponse"
+        "400":
+          description: Invalid input
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ProductResponse"
   /api/auth/setup-password:
     post:
       tags:
@@ -200,6 +304,102 @@ paths:
             '*/*':
               schema:
                 $ref: "#/components/schemas/AccountResponse"
+  /api/vendor/products/{id}/stock:
+    patch:
+      tags:
+      - Vendor — Catalog
+      summary: Update product stock
+      operationId: updateStock
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateStockRequest"
+        required: true
+      responses:
+        "200":
+          description: Stock updated
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ProductResponse"
+        "400":
+          description: Invalid input
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ProductResponse"
+        "404":
+          description: Product not found
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ProductResponse"
+  /api/vendor/products/{id}/archive:
+    patch:
+      tags:
+      - Vendor — Catalog
+      summary: Archive a product
+      operationId: archiveProduct
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "404":
+          description: Product not found
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ProductResponse"
+        "409":
+          description: Product referenced in an active order
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ProductResponse"
+        "200":
+          description: Product archived
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ProductResponse"
+  /api/vendor/alerts/{alertId}/acknowledge:
+    patch:
+      tags:
+      - Vendor — Catalog
+      summary: Acknowledge a stock alert
+      operationId: acknowledgeAlert
+      parameters:
+      - name: alertId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "404":
+          description: Alert not found
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/StockAlertResponse"
+        "200":
+          description: Alert acknowledged
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/StockAlertResponse"
   /api/me:
     get:
       tags:
@@ -513,6 +713,21 @@ paths:
             '*/*':
               schema:
                 $ref: "#/components/schemas/AccountResponse"
+  /api/vendor/alerts:
+    get:
+      tags:
+      - Vendor — Catalog
+      summary: List pending stock alerts
+      operationId: listPendingAlerts
+      responses:
+        "200":
+          description: Alert list returned
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/StockAlertResponse"
   /api/admin/countries:
     get:
       tags:
@@ -530,6 +745,156 @@ paths:
                   $ref: "#/components/schemas/CountryResponse"
 components:
   schemas:
+    UpdateProductRequest:
+      required:
+      - name
+      - priceExclTax
+      - quantity
+      type: object
+      properties:
+        name:
+          maxLength: 200
+          minLength: 0
+          type: string
+          description: Product display name
+          example: Aquarelle forêt d'automne
+        description:
+          type: string
+          description: Optional detailed description of the product
+        priceExclTax:
+          minimum: 0.01
+          exclusiveMinimum: false
+          type: number
+          description: Pre-tax unit price in euros
+          example: 29.9
+        category:
+          maxLength: 100
+          minLength: 0
+          type: string
+          description: Product category
+          example: Aquarelle
+        quantity:
+          minimum: 0
+          type: integer
+          description: Available quantity in stock
+          format: int32
+          example: 10
+        stockAlertThreshold:
+          minimum: 0
+          type: integer
+          description: Stock alert threshold
+          format: int32
+          example: 3
+        photoUrls:
+          type: array
+          description: Ordered list of photo URLs — replaces existing photos
+          items:
+            type: string
+            description: Ordered list of photo URLs — replaces existing photos
+    ProductResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Product UUID
+          format: uuid
+        vendorId:
+          type: string
+          description: Vendor account UUID
+          format: uuid
+        name:
+          type: string
+          description: Product display name
+        description:
+          type: string
+          description: Product description
+        priceExclTax:
+          type: number
+          description: Pre-tax unit price in euros
+        category:
+          type: string
+          description: Product category
+        quantity:
+          type: integer
+          description: Current available quantity in stock
+          format: int32
+        stockAlertThreshold:
+          type: integer
+          description: Stock alert threshold
+          format: int32
+        status:
+          type: string
+          description: "Lifecycle status: PUBLISHED or ARCHIVED"
+          enum:
+          - PUBLISHED
+          - ARCHIVED
+        photoUrls:
+          type: array
+          description: Ordered list of photo URLs
+          items:
+            type: string
+            description: Ordered list of photo URLs
+        outOfStock:
+          type: boolean
+          description: True when quantity is zero
+        belowThreshold:
+          type: boolean
+          description: True when quantity > 0 and quantity <= stockAlertThreshold
+        createdAt:
+          type: string
+          description: Creation timestamp
+          format: date-time
+        updatedAt:
+          type: string
+          description: Last update timestamp
+          format: date-time
+    CreateProductRequest:
+      required:
+      - name
+      - priceExclTax
+      - quantity
+      type: object
+      properties:
+        name:
+          maxLength: 200
+          minLength: 0
+          type: string
+          description: Product display name
+          example: Aquarelle forêt d'automne
+        description:
+          type: string
+          description: Optional detailed description of the product
+        priceExclTax:
+          minimum: 0.01
+          exclusiveMinimum: false
+          type: number
+          description: Pre-tax unit price in euros
+          example: 29.9
+        category:
+          maxLength: 100
+          minLength: 0
+          type: string
+          description: Product category
+          example: Aquarelle
+        quantity:
+          minimum: 0
+          type: integer
+          description: Initial available quantity in stock
+          format: int32
+          example: 10
+        stockAlertThreshold:
+          minimum: 0
+          type: integer
+          description: Stock alert threshold — alert triggered when quantity falls
+            below this value
+          format: int32
+          example: 3
+        photoUrls:
+          type: array
+          description: List of publicly accessible photo URLs
+          items:
+            type: string
+            description: List of publicly accessible photo URLs
     SetupPasswordRequest:
       required:
       - confirmPassword
@@ -743,6 +1108,53 @@ components:
           type: string
           description: Creation timestamp
           format: date-time
+    UpdateStockRequest:
+      required:
+      - quantity
+      type: object
+      properties:
+        quantity:
+          minimum: 0
+          type: integer
+          description: New available quantity in stock
+          format: int32
+          example: 15
+        stockAlertThreshold:
+          minimum: 0
+          type: integer
+          description: Stock alert threshold — alert triggered when quantity falls
+            below this value
+          format: int32
+          example: 3
+    StockAlertResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Alert UUID
+          format: uuid
+        productId:
+          type: string
+          description: UUID of the product whose stock crossed the threshold
+          format: uuid
+        productName:
+          type: string
+          description: Name of the product whose stock crossed the threshold
+        quantity:
+          type: integer
+          description: Current quantity at the time the alert was recorded
+          format: int32
+        stockAlertThreshold:
+          type: integer
+          description: Alert threshold that was crossed
+          format: int32
+        triggeredAt:
+          type: string
+          description: Timestamp when the threshold was crossed
+          format: date-time
+        acknowledged:
+          type: boolean
+          description: Whether the vendor has acknowledged this alert
     UpdateProfileRequest:
       type: object
       properties:

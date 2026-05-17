@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 import {
-  createActiveVendorViaApi, getVendorToken, injectVendorSession, createProductViaApi,
+  createActiveVendorViaApi, getVendorToken, injectVendorSession, createProductViaApi, API_URL,
 } from '../helpers/login.js';
 
 // US-CAT-05 — Vendor receives stock alert notification when stock falls below threshold.
@@ -25,11 +25,11 @@ test.describe('US-CAT-05 — Stock alert notification', () => {
 
     await injectVendorSession(page, email, token);
     await page.reload();
-    await page.getByText('Catalogue').click();
+    await page.getByRole('link', { name: 'Catalogue' }).click();
 
     // Alert panel is visible in catalog page
     await expect(page.getByText('Alertes stock')).toBeVisible();
-    await expect(page.getByText('Crayon alerte')).toBeVisible();
+    await expect(page.getByRole('cell', { name: 'Crayon alerte' })).toBeVisible();
   });
 
   test('alert badge shown on Catalogue nav link when on dashboard', async ({ page }) => {
@@ -51,8 +51,8 @@ test.describe('US-CAT-05 — Stock alert notification', () => {
     await page.reload();
 
     // On dashboard, the Catalogue nav link has a badge
-    await page.getByText('Tableau de bord').click();
-    const catalogLink = page.getByText('Catalogue');
+    await page.getByRole('link', { name: 'Tableau de bord' }).click();
+    const catalogLink = page.getByRole('link', { name: 'Catalogue' });
     // Wait for the badge to appear (App polls alerts on load)
     await expect(catalogLink.locator('..').getByText('1')).toBeVisible({ timeout: 5000 });
   });
@@ -74,7 +74,7 @@ test.describe('US-CAT-05 — Stock alert notification', () => {
 
     await injectVendorSession(page, email, token);
     await page.reload();
-    await page.getByText('Catalogue').click();
+    await page.getByRole('link', { name: 'Catalogue' }).click();
 
     await expect(page.getByText('Alertes stock')).toBeVisible();
 
@@ -102,7 +102,7 @@ test.describe('US-CAT-05 — Stock alert notification', () => {
 
     // Update stock again — still below threshold, no duplicate alert
     await page.request.patch(
-      `http://localhost:8080/api/vendor/products/${product.id}/stock`,
+      `${API_URL}/api/vendor/products/${product.id}/stock`,
       {
         headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
         data: { quantity: 2, stockAlertThreshold: 5 },
@@ -111,7 +111,7 @@ test.describe('US-CAT-05 — Stock alert notification', () => {
 
     await injectVendorSession(page, email, token);
     await page.reload();
-    await page.getByText('Catalogue').click();
+    await page.getByRole('link', { name: 'Catalogue' }).click();
 
     // Only one alert for this product (not two)
     const acknowledgeButtons = page.getByRole('button', { name: 'Acquitter' });

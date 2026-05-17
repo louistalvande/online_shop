@@ -25,7 +25,7 @@ test.describe('US-CAT-02 — Edit product', () => {
 
     await injectVendorSession(page, email, token);
     await page.reload();
-    await page.getByText('Catalogue').click();
+    await page.getByRole('link', { name: 'Catalogue' }).click();
 
     // Product is visible
     await expect(page.getByText('Huile sur toile')).toBeVisible();

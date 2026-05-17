@@ -17,7 +17,7 @@ test.describe('US-CAT-01 — Create product', () => {
     await page.reload();
 
     // Navigate to catalog
-    await page.getByText('Catalogue').click();
+    await page.getByRole('link', { name: 'Catalogue' }).click();
     await expect(page.getByRole('heading', { name: 'Catalogue produits' })).toBeVisible();
 
     // Open creation modal
@@ -49,7 +49,7 @@ test.describe('US-CAT-01 — Create product', () => {
     await injectVendorSession(page, email, token);
     await page.reload();
 
-    await page.getByText('Catalogue').click();
+    await page.getByRole('link', { name: 'Catalogue' }).click();
     await page.getByRole('button', { name: 'Ajouter un produit' }).click();
 
     await page.getByLabel('Prix HT (€)').fill('29.90');
@@ -69,7 +69,7 @@ test.describe('US-CAT-01 — Create product', () => {
     await injectVendorSession(page, email, token);
     await page.reload();
 
-    await page.getByText('Catalogue').click();
+    await page.getByRole('link', { name: 'Catalogue' }).click();
     await page.getByRole('button', { name: 'Ajouter un produit' }).click();
 
     await page.getByLabel('Nom').fill('Test produit');
