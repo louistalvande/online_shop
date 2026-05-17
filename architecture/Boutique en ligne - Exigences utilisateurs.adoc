@@ -270,7 +270,7 @@ Le tableau ci-dessous relie chaque besoin opérationnel aux activités et cas d'
 Les exigences suivantes sont issues des guides et recommandations publiés par l'ANSSI (Agence nationale de la sécurité des systèmes d'information). Elles s'appliquent à la plateforme indépendamment des besoins métier.
 
 === Authentification et gestion des accès
-_Référence : link:https://messervices.cyber.gouv.fr/guides/recommandations-relatives-lauthentification-multifacteur-et-aux-mots-de-passe[ANSSI — Recommandations relatives à l'authentification multifacteur et aux mots de passe]_
+_Référence : link:https://cyber.gouv.fr/publications/recommandations-relatives-lauthentification-multifacteur-et-aux-mots-de-passe[ANSSI-BP-076 — Recommandations relatives à l'authentification multifacteur et aux mots de passe]_
 
 [cols="1,4,1", options="header"]
 |===
@@ -278,23 +278,23 @@ _Référence : link:https://messervices.cyber.gouv.fr/guides/recommandations-rel
 
 | SEC-AUTH-001
 | Les mots de passe des comptes doivent comporter au minimum 12 caractères et combiner majuscules, minuscules, chiffres et caractères spéciaux.
-| ANSSI §3.1
+| ANSSI-BP-076 §3.1
 
 | SEC-AUTH-002
 | Les mots de passe doivent être stockés sous forme hachée avec un algorithme résistant (bcrypt, Argon2id ou scrypt) ; le stockage en clair ou en MD5/SHA-1 est interdit.
-| ANSSI §3.3
+| ANSSI-BP-076 §3.3
 
 | SEC-AUTH-003
 | Les tentatives d'authentification échouées répétées doivent déclencher un mécanisme de protection (temporisation progressive, verrouillage temporaire ou CAPTCHA) afin de prévenir les attaques par force brute.
-| ANSSI §3.2
+| ANSSI-BP-076 §3.2
 
 | SEC-AUTH-004
 | Les sessions authentifiées doivent expirer après une période d'inactivité de 30 minutes maximum. La déconnexion explicite doit invalider immédiatement le jeton de session côté serveur.
-| ANSSI §4.1
+| ANSSI-BP-076 §4.1
 
 | SEC-AUTH-005
 | Les droits d'accès doivent respecter le principe du moindre privilège : chaque rôle (administrateur, vendeur, acheteur) ne doit accéder qu'aux ressources strictement nécessaires à ses activités.
-| ANSSI §2.1
+| ANSSI-BP-076 §2.1
 |===
 
 === Sécurité des communications

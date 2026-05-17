@@ -34,7 +34,7 @@ La méthode ARCADIA sera suivie en s'appuyant uniquement sur le language de mod�
 
 Le document d'architecture est produit à partir du link:architecture/Boutique%20en%20ligne%20-%20Exigences%20utilisateurs.adoc[*document des exigences utilisateurs*], qui constitue l'entrant formel de la démarche ARCADIA. Ce document recense les besoins opérationnels des acteurs (administrateur, vendeur, acheteur) ainsi que les exigences de sécurité issues des recommandations ANSSI, et sert de référence tout au long des quatre niveaux d'analyse.
 
-NOTE: La solution respecte les **recommandations de sécurité de l'https://www.ssi.gouv.fr/[ANSSI]** (Agence nationale de la sécurité des systèmes d'information). Ces recommandations sont déclinées sur les quatre niveaux ARCADIA de l'architecture — OA, SA, LA, PA — et implémentées dans le code : TLS 1.3, hachage BCrypt, protection contre la force brute, en-têtes HTTP de sécurité (CSP, HSTS, X-Frame-Options) et journalisation d'audit.
+NOTE: La solution respecte les **recommandations de sécurité de l'https://www.ssi.gouv.fr/[ANSSI]** (Agence nationale de la sécurité des systèmes d'information), notamment le guide link:https://messervices.cyber.gouv.fr/guides/recommandations-relatives-lauthentification-multifacteur-et-aux-mots-de-passe[authentification multifacteur et mots de passe]. Ces recommandations sont déclinées sur les quatre niveaux ARCADIA de l'architecture — OA, SA, LA, PA — et implémentées dans le code : TLS 1.3, hachage BCrypt, protection contre la force brute, en-têtes HTTP de sécurité (CSP, HSTS, X-Frame-Options) et journalisation d'audit.
 
 ==== Analyse du besoin [[analyse-du-besoin]]
 ===== 1. Analyse du Besoin Opérationnel (OA — Operational Analysis) [[1-analyse-du-besoin-opérationnel-oa--operational-analysis]]
@@ -234,7 +234,7 @@ The ARCADIA method will be followed using exclusively UML modelling language. Th
 
 The architecture document is produced from the link:architecture/Boutique%20en%20ligne%20-%20Exigences%20utilisateurs.adoc[*user requirements document*], which constitutes the formal input to the ARCADIA process. This document captures the operational needs of all actors (administrator, vendor, buyer) as well as the security requirements derived from ANSSI recommendations, and serves as the reference throughout all four levels of analysis.
 
-NOTE: The solution complies with **https://www.ssi.gouv.fr/en/[ANSSI] security recommendations** (French national cybersecurity agency). These recommendations are traced across all four ARCADIA levels — OA, SA, LA, PA — and implemented in the code: TLS 1.3, BCrypt hashing, brute-force protection, HTTP security headers (CSP, HSTS, X-Frame-Options), and audit logging.
+NOTE: The solution complies with **https://www.ssi.gouv.fr/en/[ANSSI] security recommendations** (French national cybersecurity agency), including the guide on link:https://messervices.cyber.gouv.fr/guides/recommandations-relatives-lauthentification-multifacteur-et-aux-mots-de-passe[multi-factor authentication and passwords]. These recommendations are traced across all four ARCADIA levels — OA, SA, LA, PA — and implemented in the code: TLS 1.3, BCrypt hashing, brute-force protection, HTTP security headers (CSP, HSTS, X-Frame-Options), and audit logging.
 
 ==== Needs Analysis [[needs-analysis]]
 
