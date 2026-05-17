@@ -25,10 +25,11 @@ public class ProfileResponse {
     @Schema(description = "Account creation timestamp") private LocalDateTime createdAt;
 
     /**
-     * Creates a {@link ProfileResponse} from an {@link Account} entity.
+     * Creates a {@link ProfileResponse} from an {@link Account} entity, including address fields.
+     * Use for non-admin accounts (buyers, vendors).
      *
      * @param account the source entity
-     * @return the DTO
+     * @return the DTO with all fields populated
      */
     public static ProfileResponse from(Account account) {
         ProfileResponse r = new ProfileResponse();
@@ -44,6 +45,25 @@ public class ProfileResponse {
         r.language    = account.getLanguage();
         r.role        = account.getRole();
         r.createdAt   = account.getCreatedAt();
+        return r;
+    }
+
+    /**
+     * Creates a {@link ProfileResponse} for an admin account, omitting address fields.
+     * Admins do not have a delivery address — those fields are always {@code null}.
+     *
+     * @param account the admin account entity
+     * @return the DTO without address/phone fields
+     */
+    public static ProfileResponse fromAdmin(Account account) {
+        ProfileResponse r = new ProfileResponse();
+        r.id        = account.getId();
+        r.email     = account.getEmail();
+        r.firstName = account.getFirstName();
+        r.lastName  = account.getLastName();
+        r.language  = account.getLanguage();
+        r.role      = account.getRole();
+        r.createdAt = account.getCreatedAt();
         return r;
     }
 

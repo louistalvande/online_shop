@@ -6,6 +6,7 @@ import com.shop.account.dto.ProfileResponse;
 import com.shop.account.dto.UpdateAccountRequest;
 import com.shop.account.dto.UpdateProfileRequest;
 import com.shop.account.entity.Account;
+import com.shop.account.entity.AccountRole;
 import com.shop.account.entity.AccountStatus;
 import com.shop.account.entity.ActivationToken;
 import com.shop.account.exception.AccountNotFoundException;
@@ -160,7 +161,9 @@ public class AccountServiceImpl implements AccountService {
     public ProfileResponse getProfile(String email) {
         Account account = accountRepository.findByEmail(email)
                 .orElseThrow(() -> new AccountNotFoundException(email));
-        return ProfileResponse.from(account);
+        return account.getRole() == AccountRole.ADMIN
+                ? ProfileResponse.fromAdmin(account)
+                : ProfileResponse.from(account);
     }
 
     /** {@inheritDoc} */
@@ -169,14 +172,19 @@ public class AccountServiceImpl implements AccountService {
         Account account = accountRepository.findByEmail(email)
                 .orElseThrow(() -> new AccountNotFoundException(email));
 
-        if (request.getFirstName()   != null) account.setFirstName(request.getFirstName());
-        if (request.getLastName()    != null) account.setLastName(request.getLastName());
-        if (request.getPhone()       != null) account.setPhone(request.getPhone());
-        if (request.getAddressLine() != null) account.setAddressLine(request.getAddressLine());
-        if (request.getCity()        != null) account.setCity(request.getCity());
-        if (request.getPostalCode()  != null) account.setPostalCode(request.getPostalCode());
-        if (request.getCountryCode() != null) account.setCountryCode(request.getCountryCode());
-        if (request.getLanguage()    != null) account.setLanguage(request.getLanguage());
+        boolean isAdmin = account.getRole() == AccountRole.ADMIN;
+
+        if (request.getFirstName() != null) account.setFirstName(request.getFirstName());
+        if (request.getLastName()  != null) account.setLastName(request.getLastName());
+        if (request.getLanguage()  != null) account.setLanguage(request.getLanguage());
+
+        if (!isAdmin) {
+            if (request.getPhone()       != null) account.setPhone(request.getPhone());
+            if (request.getAddressLine() != null) account.setAddressLine(request.getAddressLine());
+            if (request.getCity()        != null) account.setCity(request.getCity());
+            if (request.getPostalCode()  != null) account.setPostalCode(request.getPostalCode());
+            if (request.getCountryCode() != null) account.setCountryCode(request.getCountryCode());
+        }
 
         if (request.getCurrentPassword() != null && request.getNewPassword() != null) {
             if (!passwordEncoder.matches(request.getCurrentPassword(), account.getPasswordHash())) {
@@ -188,7 +196,9 @@ public class AccountServiceImpl implements AccountService {
             account.setPasswordHash(passwordEncoder.encode(request.getNewPassword()));
         }
 
-        return ProfileResponse.from(accountRepository.save(account));
+        return isAdmin
+                ? ProfileResponse.fromAdmin(accountRepository.save(account))
+                : ProfileResponse.from(accountRepository.save(account));
     }
 
     /**
