@@ -84,5 +84,22 @@
   "profile.error.wrongPassword": "Mot de passe actuel incorrect.",
   "profile.error.passwordMismatch": "Les mots de passe ne correspondent pas.",
   "profile.error.load": "Impossible de charger votre profil.",
-  "profile.retry": "Réessayer"
+  "profile.retry": "Réessayer",
+  "catalog.search.placeholder": "Rechercher un produit…",
+  "catalog.search.submit": "Rechercher",
+  "catalog.filters.title": "Filtres",
+  "catalog.filters.category": "Catégorie",
+  "catalog.filters.categoryAll": "Toutes",
+  "catalog.filters.maxPrice": "Prix max TTC (€)",
+  "catalog.filters.inStockOnly": "Disponible uniquement",
+  "catalog.filters.reset": "Réinitialiser",
+  "catalog.loading": "Chargement…",
+  "catalog.noResults": "Aucun produit ne correspond à votre recherche.",
+  "catalog.resultCount": "{{count}} produit(s) trouvé(s)",
+  "catalog.priceExclTax": "HT : {{price}}",
+  "catalog.outOfStock": "Indisponible",
+  "catalog.page.prev": "< Précédent",
+  "catalog.page.next": "Suivant >",
+  "catalog.page.info": "Page {{current}} / {{total}}",
+  "catalog.error.load": "Impossible de charger le catalogue. Veuillez réessayer."
 }

@@ -84,5 +84,22 @@
   "profile.error.wrongPassword": "Incorrect current password.",
   "profile.error.passwordMismatch": "Passwords do not match.",
   "profile.error.load": "Unable to load your profile.",
-  "profile.retry": "Retry"
+  "profile.retry": "Retry",
+  "catalog.search.placeholder": "Search for a product…",
+  "catalog.search.submit": "Search",
+  "catalog.filters.title": "Filters",
+  "catalog.filters.category": "Category",
+  "catalog.filters.categoryAll": "All",
+  "catalog.filters.maxPrice": "Max price incl. tax (€)",
+  "catalog.filters.inStockOnly": "In stock only",
+  "catalog.filters.reset": "Reset filters",
+  "catalog.loading": "Loading…",
+  "catalog.noResults": "No products match your search.",
+  "catalog.resultCount": "{{count}} product(s) found",
+  "catalog.priceExclTax": "excl. tax: {{price}}",
+  "catalog.outOfStock": "Unavailable",
+  "catalog.page.prev": "< Previous",
+  "catalog.page.next": "Next >",
+  "catalog.page.info": "Page {{current}} of {{total}}",
+  "catalog.error.load": "Unable to load the catalogue. Please try again."
 }

@@ -30,7 +30,7 @@ export default function HomePage() {
       <section id="catalogue" style={{ maxWidth: 1100, margin: '0 auto', padding: '48px 24px 64px' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 32 }}>
           <h2 style={{ fontFamily: 'var(--font-serif)', fontSize: 26, fontWeight: 700 }}>{t('home.featured')}</h2>
-          <Button>{t('home.viewAll')}</Button>
+          <Button onClick={() => { window.location.href = '/catalog' }}>{t('home.viewAll')}</Button>
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(230px, 1fr))', gap: 24 }}>
           {WORKS.map(w => (

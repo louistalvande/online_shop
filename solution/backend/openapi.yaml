@@ -18,6 +18,8 @@ tags:
   description: Carrier management for administrators
 - name: Admin — Accounts
   description: Account management for administrators
+- name: Buyer — Catalog
+  description: Product catalog browsing for buyers and visitors
 paths:
   /api/vendor/products/{id}:
     get:
@@ -728,6 +730,72 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/StockAlertResponse"
+  /api/buyer/products:
+    get:
+      tags:
+      - Buyer — Catalog
+      summary: Browse the product catalog
+      operationId: browseProducts
+      parameters:
+      - name: category
+        in: query
+        required: false
+        schema:
+          type: string
+      - name: maxPrice
+        in: query
+        required: false
+        schema:
+          type: number
+      - name: inStockOnly
+        in: query
+        required: false
+        schema:
+          type: boolean
+          default: false
+      - name: search
+        in: query
+        required: false
+        schema:
+          type: string
+      - name: pageable
+        in: query
+        required: true
+        schema:
+          $ref: "#/components/schemas/Pageable"
+      responses:
+        "200":
+          description: Product page returned
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/PageBuyerProductResponse"
+  /api/buyer/products/{id}:
+    get:
+      tags:
+      - Buyer — Catalog
+      summary: Get a published product
+      operationId: getProduct_1
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "404":
+          description: Product not found or not published
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/BuyerProductResponse"
+        "200":
+          description: Product returned
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/BuyerProductResponse"
   /api/admin/countries:
     get:
       tags:
@@ -1305,6 +1373,119 @@ components:
           enum:
           - FR
           - EN
+    Pageable:
+      type: object
+      properties:
+        page:
+          minimum: 0
+          type: integer
+          format: int32
+        size:
+          minimum: 1
+          type: integer
+          format: int32
+        sort:
+          type: array
+          items:
+            type: string
+    BuyerProductResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Product UUID
+          format: uuid
+        name:
+          type: string
+          description: Product display name
+        description:
+          type: string
+          description: Product description
+        priceExclTax:
+          type: number
+          description: Pre-tax unit price in euros
+        priceTTC:
+          type: number
+          description: All-inclusive price in euros (priceExclTax × 1.20)
+        category:
+          type: string
+          description: Product category
+        photoUrls:
+          type: array
+          description: Ordered list of photo URLs
+          items:
+            type: string
+            description: Ordered list of photo URLs
+        outOfStock:
+          type: boolean
+          description: True when the product is out of stock
+    PageBuyerProductResponse:
+      type: object
+      properties:
+        totalElements:
+          type: integer
+          format: int64
+        totalPages:
+          type: integer
+          format: int32
+        pageable:
+          $ref: "#/components/schemas/PageableObject"
+        first:
+          type: boolean
+        last:
+          type: boolean
+        size:
+          type: integer
+          format: int32
+        content:
+          type: array
+          items:
+            $ref: "#/components/schemas/BuyerProductResponse"
+        number:
+          type: integer
+          format: int32
+        sort:
+          type: array
+          items:
+            $ref: "#/components/schemas/SortObject"
+        numberOfElements:
+          type: integer
+          format: int32
+        empty:
+          type: boolean
+    PageableObject:
+      type: object
+      properties:
+        paged:
+          type: boolean
+        pageNumber:
+          type: integer
+          format: int32
+        pageSize:
+          type: integer
+          format: int32
+        offset:
+          type: integer
+          format: int64
+        sort:
+          type: array
+          items:
+            $ref: "#/components/schemas/SortObject"
+        unpaged:
+          type: boolean
+    SortObject:
+      type: object
+      properties:
+        direction:
+          type: string
+        nullHandling:
+          type: string
+        ascending:
+          type: boolean
+        property:
+          type: string
+        ignoreCase:
+          type: boolean
     CountryResponse:
       type: object
       properties:
