@@ -135,5 +135,13 @@
   "orders.wire.confirmPrompt": "Confirm receipt of wire transfer? The order will move to awaiting processing.",
   "orders.wire.rejectPrompt": "Reject the wire transfer? The order will be cancelled and the buyer notified.",
   "orders.wire.confirmError": "Error confirming wire transfer.",
-  "orders.wire.rejectError": "Error rejecting wire transfer."
+  "orders.wire.rejectError": "Error rejecting wire transfer.",
+
+  "orders.ship.title": "Declare shipment",
+  "orders.ship.description": "Enter the tracking number from the carrier drop-off receipt.",
+  "orders.ship.trackingPlaceholder": "Tracking number",
+  "orders.ship.submit": "Confirm shipment",
+  "orders.ship.shipping": "Submitting…",
+  "orders.ship.confirmPrompt": "Confirm shipment with this tracking number? The buyer will be notified.",
+  "orders.ship.error": "Error declaring shipment."
 }

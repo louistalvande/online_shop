@@ -13,6 +13,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.context.MessageSource;
+import org.springframework.http.MediaType;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
@@ -116,6 +117,22 @@ class VendorOrderControllerImplTest {
         mvc.perform(post("/api/vendor/orders/" + ORDER_ID + "/reject-wire").principal(vendorPrincipal))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.status").value("CANCELLED"));
+    }
+
+    @Test
+    void ship_returns200WithShippedOrder() throws Exception {
+        OrderResponse shipped = buildOrderResponse(OrderStatus.SHIPPED);
+        setField(shipped, "trackingNumber", "TRACK123");
+        given(vendorOrderService.shipOrder(eq(VENDOR_ID), eq(ORDER_ID), eq("TRACK123"), any()))
+                .willReturn(shipped);
+
+        mvc.perform(post("/api/vendor/orders/" + ORDER_ID + "/ship")
+                        .principal(vendorPrincipal)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"trackingNumber\":\"TRACK123\"}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value("SHIPPED"))
+                .andExpect(jsonPath("$.trackingNumber").value("TRACK123"));
     }
 
     // ─── Helpers ─────────────────────────────────────────────────────────────

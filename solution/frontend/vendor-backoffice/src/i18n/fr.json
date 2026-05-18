@@ -135,5 +135,13 @@
   "orders.wire.confirmPrompt": "Confirmer la réception du virement ? La commande passera en attente de traitement.",
   "orders.wire.rejectPrompt": "Rejeter le virement ? La commande sera annulée et l'acheteur notifié.",
   "orders.wire.confirmError": "Erreur lors de la confirmation du virement.",
-  "orders.wire.rejectError": "Erreur lors du rejet du virement."
+  "orders.wire.rejectError": "Erreur lors du rejet du virement.",
+
+  "orders.ship.title": "Déclarer l'expédition",
+  "orders.ship.description": "Saisissez le numéro de suivi obtenu sur le reçu de dépôt auprès du transporteur.",
+  "orders.ship.trackingPlaceholder": "Numéro de suivi",
+  "orders.ship.submit": "Valider l'expédition",
+  "orders.ship.shipping": "Envoi en cours…",
+  "orders.ship.confirmPrompt": "Valider l'expédition avec ce numéro de suivi ? L'acheteur sera notifié.",
+  "orders.ship.error": "Erreur lors de la déclaration d'expédition."
 }

@@ -9,6 +9,8 @@ import ProfilePage from './ProfilePage'
 import CatalogPage from './CatalogPage'
 import CartPage from './CartPage'
 import CheckoutPage from './CheckoutPage'
+import OrderListPage from './OrderListPage'
+import OrderDetailPage from './OrderDetailPage'
 const path = window.location.pathname
 const token = new URLSearchParams(window.location.search).get('token') ?? ''
 
@@ -19,6 +21,9 @@ function Root() {
   if (path === '/catalog') return <CatalogPage />
   if (path === '/cart') return <CartPage />
   if (path === '/checkout') return <CheckoutPage />
+  if (path === '/my-orders') return <OrderListPage />
+  const orderDetailMatch = path.match(/^\/my-orders\/([^/]+)$/)
+  if (orderDetailMatch) return <OrderDetailPage orderId={orderDetailMatch[1]} />
   return <App openLogin={path === '/login'} />
 }
 

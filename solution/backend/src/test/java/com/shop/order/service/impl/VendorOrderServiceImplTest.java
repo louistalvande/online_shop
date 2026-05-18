@@ -135,6 +135,31 @@ class VendorOrderServiceImplTest {
                 .isInstanceOf(OrderNotFoundException.class);
     }
 
+    @Test
+    void shipOrder_transitionsToShipped() {
+        Order order = buildOrder(OrderStatus.AWAITING_PROCESSING);
+        given(orderRepository.findByIdAndVendorId(ORDER_ID, VENDOR_ID)).willReturn(Optional.of(order));
+        given(orderRepository.save(any())).willAnswer(inv -> inv.getArgument(0));
+        Account buyer = new Account();
+        buyer.setEmail("buyer@example.com");
+        given(accountRepository.findById(BUYER_ID)).willReturn(Optional.of(buyer));
+
+        OrderResponse result = service.shipOrder(VENDOR_ID, ORDER_ID, "TRACK123", Locale.FRENCH);
+
+        assertThat(result.getStatus()).isEqualTo(OrderStatus.SHIPPED);
+        assertThat(result.getTrackingNumber()).isEqualTo("TRACK123");
+        then(notificationService).should().sendShipmentNotificationEmail(any(), any(), any());
+    }
+
+    @Test
+    void shipOrder_wrongState_throwsInvalidOrderStateException() {
+        Order order = buildOrder(OrderStatus.DELIVERED);
+        given(orderRepository.findByIdAndVendorId(ORDER_ID, VENDOR_ID)).willReturn(Optional.of(order));
+
+        assertThatThrownBy(() -> service.shipOrder(VENDOR_ID, ORDER_ID, "TRACK999", Locale.FRENCH))
+                .isInstanceOf(InvalidOrderStateException.class);
+    }
+
     // ─── Helpers ─────────────────────────────────────────────────────────────
 
     private Order buildOrder(OrderStatus status) {

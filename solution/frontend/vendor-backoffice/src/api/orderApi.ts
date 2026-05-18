@@ -85,3 +85,15 @@ export async function rejectWirePayment(orderId: string): Promise<OrderData> {
   if (!res.ok) throw new Error('Failed to reject wire payment')
   return res.json()
 }
+
+/** Declares order shipment with a carrier tracking number. */
+export async function shipOrder(orderId: string, trackingNumber: string): Promise<OrderData> {
+  const res = await fetch(`/api/vendor/orders/${orderId}/ship`, {
+    method: 'POST',
+    headers: authHeaders(),
+    body: JSON.stringify({ trackingNumber }),
+  })
+  if (res.status === 409) throw Object.assign(new Error('Invalid order state'), { code: 'INVALID_STATE' })
+  if (!res.ok) throw new Error('Failed to ship order')
+  return res.json()
+}

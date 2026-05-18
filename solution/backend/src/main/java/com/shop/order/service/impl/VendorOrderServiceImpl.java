@@ -106,6 +106,29 @@ public class VendorOrderServiceImpl implements VendorOrderService {
         return response;
     }
 
+    /** {@inheritDoc} */
+    @Override
+    public OrderResponse shipOrder(UUID vendorId, UUID orderId, String trackingNumber, Locale locale) {
+        Order order = orderRepository.findByIdAndVendorId(orderId, vendorId)
+                .orElseThrow(() -> new OrderNotFoundException(orderId));
+
+        if (order.getStatus() != OrderStatus.AWAITING_PROCESSING
+                && order.getStatus() != OrderStatus.IN_PREPARATION) {
+            throw new InvalidOrderStateException(orderId, order.getStatus());
+        }
+
+        order.setTrackingNumber(trackingNumber);
+        order.setStatus(OrderStatus.SHIPPED);
+        Order saved = orderRepository.save(order);
+        OrderResponse response = OrderResponse.from(saved);
+
+        String buyerEmail = accountRepository.findById(saved.getBuyerId())
+                .map(a -> a.getEmail()).orElse("");
+        notificationService.sendShipmentNotificationEmail(buyerEmail, response, locale);
+
+        return response;
+    }
+
     /**
      * Restores product stock for each order line (best-effort: skips deleted products).
      *

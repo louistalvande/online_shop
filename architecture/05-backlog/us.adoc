@@ -330,19 +330,19 @@ _Fonctions ARCADIA : FS-V05, FS-B08, FS-C01, CS-05 — UCSA-07, UCSA-08 — LA :
 | *US-EXP-01*
 | En tant que vendeur, je peux déclarer l'expédition d'une commande en saisissant le numéro de suivi récupéré sur le reçu de dépôt physique auprès du transporteur.
 a|
-- [ ] Formulaire : sélecteur de transporteur (actifs uniquement) + champ numéro de suivi (obligatoire)
-- [ ] Soumission bloquée si le champ numéro de suivi est vide
-- [ ] Commande passe en statut `expédiée` ; numéro de suivi enregistré en base
-- [ ] Acheteur notifié par email avec le numéro de suivi et le lien vers le site du transporteur
-| À faire
+- [x] Formulaire : sélecteur de transporteur (actifs uniquement) + champ numéro de suivi (obligatoire)
+- [x] Soumission bloquée si le champ numéro de suivi est vide
+- [x] Commande passe en statut `expédiée` ; numéro de suivi enregistré en base
+- [x] Acheteur notifié par email avec le numéro de suivi et le lien vers le site du transporteur
+| Terminée
 
 | *US-EXP-02*
 | En tant qu'acheteur, je peux consulter le numéro de suivi de ma commande et accéder au site du transporteur depuis mon espace commandes.
 a|
-- [ ] Numéro de suivi affiché dans le détail de la commande expédiée
-- [ ] Lien vers le site de suivi du transporteur (URL construite à partir du numéro et de l'URL configurée par l'admin)
-- [ ] Si numéro non encore disponible : message « en cours d'expédition — numéro non disponible »
-| À faire
+- [x] Numéro de suivi affiché dans le détail de la commande expédiée
+- [x] Lien vers le site de suivi du transporteur (URL construite à partir du numéro et de l'URL configurée par l'admin)
+- [x] Si numéro non encore disponible : message « en cours d'expédition — numéro non disponible »
+| Terminée
 
 |===
 

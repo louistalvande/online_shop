@@ -59,4 +59,13 @@ public interface NotificationService {
      * @param locale  the locale used to select the email language
      */
     void sendWirePaymentRejectedEmail(String toEmail, OrderResponse order, Locale locale);
+
+    /**
+     * Notifies the buyer that their order has been shipped with the tracking number (US-EXP-01).
+     *
+     * @param toEmail the buyer's email address
+     * @param order   the shipped order (includes tracking number and carrier URL)
+     * @param locale  the locale used to select the email language
+     */
+    void sendShipmentNotificationEmail(String toEmail, OrderResponse order, Locale locale);
 }

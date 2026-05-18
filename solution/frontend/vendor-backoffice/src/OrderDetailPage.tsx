@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import Header from './Header'
-import { getVendorOrder, confirmWirePayment, rejectWirePayment, type OrderData } from './api/orderApi'
+import { getVendorOrder, confirmWirePayment, rejectWirePayment, shipOrder, type OrderData } from './api/orderApi'
 import { getSession } from './api/authApi'
 
 const STATUS_LABELS: Record<string, string> = {
@@ -29,6 +29,7 @@ export default function OrderDetailPage({ orderId }: Props) {
   const [actionLoading, setActionLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [actionError, setActionError] = useState<string | null>(null)
+  const [trackingInput, setTrackingInput] = useState('')
 
   useEffect(() => {
     if (!session) return
@@ -136,7 +137,7 @@ export default function OrderDetailPage({ orderId }: Props) {
             </section>
 
             {order.status === 'PAYMENT_PENDING_WIRE' && (
-              <section style={{ background: '#fff8e1', padding: '1rem', borderRadius: '4px' }}>
+              <section style={{ background: '#fff8e1', padding: '1rem', borderRadius: '4px', marginBottom: '1rem' }}>
                 <h2>{t('orders.wire.title')}</h2>
                 <p>{t('orders.wire.description')}</p>
                 {actionError && <p style={{ color: 'red' }}>{actionError}</p>}
@@ -148,6 +149,43 @@ export default function OrderDetailPage({ orderId }: Props) {
                   <button onClick={handleRejectWire} disabled={actionLoading}
                     style={{ padding: '0.5rem 1.2rem', background: '#c62828', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>
                     {actionLoading ? t('orders.wire.rejecting') : t('orders.wire.reject')}
+                  </button>
+                </div>
+              </section>
+            )}
+
+            {(order.status === 'AWAITING_PROCESSING' || order.status === 'IN_PREPARATION') && (
+              <section style={{ background: '#e8f5e9', padding: '1rem', borderRadius: '4px' }}>
+                <h2>{t('orders.ship.title')}</h2>
+                <p>{t('orders.ship.description')}</p>
+                {actionError && <p style={{ color: 'red' }}>{actionError}</p>}
+                <div style={{ display: 'flex', gap: '0.75rem', marginTop: '1rem', alignItems: 'center' }}>
+                  <input
+                    type="text"
+                    value={trackingInput}
+                    onChange={e => setTrackingInput(e.target.value)}
+                    placeholder={t('orders.ship.trackingPlaceholder')}
+                    style={{ padding: '0.4rem 0.8rem', border: '1px solid #ccc', borderRadius: '4px', flex: 1 }}
+                  />
+                  <button
+                    onClick={async () => {
+                      if (!trackingInput.trim()) return
+                      if (!window.confirm(t('orders.ship.confirmPrompt'))) return
+                      setActionLoading(true)
+                      setActionError(null)
+                      try {
+                        const updated = await shipOrder(orderId, trackingInput.trim())
+                        setOrder(updated)
+                        setTrackingInput('')
+                      } catch {
+                        setActionError(t('orders.ship.error'))
+                      } finally {
+                        setActionLoading(false)
+                      }
+                    }}
+                    disabled={actionLoading || !trackingInput.trim()}
+                    style={{ padding: '0.5rem 1.2rem', background: '#1565c0', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>
+                    {actionLoading ? t('orders.ship.shipping') : t('orders.ship.submit')}
                   </button>
                 </div>
               </section>
