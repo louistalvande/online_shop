@@ -12,10 +12,10 @@
 
 ## 🇫🇷 Français
 
-Le projet a pour objectif de développer une application web de boutique en ligne. Il débutera par la rédaction d'un [document d'architecture](architecture/Boutique%20en%20ligne%20-%20Documentation%20d%27Architecture.pdf).
-La réalisation du projet s'articulera autour de plusieurs grandes étapes, abordées de manière incrémentale. L'ensemble de ces étapes sera appliqué intégralement pour chaque User Story.
+Le projet a pour objectif de développer une application web de boutique en ligne. Il débutera par la rédaction d'un [document d'architecture](architecture/Boutique%20en%20ligne%20-%20Documentation%20d%27Architecture.pdf) avant de passer au développement la solution logicielle concrête. 
+La réalisation du projet s'articulera autour de plusieurs grandes étapes, abordées de manière incrémentale.  L'ensemble de ces étapes sera appliqué intégralement pour chaque User Story.
 
-### 1. Rédaction du document d'architecture avec la méthodologie ARCADIA (ARCHITECTURE ANALYSIS & DESIGN INTEGRATED APPROACH), une méthode MBSE (Model-Based System Engineering).
+### 1. Rédaction du document d'architecture avec la méthodologie ARCADIA (Architecture Analysis & Design Integrated Approach), une méthode MBSE (Model-Based System Engineering).
 
 ![ARCADIA](architecture/arcadia.png)
 
@@ -97,7 +97,7 @@ On mappe les composants logiques sur des composants physiques réels (matériel,
 
 ![PA Deployment](architecture/diagrams/readme/pa-deployment.svg)
 
-### 2. Génération de l'infrastructure de la solution
+### 2. Mise en place de l'infrastructure de la solution
 
 Une fois la solution documentée en détail, l'infrastructure de l'application sera développée et déployée dans un environnement de test.
 Cette phase comprend la configuration des environnements (développement, staging, production), la mise en place des outils CI/CD, ainsi que la définition et le provisionnement des ressources nécessaires (serveurs, bases de données, services cloud, etc.). L'infrastructure sera validée par une série de tests techniques visant à garantir la stabilité, la disponibilité et la sécurité de la plateforme avant le début du développement fonctionnel.
@@ -115,7 +115,7 @@ Pour chaque User Story, le cycle suivant sera appliqué dans son intégralité :
 
 Cette approche garantit une livraison progressive et maîtrisée, tout en limitant les risques de régression au fil des itérations.
 
-### 4. Génération de la documentation utilisateur
+### 4. Rédaction de la documentation utilisateur
 
 Une fois l'ensemble des cas d'utilisation développés et validés, la documentation destinée aux utilisateurs finaux sera produite avec l'assistance de l'IA, sur la base des fonctionnalités implémentées.
 Cette documentation comprendra notamment :
