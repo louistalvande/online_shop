@@ -23,7 +23,7 @@ En voici les grandes phases d'analyse :
 
 ![ARCADIA](architecture/arcadia.png)
 
-La méthode ARCADIA sera suivie en s'appuyant uniquement sur le langage de modélisation UML. Le document sera manipulé avec Asciidoc, et les diagrammes avec la notation textuelle de PlantUML, puis générés sous forme visuelle dans le document final.
+La méthode ARCADIA est suivie en s'appuyant uniquement sur le langage de modélisation UML. Le document est construit avec Asciidoc, et les diagrammes avec la notation textuelle de PlantUML, puis générés sous forme visuelle dans le document final.
 
 Le [document d'architecture](architecture/Boutique%20en%20ligne%20-%20Documentation%20d%27Architecture.pdf) est produit à partir du [**document des exigences utilisateurs**](architecture/Boutique%20en%20ligne%20-%20Exigences%20utilisateurs.pdf), qui constitue l'entrant formel de la démarche ARCADIA. Ce document recense les besoins opérationnels des acteurs (administrateur, vendeur, acheteur) ainsi que les exigences de sécurité issues des recommandations ANSSI, et sert de référence tout au long des quatre niveaux d'analyse.
 
