@@ -12,10 +12,10 @@
 
 ## 🇫🇷 Français
 
-Le projet a pour objectif de développer une application web de boutique en ligne. Il débutera par la rédaction d'un [document d'architecture](architecture/Boutique%20en%20ligne%20-%20Documentation%20d%27Architecture.pdf), les différents livrables étant produits avec l'assistance d'une IA.
+Le projet a pour objectif de développer une application web de boutique en ligne. Il débutera par la rédaction d'un [document d'architecture](architecture/Boutique%20en%20ligne%20-%20Documentation%20d%27Architecture.pdf).
 La réalisation du projet s'articulera autour de plusieurs grandes étapes, abordées de manière incrémentale. L'ensemble de ces étapes sera appliqué intégralement pour chaque User Story.
 
-### 1. Génération du document d'architecture avec la méthodologie MBSE ARCADIA (ARCHITECTURE ANALYSIS & DESIGN INTEGRATED APPROACH)
+### 1. Rédaction du document d'architecture avec la méthodologie ARCADIA (ARCHITECTURE ANALYSIS & DESIGN INTEGRATED APPROACH), une méthode MBSE (Model-Based System Engineering).
 
 ![ARCADIA](architecture/arcadia.png)
 
