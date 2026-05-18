@@ -22,12 +22,12 @@ INSERT INTO accounts (id, email, password_hash, first_name, last_name, role, sta
 VALUES (
   gen_random_uuid(),
   'admin@onlineshop.com',
-  '$2a$10$eKsMdkG5gSwl1oclTnBad.NVyVPzDaFxT7tZt1TuRFyCuEMQJvHSm', -- admin
+  '$2a$12$p8qx.P/UPC0iBPtwiliBFO9fyoFK7k9ciql2mOOCWvgB.24.prp0O', -- Admin123456!
   'Admin',
   'System',
   'ADMIN',
   'ACTIVE',
-  TRUE,
+  FALSE,
   NOW()
 );
 

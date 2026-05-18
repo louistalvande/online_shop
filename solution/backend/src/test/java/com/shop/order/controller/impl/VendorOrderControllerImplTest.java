@@ -42,11 +42,11 @@ class VendorOrderControllerImplTest {
 
     MockMvc mvc;
 
-    private static final UUID VENDOR_ID = UUID.randomUUID();
+    private static final String VENDOR_EMAIL = "vendor@test.com";
     private static final UUID ORDER_ID = UUID.randomUUID();
 
     private final UsernamePasswordAuthenticationToken vendorPrincipal =
-            new UsernamePasswordAuthenticationToken(VENDOR_ID.toString(), null, List.of());
+            new UsernamePasswordAuthenticationToken(VENDOR_EMAIL, null, List.of());
 
     @BeforeEach
     void setUp() {
@@ -58,7 +58,7 @@ class VendorOrderControllerImplTest {
 
     @Test
     void listOrders_returns200WithOrders() throws Exception {
-        given(vendorOrderService.getVendorOrders(VENDOR_ID))
+        given(vendorOrderService.getVendorOrders(VENDOR_EMAIL))
                 .willReturn(List.of(buildOrderResponse(OrderStatus.AWAITING_PROCESSING)));
 
         mvc.perform(get("/api/vendor/orders").principal(vendorPrincipal))
@@ -68,7 +68,7 @@ class VendorOrderControllerImplTest {
 
     @Test
     void getOrder_found_returns200() throws Exception {
-        given(vendorOrderService.getVendorOrder(VENDOR_ID, ORDER_ID))
+        given(vendorOrderService.getVendorOrder(VENDOR_EMAIL, ORDER_ID))
                 .willReturn(buildOrderResponse(OrderStatus.PAYMENT_PENDING_WIRE));
 
         mvc.perform(get("/api/vendor/orders/" + ORDER_ID).principal(vendorPrincipal))
@@ -78,7 +78,7 @@ class VendorOrderControllerImplTest {
 
     @Test
     void getOrder_notFound_returns404() throws Exception {
-        given(vendorOrderService.getVendorOrder(VENDOR_ID, ORDER_ID))
+        given(vendorOrderService.getVendorOrder(VENDOR_EMAIL, ORDER_ID))
                 .willThrow(new OrderNotFoundException(ORDER_ID));
         given(messageSource.getMessage(eq("error.order.not.found"), any(), any(Locale.class)))
                 .willReturn("Order not found");
@@ -90,7 +90,7 @@ class VendorOrderControllerImplTest {
 
     @Test
     void confirmWire_returns200WithUpdatedOrder() throws Exception {
-        given(vendorOrderService.confirmWirePayment(eq(VENDOR_ID), eq(ORDER_ID), any()))
+        given(vendorOrderService.confirmWirePayment(eq(VENDOR_EMAIL), eq(ORDER_ID), any()))
                 .willReturn(buildOrderResponse(OrderStatus.AWAITING_PROCESSING));
 
         mvc.perform(post("/api/vendor/orders/" + ORDER_ID + "/confirm-wire").principal(vendorPrincipal))
@@ -100,7 +100,7 @@ class VendorOrderControllerImplTest {
 
     @Test
     void confirmWire_invalidState_returns409() throws Exception {
-        given(vendorOrderService.confirmWirePayment(eq(VENDOR_ID), eq(ORDER_ID), any()))
+        given(vendorOrderService.confirmWirePayment(eq(VENDOR_EMAIL), eq(ORDER_ID), any()))
                 .willThrow(new InvalidOrderStateException(ORDER_ID, OrderStatus.AWAITING_PROCESSING));
         given(messageSource.getMessage(eq("error.order.invalid.state"), any(), any(Locale.class)))
                 .willReturn("Invalid state");
@@ -111,7 +111,7 @@ class VendorOrderControllerImplTest {
 
     @Test
     void rejectWire_returns200WithCancelledOrder() throws Exception {
-        given(vendorOrderService.rejectWirePayment(eq(VENDOR_ID), eq(ORDER_ID), any()))
+        given(vendorOrderService.rejectWirePayment(eq(VENDOR_EMAIL), eq(ORDER_ID), any()))
                 .willReturn(buildOrderResponse(OrderStatus.CANCELLED));
 
         mvc.perform(post("/api/vendor/orders/" + ORDER_ID + "/reject-wire").principal(vendorPrincipal))
@@ -123,7 +123,7 @@ class VendorOrderControllerImplTest {
     void ship_returns200WithShippedOrder() throws Exception {
         OrderResponse shipped = buildOrderResponse(OrderStatus.SHIPPED);
         setField(shipped, "trackingNumber", "TRACK123");
-        given(vendorOrderService.shipOrder(eq(VENDOR_ID), eq(ORDER_ID), eq("TRACK123"), any()))
+        given(vendorOrderService.shipOrder(eq(VENDOR_EMAIL), eq(ORDER_ID), eq("TRACK123"), any()))
                 .willReturn(shipped);
 
         mvc.perform(post("/api/vendor/orders/" + ORDER_ID + "/ship")
@@ -137,7 +137,7 @@ class VendorOrderControllerImplTest {
 
     @Test
     void acceptReturn_returns200WithPendingReturnOrder() throws Exception {
-        given(vendorOrderService.acceptReturn(eq(VENDOR_ID), eq(ORDER_ID), any(), any()))
+        given(vendorOrderService.acceptReturn(eq(VENDOR_EMAIL), eq(ORDER_ID), any(), any()))
                 .willReturn(buildOrderResponse(OrderStatus.PENDING_RETURN));
 
         mvc.perform(post("/api/vendor/orders/" + ORDER_ID + "/accept-return")
@@ -150,7 +150,7 @@ class VendorOrderControllerImplTest {
 
     @Test
     void confirmReturn_returns200WithCancelledOrder() throws Exception {
-        given(vendorOrderService.confirmReturn(eq(VENDOR_ID), eq(ORDER_ID), any()))
+        given(vendorOrderService.confirmReturn(eq(VENDOR_EMAIL), eq(ORDER_ID), any()))
                 .willReturn(buildOrderResponse(OrderStatus.CANCELLED));
 
         mvc.perform(post("/api/vendor/orders/" + ORDER_ID + "/confirm-return").principal(vendorPrincipal))
@@ -160,7 +160,7 @@ class VendorOrderControllerImplTest {
 
     @Test
     void waiveReturn_returns200WithWireRefundOrder() throws Exception {
-        given(vendorOrderService.waiveReturn(eq(VENDOR_ID), eq(ORDER_ID), any(), any()))
+        given(vendorOrderService.waiveReturn(eq(VENDOR_EMAIL), eq(ORDER_ID), any(), any()))
                 .willReturn(buildOrderResponse(OrderStatus.WIRE_REFUND_IN_PROGRESS));
 
         mvc.perform(post("/api/vendor/orders/" + ORDER_ID + "/waive-return")
@@ -173,7 +173,7 @@ class VendorOrderControllerImplTest {
 
     @Test
     void confirmWireRefund_returns200WithCancelledOrder() throws Exception {
-        given(vendorOrderService.confirmWireRefund(eq(VENDOR_ID), eq(ORDER_ID), any()))
+        given(vendorOrderService.confirmWireRefund(eq(VENDOR_EMAIL), eq(ORDER_ID), any()))
                 .willReturn(buildOrderResponse(OrderStatus.CANCELLED));
 
         mvc.perform(post("/api/vendor/orders/" + ORDER_ID + "/confirm-wire-refund").principal(vendorPrincipal))

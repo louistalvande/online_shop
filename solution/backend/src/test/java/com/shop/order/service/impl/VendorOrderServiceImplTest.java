@@ -45,12 +45,18 @@ class VendorOrderServiceImplTest {
     VendorOrderServiceImpl service;
 
     private static final UUID VENDOR_ID = UUID.randomUUID();
+    private static final String VENDOR_EMAIL = "vendor@test.com";
     private static final UUID BUYER_ID = UUID.randomUUID();
     private static final UUID ORDER_ID = UUID.randomUUID();
 
     @BeforeEach
     void setUp() {
         service = new VendorOrderServiceImpl(orderRepository, productRepository, accountRepository, notificationService, paymentGateway);
+
+        Account vendorAccount = new Account();
+        setField(vendorAccount, "id", VENDOR_ID);
+        vendorAccount.setEmail(VENDOR_EMAIL);
+        given(accountRepository.findByEmail(VENDOR_EMAIL)).willReturn(Optional.of(vendorAccount));
     }
 
     @Test
@@ -58,7 +64,7 @@ class VendorOrderServiceImplTest {
         given(orderRepository.findByVendorIdOrderByCreatedAtDesc(VENDOR_ID))
                 .willReturn(List.of(buildOrder(OrderStatus.AWAITING_PROCESSING)));
 
-        List<OrderResponse> result = service.getVendorOrders(VENDOR_ID);
+        List<OrderResponse> result = service.getVendorOrders(VENDOR_EMAIL);
 
         assertThat(result).hasSize(1);
         assertThat(result.get(0).getOrderNumber()).isEqualTo("ORD-VND-TEST");
@@ -69,7 +75,7 @@ class VendorOrderServiceImplTest {
         given(orderRepository.findByIdAndVendorId(ORDER_ID, VENDOR_ID))
                 .willReturn(Optional.of(buildOrder(OrderStatus.AWAITING_PROCESSING)));
 
-        OrderResponse result = service.getVendorOrder(VENDOR_ID, ORDER_ID);
+        OrderResponse result = service.getVendorOrder(VENDOR_EMAIL, ORDER_ID);
 
         assertThat(result.getId()).isEqualTo(ORDER_ID);
     }
@@ -78,7 +84,7 @@ class VendorOrderServiceImplTest {
     void getVendorOrder_notFound_throwsOrderNotFoundException() {
         given(orderRepository.findByIdAndVendorId(ORDER_ID, VENDOR_ID)).willReturn(Optional.empty());
 
-        assertThatThrownBy(() -> service.getVendorOrder(VENDOR_ID, ORDER_ID))
+        assertThatThrownBy(() -> service.getVendorOrder(VENDOR_EMAIL, ORDER_ID))
                 .isInstanceOf(OrderNotFoundException.class);
     }
 
@@ -91,7 +97,7 @@ class VendorOrderServiceImplTest {
         buyer.setEmail("buyer@example.com");
         given(accountRepository.findById(BUYER_ID)).willReturn(Optional.of(buyer));
 
-        OrderResponse result = service.confirmWirePayment(VENDOR_ID, ORDER_ID, Locale.FRENCH);
+        OrderResponse result = service.confirmWirePayment(VENDOR_EMAIL, ORDER_ID, Locale.FRENCH);
 
         assertThat(result.getStatus()).isEqualTo(OrderStatus.AWAITING_PROCESSING);
         then(notificationService).should().sendOrderConfirmationEmail(any(), any(), any());
@@ -102,7 +108,7 @@ class VendorOrderServiceImplTest {
         Order order = buildOrder(OrderStatus.AWAITING_PROCESSING);
         given(orderRepository.findByIdAndVendorId(ORDER_ID, VENDOR_ID)).willReturn(Optional.of(order));
 
-        assertThatThrownBy(() -> service.confirmWirePayment(VENDOR_ID, ORDER_ID, Locale.FRENCH))
+        assertThatThrownBy(() -> service.confirmWirePayment(VENDOR_EMAIL, ORDER_ID, Locale.FRENCH))
                 .isInstanceOf(InvalidOrderStateException.class);
     }
 
@@ -115,7 +121,7 @@ class VendorOrderServiceImplTest {
         buyer.setEmail("buyer@example.com");
         given(accountRepository.findById(BUYER_ID)).willReturn(Optional.of(buyer));
 
-        OrderResponse result = service.rejectWirePayment(VENDOR_ID, ORDER_ID, Locale.FRENCH);
+        OrderResponse result = service.rejectWirePayment(VENDOR_EMAIL, ORDER_ID, Locale.FRENCH);
 
         assertThat(result.getStatus()).isEqualTo(OrderStatus.CANCELLED);
         then(notificationService).should().sendWirePaymentRejectedEmail(any(), any(), any());
@@ -126,7 +132,7 @@ class VendorOrderServiceImplTest {
         Order order = buildOrder(OrderStatus.SHIPPED);
         given(orderRepository.findByIdAndVendorId(ORDER_ID, VENDOR_ID)).willReturn(Optional.of(order));
 
-        assertThatThrownBy(() -> service.rejectWirePayment(VENDOR_ID, ORDER_ID, Locale.FRENCH))
+        assertThatThrownBy(() -> service.rejectWirePayment(VENDOR_EMAIL, ORDER_ID, Locale.FRENCH))
                 .isInstanceOf(InvalidOrderStateException.class);
     }
 
@@ -134,7 +140,7 @@ class VendorOrderServiceImplTest {
     void rejectWirePayment_notFound_throwsOrderNotFoundException() {
         given(orderRepository.findByIdAndVendorId(ORDER_ID, VENDOR_ID)).willReturn(Optional.empty());
 
-        assertThatThrownBy(() -> service.rejectWirePayment(VENDOR_ID, ORDER_ID, Locale.FRENCH))
+        assertThatThrownBy(() -> service.rejectWirePayment(VENDOR_EMAIL, ORDER_ID, Locale.FRENCH))
                 .isInstanceOf(OrderNotFoundException.class);
     }
 
@@ -147,7 +153,7 @@ class VendorOrderServiceImplTest {
         buyer.setEmail("buyer@example.com");
         given(accountRepository.findById(BUYER_ID)).willReturn(Optional.of(buyer));
 
-        OrderResponse result = service.shipOrder(VENDOR_ID, ORDER_ID, "TRACK123", Locale.FRENCH);
+        OrderResponse result = service.shipOrder(VENDOR_EMAIL, ORDER_ID, "TRACK123", Locale.FRENCH);
 
         assertThat(result.getStatus()).isEqualTo(OrderStatus.SHIPPED);
         assertThat(result.getTrackingNumber()).isEqualTo("TRACK123");
@@ -159,7 +165,7 @@ class VendorOrderServiceImplTest {
         Order order = buildOrder(OrderStatus.DELIVERED);
         given(orderRepository.findByIdAndVendorId(ORDER_ID, VENDOR_ID)).willReturn(Optional.of(order));
 
-        assertThatThrownBy(() -> service.shipOrder(VENDOR_ID, ORDER_ID, "TRACK999", Locale.FRENCH))
+        assertThatThrownBy(() -> service.shipOrder(VENDOR_EMAIL, ORDER_ID, "TRACK999", Locale.FRENCH))
                 .isInstanceOf(InvalidOrderStateException.class);
     }
 
@@ -174,7 +180,7 @@ class VendorOrderServiceImplTest {
         buyer.setEmail("buyer@example.com");
         given(accountRepository.findById(BUYER_ID)).willReturn(Optional.of(buyer));
 
-        OrderResponse result = service.acceptReturn(VENDOR_ID, ORDER_ID, "FR7630006000011234567890189", Locale.FRENCH);
+        OrderResponse result = service.acceptReturn(VENDOR_EMAIL, ORDER_ID, "FR7630006000011234567890189", Locale.FRENCH);
 
         assertThat(result.getStatus()).isEqualTo(OrderStatus.PENDING_RETURN);
         then(notificationService).should().sendReturnRequestedEmail(any(), any(), any());
@@ -185,7 +191,7 @@ class VendorOrderServiceImplTest {
         Order order = buildOrder(OrderStatus.SHIPPED);
         given(orderRepository.findByIdAndVendorId(ORDER_ID, VENDOR_ID)).willReturn(Optional.of(order));
 
-        assertThatThrownBy(() -> service.acceptReturn(VENDOR_ID, ORDER_ID, null, Locale.FRENCH))
+        assertThatThrownBy(() -> service.acceptReturn(VENDOR_EMAIL, ORDER_ID, null, Locale.FRENCH))
                 .isInstanceOf(MissingBuyerIbanException.class);
     }
 
@@ -194,7 +200,7 @@ class VendorOrderServiceImplTest {
         Order order = buildOrder(OrderStatus.AWAITING_PROCESSING);
         given(orderRepository.findByIdAndVendorId(ORDER_ID, VENDOR_ID)).willReturn(Optional.of(order));
 
-        assertThatThrownBy(() -> service.acceptReturn(VENDOR_ID, ORDER_ID, "FR00", Locale.FRENCH))
+        assertThatThrownBy(() -> service.acceptReturn(VENDOR_EMAIL, ORDER_ID, "FR00", Locale.FRENCH))
                 .isInstanceOf(InvalidOrderStateException.class);
     }
 
@@ -209,7 +215,7 @@ class VendorOrderServiceImplTest {
         buyer.setEmail("buyer@example.com");
         given(accountRepository.findById(BUYER_ID)).willReturn(Optional.of(buyer));
 
-        OrderResponse result = service.confirmReturn(VENDOR_ID, ORDER_ID, Locale.FRENCH);
+        OrderResponse result = service.confirmReturn(VENDOR_EMAIL, ORDER_ID, Locale.FRENCH);
 
         assertThat(result.getStatus()).isEqualTo(OrderStatus.WIRE_REFUND_IN_PROGRESS);
         then(notificationService).should().sendBuyerCancellationEmail(any(), any(), any());
@@ -226,7 +232,7 @@ class VendorOrderServiceImplTest {
         buyer.setEmail("buyer@example.com");
         given(accountRepository.findById(BUYER_ID)).willReturn(Optional.of(buyer));
 
-        OrderResponse result = service.waiveReturn(VENDOR_ID, ORDER_ID, "FR7630006000011234567890189", Locale.FRENCH);
+        OrderResponse result = service.waiveReturn(VENDOR_EMAIL, ORDER_ID, "FR7630006000011234567890189", Locale.FRENCH);
 
         assertThat(result.getStatus()).isEqualTo(OrderStatus.WIRE_REFUND_IN_PROGRESS);
         then(notificationService).should().sendBuyerCancellationEmail(any(), any(), any());
@@ -243,7 +249,7 @@ class VendorOrderServiceImplTest {
         buyer.setEmail("buyer@example.com");
         given(accountRepository.findById(BUYER_ID)).willReturn(Optional.of(buyer));
 
-        OrderResponse result = service.confirmWireRefund(VENDOR_ID, ORDER_ID, Locale.FRENCH);
+        OrderResponse result = service.confirmWireRefund(VENDOR_EMAIL, ORDER_ID, Locale.FRENCH);
 
         assertThat(result.getStatus()).isEqualTo(OrderStatus.CANCELLED);
         then(notificationService).should().sendWireRefundConfirmedEmail(any(), any(), any());
@@ -254,7 +260,7 @@ class VendorOrderServiceImplTest {
         Order order = buildOrder(OrderStatus.SHIPPED);
         given(orderRepository.findByIdAndVendorId(ORDER_ID, VENDOR_ID)).willReturn(Optional.of(order));
 
-        assertThatThrownBy(() -> service.confirmWireRefund(VENDOR_ID, ORDER_ID, Locale.FRENCH))
+        assertThatThrownBy(() -> service.confirmWireRefund(VENDOR_EMAIL, ORDER_ID, Locale.FRENCH))
                 .isInstanceOf(InvalidOrderStateException.class);
     }
 

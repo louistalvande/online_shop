@@ -11,7 +11,7 @@ import jakarta.annotation.PostConstruct;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
@@ -24,7 +24,7 @@ import java.util.UUID;
  * never sees raw card numbers (PCI-DSS, IFS-04).
  */
 @Component
-@ConditionalOnProperty(name = "stripe.secret-key")
+@ConditionalOnExpression("!'${stripe.secret-key:}'.isEmpty()")
 public class StripePaymentGateway implements PaymentGateway {
 
     private static final Logger log = LoggerFactory.getLogger(StripePaymentGateway.class);

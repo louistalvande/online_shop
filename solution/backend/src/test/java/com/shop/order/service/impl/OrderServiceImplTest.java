@@ -10,7 +10,7 @@ import com.shop.carrier.repository.CarrierRepository;
 import com.shop.catalog.entity.Product;
 import com.shop.catalog.entity.ProductStatus;
 import com.shop.catalog.repository.ProductRepository;
-import com.shop.common.repository.CountryRepository;
+import com.shop.country.repository.CountryRepository;
 import com.shop.notification.service.NotificationService;
 import com.shop.order.dto.CheckoutInitResponse;
 import com.shop.order.dto.CreateOrderRequest;
@@ -63,6 +63,7 @@ class OrderServiceImplTest {
     OrderServiceImpl service;
 
     private static final UUID BUYER_ID = UUID.randomUUID();
+    private static final String BUYER_EMAIL = "buyer@test.com";
     private static final UUID CARRIER_ID = UUID.randomUUID();
     private static final UUID ORDER_ID = UUID.randomUUID();
     private static final String IBAN = "FR7630006000011234567890189";
@@ -74,6 +75,11 @@ class OrderServiceImplTest {
                 orderRepository, cartRepository, carrierRepository,
                 countryRepository, accountRepository, productRepository,
                 paymentGateway, notificationService, IBAN, BIC);
+
+        Account buyerAccount = new Account();
+        setField(buyerAccount, "id", BUYER_ID);
+        buyerAccount.setEmail(BUYER_EMAIL);
+        given(accountRepository.findByEmail(BUYER_EMAIL)).willReturn(Optional.of(buyerAccount));
     }
 
     // ─── initCheckout ───────────────────────────────────────────────────────
@@ -90,7 +96,7 @@ class OrderServiceImplTest {
         Order saved = buildSavedOrder(OrderStatus.PAYMENT_PENDING_CARD);
         given(orderRepository.save(any())).willReturn(saved);
 
-        CheckoutInitResponse response = service.initCheckout(BUYER_ID, cardRequest(), Locale.FRENCH);
+        CheckoutInitResponse response = service.initCheckout(BUYER_EMAIL, cardRequest(), Locale.FRENCH);
 
         assertThat(response.getPaymentMethod()).isEqualTo(PaymentMethod.CARD);
         assertThat(response.getClientSecret()).isNotNull();
@@ -104,11 +110,10 @@ class OrderServiceImplTest {
         given(countryRepository.existsByCode("FR")).willReturn(true);
         given(carrierRepository.findById(CARRIER_ID)).willReturn(Optional.of(buildCarrier("FR")));
         given(accountRepository.findById(any())).willReturn(Optional.of(buildAccount("vendor@example.com")));
-        given(accountRepository.findById(BUYER_ID)).willReturn(Optional.of(buildAccount("buyer@example.com")));
         Order saved = buildSavedOrder(OrderStatus.PAYMENT_PENDING_WIRE);
         given(orderRepository.save(any())).willReturn(saved);
 
-        CheckoutInitResponse response = service.initCheckout(BUYER_ID, wireRequest(), Locale.FRENCH);
+        CheckoutInitResponse response = service.initCheckout(BUYER_EMAIL, wireRequest(), Locale.FRENCH);
 
         assertThat(response.getPaymentMethod()).isEqualTo(PaymentMethod.WIRE_TRANSFER);
         assertThat(response.getBankIban()).isEqualTo(IBAN);
@@ -120,7 +125,7 @@ class OrderServiceImplTest {
     void initCheckout_emptyCart_throws() {
         given(cartRepository.findByBuyerId(BUYER_ID)).willReturn(Optional.empty());
 
-        assertThatThrownBy(() -> service.initCheckout(BUYER_ID, cardRequest(), Locale.FRENCH))
+        assertThatThrownBy(() -> service.initCheckout(BUYER_EMAIL, cardRequest(), Locale.FRENCH))
                 .isInstanceOf(EmptyCartException.class);
     }
 
@@ -132,7 +137,7 @@ class OrderServiceImplTest {
         CreateOrderRequest req = cardRequest();
         req.setDeliveryCountryCode("US");
 
-        assertThatThrownBy(() -> service.initCheckout(BUYER_ID, req, Locale.FRENCH))
+        assertThatThrownBy(() -> service.initCheckout(BUYER_EMAIL, req, Locale.FRENCH))
                 .isInstanceOf(InvalidDeliveryCountryException.class);
     }
 
@@ -142,7 +147,7 @@ class OrderServiceImplTest {
         given(countryRepository.existsByCode("FR")).willReturn(true);
         given(carrierRepository.findById(CARRIER_ID)).willReturn(Optional.of(buildCarrier("DE")));
 
-        assertThatThrownBy(() -> service.initCheckout(BUYER_ID, cardRequest(), Locale.FRENCH))
+        assertThatThrownBy(() -> service.initCheckout(BUYER_EMAIL, cardRequest(), Locale.FRENCH))
                 .isInstanceOf(CarrierNotAvailableException.class);
     }
 
@@ -154,9 +159,8 @@ class OrderServiceImplTest {
         given(orderRepository.findByIdAndBuyerId(ORDER_ID, BUYER_ID)).willReturn(Optional.of(order));
         given(paymentGateway.isPaymentSucceeded(any())).willReturn(true);
         given(orderRepository.save(any())).willReturn(order);
-        given(accountRepository.findById(BUYER_ID)).willReturn(Optional.of(buildAccount("buyer@example.com")));
 
-        OrderResponse response = service.confirmCardPayment(BUYER_ID, ORDER_ID, Locale.FRENCH);
+        service.confirmCardPayment(BUYER_EMAIL, ORDER_ID, Locale.FRENCH);
 
         assertThat(order.getStatus()).isEqualTo(OrderStatus.AWAITING_PROCESSING);
         then(notificationService).should().sendOrderConfirmationEmail(any(), any(), any());
@@ -168,7 +172,7 @@ class OrderServiceImplTest {
         Order order = buildSavedOrder(OrderStatus.AWAITING_PROCESSING);
         given(orderRepository.findByIdAndBuyerId(ORDER_ID, BUYER_ID)).willReturn(Optional.of(order));
 
-        assertThatThrownBy(() -> service.confirmCardPayment(BUYER_ID, ORDER_ID, Locale.FRENCH))
+        assertThatThrownBy(() -> service.confirmCardPayment(BUYER_EMAIL, ORDER_ID, Locale.FRENCH))
                 .isInstanceOf(InvalidOrderStateException.class);
     }
 
@@ -178,7 +182,7 @@ class OrderServiceImplTest {
         given(orderRepository.findByIdAndBuyerId(ORDER_ID, BUYER_ID)).willReturn(Optional.of(order));
         given(paymentGateway.isPaymentSucceeded(any())).willReturn(false);
 
-        assertThatThrownBy(() -> service.confirmCardPayment(BUYER_ID, ORDER_ID, Locale.FRENCH))
+        assertThatThrownBy(() -> service.confirmCardPayment(BUYER_EMAIL, ORDER_ID, Locale.FRENCH))
                 .isInstanceOf(PaymentFailedException.class);
     }
 
@@ -186,7 +190,7 @@ class OrderServiceImplTest {
     void confirmCardPayment_orderNotFound_throws() {
         given(orderRepository.findByIdAndBuyerId(ORDER_ID, BUYER_ID)).willReturn(Optional.empty());
 
-        assertThatThrownBy(() -> service.confirmCardPayment(BUYER_ID, ORDER_ID, Locale.FRENCH))
+        assertThatThrownBy(() -> service.confirmCardPayment(BUYER_EMAIL, ORDER_ID, Locale.FRENCH))
                 .isInstanceOf(OrderNotFoundException.class);
     }
 
@@ -197,9 +201,8 @@ class OrderServiceImplTest {
         Order order = buildSavedOrder(OrderStatus.AWAITING_PROCESSING);
         given(orderRepository.findByIdAndBuyerId(ORDER_ID, BUYER_ID)).willReturn(Optional.of(order));
         given(orderRepository.save(any())).willReturn(order);
-        given(accountRepository.findById(BUYER_ID)).willReturn(Optional.of(buildAccount("buyer@example.com")));
 
-        OrderResponse response = service.cancelOrder(BUYER_ID, ORDER_ID, null, Locale.FRENCH);
+        service.cancelOrder(BUYER_EMAIL, ORDER_ID, null, Locale.FRENCH);
 
         assertThat(order.getStatus()).isEqualTo(OrderStatus.CANCELLED);
         then(paymentGateway).should().refund("pi_stub");
@@ -213,9 +216,8 @@ class OrderServiceImplTest {
         order.setPaymentMethod(PaymentMethod.WIRE_TRANSFER);
         given(orderRepository.findByIdAndBuyerId(ORDER_ID, BUYER_ID)).willReturn(Optional.of(order));
         given(orderRepository.save(any())).willReturn(order);
-        given(accountRepository.findById(BUYER_ID)).willReturn(Optional.of(buildAccount("buyer@example.com")));
 
-        service.cancelOrder(BUYER_ID, ORDER_ID, "FR7630006000011234567890189", Locale.FRENCH);
+        service.cancelOrder(BUYER_EMAIL, ORDER_ID, "FR7630006000011234567890189", Locale.FRENCH);
 
         assertThat(order.getStatus()).isEqualTo(OrderStatus.WIRE_REFUND_IN_PROGRESS);
         assertThat(order.getBuyerIban()).isEqualTo("FR7630006000011234567890189");
@@ -227,8 +229,21 @@ class OrderServiceImplTest {
         order.setPaymentMethod(PaymentMethod.WIRE_TRANSFER);
         given(orderRepository.findByIdAndBuyerId(ORDER_ID, BUYER_ID)).willReturn(Optional.of(order));
 
-        assertThatThrownBy(() -> service.cancelOrder(BUYER_ID, ORDER_ID, null, Locale.FRENCH))
+        assertThatThrownBy(() -> service.cancelOrder(BUYER_EMAIL, ORDER_ID, null, Locale.FRENCH))
                 .isInstanceOf(MissingBuyerIbanException.class);
+    }
+
+    @Test
+    void cancelOrder_wire_paymentPending_transitionsToWireRefundInProgress() {
+        Order order = buildSavedOrder(OrderStatus.PAYMENT_PENDING_WIRE);
+        order.setPaymentMethod(PaymentMethod.WIRE_TRANSFER);
+        given(orderRepository.findByIdAndBuyerId(ORDER_ID, BUYER_ID)).willReturn(Optional.of(order));
+        given(orderRepository.save(any())).willReturn(order);
+
+        service.cancelOrder(BUYER_EMAIL, ORDER_ID, "FR7630006000011234567890189", Locale.FRENCH);
+
+        assertThat(order.getStatus()).isEqualTo(OrderStatus.WIRE_REFUND_IN_PROGRESS);
+        assertThat(order.getBuyerIban()).isEqualTo("FR7630006000011234567890189");
     }
 
     @Test
@@ -236,7 +251,7 @@ class OrderServiceImplTest {
         Order order = buildSavedOrder(OrderStatus.SHIPPED);
         given(orderRepository.findByIdAndBuyerId(ORDER_ID, BUYER_ID)).willReturn(Optional.of(order));
 
-        assertThatThrownBy(() -> service.cancelOrder(BUYER_ID, ORDER_ID, null, Locale.FRENCH))
+        assertThatThrownBy(() -> service.cancelOrder(BUYER_EMAIL, ORDER_ID, null, Locale.FRENCH))
                 .isInstanceOf(InvalidOrderStateException.class);
     }
 
@@ -246,7 +261,7 @@ class OrderServiceImplTest {
     void getMyOrders_returnsEmptyListWhenNoneExist() {
         given(orderRepository.findByBuyerIdOrderByCreatedAtDesc(BUYER_ID)).willReturn(List.of());
 
-        List<OrderResponse> result = service.getMyOrders(BUYER_ID);
+        List<OrderResponse> result = service.getMyOrders(BUYER_EMAIL);
 
         assertThat(result).isEmpty();
     }
@@ -255,7 +270,7 @@ class OrderServiceImplTest {
     void getMyOrder_throwsWhenNotFound() {
         given(orderRepository.findByIdAndBuyerId(ORDER_ID, BUYER_ID)).willReturn(Optional.empty());
 
-        assertThatThrownBy(() -> service.getMyOrder(BUYER_ID, ORDER_ID))
+        assertThatThrownBy(() -> service.getMyOrder(BUYER_EMAIL, ORDER_ID))
                 .isInstanceOf(OrderNotFoundException.class);
     }
 
