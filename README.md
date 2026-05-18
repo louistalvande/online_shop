@@ -14,7 +14,8 @@
 
 Le projet a pour objectif de développer une application web de boutique en ligne dans l'état de l'art actuel, aussi bien en terme d'ergonomie que de cybersécurité et en suivant un processus d'ingénierie logiciel éprouvé. Il débute par la rédaction d'un [document d'architecture](architecture/Boutique%20en%20ligne%20-%20Documentation%20d%27Architecture.pdf) à partir des [exigences](architecture/Boutique%20en%20ligne%20-%20Exigences%20d%27utilisateurs.pdf) avant de passer au développement de la solution logicielle concrète.
 
-La démarche adoptée est volontairement rigoureuse et structurée. Elle s'appuie sur le principe fondamental que *l'architecture précède le code* : avant d'écrire la moindre ligne de code, le système est entièrement modélisé, documenté et validé. Cette approche, issue du génie logiciel industriel, permet de détecter les incohérences et les ambiguïtés en amont, là où elles coûtent le moins cher à corriger.
+La démarche adoptée est volontairement rigoureuse et structurée. Elle s'appuie sur le principe fondamental que *l'architecture précède le code* : avant d'écrire la moindre ligne de code, le système est entièrement modélisé, documenté et validé. Cette approche, issue du génie logiciel industriel, permet de détecter les incohérences et les ambiguïtés en amont, là où elles coûtent le moins cher à corriger. Cette démarche peut très bien prendre en compte de nouvelles exigences en cours de développement, à condition qu'elles repassent par l'ensemble du processus de conception afin de maintenir la documentation d'architecture à jour.
+ 
 
 Le processus global se déroule en quatre phases séquentielles et interdépendantes :
 
@@ -147,7 +148,7 @@ L'objectif est de fournir une documentation claire, accessible et maintenable, c
 
 The project aims to develop an online shop web application built to current best practices, in terms of both user experience and cybersecurity, following a proven software engineering process. It begins with the writing of an [architecture document](architecture/Boutique%20en%20ligne%20-%20Documentation%20d%27Architecture.pdf) from the [requirements](architecture/Boutique%20en%20ligne%20-%20Exigences%20d%27utilisateurs.pdf), before moving on to the concrete development of the software solution.
 
-The approach is deliberately rigorous and structured. It rests on the fundamental principle that *architecture precedes code*: before a single line of code is written, the system is fully modelled, documented, and validated. This approach, rooted in industrial software engineering, makes it possible to detect inconsistencies and ambiguities early — where they are least costly to fix.
+The approach is deliberately rigorous and structured. It rests on the fundamental principle that *architecture precedes code*: before a single line of code is written, the system is fully modelled, documented, and validated. This approach, rooted in industrial software engineering, makes it possible to detect inconsistencies and ambiguities early — where they are least costly to fix. This approach can very well accommodate new requirements arising during development, provided they go through the full design process in order to keep the architecture documentation up to date.
 
 The overall process unfolds across four sequential, interdependent phases:
 
