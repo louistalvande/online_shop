@@ -13,7 +13,7 @@
 ## 🇫🇷 Français
 
 Le projet a pour objectif de développer une application web de boutique en ligne. Il débute par la rédaction d'un [document d'architecture](architecture/Boutique%20en%20ligne%20-%20Documentation%20d%27Architecture.pdf) avant de passer au développement la solution logicielle concrête. 
-La réalisation du projet se déroule en plusieurs étapes, la définition du besoin, la conception de la solution, le découpage en User Stories, puis l'implémentation des User Stories de manière incrémentale.
+La réalisation du projet se déroule en plusieurs étapes, la définition du besoin, la conception de la solution, le découpage en User Stories, puis l'implémentation des User Stories de manière incrémentale, et pour finir, la rédaction de la documentation utilisateur.
 
 ### 1. Rédaction du document d'architecture avec la méthodologie ARCADIA (Architecture Analysis & Design Integrated Approach), une méthode MBSE (Model-Based System Engineering).
 
