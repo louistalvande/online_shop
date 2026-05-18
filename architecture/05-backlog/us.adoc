@@ -305,17 +305,17 @@ _Fonctions ARCADIA : FS-V04, FS-V09 — UCSA-07, UCSA-13 — LA : Service Comman
 | *US-VND-01*
 | En tant que vendeur, je suis notifié des nouvelles commandes et je peux les consulter dans mon tableau de bord.
 a|
-- [ ] Notification email à chaque nouvelle commande
-- [ ] Commande visible dans le back-office avec détail acheteur, lignes et statut
-| À faire
+- [x] Notification email à chaque nouvelle commande
+- [x] Commande visible dans le back-office avec détail acheteur, lignes et statut
+| Terminée
 
 | *US-VND-02*
 | En tant que vendeur, je peux confirmer la réception d'un virement bancaire pour déclencher la prise en charge de la commande.
 a|
-- [ ] Liste des commandes en statut `paiement_en_attente_virement` dans le back-office
-- [ ] « Confirmer » → commande passe en `en_attente` ; acheteur notifié
-- [ ] « Rejeter » → commande annulée ; stock pré-réservé libéré ; acheteur notifié
-| À faire
+- [x] Liste des commandes en statut `paiement_en_attente_virement` dans le back-office
+- [x] « Confirmer » → commande passe en `en_attente` ; acheteur notifié
+- [x] « Rejeter » → commande annulée ; stock pré-réservé libéré ; acheteur notifié
+| Terminée
 
 |===
 

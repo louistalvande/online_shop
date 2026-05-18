@@ -142,6 +142,27 @@ public class NotificationServiceImpl implements NotificationService {
         sendEmail(toEmail, subject, htmlBody);
     }
 
+    /** {@inheritDoc} */
+    @Async
+    @Override
+    public void sendWirePaymentRejectedEmail(String toEmail, OrderResponse order, Locale locale) {
+        if (!sendGridConfigured) {
+            log.info("[EMAIL] Wire payment rejected for {} — order #{}", toEmail, order.getOrderNumber());
+            return;
+        }
+
+        String subject = messageSource.getMessage(
+                "email.wire.rejected.subject",
+                new Object[]{order.getOrderNumber()},
+                locale);
+        String htmlBody = messageSource.getMessage(
+                "email.wire.rejected.body.html",
+                new Object[]{order.getOrderNumber()},
+                locale);
+
+        sendEmail(toEmail, subject, htmlBody);
+    }
+
     /**
      * Sends an HTML email via SendGrid and logs a warning on failure.
      *

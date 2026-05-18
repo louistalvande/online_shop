@@ -105,6 +105,7 @@ public class OrderServiceImpl implements com.shop.order.service.OrderService {
                 .filter(c -> c.isActive() && c.getSupportedCountries().contains(countryCode))
                 .orElseThrow(() -> new CarrierNotAvailableException(request.getCarrierId()));
 
+        UUID vendorId = resolveVendorId(cart);
         String vendorEmail = resolveVendorEmail(cart);
 
         Order order = new Order();
@@ -119,6 +120,7 @@ public class OrderServiceImpl implements com.shop.order.service.OrderService {
         order.setDeliveryCountryCode(countryCode);
         order.setPaymentMethod(request.getPaymentMethod());
         order.setVendorEmail(vendorEmail);
+        order.setVendorId(vendorId);
 
         List<OrderLine> lines = buildLines(cart, order);
         order.getLines().addAll(lines);
@@ -239,6 +241,19 @@ public class OrderServiceImpl implements com.shop.order.service.OrderService {
             Product product = item.getProduct();
             product.setQuantity(product.getQuantity() - item.getQuantity());
         }
+    }
+
+    /**
+     * Resolves the vendor UUID from the first cart item's product.
+     *
+     * @param cart the buyer's cart
+     * @return the vendor account UUID, or null if not found
+     */
+    private UUID resolveVendorId(Cart cart) {
+        return cart.getItems().stream()
+                .findFirst()
+                .map(item -> item.getProduct().getVendorId())
+                .orElse(null);
     }
 
     /**

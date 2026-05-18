@@ -83,6 +83,10 @@ public class Order {
     @Column(name = "vendor_email", nullable = false, length = 255)
     private String vendorEmail = "";
 
+    /** UUID of the vendor account whose products are in this order. */
+    @Column(name = "vendor_id")
+    private UUID vendorId;
+
     /** Line items snapshotted from the cart at order creation. */
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
     @OrderBy("id ASC")
@@ -207,6 +211,12 @@ public class Order {
 
     /** @param vendorEmail the vendor email snapshot */
     public void setVendorEmail(String vendorEmail) { this.vendorEmail = vendorEmail; }
+
+    /** @return the vendor account UUID */
+    public UUID getVendorId() { return vendorId; }
+
+    /** @param vendorId the vendor account UUID */
+    public void setVendorId(UUID vendorId) { this.vendorId = vendorId; }
 
     /** @return the ordered list of line items */
     public List<OrderLine> getLines() { return lines; }
