@@ -1,5 +1,8 @@
 package com.shop.notification.service;
 
+import com.shop.order.dto.OrderResponse;
+
+import java.math.BigDecimal;
 import java.util.Locale;
 
 /** Sends transactional emails to platform users. */
@@ -14,4 +17,37 @@ public interface NotificationService {
      * @param locale         the locale used to select the email language
      */
     void sendActivationEmail(String toEmail, String activationLink, Locale locale);
+
+    /**
+     * Sends an order confirmation email to the buyer after successful payment (US-ORD-05).
+     *
+     * @param toEmail the buyer's email address
+     * @param order   the confirmed order
+     * @param locale  the locale used to select the email language
+     */
+    void sendOrderConfirmationEmail(String toEmail, OrderResponse order, Locale locale);
+
+    /**
+     * Sends wire transfer bank details to the buyer for a pending wire payment (US-ORD-04).
+     *
+     * @param toEmail        the buyer's email address
+     * @param orderNumber    the human-readable order number (used as payment reference)
+     * @param totalAmountTtc the amount to transfer
+     * @param bankIban       the vendor's IBAN
+     * @param bankBic        the vendor's BIC
+     * @param locale         the locale used to select the email language
+     */
+    void sendWireTransferDetailsEmail(String toEmail, String orderNumber,
+                                      BigDecimal totalAmountTtc,
+                                      String bankIban, String bankBic,
+                                      Locale locale);
+
+    /**
+     * Notifies a vendor by email that a new order has been placed (US-ORD-03, US-ORD-04).
+     *
+     * @param toEmail the vendor's email address
+     * @param order   the new order
+     * @param locale  the locale used to select the email language
+     */
+    void sendVendorNewOrderEmail(String toEmail, OrderResponse order, Locale locale);
 }

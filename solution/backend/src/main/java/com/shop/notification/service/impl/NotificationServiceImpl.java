@@ -8,6 +8,7 @@ import com.sendgrid.helpers.mail.Mail;
 import com.sendgrid.helpers.mail.objects.Content;
 import com.sendgrid.helpers.mail.objects.Email;
 import com.shop.notification.service.NotificationService;
+import com.shop.order.dto.OrderResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -16,6 +17,7 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.util.Locale;
 
 /**
@@ -70,6 +72,84 @@ public class NotificationServiceImpl implements NotificationService {
                 new Object[]{activationLink, activationExpiryHours},
                 locale);
 
+        sendEmail(toEmail, subject, htmlBody);
+    }
+
+    /** {@inheritDoc} */
+    @Async
+    @Override
+    public void sendOrderConfirmationEmail(String toEmail, OrderResponse order, Locale locale) {
+        if (!sendGridConfigured) {
+            log.info("[EMAIL] Order confirmation for {} — order #{}", toEmail, order.getOrderNumber());
+            return;
+        }
+
+        String subject = messageSource.getMessage(
+                "email.order.confirmation.subject",
+                new Object[]{order.getOrderNumber()},
+                locale);
+        String htmlBody = messageSource.getMessage(
+                "email.order.confirmation.body.html",
+                new Object[]{order.getOrderNumber(), order.getTotalAmountTtc()},
+                locale);
+
+        sendEmail(toEmail, subject, htmlBody);
+    }
+
+    /** {@inheritDoc} */
+    @Async
+    @Override
+    public void sendWireTransferDetailsEmail(String toEmail, String orderNumber,
+                                             BigDecimal totalAmountTtc,
+                                             String bankIban, String bankBic,
+                                             Locale locale) {
+        if (!sendGridConfigured) {
+            log.info("[EMAIL] Wire transfer details for {} — order #{} amount={} IBAN={} BIC={}",
+                    toEmail, orderNumber, totalAmountTtc, bankIban, bankBic);
+            return;
+        }
+
+        String subject = messageSource.getMessage(
+                "email.wire.transfer.subject",
+                new Object[]{orderNumber},
+                locale);
+        String htmlBody = messageSource.getMessage(
+                "email.wire.transfer.body.html",
+                new Object[]{orderNumber, totalAmountTtc, bankIban, bankBic},
+                locale);
+
+        sendEmail(toEmail, subject, htmlBody);
+    }
+
+    /** {@inheritDoc} */
+    @Async
+    @Override
+    public void sendVendorNewOrderEmail(String toEmail, OrderResponse order, Locale locale) {
+        if (!sendGridConfigured) {
+            log.info("[EMAIL] Vendor new order notification for {} — order #{}", toEmail, order.getOrderNumber());
+            return;
+        }
+
+        String subject = messageSource.getMessage(
+                "email.vendor.new.order.subject",
+                new Object[]{order.getOrderNumber()},
+                locale);
+        String htmlBody = messageSource.getMessage(
+                "email.vendor.new.order.body.html",
+                new Object[]{order.getOrderNumber(), order.getTotalAmountTtc()},
+                locale);
+
+        sendEmail(toEmail, subject, htmlBody);
+    }
+
+    /**
+     * Sends an HTML email via SendGrid and logs a warning on failure.
+     *
+     * @param toEmail  recipient address
+     * @param subject  email subject
+     * @param htmlBody HTML email body
+     */
+    private void sendEmail(String toEmail, String subject, String htmlBody) {
         Mail mail = new Mail(
                 new Email(fromEmail, fromName),
                 subject,
@@ -83,11 +163,11 @@ public class NotificationServiceImpl implements NotificationService {
             request.setBody(mail.build());
             Response response = sendGrid.api(request);
             if (response.getStatusCode() >= 400) {
-                log.warn("[EMAIL] SendGrid rejected activation email for {} — status {} body {}",
+                log.warn("[EMAIL] SendGrid rejected email to {} — status {} body {}",
                         toEmail, response.getStatusCode(), response.getBody());
             }
         } catch (IOException e) {
-            log.warn("[EMAIL] Failed to send activation email to {}: {}", toEmail, e.getMessage());
+            log.warn("[EMAIL] Failed to send email to {}: {}", toEmail, e.getMessage());
         }
     }
 }
