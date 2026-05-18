@@ -12,7 +12,7 @@
 
 ## 🇫🇷 Français
 
-Le projet a pour objectif de développer une application web de boutique en ligne dans l'état de l'art actuel, aussi bien en terme d'ergonomie que de cybersécurité. Il débute par la rédaction d'un [document d'architecture](architecture/Boutique%20en%20ligne%20-%20Documentation%20d%27Architecture.pdf) à partir des [exigences](architecture/Boutique%20en%20ligne%20-%20Exigences%20d%27utilisateurs.pdf)  avant de passer au développement de la solution logicielle concrète.
+Le projet a pour objectif de développer une application web de boutique en ligne dans l'état de l'art actuel, aussi bien en terme d'ergonomie que de cybersécurité et en suivant un processus d'ingénieurie logiciel éprouvé. Il débute par la rédaction d'un [document d'architecture](architecture/Boutique%20en%20ligne%20-%20Documentation%20d%27Architecture.pdf) à partir des [exigences](architecture/Boutique%20en%20ligne%20-%20Exigences%20d%27utilisateurs.pdf)  avant de passer au développement de la solution logicielle concrète.
  
 La démarche adoptée est volontairement rigoureuse et structurée. Elle s'appuie sur le principe fondamental que *l'architecture précède le code* : avant d'écrire la moindre ligne de code, le système est entièrement modélisé, documenté et validé. Cette approche, issue du génie logiciel industriel, permet de détecter les incohérences et les ambiguïtés en amont, là où elles coûtent le moins cher à corriger.
  
