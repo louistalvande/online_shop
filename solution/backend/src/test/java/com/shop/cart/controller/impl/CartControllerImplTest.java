@@ -141,7 +141,14 @@ class CartControllerImplTest {
     // -------------------------------------------------------------------------
 
     private CartResponse emptyCartResponse() {
-        CartResponse r = new CartResponse();
+        CartResponse r;
+        try {
+            var ctor = CartResponse.class.getDeclaredConstructor();
+            ctor.setAccessible(true);
+            r = ctor.newInstance();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
         setField(r, "id", UUID.randomUUID());
         setField(r, "buyerId", UUID.randomUUID());
         setField(r, "items", List.of());

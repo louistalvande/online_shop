@@ -6,6 +6,8 @@ import com.shop.order.dto.OrderResponse;
 import com.shop.order.entity.OrderStatus;
 import com.shop.order.entity.PaymentMethod;
 import com.shop.order.exception.EmptyCartException;
+import com.shop.order.exception.InvalidOrderStateException;
+import com.shop.order.exception.MissingBuyerIbanException;
 import com.shop.order.exception.OrderNotFoundException;
 import com.shop.order.exception.PaymentFailedException;
 import com.shop.order.service.OrderService;
@@ -128,6 +130,49 @@ class OrderControllerImplTest {
         mvc.perform(get("/api/orders/" + ORDER_ID).principal(buyerPrincipal))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.error").value("ORDER_NOT_FOUND"));
+    }
+
+    @Test
+    void cancelOrder_card_returns200() throws Exception {
+        OrderResponse cancelled = buildOrderResponse(OrderStatus.CANCELLED);
+        given(orderService.cancelOrder(eq(BUYER_ID), eq(ORDER_ID), any(), any())).willReturn(cancelled);
+
+        mvc.perform(post("/api/orders/" + ORDER_ID + "/cancel")
+                        .principal(buyerPrincipal)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value("CANCELLED"));
+    }
+
+    @Test
+    void cancelOrder_missingIban_returns422() throws Exception {
+        given(orderService.cancelOrder(eq(BUYER_ID), eq(ORDER_ID), any(), any()))
+                .willThrow(new MissingBuyerIbanException(ORDER_ID));
+        given(messageSource.getMessage(eq("error.order.missing.buyer.iban"), any(), any(Locale.class)))
+                .willReturn("IBAN required");
+
+        mvc.perform(post("/api/orders/" + ORDER_ID + "/cancel")
+                        .principal(buyerPrincipal)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{}"))
+                .andExpect(status().isUnprocessableEntity())
+                .andExpect(jsonPath("$.error").value("MISSING_BUYER_IBAN"));
+    }
+
+    @Test
+    void cancelOrder_invalidState_returns409() throws Exception {
+        given(orderService.cancelOrder(eq(BUYER_ID), eq(ORDER_ID), any(), any()))
+                .willThrow(new InvalidOrderStateException(ORDER_ID, OrderStatus.SHIPPED));
+        given(messageSource.getMessage(eq("error.order.invalid.state"), any(), any(Locale.class)))
+                .willReturn("Invalid state");
+
+        mvc.perform(post("/api/orders/" + ORDER_ID + "/cancel")
+                        .principal(buyerPrincipal)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{}"))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.error").value("INVALID_ORDER_STATE"));
     }
 
     // ─── Helpers ─────────────────────────────────────────────────────────────

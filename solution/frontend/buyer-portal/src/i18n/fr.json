@@ -191,5 +191,18 @@
   "orders.tracking.inPreparation": "Votre commande est en cours de préparation.",
   "orders.error.load": "Impossible de charger vos commandes.",
   "orders.error.notFound": "Commande introuvable.",
-  "orders.error.loginRequired": "Vous devez être connecté pour voir vos commandes."
+  "orders.error.loginRequired": "Vous devez être connecté pour voir vos commandes.",
+
+  "orders.cancel.title": "Annuler la commande",
+  "orders.cancel.description": "Vous pouvez annuler cette commande. En cas de paiement par virement, fournissez votre IBAN pour le remboursement.",
+  "orders.cancel.ibanLabel": "Votre IBAN de remboursement",
+  "orders.cancel.ibanPlaceholder": "FR76 3000 6000 0112 3456 7890 189",
+  "orders.cancel.ibanRequired": "Un IBAN est requis pour annuler une commande payée par virement.",
+  "orders.cancel.invalidState": "Cette commande ne peut plus être annulée.",
+  "orders.cancel.error": "Une erreur est survenue lors de l'annulation.",
+  "orders.cancel.confirmPrompt": "Confirmer l'annulation de cette commande ?",
+  "orders.cancel.submit": "Annuler la commande",
+  "orders.cancel.cancelling": "Annulation…",
+  "orders.cancel.wireRefundInProgress": "Remboursement par virement en cours",
+  "orders.cancel.ibanUsed": "IBAN de remboursement"
 }

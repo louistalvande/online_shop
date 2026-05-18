@@ -53,4 +53,21 @@ public interface OrderService {
      * @return the order response
      */
     OrderResponse getMyOrder(UUID buyerId, UUID orderId);
+
+    /**
+     * Cancels an order placed by the buyer (US-CAN-01).
+     * Valid from {@code AWAITING_PROCESSING} or {@code IN_PREPARATION}.
+     * <ul>
+     *   <li>CARD payment: triggers Stripe refund, transitions to {@code CANCELLED}.</li>
+     *   <li>WIRE payment: requires {@code buyerIban}; transitions to {@code WIRE_REFUND_IN_PROGRESS}.</li>
+     * </ul>
+     * Stock is always released and the vendor is notified.
+     *
+     * @param buyerId   the authenticated buyer UUID
+     * @param orderId   the order UUID
+     * @param buyerIban the buyer's IBAN for wire refund; {@code null} for card orders
+     * @param locale    locale for notification emails
+     * @return the updated order
+     */
+    OrderResponse cancelOrder(UUID buyerId, UUID orderId, String buyerIban, Locale locale);
 }

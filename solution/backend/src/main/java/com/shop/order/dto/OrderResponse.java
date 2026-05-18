@@ -27,6 +27,7 @@ public class OrderResponse {
     @Schema(description = "Current order status") private OrderStatus status;
     @Schema(description = "Grand total including VAT") private BigDecimal totalAmountTtc;
     @Schema(description = "Shipment tracking number, null until shipped") private String trackingNumber;
+    @Schema(description = "Buyer IBAN for wire refund, populated when provided") private String buyerIban;
     @Schema(description = "Order line items") private List<OrderLineResponse> lines;
     @Schema(description = "Order creation timestamp") private LocalDateTime createdAt;
     @Schema(description = "Last status-change timestamp") private LocalDateTime updatedAt;
@@ -55,6 +56,7 @@ public class OrderResponse {
         r.status = order.getStatus();
         r.totalAmountTtc = order.getTotalAmountTtc();
         r.trackingNumber = order.getTrackingNumber();
+        r.buyerIban = order.getBuyerIban();
         r.lines = order.getLines().stream().map(OrderLineResponse::from).toList();
         r.createdAt = order.getCreatedAt();
         r.updatedAt = order.getUpdatedAt();
@@ -89,6 +91,8 @@ public class OrderResponse {
     public BigDecimal getTotalAmountTtc() { return totalAmountTtc; }
     /** @return the tracking number, or null */
     public String getTrackingNumber() { return trackingNumber; }
+    /** @return the buyer IBAN for wire refund, or null */
+    public String getBuyerIban() { return buyerIban; }
     /** @return the order lines */
     public List<OrderLineResponse> getLines() { return lines; }
     /** @return the creation timestamp */

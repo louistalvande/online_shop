@@ -68,4 +68,40 @@ public interface NotificationService {
      * @param locale  the locale used to select the email language
      */
     void sendShipmentNotificationEmail(String toEmail, OrderResponse order, Locale locale);
+
+    /**
+     * Notifies the buyer that their cancellation request has been processed (US-CAN-01).
+     *
+     * @param toEmail the buyer's email address
+     * @param order   the cancelled or wire-refund-pending order
+     * @param locale  the locale used to select the email language
+     */
+    void sendBuyerCancellationEmail(String toEmail, OrderResponse order, Locale locale);
+
+    /**
+     * Notifies the vendor that the buyer has cancelled an order before shipment (US-CAN-02).
+     *
+     * @param toEmail the vendor's email address
+     * @param order   the cancelled order
+     * @param locale  the locale used to select the email language
+     */
+    void sendVendorCancellationEmail(String toEmail, OrderResponse order, Locale locale);
+
+    /**
+     * Notifies the buyer that they must return the parcel before the refund is issued (US-CAN-03).
+     *
+     * @param toEmail the buyer's email address
+     * @param order   the order now in PENDING_RETURN status
+     * @param locale  the locale used to select the email language
+     */
+    void sendReturnRequestedEmail(String toEmail, OrderResponse order, Locale locale);
+
+    /**
+     * Notifies the buyer that the wire refund has been sent by the vendor (US-CAN-05).
+     *
+     * @param toEmail the buyer's email address
+     * @param order   the now-cancelled order
+     * @param locale  the locale used to select the email language
+     */
+    void sendWireRefundConfirmedEmail(String toEmail, OrderResponse order, Locale locale);
 }

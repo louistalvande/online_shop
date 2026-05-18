@@ -191,5 +191,18 @@
   "orders.tracking.inPreparation": "Your order is being prepared.",
   "orders.error.load": "Unable to load your orders.",
   "orders.error.notFound": "Order not found.",
-  "orders.error.loginRequired": "You must be logged in to view your orders."
+  "orders.error.loginRequired": "You must be logged in to view your orders.",
+
+  "orders.cancel.title": "Cancel order",
+  "orders.cancel.description": "You may cancel this order. For wire transfer orders, provide your IBAN for the refund.",
+  "orders.cancel.ibanLabel": "Your refund IBAN",
+  "orders.cancel.ibanPlaceholder": "FR76 3000 6000 0112 3456 7890 189",
+  "orders.cancel.ibanRequired": "An IBAN is required to cancel a wire transfer order.",
+  "orders.cancel.invalidState": "This order can no longer be cancelled.",
+  "orders.cancel.error": "An error occurred while cancelling the order.",
+  "orders.cancel.confirmPrompt": "Confirm cancellation of this order?",
+  "orders.cancel.submit": "Cancel order",
+  "orders.cancel.cancelling": "Cancelling…",
+  "orders.cancel.wireRefundInProgress": "Wire refund in progress",
+  "orders.cancel.ibanUsed": "Refund IBAN"
 }

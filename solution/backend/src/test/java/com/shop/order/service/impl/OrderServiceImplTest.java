@@ -9,6 +9,7 @@ import com.shop.carrier.entity.Carrier;
 import com.shop.carrier.repository.CarrierRepository;
 import com.shop.catalog.entity.Product;
 import com.shop.catalog.entity.ProductStatus;
+import com.shop.catalog.repository.ProductRepository;
 import com.shop.common.repository.CountryRepository;
 import com.shop.notification.service.NotificationService;
 import com.shop.order.dto.CheckoutInitResponse;
@@ -21,6 +22,7 @@ import com.shop.order.exception.CarrierNotAvailableException;
 import com.shop.order.exception.EmptyCartException;
 import com.shop.order.exception.InvalidDeliveryCountryException;
 import com.shop.order.exception.InvalidOrderStateException;
+import com.shop.order.exception.MissingBuyerIbanException;
 import com.shop.order.exception.OrderNotFoundException;
 import com.shop.order.exception.PaymentFailedException;
 import com.shop.order.repository.OrderRepository;
@@ -54,6 +56,7 @@ class OrderServiceImplTest {
     @Mock CarrierRepository carrierRepository;
     @Mock CountryRepository countryRepository;
     @Mock AccountRepository accountRepository;
+    @Mock ProductRepository productRepository;
     @Mock PaymentGateway paymentGateway;
     @Mock NotificationService notificationService;
 
@@ -69,8 +72,8 @@ class OrderServiceImplTest {
     void setUp() {
         service = new OrderServiceImpl(
                 orderRepository, cartRepository, carrierRepository,
-                countryRepository, accountRepository, paymentGateway,
-                notificationService, IBAN, BIC);
+                countryRepository, accountRepository, productRepository,
+                paymentGateway, notificationService, IBAN, BIC);
     }
 
     // ─── initCheckout ───────────────────────────────────────────────────────
@@ -185,6 +188,56 @@ class OrderServiceImplTest {
 
         assertThatThrownBy(() -> service.confirmCardPayment(BUYER_ID, ORDER_ID, Locale.FRENCH))
                 .isInstanceOf(OrderNotFoundException.class);
+    }
+
+    // ─── cancelOrder ────────────────────────────────────────────────────────
+
+    @Test
+    void cancelOrder_card_transitionsToCancelled() {
+        Order order = buildSavedOrder(OrderStatus.AWAITING_PROCESSING);
+        given(orderRepository.findByIdAndBuyerId(ORDER_ID, BUYER_ID)).willReturn(Optional.of(order));
+        given(orderRepository.save(any())).willReturn(order);
+        given(accountRepository.findById(BUYER_ID)).willReturn(Optional.of(buildAccount("buyer@example.com")));
+
+        OrderResponse response = service.cancelOrder(BUYER_ID, ORDER_ID, null, Locale.FRENCH);
+
+        assertThat(order.getStatus()).isEqualTo(OrderStatus.CANCELLED);
+        then(paymentGateway).should().refund("pi_stub");
+        then(notificationService).should().sendBuyerCancellationEmail(any(), any(), any());
+        then(notificationService).should().sendVendorCancellationEmail(any(), any(), any());
+    }
+
+    @Test
+    void cancelOrder_wire_transitionsToWireRefundInProgress() {
+        Order order = buildSavedOrder(OrderStatus.AWAITING_PROCESSING);
+        order.setPaymentMethod(PaymentMethod.WIRE_TRANSFER);
+        given(orderRepository.findByIdAndBuyerId(ORDER_ID, BUYER_ID)).willReturn(Optional.of(order));
+        given(orderRepository.save(any())).willReturn(order);
+        given(accountRepository.findById(BUYER_ID)).willReturn(Optional.of(buildAccount("buyer@example.com")));
+
+        service.cancelOrder(BUYER_ID, ORDER_ID, "FR7630006000011234567890189", Locale.FRENCH);
+
+        assertThat(order.getStatus()).isEqualTo(OrderStatus.WIRE_REFUND_IN_PROGRESS);
+        assertThat(order.getBuyerIban()).isEqualTo("FR7630006000011234567890189");
+    }
+
+    @Test
+    void cancelOrder_wire_missingIban_throwsMissingBuyerIbanException() {
+        Order order = buildSavedOrder(OrderStatus.AWAITING_PROCESSING);
+        order.setPaymentMethod(PaymentMethod.WIRE_TRANSFER);
+        given(orderRepository.findByIdAndBuyerId(ORDER_ID, BUYER_ID)).willReturn(Optional.of(order));
+
+        assertThatThrownBy(() -> service.cancelOrder(BUYER_ID, ORDER_ID, null, Locale.FRENCH))
+                .isInstanceOf(MissingBuyerIbanException.class);
+    }
+
+    @Test
+    void cancelOrder_wrongState_throwsInvalidOrderStateException() {
+        Order order = buildSavedOrder(OrderStatus.SHIPPED);
+        given(orderRepository.findByIdAndBuyerId(ORDER_ID, BUYER_ID)).willReturn(Optional.of(order));
+
+        assertThatThrownBy(() -> service.cancelOrder(BUYER_ID, ORDER_ID, null, Locale.FRENCH))
+                .isInstanceOf(InvalidOrderStateException.class);
     }
 
     // ─── getMyOrders / getMyOrder ────────────────────────────────────────────

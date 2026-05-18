@@ -1,5 +1,6 @@
 package com.shop.order.controller;
 
+import com.shop.order.dto.CancelOrderRequest;
 import com.shop.order.dto.CheckoutInitResponse;
 import com.shop.order.dto.CreateOrderRequest;
 import com.shop.order.dto.OrderResponse;
@@ -90,4 +91,29 @@ public interface OrderController {
     ResponseEntity<OrderResponse> getMyOrder(
             @PathVariable UUID orderId,
             Principal principal);
+
+    /**
+     * Cancels an order placed by the authenticated buyer (US-CAN-01).
+     * Valid when status is AWAITING_PROCESSING or IN_PREPARATION.
+     * Wire orders require a buyerIban for refund.
+     *
+     * @param orderId   the order UUID
+     * @param request   optional IBAN for wire refund
+     * @param principal authenticated buyer
+     * @param locale    buyer locale
+     * @return 200 with the updated order
+     */
+    @Operation(summary = "Cancel an order placed by the buyer (US-CAN-01)")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Order cancelled or wire refund initiated"),
+            @ApiResponse(responseCode = "404", description = "Order not found"),
+            @ApiResponse(responseCode = "409", description = "Order not in a cancellable status"),
+            @ApiResponse(responseCode = "422", description = "Buyer IBAN missing for wire transfer order")
+    })
+    @PostMapping("/{orderId}/cancel")
+    ResponseEntity<OrderResponse> cancelOrder(
+            @PathVariable UUID orderId,
+            @RequestBody(required = false) CancelOrderRequest request,
+            Principal principal,
+            Locale locale);
 }

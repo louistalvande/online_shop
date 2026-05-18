@@ -7,6 +7,7 @@ import com.shop.cart.repository.CartRepository;
 import com.shop.carrier.entity.Carrier;
 import com.shop.carrier.repository.CarrierRepository;
 import com.shop.catalog.entity.Product;
+import com.shop.catalog.repository.ProductRepository;
 import com.shop.common.repository.CountryRepository;
 import com.shop.notification.service.NotificationService;
 import com.shop.order.dto.CheckoutInitResponse;
@@ -20,6 +21,7 @@ import com.shop.order.exception.CarrierNotAvailableException;
 import com.shop.order.exception.EmptyCartException;
 import com.shop.order.exception.InvalidDeliveryCountryException;
 import com.shop.order.exception.InvalidOrderStateException;
+import com.shop.order.exception.MissingBuyerIbanException;
 import com.shop.order.exception.OrderNotFoundException;
 import com.shop.order.exception.PaymentFailedException;
 import com.shop.order.repository.OrderRepository;
@@ -50,6 +52,7 @@ public class OrderServiceImpl implements com.shop.order.service.OrderService {
     private final CarrierRepository carrierRepository;
     private final CountryRepository countryRepository;
     private final AccountRepository accountRepository;
+    private final ProductRepository productRepository;
     private final PaymentGateway paymentGateway;
     private final NotificationService notificationService;
     private final String bankIban;
@@ -63,6 +66,7 @@ public class OrderServiceImpl implements com.shop.order.service.OrderService {
      * @param carrierRepository   JPA repository for carriers
      * @param countryRepository   JPA repository for Eurozone country codes
      * @param accountRepository   JPA repository for accounts (vendor email lookup)
+     * @param productRepository   JPA repository for products (stock restoration on cancellation)
      * @param paymentGateway      card payment abstraction (Stripe or stub)
      * @param notificationService email notification service
      * @param bankIban            vendor bank IBAN injected from configuration
@@ -74,6 +78,7 @@ public class OrderServiceImpl implements com.shop.order.service.OrderService {
             CarrierRepository carrierRepository,
             CountryRepository countryRepository,
             AccountRepository accountRepository,
+            ProductRepository productRepository,
             PaymentGateway paymentGateway,
             NotificationService notificationService,
             @Value("${shop.bank.iban}") String bankIban,
@@ -83,6 +88,7 @@ public class OrderServiceImpl implements com.shop.order.service.OrderService {
         this.carrierRepository = carrierRepository;
         this.countryRepository = countryRepository;
         this.accountRepository = accountRepository;
+        this.productRepository = productRepository;
         this.paymentGateway = paymentGateway;
         this.notificationService = notificationService;
         this.bankIban = bankIban;
@@ -269,6 +275,56 @@ public class OrderServiceImpl implements com.shop.order.service.OrderService {
                 .flatMap(accountRepository::findById)
                 .map(a -> a.getEmail())
                 .orElse("");
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public OrderResponse cancelOrder(UUID buyerId, UUID orderId, String buyerIban, Locale locale) {
+        Order order = orderRepository.findByIdAndBuyerId(orderId, buyerId)
+                .orElseThrow(() -> new OrderNotFoundException(orderId));
+
+        if (order.getStatus() != OrderStatus.AWAITING_PROCESSING
+                && order.getStatus() != OrderStatus.IN_PREPARATION) {
+            throw new InvalidOrderStateException(orderId, order.getStatus());
+        }
+
+        restoreOrderStock(order);
+
+        if (order.getPaymentMethod() == PaymentMethod.WIRE_TRANSFER) {
+            if (buyerIban == null || buyerIban.isBlank()) {
+                throw new MissingBuyerIbanException(orderId);
+            }
+            order.setBuyerIban(buyerIban);
+            order.setStatus(OrderStatus.WIRE_REFUND_IN_PROGRESS);
+        } else {
+            if (order.getStripePaymentIntentId() != null) {
+                paymentGateway.refund(order.getStripePaymentIntentId());
+            }
+            order.setStatus(OrderStatus.CANCELLED);
+        }
+
+        Order saved = orderRepository.save(order);
+        OrderResponse response = OrderResponse.from(saved);
+
+        String buyerEmail = accountRepository.findById(buyerId).map(a -> a.getEmail()).orElse("");
+        notificationService.sendBuyerCancellationEmail(buyerEmail, response, locale);
+        notificationService.sendVendorCancellationEmail(saved.getVendorEmail(), response, locale);
+
+        return response;
+    }
+
+    /**
+     * Restores product stock for each order line (best-effort: skips deleted products).
+     *
+     * @param order the order whose stock should be restored
+     */
+    private void restoreOrderStock(Order order) {
+        order.getLines().forEach(line -> {
+            if (line.getProductId() != null) {
+                productRepository.findById(line.getProductId()).ifPresent(product ->
+                        product.setQuantity(product.getQuantity() + line.getQuantity()));
+            }
+        });
     }
 
     /**

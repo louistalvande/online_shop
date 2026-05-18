@@ -62,6 +62,7 @@ export interface OrderData {
   status: OrderStatus
   totalAmountTtc: number
   trackingNumber: string | null
+  buyerIban: string | null
   lines: OrderLineData[]
   createdAt: string
   updatedAt: string
@@ -140,5 +141,19 @@ export async function getMyOrder(orderId: string): Promise<OrderData> {
   const res = await fetch(`${BASE}/${orderId}`, { headers: authHeaders() })
   if (res.status === 404) throw new Error('ORDER_NOT_FOUND')
   if (!res.ok) throw new Error('ORDER_LOAD_ERROR')
+  return res.json()
+}
+
+/** Cancels an order placed by the buyer (US-CAN-01). Pass buyerIban for wire transfer orders. */
+export async function cancelOrder(orderId: string, buyerIban?: string): Promise<OrderData> {
+  const res = await fetch(`${BASE}/${orderId}/cancel`, {
+    method: 'POST',
+    headers: authHeaders(),
+    body: JSON.stringify({ buyerIban: buyerIban ?? null }),
+  })
+  if (res.status === 404) throw new Error('ORDER_NOT_FOUND')
+  if (res.status === 409) throw new Error('INVALID_ORDER_STATE')
+  if (res.status === 422) throw new Error('MISSING_BUYER_IBAN')
+  if (!res.ok) throw new Error('CANCEL_ERROR')
   return res.json()
 }

@@ -38,6 +38,7 @@ export interface OrderData {
   status: OrderStatus
   totalAmountTtc: number
   trackingNumber: string | null
+  buyerIban: string | null
   lines: OrderLineData[]
   createdAt: string
   updatedAt: string
@@ -95,5 +96,53 @@ export async function shipOrder(orderId: string, trackingNumber: string): Promis
   })
   if (res.status === 409) throw Object.assign(new Error('Invalid order state'), { code: 'INVALID_STATE' })
   if (!res.ok) throw new Error('Failed to ship order')
+  return res.json()
+}
+
+/** Accepts post-shipment cancellation requiring parcel return (US-CAN-03). */
+export async function acceptReturn(orderId: string, buyerIban?: string): Promise<OrderData> {
+  const res = await fetch(`/api/vendor/orders/${orderId}/accept-return`, {
+    method: 'POST',
+    headers: authHeaders(),
+    body: JSON.stringify({ buyerIban: buyerIban ?? null }),
+  })
+  if (res.status === 409) throw Object.assign(new Error('Invalid order state'), { code: 'INVALID_STATE' })
+  if (res.status === 422) throw Object.assign(new Error('Buyer IBAN required'), { code: 'MISSING_IBAN' })
+  if (!res.ok) throw new Error('Failed to accept return')
+  return res.json()
+}
+
+/** Confirms receipt of the returned parcel and triggers refund (US-CAN-03). */
+export async function confirmReturn(orderId: string): Promise<OrderData> {
+  const res = await fetch(`/api/vendor/orders/${orderId}/confirm-return`, {
+    method: 'POST',
+    headers: authHeaders(),
+  })
+  if (res.status === 409) throw Object.assign(new Error('Invalid order state'), { code: 'INVALID_STATE' })
+  if (!res.ok) throw new Error('Failed to confirm return')
+  return res.json()
+}
+
+/** Accepts post-shipment cancellation without requiring return (US-CAN-04). */
+export async function waiveReturn(orderId: string, buyerIban?: string): Promise<OrderData> {
+  const res = await fetch(`/api/vendor/orders/${orderId}/waive-return`, {
+    method: 'POST',
+    headers: authHeaders(),
+    body: JSON.stringify({ buyerIban: buyerIban ?? null }),
+  })
+  if (res.status === 409) throw Object.assign(new Error('Invalid order state'), { code: 'INVALID_STATE' })
+  if (res.status === 422) throw Object.assign(new Error('Buyer IBAN required'), { code: 'MISSING_IBAN' })
+  if (!res.ok) throw new Error('Failed to waive return')
+  return res.json()
+}
+
+/** Confirms that the wire transfer refund has been sent to the buyer (US-CAN-05). */
+export async function confirmWireRefund(orderId: string): Promise<OrderData> {
+  const res = await fetch(`/api/vendor/orders/${orderId}/confirm-wire-refund`, {
+    method: 'POST',
+    headers: authHeaders(),
+  })
+  if (res.status === 409) throw Object.assign(new Error('Invalid order state'), { code: 'INVALID_STATE' })
+  if (!res.ok) throw new Error('Failed to confirm wire refund')
   return res.json()
 }

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import Header from './Header'
-import { getVendorOrder, confirmWirePayment, rejectWirePayment, shipOrder, type OrderData } from './api/orderApi'
+import { getVendorOrder, confirmWirePayment, rejectWirePayment, shipOrder, acceptReturn, confirmReturn, waiveReturn, confirmWireRefund, type OrderData } from './api/orderApi'
 import { getSession } from './api/authApi'
 
 const STATUS_LABELS: Record<string, string> = {
@@ -30,6 +30,7 @@ export default function OrderDetailPage({ orderId }: Props) {
   const [error, setError] = useState<string | null>(null)
   const [actionError, setActionError] = useState<string | null>(null)
   const [trackingInput, setTrackingInput] = useState('')
+  const [returnIban, setReturnIban] = useState('')
 
   useEffect(() => {
     if (!session) return
@@ -155,7 +156,7 @@ export default function OrderDetailPage({ orderId }: Props) {
             )}
 
             {(order.status === 'AWAITING_PROCESSING' || order.status === 'IN_PREPARATION') && (
-              <section style={{ background: '#e8f5e9', padding: '1rem', borderRadius: '4px' }}>
+              <section style={{ background: '#e8f5e9', padding: '1rem', borderRadius: '4px', marginBottom: '1rem' }}>
                 <h2>{t('orders.ship.title')}</h2>
                 <p>{t('orders.ship.description')}</p>
                 {actionError && <p style={{ color: 'red' }}>{actionError}</p>}
@@ -188,6 +189,111 @@ export default function OrderDetailPage({ orderId }: Props) {
                     {actionLoading ? t('orders.ship.shipping') : t('orders.ship.submit')}
                   </button>
                 </div>
+              </section>
+            )}
+
+            {/* Post-shipment cancellation — US-CAN-03 / US-CAN-04 */}
+            {order.status === 'SHIPPED' && (
+              <section style={{ background: '#fff3e0', padding: '1rem', borderRadius: '4px', marginBottom: '1rem' }}>
+                <h2>{t('orders.postShipCancel.title')}</h2>
+                <p>{t('orders.postShipCancel.description')}</p>
+                {order.paymentMethod === 'WIRE_TRANSFER' && (
+                  <div style={{ marginBottom: '0.75rem' }}>
+                    <label style={{ display: 'block', marginBottom: '0.25rem' }}>{t('orders.postShipCancel.ibanLabel')} *</label>
+                    <input
+                      type="text"
+                      value={returnIban}
+                      onChange={e => setReturnIban(e.target.value)}
+                      placeholder={t('orders.postShipCancel.ibanPlaceholder')}
+                      style={{ padding: '0.4rem 0.8rem', border: '1px solid #ccc', borderRadius: '4px', width: '100%', maxWidth: '400px' }}
+                    />
+                  </div>
+                )}
+                {actionError && <p style={{ color: 'red' }}>{actionError}</p>}
+                <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
+                  <button
+                    onClick={async () => {
+                      if (!window.confirm(t('orders.postShipCancel.acceptReturnPrompt'))) return
+                      setActionLoading(true); setActionError(null)
+                      try {
+                        const updated = await acceptReturn(orderId, order.paymentMethod === 'WIRE_TRANSFER' ? returnIban : undefined)
+                        setOrder(updated)
+                      } catch {
+                        setActionError(t('orders.postShipCancel.error'))
+                      } finally { setActionLoading(false) }
+                    }}
+                    disabled={actionLoading || (order.paymentMethod === 'WIRE_TRANSFER' && !returnIban.trim())}
+                    style={{ padding: '0.5rem 1.2rem', background: '#e65100', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>
+                    {t('orders.postShipCancel.acceptReturn')}
+                  </button>
+                  <button
+                    onClick={async () => {
+                      if (!window.confirm(t('orders.postShipCancel.waiveReturnPrompt'))) return
+                      setActionLoading(true); setActionError(null)
+                      try {
+                        const updated = await waiveReturn(orderId, order.paymentMethod === 'WIRE_TRANSFER' ? returnIban : undefined)
+                        setOrder(updated)
+                      } catch {
+                        setActionError(t('orders.postShipCancel.error'))
+                      } finally { setActionLoading(false) }
+                    }}
+                    disabled={actionLoading || (order.paymentMethod === 'WIRE_TRANSFER' && !returnIban.trim())}
+                    style={{ padding: '0.5rem 1.2rem', background: '#c62828', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>
+                    {t('orders.postShipCancel.waiveReturn')}
+                  </button>
+                </div>
+              </section>
+            )}
+
+            {/* Confirm return received — US-CAN-03 */}
+            {order.status === 'PENDING_RETURN' && (
+              <section style={{ background: '#fce4ec', padding: '1rem', borderRadius: '4px', marginBottom: '1rem' }}>
+                <h2>{t('orders.confirmReturn.title')}</h2>
+                <p>{t('orders.confirmReturn.description')}</p>
+                {actionError && <p style={{ color: 'red' }}>{actionError}</p>}
+                <button
+                  onClick={async () => {
+                    if (!window.confirm(t('orders.confirmReturn.prompt'))) return
+                    setActionLoading(true); setActionError(null)
+                    try {
+                      const updated = await confirmReturn(orderId)
+                      setOrder(updated)
+                    } catch {
+                      setActionError(t('orders.confirmReturn.error'))
+                    } finally { setActionLoading(false) }
+                  }}
+                  disabled={actionLoading}
+                  style={{ padding: '0.5rem 1.2rem', background: '#2e7d32', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>
+                  {t('orders.confirmReturn.submit')}
+                </button>
+              </section>
+            )}
+
+            {/* Wire refund confirmation — US-CAN-05 */}
+            {order.status === 'WIRE_REFUND_IN_PROGRESS' && (
+              <section style={{ background: '#e8eaf6', padding: '1rem', borderRadius: '4px', marginBottom: '1rem' }}>
+                <h2>{t('orders.wireRefund.title')}</h2>
+                <p>{t('orders.wireRefund.description')}</p>
+                {order.buyerIban && (
+                  <p><strong>{t('orders.wireRefund.buyerIban')}:</strong> <code>{order.buyerIban}</code></p>
+                )}
+                <p><strong>{t('orders.wireRefund.amount')}:</strong> {order.totalAmountTtc.toFixed(2)} €</p>
+                {actionError && <p style={{ color: 'red' }}>{actionError}</p>}
+                <button
+                  onClick={async () => {
+                    if (!window.confirm(t('orders.wireRefund.prompt'))) return
+                    setActionLoading(true); setActionError(null)
+                    try {
+                      const updated = await confirmWireRefund(orderId)
+                      setOrder(updated)
+                    } catch {
+                      setActionError(t('orders.wireRefund.error'))
+                    } finally { setActionLoading(false) }
+                  }}
+                  disabled={actionLoading}
+                  style={{ padding: '0.5rem 1.2rem', background: '#1a237e', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>
+                  {t('orders.wireRefund.submit')}
+                </button>
               </section>
             )}
           </>

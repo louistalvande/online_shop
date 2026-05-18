@@ -4,6 +4,8 @@ import com.shop.account.entity.Account;
 import com.shop.account.repository.AccountRepository;
 import com.shop.catalog.repository.ProductRepository;
 import com.shop.notification.service.NotificationService;
+import com.shop.order.exception.MissingBuyerIbanException;
+import com.shop.payment.PaymentGateway;
 import com.shop.order.dto.OrderResponse;
 import com.shop.order.entity.Order;
 import com.shop.order.entity.OrderStatus;
@@ -38,6 +40,7 @@ class VendorOrderServiceImplTest {
     @Mock ProductRepository productRepository;
     @Mock AccountRepository accountRepository;
     @Mock NotificationService notificationService;
+    @Mock PaymentGateway paymentGateway;
 
     VendorOrderServiceImpl service;
 
@@ -47,7 +50,7 @@ class VendorOrderServiceImplTest {
 
     @BeforeEach
     void setUp() {
-        service = new VendorOrderServiceImpl(orderRepository, productRepository, accountRepository, notificationService);
+        service = new VendorOrderServiceImpl(orderRepository, productRepository, accountRepository, notificationService, paymentGateway);
     }
 
     @Test
@@ -157,6 +160,101 @@ class VendorOrderServiceImplTest {
         given(orderRepository.findByIdAndVendorId(ORDER_ID, VENDOR_ID)).willReturn(Optional.of(order));
 
         assertThatThrownBy(() -> service.shipOrder(VENDOR_ID, ORDER_ID, "TRACK999", Locale.FRENCH))
+                .isInstanceOf(InvalidOrderStateException.class);
+    }
+
+    // ─── acceptReturn ────────────────────────────────────────────────────────
+
+    @Test
+    void acceptReturn_wire_transitionsToPendingReturn() {
+        Order order = buildOrder(OrderStatus.SHIPPED);
+        given(orderRepository.findByIdAndVendorId(ORDER_ID, VENDOR_ID)).willReturn(Optional.of(order));
+        given(orderRepository.save(any())).willAnswer(inv -> inv.getArgument(0));
+        Account buyer = new Account();
+        buyer.setEmail("buyer@example.com");
+        given(accountRepository.findById(BUYER_ID)).willReturn(Optional.of(buyer));
+
+        OrderResponse result = service.acceptReturn(VENDOR_ID, ORDER_ID, "FR7630006000011234567890189", Locale.FRENCH);
+
+        assertThat(result.getStatus()).isEqualTo(OrderStatus.PENDING_RETURN);
+        then(notificationService).should().sendReturnRequestedEmail(any(), any(), any());
+    }
+
+    @Test
+    void acceptReturn_wire_missingIban_throwsMissingBuyerIbanException() {
+        Order order = buildOrder(OrderStatus.SHIPPED);
+        given(orderRepository.findByIdAndVendorId(ORDER_ID, VENDOR_ID)).willReturn(Optional.of(order));
+
+        assertThatThrownBy(() -> service.acceptReturn(VENDOR_ID, ORDER_ID, null, Locale.FRENCH))
+                .isInstanceOf(MissingBuyerIbanException.class);
+    }
+
+    @Test
+    void acceptReturn_wrongState_throwsInvalidOrderStateException() {
+        Order order = buildOrder(OrderStatus.AWAITING_PROCESSING);
+        given(orderRepository.findByIdAndVendorId(ORDER_ID, VENDOR_ID)).willReturn(Optional.of(order));
+
+        assertThatThrownBy(() -> service.acceptReturn(VENDOR_ID, ORDER_ID, "FR00", Locale.FRENCH))
+                .isInstanceOf(InvalidOrderStateException.class);
+    }
+
+    // ─── confirmReturn ────────────────────────────────────────────────────────
+
+    @Test
+    void confirmReturn_wire_transitionsToWireRefundInProgress() {
+        Order order = buildOrder(OrderStatus.PENDING_RETURN);
+        given(orderRepository.findByIdAndVendorId(ORDER_ID, VENDOR_ID)).willReturn(Optional.of(order));
+        given(orderRepository.save(any())).willAnswer(inv -> inv.getArgument(0));
+        Account buyer = new Account();
+        buyer.setEmail("buyer@example.com");
+        given(accountRepository.findById(BUYER_ID)).willReturn(Optional.of(buyer));
+
+        OrderResponse result = service.confirmReturn(VENDOR_ID, ORDER_ID, Locale.FRENCH);
+
+        assertThat(result.getStatus()).isEqualTo(OrderStatus.WIRE_REFUND_IN_PROGRESS);
+        then(notificationService).should().sendBuyerCancellationEmail(any(), any(), any());
+    }
+
+    // ─── waiveReturn ──────────────────────────────────────────────────────────
+
+    @Test
+    void waiveReturn_wire_transitionsToWireRefundInProgress() {
+        Order order = buildOrder(OrderStatus.SHIPPED);
+        given(orderRepository.findByIdAndVendorId(ORDER_ID, VENDOR_ID)).willReturn(Optional.of(order));
+        given(orderRepository.save(any())).willAnswer(inv -> inv.getArgument(0));
+        Account buyer = new Account();
+        buyer.setEmail("buyer@example.com");
+        given(accountRepository.findById(BUYER_ID)).willReturn(Optional.of(buyer));
+
+        OrderResponse result = service.waiveReturn(VENDOR_ID, ORDER_ID, "FR7630006000011234567890189", Locale.FRENCH);
+
+        assertThat(result.getStatus()).isEqualTo(OrderStatus.WIRE_REFUND_IN_PROGRESS);
+        then(notificationService).should().sendBuyerCancellationEmail(any(), any(), any());
+    }
+
+    // ─── confirmWireRefund ────────────────────────────────────────────────────
+
+    @Test
+    void confirmWireRefund_transitionsToCancelled() {
+        Order order = buildOrder(OrderStatus.WIRE_REFUND_IN_PROGRESS);
+        given(orderRepository.findByIdAndVendorId(ORDER_ID, VENDOR_ID)).willReturn(Optional.of(order));
+        given(orderRepository.save(any())).willAnswer(inv -> inv.getArgument(0));
+        Account buyer = new Account();
+        buyer.setEmail("buyer@example.com");
+        given(accountRepository.findById(BUYER_ID)).willReturn(Optional.of(buyer));
+
+        OrderResponse result = service.confirmWireRefund(VENDOR_ID, ORDER_ID, Locale.FRENCH);
+
+        assertThat(result.getStatus()).isEqualTo(OrderStatus.CANCELLED);
+        then(notificationService).should().sendWireRefundConfirmedEmail(any(), any(), any());
+    }
+
+    @Test
+    void confirmWireRefund_wrongState_throwsInvalidOrderStateException() {
+        Order order = buildOrder(OrderStatus.SHIPPED);
+        given(orderRepository.findByIdAndVendorId(ORDER_ID, VENDOR_ID)).willReturn(Optional.of(order));
+
+        assertThatThrownBy(() -> service.confirmWireRefund(VENDOR_ID, ORDER_ID, Locale.FRENCH))
                 .isInstanceOf(InvalidOrderStateException.class);
     }
 

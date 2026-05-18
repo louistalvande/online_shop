@@ -3,6 +3,7 @@ package com.shop.order.controller.impl;
 import com.shop.order.controller.VendorOrderController;
 import com.shop.order.dto.OrderResponse;
 import com.shop.order.dto.ShipOrderRequest;
+import com.shop.order.dto.VendorReturnRequest;
 import com.shop.order.service.VendorOrderService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
@@ -58,5 +59,35 @@ public class VendorOrderControllerImpl implements VendorOrderController {
     public ResponseEntity<OrderResponse> ship(UUID orderId, ShipOrderRequest request, Principal principal, Locale locale) {
         UUID vendorId = UUID.fromString(principal.getName());
         return ResponseEntity.ok(vendorOrderService.shipOrder(vendorId, orderId, request.getTrackingNumber(), locale));
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public ResponseEntity<OrderResponse> acceptReturn(UUID orderId, VendorReturnRequest request, Principal principal, Locale locale) {
+        UUID vendorId = UUID.fromString(principal.getName());
+        String buyerIban = request != null ? request.getBuyerIban() : null;
+        return ResponseEntity.ok(vendorOrderService.acceptReturn(vendorId, orderId, buyerIban, locale));
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public ResponseEntity<OrderResponse> confirmReturn(UUID orderId, Principal principal, Locale locale) {
+        UUID vendorId = UUID.fromString(principal.getName());
+        return ResponseEntity.ok(vendorOrderService.confirmReturn(vendorId, orderId, locale));
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public ResponseEntity<OrderResponse> waiveReturn(UUID orderId, VendorReturnRequest request, Principal principal, Locale locale) {
+        UUID vendorId = UUID.fromString(principal.getName());
+        String buyerIban = request != null ? request.getBuyerIban() : null;
+        return ResponseEntity.ok(vendorOrderService.waiveReturn(vendorId, orderId, buyerIban, locale));
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public ResponseEntity<OrderResponse> confirmWireRefund(UUID orderId, Principal principal, Locale locale) {
+        UUID vendorId = UUID.fromString(principal.getName());
+        return ResponseEntity.ok(vendorOrderService.confirmWireRefund(vendorId, orderId, locale));
     }
 }

@@ -135,6 +135,52 @@ class VendorOrderControllerImplTest {
                 .andExpect(jsonPath("$.trackingNumber").value("TRACK123"));
     }
 
+    @Test
+    void acceptReturn_returns200WithPendingReturnOrder() throws Exception {
+        given(vendorOrderService.acceptReturn(eq(VENDOR_ID), eq(ORDER_ID), any(), any()))
+                .willReturn(buildOrderResponse(OrderStatus.PENDING_RETURN));
+
+        mvc.perform(post("/api/vendor/orders/" + ORDER_ID + "/accept-return")
+                        .principal(vendorPrincipal)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"buyerIban\":\"FR7630006000011234567890189\"}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value("PENDING_RETURN"));
+    }
+
+    @Test
+    void confirmReturn_returns200WithCancelledOrder() throws Exception {
+        given(vendorOrderService.confirmReturn(eq(VENDOR_ID), eq(ORDER_ID), any()))
+                .willReturn(buildOrderResponse(OrderStatus.CANCELLED));
+
+        mvc.perform(post("/api/vendor/orders/" + ORDER_ID + "/confirm-return").principal(vendorPrincipal))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value("CANCELLED"));
+    }
+
+    @Test
+    void waiveReturn_returns200WithWireRefundOrder() throws Exception {
+        given(vendorOrderService.waiveReturn(eq(VENDOR_ID), eq(ORDER_ID), any(), any()))
+                .willReturn(buildOrderResponse(OrderStatus.WIRE_REFUND_IN_PROGRESS));
+
+        mvc.perform(post("/api/vendor/orders/" + ORDER_ID + "/waive-return")
+                        .principal(vendorPrincipal)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"buyerIban\":\"FR7630006000011234567890189\"}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value("WIRE_REFUND_IN_PROGRESS"));
+    }
+
+    @Test
+    void confirmWireRefund_returns200WithCancelledOrder() throws Exception {
+        given(vendorOrderService.confirmWireRefund(eq(VENDOR_ID), eq(ORDER_ID), any()))
+                .willReturn(buildOrderResponse(OrderStatus.CANCELLED));
+
+        mvc.perform(post("/api/vendor/orders/" + ORDER_ID + "/confirm-wire-refund").principal(vendorPrincipal))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value("CANCELLED"));
+    }
+
     // ─── Helpers ─────────────────────────────────────────────────────────────
 
     private OrderResponse buildOrderResponse(OrderStatus status) {

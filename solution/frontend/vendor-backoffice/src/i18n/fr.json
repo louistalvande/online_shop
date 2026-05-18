@@ -143,5 +143,29 @@
   "orders.ship.submit": "Valider l'expédition",
   "orders.ship.shipping": "Envoi en cours…",
   "orders.ship.confirmPrompt": "Valider l'expédition avec ce numéro de suivi ? L'acheteur sera notifié.",
-  "orders.ship.error": "Erreur lors de la déclaration d'expédition."
+  "orders.ship.error": "Erreur lors de la déclaration d'expédition.",
+
+  "orders.postShipCancel.title": "Annulation après expédition",
+  "orders.postShipCancel.description": "Vous pouvez accepter l'annulation de cette commande expédiée, avec ou sans retour du colis.",
+  "orders.postShipCancel.ibanLabel": "IBAN de l'acheteur pour remboursement",
+  "orders.postShipCancel.ibanPlaceholder": "FR76 3000 6000 0112 3456 7890 189",
+  "orders.postShipCancel.acceptReturn": "Accepter avec retour",
+  "orders.postShipCancel.waiveReturn": "Accepter sans retour",
+  "orders.postShipCancel.acceptReturnPrompt": "Exiger le retour du colis avant remboursement ? L'acheteur sera notifié.",
+  "orders.postShipCancel.waiveReturnPrompt": "Accepter l'annulation sans retour ? Le remboursement sera déclenché immédiatement.",
+  "orders.postShipCancel.error": "Une erreur est survenue lors du traitement.",
+
+  "orders.confirmReturn.title": "Confirmer la réception du retour",
+  "orders.confirmReturn.description": "Confirmez que vous avez bien reçu le colis retourné par l'acheteur.",
+  "orders.confirmReturn.prompt": "Confirmer la réception du colis retourné ? Le remboursement sera déclenché.",
+  "orders.confirmReturn.submit": "Confirmer la réception",
+  "orders.confirmReturn.error": "Erreur lors de la confirmation du retour.",
+
+  "orders.wireRefund.title": "Confirmer le virement de remboursement",
+  "orders.wireRefund.description": "Effectuez le virement bancaire de remboursement vers l'IBAN ci-dessous, puis confirmez.",
+  "orders.wireRefund.buyerIban": "IBAN acheteur",
+  "orders.wireRefund.amount": "Montant à rembourser",
+  "orders.wireRefund.prompt": "Confirmer l'émission du virement de remboursement ?",
+  "orders.wireRefund.submit": "Confirmer le virement de remboursement",
+  "orders.wireRefund.error": "Erreur lors de la confirmation du virement."
 }
