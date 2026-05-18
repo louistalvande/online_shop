@@ -1,11 +1,15 @@
 package com.shop.catalog.service;
 
+import com.shop.catalog.dto.BuyerProductResponse;
 import com.shop.catalog.dto.CreateProductRequest;
 import com.shop.catalog.dto.ProductResponse;
 import com.shop.catalog.dto.StockAlertResponse;
 import com.shop.catalog.dto.UpdateProductRequest;
 import com.shop.catalog.dto.UpdateStockRequest;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
 
@@ -95,4 +99,27 @@ public interface ProductService {
      * @return the acknowledged alert
      */
     StockAlertResponse acknowledgeAlert(String vendorEmail, UUID alertId);
+
+    /**
+     * Returns a paginated list of published products with optional filters (US-SHP-01, US-SHP-02).
+     *
+     * @param category    optional exact category filter (case-insensitive)
+     * @param maxPrice    optional maximum TTC price filter in euros
+     * @param inStockOnly when true, excludes out-of-stock products
+     * @param search      optional text search on product name (case-insensitive, partial match)
+     * @param pageable    pagination and sort parameters
+     * @return a page of buyer-facing product responses
+     */
+    Page<BuyerProductResponse> browseProducts(
+            String category, BigDecimal maxPrice, boolean inStockOnly, String search, Pageable pageable);
+
+    /**
+     * Returns a single published product visible to buyers (US-SHP-01).
+     *
+     * @param productId the product UUID
+     * @return the buyer-facing product response
+     * @throws com.shop.catalog.exception.ProductNotFoundException if the product does not exist
+     *         or is not published
+     */
+    BuyerProductResponse getPublishedProduct(UUID productId);
 }

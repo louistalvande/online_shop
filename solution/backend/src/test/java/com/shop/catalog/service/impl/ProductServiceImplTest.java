@@ -3,6 +3,7 @@ package com.shop.catalog.service.impl;
 import com.shop.account.entity.Account;
 import com.shop.account.exception.AccountNotFoundException;
 import com.shop.account.repository.AccountRepository;
+import com.shop.catalog.dto.BuyerProductResponse;
 import com.shop.catalog.dto.CreateProductRequest;
 import com.shop.catalog.dto.ProductResponse;
 import com.shop.catalog.dto.StockAlertResponse;
@@ -19,6 +20,10 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.jpa.domain.Specification;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -240,5 +245,65 @@ class ProductServiceImplTest {
         List<StockAlertResponse> result = service.listPendingAlerts(VENDOR_EMAIL);
 
         assertThat(result).hasSize(1);
+    }
+
+    /** browseProducts must return buyer-facing DTO page from repository. */
+    @Test
+    @SuppressWarnings("unchecked")
+    void browseProducts_returnsPageOfBuyerResponses() {
+        Product p = publishedProduct();
+        Page<Product> productPage = new PageImpl<>(List.of(p), PageRequest.of(0, 20), 1);
+        given(productRepository.findAll(any(Specification.class), any(PageRequest.class)))
+                .willReturn(productPage);
+
+        Page<BuyerProductResponse> result = service.browseProducts(null, null, false, null, PageRequest.of(0, 20));
+
+        assertThat(result.getTotalElements()).isEqualTo(1);
+        assertThat(result.getContent().get(0).getName()).isEqualTo("Aquarelle");
+        assertThat(result.getContent().get(0).getPriceTTC())
+                .isEqualByComparingTo(new BigDecimal("35.88"));
+    }
+
+    /** browseProducts must exclude out-of-stock products when inStockOnly is true (spec applied via repo). */
+    @Test
+    @SuppressWarnings("unchecked")
+    void browseProducts_withInStockOnly_returnsEmptyPageWhenNoneInStock() {
+        given(productRepository.findAll(any(Specification.class), any(PageRequest.class)))
+                .willReturn(Page.empty());
+
+        Page<BuyerProductResponse> result = service.browseProducts(null, null, true, null, PageRequest.of(0, 20));
+
+        assertThat(result.getContent()).isEmpty();
+    }
+
+    /** getPublishedProduct must return buyer DTO for a published product. */
+    @Test
+    void getPublishedProduct_returnsDto_whenPublished() {
+        given(productRepository.findById(PRODUCT_ID)).willReturn(Optional.of(publishedProduct()));
+
+        BuyerProductResponse result = service.getPublishedProduct(PRODUCT_ID);
+
+        assertThat(result.getName()).isEqualTo("Aquarelle");
+        assertThat(result.isOutOfStock()).isFalse();
+    }
+
+    /** getPublishedProduct must throw when the product is archived. */
+    @Test
+    void getPublishedProduct_throws_whenArchived() {
+        Product archived = publishedProduct();
+        archived.setStatus(ProductStatus.ARCHIVED);
+        given(productRepository.findById(PRODUCT_ID)).willReturn(Optional.of(archived));
+
+        assertThatThrownBy(() -> service.getPublishedProduct(PRODUCT_ID))
+                .isInstanceOf(ProductNotFoundException.class);
+    }
+
+    /** getPublishedProduct must throw when the product does not exist. */
+    @Test
+    void getPublishedProduct_throws_whenNotFound() {
+        given(productRepository.findById(PRODUCT_ID)).willReturn(Optional.empty());
+
+        assertThatThrownBy(() -> service.getPublishedProduct(PRODUCT_ID))
+                .isInstanceOf(ProductNotFoundException.class);
     }
 }

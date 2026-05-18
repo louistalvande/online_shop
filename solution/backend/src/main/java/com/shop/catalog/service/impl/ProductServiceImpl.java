@@ -1,7 +1,9 @@
 package com.shop.catalog.service.impl;
 
 import com.shop.account.entity.Account;
+import com.shop.account.exception.AccountNotFoundException;
 import com.shop.account.repository.AccountRepository;
+import com.shop.catalog.dto.BuyerProductResponse;
 import com.shop.catalog.dto.CreateProductRequest;
 import com.shop.catalog.dto.ProductResponse;
 import com.shop.catalog.dto.StockAlertResponse;
@@ -13,12 +15,16 @@ import com.shop.catalog.entity.ProductStatus;
 import com.shop.catalog.entity.StockAlert;
 import com.shop.catalog.exception.ProductNotFoundException;
 import com.shop.catalog.repository.ProductRepository;
+import com.shop.catalog.repository.ProductSpecifications;
 import com.shop.catalog.repository.StockAlertRepository;
 import com.shop.catalog.service.ProductService;
-import com.shop.account.exception.AccountNotFoundException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
@@ -161,6 +167,30 @@ public class ProductServiceImpl implements ProductService {
                 .orElseThrow(() -> new ProductNotFoundException(alertId));
         alert.setAcknowledged(true);
         return StockAlertResponse.from(stockAlertRepository.save(alert));
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    @Transactional(readOnly = true)
+    public Page<BuyerProductResponse> browseProducts(
+            String category, BigDecimal maxPrice, boolean inStockOnly, String search, Pageable pageable) {
+        Specification<Product> spec = Specification
+                .where(ProductSpecifications.published())
+                .and(ProductSpecifications.withCategory(category))
+                .and(ProductSpecifications.withMaxPriceTTC(maxPrice))
+                .and(ProductSpecifications.inStockOnly(inStockOnly))
+                .and(ProductSpecifications.nameLike(search));
+        return productRepository.findAll(spec, pageable).map(BuyerProductResponse::from);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    @Transactional(readOnly = true)
+    public BuyerProductResponse getPublishedProduct(UUID productId) {
+        Product product = productRepository.findById(productId)
+                .filter(p -> p.getStatus() == ProductStatus.PUBLISHED)
+                .orElseThrow(() -> new ProductNotFoundException(productId));
+        return BuyerProductResponse.from(product);
     }
 
     // -------------------------------------------------------------------------

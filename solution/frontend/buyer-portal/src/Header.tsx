@@ -16,8 +16,8 @@ export default function Header({ session, onShowLogin, onLogout, children }: Pro
     <AppShell
       appName={t('app.name')}
       navLinks={[
-        { label: t('nav.home'), href: '#' },
-        { label: t('nav.catalog'), href: '#catalogue' },
+        { label: t('nav.home'), href: '/' },
+        { label: t('nav.catalog'), href: '/catalog' },
       ]}
       actions={
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
