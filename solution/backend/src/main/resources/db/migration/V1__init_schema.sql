@@ -147,3 +147,29 @@ CREATE TABLE stock_alerts (
 CREATE INDEX idx_stock_alerts_product_id  ON stock_alerts (product_id);
 CREATE INDEX idx_stock_alerts_acknowledged ON stock_alerts (acknowledged);
 
+
+-- Cart domain (US-CRT-01, US-CRT-02)
+-- One persistent cart per authenticated buyer, with individual line items.
+
+CREATE TABLE cart (
+    id         UUID      PRIMARY KEY DEFAULT gen_random_uuid(),
+    buyer_id   UUID      NOT NULL REFERENCES accounts(id) ON DELETE CASCADE,
+    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    UNIQUE (buyer_id)
+);
+
+CREATE INDEX idx_cart_buyer_id ON cart (buyer_id);
+
+CREATE TABLE cart_item (
+    id         UUID    PRIMARY KEY DEFAULT gen_random_uuid(),
+    cart_id    UUID    NOT NULL REFERENCES cart(id) ON DELETE CASCADE,
+    product_id UUID    NOT NULL REFERENCES products(id),
+    quantity   INTEGER NOT NULL CHECK (quantity > 0),
+    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    UNIQUE (cart_id, product_id)
+);
+
+CREATE INDEX idx_cart_item_cart_id ON cart_item (cart_id);
+

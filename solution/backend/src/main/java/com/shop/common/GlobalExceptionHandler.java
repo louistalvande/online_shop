@@ -9,6 +9,8 @@ import com.shop.auth.exception.InvalidCredentialsException;
 import com.shop.auth.exception.PasswordsMismatchException;
 import com.shop.auth.exception.TokenNotFoundException;
 import com.shop.auth.exception.TooManyLoginAttemptsException;
+import com.shop.cart.exception.CartItemNotFoundException;
+import com.shop.cart.exception.ProductOutOfStockException;
 import com.shop.carrier.exception.CarrierNotFoundException;
 import com.shop.catalog.exception.ProductArchivedConflictException;
 import com.shop.catalog.exception.ProductNotFoundException;
@@ -209,6 +211,36 @@ public class GlobalExceptionHandler {
         String message = messageSource.getMessage("error.product.archive.conflict", null, locale);
         return ResponseEntity.status(HttpStatus.CONFLICT)
                 .body(Map.of("error", "PRODUCT_ARCHIVE_CONFLICT", "message", message));
+    }
+
+    /**
+     * Handles cart item not found — returns HTTP 404 (US-CRT-01).
+     *
+     * @param ex     the exception
+     * @param locale the request locale
+     * @return a 404 response with a localised error body
+     */
+    @ExceptionHandler(CartItemNotFoundException.class)
+    public ResponseEntity<Map<String, String>> handleCartItemNotFound(
+            CartItemNotFoundException ex, Locale locale) {
+        String message = messageSource.getMessage("error.cart.item.not.found", null, locale);
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(Map.of("error", "CART_ITEM_NOT_FOUND", "message", message));
+    }
+
+    /**
+     * Handles out-of-stock product on cart add or quantity update — returns HTTP 409 (US-CRT-01).
+     *
+     * @param ex     the exception
+     * @param locale the request locale
+     * @return a 409 response with a localised error body
+     */
+    @ExceptionHandler(ProductOutOfStockException.class)
+    public ResponseEntity<Map<String, String>> handleProductOutOfStock(
+            ProductOutOfStockException ex, Locale locale) {
+        String message = messageSource.getMessage("error.product.out.of.stock", null, locale);
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(Map.of("error", "PRODUCT_OUT_OF_STOCK", "message", message));
     }
 
     /**

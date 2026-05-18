@@ -173,6 +173,35 @@ export async function injectVendorSession(page, email, token) {
 }
 
 /**
+ * Obtains a buyer JWT by logging in via the REST API.
+ *
+ * @param {object} page      Playwright Page
+ * @param {string} email     buyer email
+ * @param {string} password  buyer password
+ */
+export async function getBuyerToken(page, email, password) {
+  const res = await page.request.post(`${API_URL}/api/auth/login`, {
+    data: { email, password },
+  });
+  const body = await res.json();
+  return body.token;
+}
+
+/**
+ * Injects a buyer session into localStorage so tests can skip the UI login step.
+ *
+ * @param {object} page   Playwright Page
+ * @param {string} email  buyer email
+ * @param {string} token  buyer JWT
+ */
+export async function injectBuyerSession(page, email, token) {
+  await page.goto('/');
+  await page.evaluate(({ email, token }) => {
+    localStorage.setItem('buyer_session', JSON.stringify({ email, token }));
+  }, { email, token });
+}
+
+/**
  * Creates a product for a vendor via the REST API.
  *
  * @param {object} page      Playwright Page
