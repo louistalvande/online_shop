@@ -1,4 +1,4 @@
-# Application Web de boutique en ligne / Online Shop web app
+# Application Web de boutique en ligne / Online Shop Web App
 
 ## Table of Contents / Sommaire
 
@@ -12,18 +12,18 @@
 
 ## 🇫🇷 Français
 
-Le projet a pour objectif de développer une application web de boutique en ligne dans l'état de l'art actuel, aussi bien en terme d'ergonomie que de cybersécurité et en suivant un processus d'ingénieurie logiciel éprouvé. Il débute par la rédaction d'un [document d'architecture](architecture/Boutique%20en%20ligne%20-%20Documentation%20d%27Architecture.pdf) à partir des [exigences](architecture/Boutique%20en%20ligne%20-%20Exigences%20d%27utilisateurs.pdf)  avant de passer au développement de la solution logicielle concrète.
- 
+Le projet a pour objectif de développer une application web de boutique en ligne dans l'état de l'art actuel, aussi bien en terme d'ergonomie que de cybersécurité et en suivant un processus d'ingénierie logiciel éprouvé. Il débute par la rédaction d'un [document d'architecture](architecture/Boutique%20en%20ligne%20-%20Documentation%20d%27Architecture.pdf) à partir des [exigences](architecture/Boutique%20en%20ligne%20-%20Exigences%20d%27utilisateurs.pdf) avant de passer au développement de la solution logicielle concrète.
+
 La démarche adoptée est volontairement rigoureuse et structurée. Elle s'appuie sur le principe fondamental que *l'architecture précède le code* : avant d'écrire la moindre ligne de code, le système est entièrement modélisé, documenté et validé. Cette approche, issue du génie logiciel industriel, permet de détecter les incohérences et les ambiguïtés en amont, là où elles coûtent le moins cher à corriger.
- 
+
 Le processus global se déroule en quatre phases séquentielles et interdépendantes :
- 
+
 - **Rédaction du document d'architecture** — Le besoin utilisateur est analysé en profondeur selon la méthode [ARCADIA](https://fr.wikipedia.org/wiki/Arcadia_(ing%C3%A9nierie)) (méthode MBSE - Model-Based System Engineering), du contexte opérationnel jusqu'à l'architecture physique de déploiement. Ce document constitue la référence technique et fonctionnelle de tout le projet.
 - **Mise en place de l'infrastructure** — Les environnements (développement, gestion de version, production) sont configurés et validés avant le début du développement fonctionnel. Aucune User Story n'est implémentée tant que la plateforme de livraison n'est pas opérationnelle.
 - **Développement itératif des cas d'utilisation** — Les fonctionnalités sont implémentées une par une, chacune suivant un cycle complet d'analyse, de développement, de tests et d'intégration. Chaque itération s'appuie sur l'architecture définie et laisse le système dans un état stable et livrable.
 - **Rédaction de la documentation utilisateur** — Une fois l'ensemble des fonctionnalités développées et validées, la documentation destinée aux utilisateurs finaux est produite sur la base de l'application telle qu'elle a été livrée.
 
-### 1. Rédaction du document d'architecture 
+### 1. Rédaction du document d'architecture
 
 Le document d'architecture est rédigé en suivant la méthodologie ARCADIA (Architecture Analysis & Design Integrated Approach).
 
@@ -31,7 +31,7 @@ En voici les grandes phases d'analyse :
 
 ![ARCADIA](architecture/arcadia.png)
 
-La méthode ARCADIA est suivie en s'appuyant uniquement sur le langage de modélisation UML. Le document est construit avec Asciidoc, et les diagrammes avec la notation textuelle de PlantUML, puis générés sous forme visuelle dans le document final.
+La méthode ARCADIA est suivie en s'appuyant uniquement sur le langage de modélisation UML. Le document est construit avec AsciiDoc, et les diagrammes avec la notation textuelle de PlantUML, puis générés sous forme visuelle dans le document final.
 
 Le [document d'architecture](architecture/Boutique%20en%20ligne%20-%20Documentation%20d%27Architecture.pdf) est produit à partir du [**document des exigences utilisateurs**](architecture/Boutique%20en%20ligne%20-%20Exigences%20utilisateurs.pdf), qui constitue l'entrant formel de la démarche ARCADIA. Ce document recense les besoins opérationnels des acteurs (administrateur, vendeur, acheteur) ainsi que les exigences de sécurité issues des recommandations ANSSI, et sert de référence tout au long des quatre niveaux d'analyse.
 
@@ -41,7 +41,7 @@ Le [document d'architecture](architecture/Boutique%20en%20ligne%20-%20Documentat
 
 ##### 1.1. Analyse du Besoin Opérationnel (OA — Operational Analysis)
 
-Que font les utilisateurs et pour quoi ?
+Que font les utilisateurs et pourquoi ?
 On modélise ici les acteurs (opérateurs, systèmes externes), leurs activités opérationnelles et les échanges entre eux, indépendamment de tout système à construire. On décrit le contexte métier réel.
 
 | Diagramme | Utilité dans l'OA |
@@ -58,7 +58,7 @@ On modélise ici les acteurs (opérateurs, systèmes externes), leurs activités
 ##### 1.2. Analyse du Besoin Système (SA — System Need Analysis)
 
 Que doit faire le système pour satisfaire ce besoin ?
-On définit les fonctions du système vues de l'extérieur (ce qu'il doit accomplir), les interfaces avec les acteurs, et les scénarios d'usage. On reste volontairement agnostique sur l'architecture interne. Les exigences sont déduites de cette analyse fonctionnelle, pas l'inverse.
+On définit les fonctions du système vues de l'extérieur (ce qu'il doit accomplir), les interfaces avec les acteurs, et les scénarios d'usage. On reste volontairement agnostique sur l'architecture interne. Les exigences sont déduites de cette analyse fonctionnelle, et non l'inverse.
 
 | Diagramme | Utilité dans la SA |
 |-----------|-------------------|
@@ -95,7 +95,7 @@ On décompose le système en composants logiques (sans préjuger des technologie
 ##### 1.4. Architecture Physique (PA — Physical Architecture)
 
 Quelles solutions concrètes implémentent l'architecture logique ?
-On mappe les composants logiques sur des composants physiques réels (matériel, logiciel, réseaux). On gère les contraintes de déploiement, de performance, de redondance. On prépare la répartition du travail entre les parties-prenantes.
+On mappe les composants logiques sur des composants physiques réels (matériel, logiciel, réseaux). On gère les contraintes de déploiement, de performance, de redondance. On prépare la répartition du travail entre les parties prenantes.
 
 | Diagramme | Utilité dans la PA |
 |-----------|-------------------|
@@ -111,45 +111,58 @@ On mappe les composants logiques sur des composants physiques réels (matériel,
 
 ### 2. Mise en place de l'infrastructure de la solution
 
-Une fois la solution documentée en détail, l'infrastructure de l'application sera développée et déployée dans un environnement de test.
-Cette phase comprend la configuration des environnements (développement, staging, production), la mise en place des outils CI/CD, ainsi que la définition et le provisionnement des ressources nécessaires (serveurs, bases de données, services cloud, etc.). L'infrastructure sera validée par une série de tests techniques visant à garantir la stabilité, la disponibilité et la sécurité de la plateforme avant le début du développement fonctionnel.
+Une fois la solution documentée en détail, l'infrastructure de l'application est développée et déployée dans un environnement de test.
+
+Cette phase comprend la configuration des environnements (développement, staging, production), la mise en place des outils CI/CD, ainsi que la définition et le provisionnement des ressources nécessaires (serveurs, bases de données, services cloud, etc.). L'infrastructure est validée par une série de tests techniques visant à garantir la stabilité, la disponibilité et la sécurité de la plateforme avant le début du développement fonctionnel.
 
 ### 3. Développement des cas d'utilisation de manière itérative
 
-Les [cas d'utilisation](architecture/05-backlog/us.adoc) seront implémentés de manière itérative, l'un après l'autre, en suivant un cycle de développement structuré et reproductible.
-Pour chaque User Story, le cycle suivant sera appliqué dans son intégralité :
+Les [cas d'utilisation](architecture/05-backlog/us.adoc) sont implémentés de manière itérative, l'un après l'autre, en suivant un cycle de développement structuré et reproductible.
 
-- **Analyse & conception** — prise en compte des exigences fonctionnelles définies dans le document d'architecture et en cas de doute ou d'incohérence, mise au point avec l'utilisateur.
-- **Développement** — implémentation du code source, assistée par IA, en respectant l'architecture définie.
+Pour chaque User Story, le cycle suivant est appliqué dans son intégralité :
+
+- **Analyse & conception** — prise en compte des exigences fonctionnelles définies dans le document d'architecture ; en cas de doute ou d'incohérence, mise au point avec l'utilisateur avant de poursuivre.
+- **Développement** — implémentation du code source en respectant l'architecture définie.
 - **Tests unitaires & d'intégration** — vérification du bon fonctionnement de chaque composant, isolément puis en interaction avec le reste du système.
-- **Tests end-to-end (E2E)** — validation du parcours utilisateur complet, de bout en bout, afin de s'assurer que la fonctionnalité répond aux attentes définies.
+- **Tests end-to-end (E2E)** — validation du parcours utilisateur complet, de bout en bout, afin de s'assurer que la fonctionnalité répond aux critères d'acceptation définis.
 - **Revue & intégration** — validation finale et fusion dans la branche principale, avant de passer à la User Story suivante.
 
 Cette approche garantit une livraison progressive et maîtrisée, tout en limitant les risques de régression au fil des itérations.
 
 ### 4. Rédaction de la documentation utilisateur
 
-Une fois l'ensemble des cas d'utilisation développés et validés, la documentation destinée aux utilisateurs finaux sera produite avec l'assistance de l'IA, sur la base des fonctionnalités implémentées.
-Cette documentation comprendra notamment :
+Une fois l'ensemble des cas d'utilisation développés et validés, la documentation destinée aux utilisateurs finaux est produite sur la base des fonctionnalités implémentées.
+
+Cette documentation comprend notamment :
 
 - un guide utilisateur décrivant les principales fonctionnalités de la boutique en ligne (navigation, recherche de produits, gestion du panier, tunnel d'achat, suivi de commande, etc.) ;
 - des guides pas à pas illustrant les parcours utilisateurs clés ;
 - le cas échéant, une documentation administrateur à destination des gestionnaires de la boutique (gestion du catalogue, des commandes, des utilisateurs, etc.).
 
-L'objectif est de fournir une documentation claire, accessible et maintainable, cohérente avec l'état final de l'application livrée.
+L'objectif est de fournir une documentation claire, accessible et maintenable, cohérente avec l'état final de l'application livrée.
 
 ---
 
 ## 🇬🇧 English
 
-The project aims to develop an online shop web application. It will begin with the writing of an [architecture document](architecture/Boutique%20en%20ligne%20-%20Documentation%20d%27Architecture.pdf), with the various deliverables produced with the assistance of an AI.
-The project will be structured around several major phases, approached iteratively. Each of these phases will be applied in full for every User Story.
+The project aims to develop an online shop web application built to current best practices, in terms of both user experience and cybersecurity, following a proven software engineering process. It begins with the writing of an [architecture document](architecture/Boutique%20en%20ligne%20-%20Documentation%20d%27Architecture.pdf) from the [requirements](architecture/Boutique%20en%20ligne%20-%20Exigences%20d%27utilisateurs.pdf), before moving on to the concrete development of the software solution.
 
-### 1. Generating the Architecture Document Using the MBSE ARCADIA Methodology
+The approach is deliberately rigorous and structured. It rests on the fundamental principle that *architecture precedes code*: before a single line of code is written, the system is fully modelled, documented, and validated. This approach, rooted in industrial software engineering, makes it possible to detect inconsistencies and ambiguities early — where they are least costly to fix.
+
+The overall process unfolds across four sequential, interdependent phases:
+
+- **Writing the architecture document** — The user requirements are analysed in depth using the [ARCADIA](https://en.wikipedia.org/wiki/Arcadia_(methodology)) method (MBSE - Model-Based System Engineering), from the operational context down to the physical deployment architecture. This document serves as the technical and functional reference for the entire project.
+- **Setting up the infrastructure** — The environments (development, version control, production) and CI/CD tooling are configured and validated before any functional development begins. No User Story is implemented until the delivery platform is fully operational.
+- **Iterative development of use cases** — Features are implemented one by one, each following a complete cycle of analysis, development, testing, and integration. Every iteration builds on the defined architecture and leaves the system in a stable, deliverable state.
+- **Writing the user documentation** — Once all features have been developed and validated, end-user documentation is produced based on the application as it has been delivered.
+
+### 1. Writing the Architecture Document
+
+The architecture document is written following the ARCADIA methodology (Architecture Analysis & Design Integrated Approach).
 
 ![ARCADIA](architecture/arcadia.png)
 
-The ARCADIA method will be followed using exclusively UML modelling language. The document will be written in AsciiDoc, and diagrams will be expressed using PlantUML textual notation, then rendered visually in the final document.
+The ARCADIA method is followed using exclusively UML modelling language. The document is written in AsciiDoc, and diagrams are expressed using PlantUML textual notation, then rendered visually in the final document.
 
 The [architecture document](architecture/Boutique%20en%20ligne%20-%20Documentation%20d%27Architecture.pdf) is produced from the [**user requirements document**](architecture/Boutique%20en%20ligne%20-%20Exigences%20utilisateurs.pdf), which constitutes the formal input to the ARCADIA process. This document captures the operational needs of all actors (administrator, vendor, buyer) as well as the security requirements derived from ANSSI recommendations, and serves as the reference throughout all four levels of analysis.
 
@@ -157,98 +170,101 @@ The [architecture document](architecture/Boutique%20en%20ligne%20-%20Documentati
 
 #### Needs Analysis
 
-##### 1. Operational Analysis (OA)
+##### 1.1. Operational Analysis (OA)
 
 What do users do, and why?
 This phase models the actors (operators, external systems), their operational activities, and the exchanges between them, independently of any system to be built. It describes the real business context.
 
 | Diagram | Purpose in OA |
 |---------|---------------|
-| Use Case Diagram | Identifies actors and their operational goals |
-| Activity Diagram | Models operational workflows and decision-making |
-| Sequence Diagram | Represents timed exchanges between actors |
-| Communication Diagram | Highlights interactions between groups of actors |
+| **Use Case Diagram** | Identifies actors and their operational goals |
+| **Activity Diagram** | Models operational workflows and decision-making |
+| **Sequence Diagram** | Represents timed exchanges between actors |
+| **Communication Diagram** | Highlights interactions between groups of actors |
 
-OA Diagram Example — Operational Use Case:
+**OA Diagram Example — Operational Use Case:**
 
 ![OA Use Case](architecture/diagrams/readme/oa-use-case.svg)
 
-##### 2. System Need Analysis (SA)
+##### 1.2. System Need Analysis (SA)
 
 What must the system do to satisfy this need?
-This phase defines the system's functions as seen from the outside (what it must accomplish), its interfaces with actors, and the usage scenarios. The internal architecture is deliberately left unspecified at this stage. Requirements are derived from this functional analysis, not the other way around.
+This phase defines the system's functions as seen from the outside (what it must accomplish), its interfaces with actors, and the usage scenarios. The internal architecture is deliberately left unspecified at this stage. Requirements are derived from this functional analysis — not the other way around.
 
 | Diagram | Purpose in SA |
 |---------|---------------|
-| Use Case Diagram | Defines the system functions exposed to actors |
-| Sequence Diagram | Describes usage scenarios (nominal and alternative flows) |
-| State Machine Diagram | Models system states as seen from the outside (e.g. order lifecycle) |
-| Activity Diagram | Details functional flows triggered by actors |
-| Context Diagram (system boundary) | Represents the system as a black box with all its interfaces |
+| **Use Case Diagram** | Defines the system functions exposed to actors |
+| **Sequence Diagram** | Describes usage scenarios (nominal and alternative flows) |
+| **State Machine Diagram** | Models system states as seen from the outside (e.g. order lifecycle) |
+| **Activity Diagram** | Details functional flows triggered by actors |
+| **Context Diagram** *(system boundary)* | Represents the system as a black box with all its interfaces |
 
-SA Diagram Example — System Context:
+**SA Diagram Example — System Context:**
 
 ![SA Context](architecture/diagrams/readme/sa-context.svg)
 
 #### System Analysis
 
-##### 3. Logical Architecture (LA)
+##### 1.3. Logical Architecture (LA)
 
 How should functions be organised into logical components?
 The system is broken down into logical components (without assuming any specific technology) and functions are allocated to those components. Internal exchange flows are defined, the decomposition is checked for consistency, and initial architectural decisions are made. This is the core of system design.
 
 | Diagram | Purpose in LA |
 |---------|---------------|
-| Component Diagram | Decomposes the system into logical components and their interfaces |
-| Sequence Diagram | Represents internal exchanges between logical components |
-| Class Diagram | Models logical data structures and their relationships |
-| Activity Diagram | Allocates functional flows to logical components |
-| State Machine Diagram | Models the internal lifecycle of key entities (Order, Cart, Payment…) |
-| Composite Structure Diagram | Represents internal ports and connectors between components |
+| **Component Diagram** | Decomposes the system into logical components and their interfaces |
+| **Sequence Diagram** | Represents internal exchanges between logical components |
+| **Class Diagram** | Models logical data structures and their relationships |
+| **Activity Diagram** | Allocates functional flows to logical components |
+| **State Machine Diagram** | Models the internal lifecycle of key entities (Order, Cart, Payment…) |
+| **Composite Structure Diagram** | Represents internal ports and connectors between components |
 
-LA Diagram Example — Logical Component Architecture:
+**LA Diagram Example — Logical Component Architecture:**
 
 ![LA Components](architecture/diagrams/readme/la-components.svg)
 
-##### 4. Physical Architecture (PA)
+##### 1.4. Physical Architecture (PA)
 
 Which concrete solutions implement the logical architecture?
 Logical components are mapped onto real physical components (hardware, software, networks). Deployment, performance, and redundancy constraints are addressed, and the division of work between stakeholders is defined.
 
 | Diagram | Purpose in PA |
 |---------|---------------|
-| Deployment Diagram | Maps components onto physical nodes (servers, containers, cloud…) |
-| Component Diagram | Represents physical modules, libraries, and their dependencies |
-| Package Diagram | Organises code into deployable units |
-| Sequence Diagram | Validates end-to-end technical flows (e.g. payment with Stripe) |
-| Network Diagram (UML node notation) | Describes infrastructure topology and communication protocols |
+| **Deployment Diagram** | Maps components onto physical nodes (servers, containers, cloud…) |
+| **Component Diagram** | Represents physical modules, libraries, and their dependencies |
+| **Package Diagram** | Organises code into deployable units |
+| **Sequence Diagram** | Validates end-to-end technical flows (e.g. payment with Stripe) |
+| **Network Diagram** *(UML node notation)* | Describes infrastructure topology and communication protocols |
 
-PA Diagram Example — Deployment Architecture:
+**PA Diagram Example — Deployment Architecture:**
 
 ![PA Deployment](architecture/diagrams/readme/pa-deployment.svg)
 
-### 2. Generating the Solution Infrastructure
+### 2. Setting Up the Solution Infrastructure
 
-Once the solution has been documented in detail, the application infrastructure will be built and deployed in a test environment.
-This phase covers the configuration of environments (development, staging, production), the setup of CI/CD tooling, and the provisioning of the required resources (servers, databases, cloud services, etc.). The infrastructure will be validated through a series of technical tests to ensure the platform's stability, availability, and security prior to the start of functional development.
+Once the solution has been documented in detail, the application infrastructure is built and deployed in a test environment.
+
+This phase covers the configuration of environments (development, staging, production), the setup of CI/CD tooling, and the provisioning of the required resources (servers, databases, cloud services, etc.). The infrastructure is validated through a series of technical tests to ensure the platform's stability, availability, and security prior to the start of functional development.
 
 ### 3. Iterative Development of Use Cases
 
-[Use cases](architecture/05-backlog/us.adoc) will be implemented one by one in an iterative manner, following a structured and repeatable development cycle.
-For each User Story, the following cycle will be applied in full:
+[Use cases](architecture/05-backlog/us.adoc) are implemented one by one in an iterative manner, following a structured and repeatable development cycle.
+
+For each User Story, the following cycle is applied in full:
 
 - **Analysis & Design** — review of the functional requirements defined in the architecture document; any ambiguity or inconsistency is clarified with the stakeholder before proceeding.
-- **Development** — AI-assisted implementation of the source code, in compliance with the defined architecture.
+- **Development** — implementation of the source code in compliance with the defined architecture.
 - **Unit & Integration Testing** — verification that each component functions correctly in isolation and in interaction with the rest of the system.
 - **End-to-End (E2E) Testing** — full validation of the user journey from start to finish, ensuring the feature meets the defined acceptance criteria.
 - **Review & Integration** — final validation and merge into the main branch, before moving on to the next User Story.
 
 This approach ensures progressive, controlled delivery while minimising the risk of regression across iterations.
 
-### 4. Generating the User Documentation
+### 4. Writing the User Documentation
 
-Once all use cases have been developed and validated, end-user documentation will be produced with AI assistance, based on the implemented features.
-This documentation will include in particular:
+Once all use cases have been developed and validated, end-user documentation is produced based on the implemented features.
+
+This documentation includes in particular:
 
 - a user guide describing the main features of the online shop (browsing, product search, cart management, checkout flow, order tracking, etc.);
 - step-by-step guides illustrating key user journeys;
