@@ -18,14 +18,14 @@ La démarche adoptée est volontairement rigoureuse et structurée. Elle s'appui
  
 Le processus global se déroule en quatre phases séquentielles et interdépendantes :
  
-- **Rédaction du document d'architecture** — Le besoin est analysé en profondeur selon la méthode MBSE ARCADIA, du contexte opérationnel jusqu'à l'architecture physique de déploiement. Ce document constitue la référence technique et fonctionnelle de tout le projet.
-- **Mise en place de l'infrastructure** — Les environnements (développement, staging, production) sont configurés et validés avant le début du développement fonctionnel. Aucune User Story n'est implémentée tant que la plateforme de livraison n'est pas opérationnelle.
+- **Rédaction du document d'architecture** — Le besoin utilisateur est analysé en profondeur selon la méthode [ARCADIA](https://fr.wikipedia.org/wiki/Arcadia_(ing%C3%A9nierie)) (méthode MBSE - Model-Based System Engineering), du contexte opérationnel jusqu'à l'architecture physique de déploiement. Ce document constitue la référence technique et fonctionnelle de tout le projet.
+- **Mise en place de l'infrastructure** — Les environnements (développement, gestion de version, production) sont configurés et validés avant le début du développement fonctionnel. Aucune User Story n'est implémentée tant que la plateforme de livraison n'est pas opérationnelle.
 - **Développement itératif des cas d'utilisation** — Les fonctionnalités sont implémentées une par une, chacune suivant un cycle complet d'analyse, de développement, de tests et d'intégration. Chaque itération s'appuie sur l'architecture définie et laisse le système dans un état stable et livrable.
 - **Rédaction de la documentation utilisateur** — Une fois l'ensemble des fonctionnalités développées et validées, la documentation destinée aux utilisateurs finaux est produite sur la base de l'application telle qu'elle a été livrée.
 
 ### 1. Rédaction du document d'architecture 
 
-Le document d'architecture est rédigé en suivant la méthodologie ARCADIA (Architecture Analysis & Design Integrated Approach), une méthode MBSE (Model-Based System Engineering).
+Le document d'architecture est rédigé en suivant la méthodologie ARCADIA (Architecture Analysis & Design Integrated Approach).
 
 En voici les grandes phases d'analyse :
 
