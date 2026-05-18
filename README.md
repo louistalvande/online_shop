@@ -31,7 +31,7 @@ Le [document d'architecture](architecture/Boutique%20en%20ligne%20-%20Documentat
 
 #### Analyse du besoin
 
-##### 1. Analyse du Besoin Opérationnel (OA — Operational Analysis)
+##### 1.1. Analyse du Besoin Opérationnel (OA — Operational Analysis)
 
 Que font les utilisateurs et pour quoi ?
 On modélise ici les acteurs (opérateurs, systèmes externes), leurs activités opérationnelles et les échanges entre eux, indépendamment de tout système à construire. On décrit le contexte métier réel.
@@ -47,7 +47,7 @@ On modélise ici les acteurs (opérateurs, systèmes externes), leurs activités
 
 ![OA Use Case](architecture/diagrams/readme/oa-use-case.svg)
 
-##### 2. Analyse du Besoin Système (SA — System Need Analysis)
+##### 1.2. Analyse du Besoin Système (SA — System Need Analysis)
 
 Que doit faire le système pour satisfaire ce besoin ?
 On définit les fonctions du système vues de l'extérieur (ce qu'il doit accomplir), les interfaces avec les acteurs, et les scénarios d'usage. On reste volontairement agnostique sur l'architecture interne. Les exigences sont déduites de cette analyse fonctionnelle, pas l'inverse.
@@ -66,7 +66,7 @@ On définit les fonctions du système vues de l'extérieur (ce qu'il doit accomp
 
 #### Analyse du système
 
-##### 3. Architecture Logique (LA — Logical Architecture)
+##### 1.3. Architecture Logique (LA — Logical Architecture)
 
 Comment organiser les fonctions en composants logiques ?
 On décompose le système en composants logiques (sans préjuger des technologies) et on alloue les fonctions à ces composants. On travaille les flux d'échanges internes, la cohérence du découpage, et on identifie les premiers choix d'architecture. C'est le cœur de la conception système.
@@ -84,7 +84,7 @@ On décompose le système en composants logiques (sans préjuger des technologie
 
 ![LA Components](architecture/diagrams/readme/la-components.svg)
 
-##### 4. Architecture Physique (PA — Physical Architecture)
+##### 1.4. Architecture Physique (PA — Physical Architecture)
 
 Quelles solutions concrètes implémentent l'architecture logique ?
 On mappe les composants logiques sur des composants physiques réels (matériel, logiciel, réseaux). On gère les contraintes de déploiement, de performance, de redondance. On prépare la répartition du travail entre les parties-prenantes.
