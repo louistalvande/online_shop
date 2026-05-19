@@ -11,14 +11,14 @@
 ## Table of Contents / Sommaire
 
 ### 🇫🇷 Français
-- [Français](#-français)
+- [Français](#français-)
 
 ### 🇬🇧 English
-- [English](#-english)
+- [English](#english-)
 
 ---
 
-## 🇫🇷 Français
+## Français 🇫🇷
 
 Le projet a pour objectif de développer une application web de site e-commerce dans l'état de l'art actuel, aussi bien en terme d'ergonomie que de cybersécurité ([recommandations ANSSI](https://fr.wikipedia.org/wiki/Agence_nationale_de_la_s%C3%A9curit%C3%A9_des_syst%C3%A8mes_d%27information)), en suivant un processus d'ingénierie logiciel éprouvé. Il débute par la rédaction d'un [document d'architecture](architecture/Boutique%20en%20ligne%20-%20Documentation%20d%27Architecture.pdf) à partir des [exigences](architecture/Boutique%20en%20ligne%20-%20Exigences%20d%27utilisateurs.pdf) avant de passer au développement de la solution logicielle concrète.
 
@@ -155,7 +155,9 @@ L'objectif est de fournir une documentation claire, accessible et maintenable, c
 
 ---
 
-## 🇬🇧 English
+<a name="english"></a>
+
+## English 🇬🇧
 
 The project aims to develop an e-commerce web application built to current best practices, in terms of both user experience and cybersecurity ([ANSSI recommendations](https://en.wikipedia.org/wiki/Agence_nationale_de_la_s%C3%A9curit%C3%A9_des_syst%C3%A8mes_d%27information)), following a proven software engineering process. It begins with the writing of an [architecture document](architecture/Boutique%20en%20ligne%20-%20Documentation%20d%27Architecture.pdf) from the [requirements](architecture/Boutique%20en%20ligne%20-%20Exigences%20d%27utilisateurs.pdf), before moving on to the concrete development of the software solution.
 
