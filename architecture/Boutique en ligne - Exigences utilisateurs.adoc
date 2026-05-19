@@ -143,6 +143,10 @@ Un besoin opérationnel exprime **la nécessité d'un acteur** (ce qu'il doit po
 | BES-VND-013
 | Le vendeur a besoin d'exporter l'ensemble de son catalogue produits au format CSV afin de le consulter hors ligne, le partager ou le réimporter ultérieurement.
 | UC_V1, Activités vendeur
+
+| BES-VND-014
+| Le vendeur a besoin de mettre à jour les niveaux de stock de plusieurs produits simultanément depuis une vue liste, sans avoir à ouvrir chaque fiche produit individuellement.
+| UC_V2, Activités vendeur
 |===
 
 ---
@@ -259,6 +263,7 @@ Le tableau ci-dessous relie chaque besoin opérationnel aux activités et cas d'
 | BES-VND-011 | Vendeur | UC_V9 — Gérer les annonces défilantes
 | BES-VND-012 | Vendeur | UC_V1 — Import CSV catalogue (nouveaux produits)
 | BES-VND-013 | Vendeur | UC_V1 — Export CSV catalogue
+| BES-VND-014 | Vendeur | UC_V2 — Mise à jour en masse des stocks
 | BES-ACH-001 | Acheteur | UC_B0 — S'inscrire
 | BES-ACH-002 | Acheteur | UC_B0B — Activer son compte via email ; COp-04
 | BES-ACH-003 | Acheteur | UC_B_AUTH — S'authentifier

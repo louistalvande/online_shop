@@ -158,6 +158,7 @@ Les fonctions système (FS) sont dérivées des cas d'utilisation opérationnels
 | FS-V01 | Permettre au vendeur de mettre à jour ses données de compte, y compris sa préférence de langue de notification (CS-10) | UC_V0
 | FS-V02 | Gérer le catalogue produits — CRUD : photos, descriptions, prix, catégories | UC_V1
 | FS-V03 | Gérer les niveaux de stock et alerter en cas de rupture imminente | UC_V2
+| FS-V14 | Mettre à jour les niveaux de stock de plusieurs produits simultanément depuis une vue liste | UC_V2
 | FS-V04 | Recevoir et traiter les nouvelles commandes (notification, vérification stock) | UC_V3
 | FS-V05 | Permettre au vendeur de déclarer l'expédition d'une commande en saisissant le numéro de suivi récupéré sur le reçu de dépôt physique ; passer la commande en état `expédiée` et notifier l'acheteur avec ce numéro | UC_V4
 | FS-V06 | Traiter les litiges et réclamations (remboursement, retour) | UC_V5
@@ -1400,7 +1401,7 @@ package "Système — Boutique en ligne" {
 
   package "Noyau Métier" {
     [Gestion des comptes\n(FS-A01..A03, FS-B01..B02)] as AccountSvc
-    [Gestion du catalogue\net des stocks (FS-V02..V03, FS-V12..V13, FS-B03)] as CatalogSvc
+    [Gestion du catalogue\net des stocks (FS-V02..V03, FS-V12..V14, FS-B03)] as CatalogSvc
     [Gestion du panier\n(FS-B04..B05 / CS-03)] as CartSvc
     [Orchestrateur de commande\n(FS-B06..B09, FS-V04..V08)] as OrderSvc
     [Moteur de rapports\n(FS-V07)] as ReportSvc
