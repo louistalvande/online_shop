@@ -1,8 +1,8 @@
 package com.shop.order.controller.impl;
 
 import com.shop.order.controller.OrderController;
+import com.shop.order.dto.CancelOrderRequest;
 import com.shop.order.dto.CheckoutInitResponse;
-import com.shop.order.dto.CreateOrderRequest;
 import com.shop.order.dto.OrderResponse;
 import com.shop.order.service.OrderService;
 import org.springframework.http.HttpStatus;
@@ -35,9 +35,8 @@ public class OrderControllerImpl implements OrderController {
             com.shop.order.dto.CreateOrderRequest request,
             Principal principal,
             Locale locale) {
-        UUID buyerId = UUID.fromString(principal.getName());
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(orderService.initCheckout(buyerId, request, locale));
+                .body(orderService.initCheckout(principal.getName(), request, locale));
     }
 
     /** {@inheritDoc} */
@@ -46,21 +45,29 @@ public class OrderControllerImpl implements OrderController {
             UUID orderId,
             Principal principal,
             Locale locale) {
-        UUID buyerId = UUID.fromString(principal.getName());
-        return ResponseEntity.ok(orderService.confirmCardPayment(buyerId, orderId, locale));
+        return ResponseEntity.ok(orderService.confirmCardPayment(principal.getName(), orderId, locale));
     }
 
     /** {@inheritDoc} */
     @Override
     public ResponseEntity<List<OrderResponse>> getMyOrders(Principal principal) {
-        UUID buyerId = UUID.fromString(principal.getName());
-        return ResponseEntity.ok(orderService.getMyOrders(buyerId));
+        return ResponseEntity.ok(orderService.getMyOrders(principal.getName()));
     }
 
     /** {@inheritDoc} */
     @Override
     public ResponseEntity<OrderResponse> getMyOrder(UUID orderId, Principal principal) {
-        UUID buyerId = UUID.fromString(principal.getName());
-        return ResponseEntity.ok(orderService.getMyOrder(buyerId, orderId));
+        return ResponseEntity.ok(orderService.getMyOrder(principal.getName(), orderId));
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public ResponseEntity<OrderResponse> cancelOrder(
+            UUID orderId,
+            CancelOrderRequest request,
+            Principal principal,
+            Locale locale) {
+        String buyerIban = request != null ? request.getBuyerIban() : null;
+        return ResponseEntity.ok(orderService.cancelOrder(principal.getName(), orderId, buyerIban, locale));
     }
 }

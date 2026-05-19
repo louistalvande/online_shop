@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import Header from './Header'
-import { getMyOrder, type OrderData } from './api/orderApi'
+import { getMyOrder, cancelOrder, type OrderData } from './api/orderApi'
 import { getSession } from './api/authApi'
 
 const STATUS_LABELS: Record<string, string> = {
@@ -27,6 +27,9 @@ export default function OrderDetailPage({ orderId }: Props) {
   const [order, setOrder] = useState<OrderData | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [cancelLoading, setCancelLoading] = useState(false)
+  const [cancelError, setCancelError] = useState<string | null>(null)
+  const [buyerIban, setBuyerIban] = useState('')
 
   useEffect(() => {
     if (!session) return
@@ -93,6 +96,57 @@ export default function OrderDetailPage({ orderId }: Props) {
             {order.status === 'IN_PREPARATION' && (
               <section style={{ background: '#fff9c4', padding: '1rem', borderRadius: '4px', marginBottom: '1.5rem' }}>
                 <p>{t('orders.tracking.inPreparation')}</p>
+              </section>
+            )}
+
+            {/* Cancel section — US-CAN-01 */}
+            {(order.status === 'AWAITING_PROCESSING' || order.status === 'IN_PREPARATION') && (
+              <section style={{ background: '#ffebee', padding: '1rem', borderRadius: '4px', marginBottom: '1.5rem' }}>
+                <h2>{t('orders.cancel.title')}</h2>
+                <p>{t('orders.cancel.description')}</p>
+                {order.paymentMethod === 'WIRE_TRANSFER' && (
+                  <div style={{ marginBottom: '0.75rem' }}>
+                    <label style={{ display: 'block', marginBottom: '0.25rem' }}>
+                      {t('orders.cancel.ibanLabel')} *
+                    </label>
+                    <input
+                      type="text"
+                      value={buyerIban}
+                      onChange={e => setBuyerIban(e.target.value)}
+                      placeholder={t('orders.cancel.ibanPlaceholder')}
+                      style={{ padding: '0.4rem 0.8rem', border: '1px solid #ccc', borderRadius: '4px', width: '100%', maxWidth: '400px' }}
+                    />
+                  </div>
+                )}
+                {cancelError && <p style={{ color: 'red' }}>{cancelError}</p>}
+                <button
+                  onClick={async () => {
+                    if (!window.confirm(t('orders.cancel.confirmPrompt'))) return
+                    setCancelLoading(true)
+                    setCancelError(null)
+                    try {
+                      const updated = await cancelOrder(orderId, order.paymentMethod === 'WIRE_TRANSFER' ? buyerIban : undefined)
+                      setOrder(updated)
+                    } catch (err: unknown) {
+                      const code = (err as Error).message
+                      if (code === 'MISSING_BUYER_IBAN') setCancelError(t('orders.cancel.ibanRequired'))
+                      else if (code === 'INVALID_ORDER_STATE') setCancelError(t('orders.cancel.invalidState'))
+                      else setCancelError(t('orders.cancel.error'))
+                    } finally {
+                      setCancelLoading(false)
+                    }
+                  }}
+                  disabled={cancelLoading || (order.paymentMethod === 'WIRE_TRANSFER' && !buyerIban.trim())}
+                  style={{ padding: '0.5rem 1.2rem', background: '#c62828', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>
+                  {cancelLoading ? t('orders.cancel.cancelling') : t('orders.cancel.submit')}
+                </button>
+              </section>
+            )}
+
+            {order.status === 'WIRE_REFUND_IN_PROGRESS' && (
+              <section style={{ background: '#fff9c4', padding: '1rem', borderRadius: '4px', marginBottom: '1.5rem' }}>
+                <p><strong>{t('orders.cancel.wireRefundInProgress')}</strong></p>
+                {order.buyerIban && <p>{t('orders.cancel.ibanUsed')}: <code>{order.buyerIban}</code></p>}
               </section>
             )}
 

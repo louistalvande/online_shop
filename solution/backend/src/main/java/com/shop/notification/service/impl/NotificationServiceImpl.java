@@ -186,6 +186,58 @@ public class NotificationServiceImpl implements NotificationService {
         sendEmail(toEmail, subject, htmlBody);
     }
 
+    /** {@inheritDoc} */
+    @Async
+    @Override
+    public void sendBuyerCancellationEmail(String toEmail, OrderResponse order, Locale locale) {
+        if (!sendGridConfigured) {
+            log.info("[EMAIL] Buyer cancellation for {} — order #{} status={}", toEmail, order.getOrderNumber(), order.getStatus());
+            return;
+        }
+        String subject = messageSource.getMessage("email.cancellation.buyer.subject", new Object[]{order.getOrderNumber()}, locale);
+        String htmlBody = messageSource.getMessage("email.cancellation.buyer.body.html", new Object[]{order.getOrderNumber(), order.getStatus()}, locale);
+        sendEmail(toEmail, subject, htmlBody);
+    }
+
+    /** {@inheritDoc} */
+    @Async
+    @Override
+    public void sendVendorCancellationEmail(String toEmail, OrderResponse order, Locale locale) {
+        if (!sendGridConfigured) {
+            log.info("[EMAIL] Vendor cancellation notification for {} — order #{}", toEmail, order.getOrderNumber());
+            return;
+        }
+        String subject = messageSource.getMessage("email.cancellation.vendor.subject", new Object[]{order.getOrderNumber()}, locale);
+        String htmlBody = messageSource.getMessage("email.cancellation.vendor.body.html", new Object[]{order.getOrderNumber()}, locale);
+        sendEmail(toEmail, subject, htmlBody);
+    }
+
+    /** {@inheritDoc} */
+    @Async
+    @Override
+    public void sendReturnRequestedEmail(String toEmail, OrderResponse order, Locale locale) {
+        if (!sendGridConfigured) {
+            log.info("[EMAIL] Return requested for {} — order #{}", toEmail, order.getOrderNumber());
+            return;
+        }
+        String subject = messageSource.getMessage("email.return.requested.subject", new Object[]{order.getOrderNumber()}, locale);
+        String htmlBody = messageSource.getMessage("email.return.requested.body.html", new Object[]{order.getOrderNumber()}, locale);
+        sendEmail(toEmail, subject, htmlBody);
+    }
+
+    /** {@inheritDoc} */
+    @Async
+    @Override
+    public void sendWireRefundConfirmedEmail(String toEmail, OrderResponse order, Locale locale) {
+        if (!sendGridConfigured) {
+            log.info("[EMAIL] Wire refund confirmed for {} — order #{}", toEmail, order.getOrderNumber());
+            return;
+        }
+        String subject = messageSource.getMessage("email.wire.refund.confirmed.subject", new Object[]{order.getOrderNumber()}, locale);
+        String htmlBody = messageSource.getMessage("email.wire.refund.confirmed.body.html", new Object[]{order.getOrderNumber()}, locale);
+        sendEmail(toEmail, subject, htmlBody);
+    }
+
     /**
      * Sends an HTML email via SendGrid and logs a warning on failure.
      *

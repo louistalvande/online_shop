@@ -6,6 +6,8 @@ import com.shop.order.dto.OrderResponse;
 import com.shop.order.entity.OrderStatus;
 import com.shop.order.entity.PaymentMethod;
 import com.shop.order.exception.EmptyCartException;
+import com.shop.order.exception.InvalidOrderStateException;
+import com.shop.order.exception.MissingBuyerIbanException;
 import com.shop.order.exception.OrderNotFoundException;
 import com.shop.order.exception.PaymentFailedException;
 import com.shop.order.service.OrderService;
@@ -44,11 +46,11 @@ class OrderControllerImplTest {
 
     MockMvc mvc;
 
-    private static final UUID BUYER_ID = UUID.randomUUID();
+    private static final String BUYER_EMAIL = "buyer@test.com";
     private static final UUID ORDER_ID = UUID.randomUUID();
 
     private final UsernamePasswordAuthenticationToken buyerPrincipal =
-            new UsernamePasswordAuthenticationToken(BUYER_ID.toString(), null, List.of());
+            new UsernamePasswordAuthenticationToken(BUYER_EMAIL, null, List.of());
 
     @BeforeEach
     void setUp() {
@@ -61,7 +63,7 @@ class OrderControllerImplTest {
     @Test
     void initCheckout_returns201() throws Exception {
         CheckoutInitResponse init = CheckoutInitResponse.forCard(ORDER_ID, "ORD-TEST", new BigDecimal("24.00"), "secret");
-        given(orderService.initCheckout(eq(BUYER_ID), any(), any())).willReturn(init);
+        given(orderService.initCheckout(eq(BUYER_EMAIL), any(), any())).willReturn(init);
 
         mvc.perform(post("/api/orders")
                         .principal(buyerPrincipal)
@@ -74,7 +76,7 @@ class OrderControllerImplTest {
 
     @Test
     void initCheckout_emptyCart_returns400() throws Exception {
-        given(orderService.initCheckout(eq(BUYER_ID), any(), any())).willThrow(new EmptyCartException());
+        given(orderService.initCheckout(eq(BUYER_EMAIL), any(), any())).willThrow(new EmptyCartException());
         given(messageSource.getMessage(eq("error.order.empty.cart"), any(), any(Locale.class)))
                 .willReturn("Empty cart");
 
@@ -89,7 +91,7 @@ class OrderControllerImplTest {
     @Test
     void confirmCardPayment_returns200() throws Exception {
         OrderResponse order = buildOrderResponse(OrderStatus.AWAITING_PROCESSING);
-        given(orderService.confirmCardPayment(eq(BUYER_ID), eq(ORDER_ID), any())).willReturn(order);
+        given(orderService.confirmCardPayment(eq(BUYER_EMAIL), eq(ORDER_ID), any())).willReturn(order);
 
         mvc.perform(post("/api/orders/" + ORDER_ID + "/confirm-payment")
                         .principal(buyerPrincipal))
@@ -99,7 +101,7 @@ class OrderControllerImplTest {
 
     @Test
     void confirmCardPayment_paymentFailed_returns402() throws Exception {
-        given(orderService.confirmCardPayment(eq(BUYER_ID), eq(ORDER_ID), any()))
+        given(orderService.confirmCardPayment(eq(BUYER_EMAIL), eq(ORDER_ID), any()))
                 .willThrow(new PaymentFailedException("declined"));
         given(messageSource.getMessage(eq("error.order.payment.failed"), any(), any(Locale.class)))
                 .willReturn("Payment failed");
@@ -112,7 +114,7 @@ class OrderControllerImplTest {
 
     @Test
     void getMyOrders_returns200WithList() throws Exception {
-        given(orderService.getMyOrders(BUYER_ID)).willReturn(List.of(buildOrderResponse(OrderStatus.AWAITING_PROCESSING)));
+        given(orderService.getMyOrders(BUYER_EMAIL)).willReturn(List.of(buildOrderResponse(OrderStatus.AWAITING_PROCESSING)));
 
         mvc.perform(get("/api/orders").principal(buyerPrincipal))
                 .andExpect(status().isOk())
@@ -121,13 +123,56 @@ class OrderControllerImplTest {
 
     @Test
     void getMyOrder_returns404WhenNotFound() throws Exception {
-        given(orderService.getMyOrder(BUYER_ID, ORDER_ID)).willThrow(new OrderNotFoundException(ORDER_ID));
+        given(orderService.getMyOrder(BUYER_EMAIL, ORDER_ID)).willThrow(new OrderNotFoundException(ORDER_ID));
         given(messageSource.getMessage(eq("error.order.not.found"), any(), any(Locale.class)))
                 .willReturn("Order not found");
 
         mvc.perform(get("/api/orders/" + ORDER_ID).principal(buyerPrincipal))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.error").value("ORDER_NOT_FOUND"));
+    }
+
+    @Test
+    void cancelOrder_card_returns200() throws Exception {
+        OrderResponse cancelled = buildOrderResponse(OrderStatus.CANCELLED);
+        given(orderService.cancelOrder(eq(BUYER_EMAIL), eq(ORDER_ID), any(), any())).willReturn(cancelled);
+
+        mvc.perform(post("/api/orders/" + ORDER_ID + "/cancel")
+                        .principal(buyerPrincipal)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value("CANCELLED"));
+    }
+
+    @Test
+    void cancelOrder_missingIban_returns422() throws Exception {
+        given(orderService.cancelOrder(eq(BUYER_EMAIL), eq(ORDER_ID), any(), any()))
+                .willThrow(new MissingBuyerIbanException(ORDER_ID));
+        given(messageSource.getMessage(eq("error.order.missing.buyer.iban"), any(), any(Locale.class)))
+                .willReturn("IBAN required");
+
+        mvc.perform(post("/api/orders/" + ORDER_ID + "/cancel")
+                        .principal(buyerPrincipal)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{}"))
+                .andExpect(status().isUnprocessableEntity())
+                .andExpect(jsonPath("$.error").value("MISSING_BUYER_IBAN"));
+    }
+
+    @Test
+    void cancelOrder_invalidState_returns409() throws Exception {
+        given(orderService.cancelOrder(eq(BUYER_EMAIL), eq(ORDER_ID), any(), any()))
+                .willThrow(new InvalidOrderStateException(ORDER_ID, OrderStatus.SHIPPED));
+        given(messageSource.getMessage(eq("error.order.invalid.state"), any(), any(Locale.class)))
+                .willReturn("Invalid state");
+
+        mvc.perform(post("/api/orders/" + ORDER_ID + "/cancel")
+                        .principal(buyerPrincipal)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{}"))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.error").value("INVALID_ORDER_STATE"));
     }
 
     // ─── Helpers ─────────────────────────────────────────────────────────────
@@ -155,7 +200,7 @@ class OrderControllerImplTest {
         }
         setField(r, "id", ORDER_ID);
         setField(r, "orderNumber", "ORD-TEST");
-        setField(r, "buyerId", BUYER_ID);
+        setField(r, "buyerId", UUID.randomUUID());
         setField(r, "carrierId", UUID.randomUUID());
         setField(r, "carrierName", "Test Carrier");
         setField(r, "carrierTrackingUrl", "https://track.example.com");

@@ -1,12 +1,16 @@
 package com.shop.order.service.impl;
 
+import com.shop.account.exception.AccountNotFoundException;
 import com.shop.account.repository.AccountRepository;
 import com.shop.catalog.repository.ProductRepository;
 import com.shop.notification.service.NotificationService;
+import com.shop.payment.PaymentGateway;
 import com.shop.order.dto.OrderResponse;
 import com.shop.order.entity.Order;
 import com.shop.order.entity.OrderStatus;
+import com.shop.order.entity.PaymentMethod;
 import com.shop.order.exception.InvalidOrderStateException;
+import com.shop.order.exception.MissingBuyerIbanException;
 import com.shop.order.exception.OrderNotFoundException;
 import com.shop.order.repository.OrderRepository;
 import com.shop.order.service.VendorOrderService;
@@ -26,28 +30,33 @@ public class VendorOrderServiceImpl implements VendorOrderService {
     private final ProductRepository productRepository;
     private final AccountRepository accountRepository;
     private final NotificationService notificationService;
+    private final PaymentGateway paymentGateway;
 
     /**
-     * @param orderRepository    JPA repository for orders
-     * @param productRepository  JPA repository for products (stock restoration)
-     * @param accountRepository  JPA repository for accounts (buyer email lookup)
+     * @param orderRepository     JPA repository for orders
+     * @param productRepository   JPA repository for products (stock restoration)
+     * @param accountRepository   JPA repository for accounts (vendor/buyer lookup)
      * @param notificationService email notification service
+     * @param paymentGateway      card payment abstraction (Stripe refund)
      */
     public VendorOrderServiceImpl(
             OrderRepository orderRepository,
             ProductRepository productRepository,
             AccountRepository accountRepository,
-            NotificationService notificationService) {
+            NotificationService notificationService,
+            PaymentGateway paymentGateway) {
         this.orderRepository = orderRepository;
         this.productRepository = productRepository;
         this.accountRepository = accountRepository;
         this.notificationService = notificationService;
+        this.paymentGateway = paymentGateway;
     }
 
     /** {@inheritDoc} */
     @Override
     @Transactional(readOnly = true)
-    public List<OrderResponse> getVendorOrders(UUID vendorId) {
+    public List<OrderResponse> getVendorOrders(String vendorEmail) {
+        UUID vendorId = resolveAccountId(vendorEmail);
         return orderRepository.findByVendorIdOrderByCreatedAtDesc(vendorId)
                 .stream()
                 .map(OrderResponse::from)
@@ -57,7 +66,8 @@ public class VendorOrderServiceImpl implements VendorOrderService {
     /** {@inheritDoc} */
     @Override
     @Transactional(readOnly = true)
-    public OrderResponse getVendorOrder(UUID vendorId, UUID orderId) {
+    public OrderResponse getVendorOrder(String vendorEmail, UUID orderId) {
+        UUID vendorId = resolveAccountId(vendorEmail);
         return orderRepository.findByIdAndVendorId(orderId, vendorId)
                 .map(OrderResponse::from)
                 .orElseThrow(() -> new OrderNotFoundException(orderId));
@@ -65,7 +75,8 @@ public class VendorOrderServiceImpl implements VendorOrderService {
 
     /** {@inheritDoc} */
     @Override
-    public OrderResponse confirmWirePayment(UUID vendorId, UUID orderId, Locale locale) {
+    public OrderResponse confirmWirePayment(String vendorEmail, UUID orderId, Locale locale) {
+        UUID vendorId = resolveAccountId(vendorEmail);
         Order order = orderRepository.findByIdAndVendorId(orderId, vendorId)
                 .orElseThrow(() -> new OrderNotFoundException(orderId));
 
@@ -86,7 +97,8 @@ public class VendorOrderServiceImpl implements VendorOrderService {
 
     /** {@inheritDoc} */
     @Override
-    public OrderResponse rejectWirePayment(UUID vendorId, UUID orderId, Locale locale) {
+    public OrderResponse rejectWirePayment(String vendorEmail, UUID orderId, Locale locale) {
+        UUID vendorId = resolveAccountId(vendorEmail);
         Order order = orderRepository.findByIdAndVendorId(orderId, vendorId)
                 .orElseThrow(() -> new OrderNotFoundException(orderId));
 
@@ -108,7 +120,8 @@ public class VendorOrderServiceImpl implements VendorOrderService {
 
     /** {@inheritDoc} */
     @Override
-    public OrderResponse shipOrder(UUID vendorId, UUID orderId, String trackingNumber, Locale locale) {
+    public OrderResponse shipOrder(String vendorEmail, UUID orderId, String trackingNumber, Locale locale) {
+        UUID vendorId = resolveAccountId(vendorEmail);
         Order order = orderRepository.findByIdAndVendorId(orderId, vendorId)
                 .orElseThrow(() -> new OrderNotFoundException(orderId));
 
@@ -129,6 +142,123 @@ public class VendorOrderServiceImpl implements VendorOrderService {
         return response;
     }
 
+    /** {@inheritDoc} */
+    @Override
+    public OrderResponse acceptReturn(String vendorEmail, UUID orderId, String buyerIban, Locale locale) {
+        UUID vendorId = resolveAccountId(vendorEmail);
+        Order order = orderRepository.findByIdAndVendorId(orderId, vendorId)
+                .orElseThrow(() -> new OrderNotFoundException(orderId));
+
+        if (order.getStatus() != OrderStatus.SHIPPED) {
+            throw new InvalidOrderStateException(orderId, order.getStatus());
+        }
+
+        if (order.getPaymentMethod() == PaymentMethod.WIRE_TRANSFER) {
+            if (buyerIban == null || buyerIban.isBlank()) {
+                throw new MissingBuyerIbanException(orderId);
+            }
+            order.setBuyerIban(buyerIban);
+        }
+
+        order.setStatus(OrderStatus.PENDING_RETURN);
+        Order saved = orderRepository.save(order);
+        OrderResponse response = OrderResponse.from(saved);
+
+        String buyerEmail = accountRepository.findById(saved.getBuyerId())
+                .map(a -> a.getEmail()).orElse("");
+        notificationService.sendReturnRequestedEmail(buyerEmail, response, locale);
+
+        return response;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public OrderResponse confirmReturn(String vendorEmail, UUID orderId, Locale locale) {
+        UUID vendorId = resolveAccountId(vendorEmail);
+        Order order = orderRepository.findByIdAndVendorId(orderId, vendorId)
+                .orElseThrow(() -> new OrderNotFoundException(orderId));
+
+        if (order.getStatus() != OrderStatus.PENDING_RETURN) {
+            throw new InvalidOrderStateException(orderId, order.getStatus());
+        }
+
+        restoreStock(order);
+
+        if (order.getPaymentMethod() == PaymentMethod.WIRE_TRANSFER) {
+            order.setStatus(OrderStatus.WIRE_REFUND_IN_PROGRESS);
+        } else {
+            if (order.getStripePaymentIntentId() != null) {
+                paymentGateway.refund(order.getStripePaymentIntentId());
+            }
+            order.setStatus(OrderStatus.CANCELLED);
+        }
+
+        Order saved = orderRepository.save(order);
+        OrderResponse response = OrderResponse.from(saved);
+
+        String buyerEmail = accountRepository.findById(saved.getBuyerId())
+                .map(a -> a.getEmail()).orElse("");
+        notificationService.sendBuyerCancellationEmail(buyerEmail, response, locale);
+
+        return response;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public OrderResponse waiveReturn(String vendorEmail, UUID orderId, String buyerIban, Locale locale) {
+        UUID vendorId = resolveAccountId(vendorEmail);
+        Order order = orderRepository.findByIdAndVendorId(orderId, vendorId)
+                .orElseThrow(() -> new OrderNotFoundException(orderId));
+
+        if (order.getStatus() != OrderStatus.SHIPPED) {
+            throw new InvalidOrderStateException(orderId, order.getStatus());
+        }
+
+        if (order.getPaymentMethod() == PaymentMethod.WIRE_TRANSFER) {
+            if (buyerIban == null || buyerIban.isBlank()) {
+                throw new MissingBuyerIbanException(orderId);
+            }
+            order.setBuyerIban(buyerIban);
+            order.setStatus(OrderStatus.WIRE_REFUND_IN_PROGRESS);
+        } else {
+            if (order.getStripePaymentIntentId() != null) {
+                paymentGateway.refund(order.getStripePaymentIntentId());
+            }
+            order.setStatus(OrderStatus.CANCELLED);
+        }
+
+        Order saved = orderRepository.save(order);
+        OrderResponse response = OrderResponse.from(saved);
+
+        String buyerEmail = accountRepository.findById(saved.getBuyerId())
+                .map(a -> a.getEmail()).orElse("");
+        notificationService.sendBuyerCancellationEmail(buyerEmail, response, locale);
+
+        return response;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public OrderResponse confirmWireRefund(String vendorEmail, UUID orderId, Locale locale) {
+        UUID vendorId = resolveAccountId(vendorEmail);
+        Order order = orderRepository.findByIdAndVendorId(orderId, vendorId)
+                .orElseThrow(() -> new OrderNotFoundException(orderId));
+
+        if (order.getStatus() != OrderStatus.WIRE_REFUND_IN_PROGRESS) {
+            throw new InvalidOrderStateException(orderId, order.getStatus());
+        }
+
+        order.setStatus(OrderStatus.CANCELLED);
+        Order saved = orderRepository.save(order);
+        OrderResponse response = OrderResponse.from(saved);
+
+        String buyerEmail = accountRepository.findById(saved.getBuyerId())
+                .map(a -> a.getEmail()).orElse("");
+        notificationService.sendWireRefundConfirmedEmail(buyerEmail, response, locale);
+
+        return response;
+    }
+
     /**
      * Restores product stock for each order line (best-effort: skips deleted products).
      *
@@ -141,5 +271,18 @@ public class VendorOrderServiceImpl implements VendorOrderService {
                         product.setQuantity(product.getQuantity() + line.getQuantity()));
             }
         });
+    }
+
+    /**
+     * Resolves the account UUID for the given email address.
+     *
+     * @param email the account email
+     * @return the account UUID
+     * @throws AccountNotFoundException if no account exists with that email
+     */
+    private UUID resolveAccountId(String email) {
+        return accountRepository.findByEmail(email)
+                .map(a -> a.getId())
+                .orElseThrow(() -> new AccountNotFoundException(email));
     }
 }

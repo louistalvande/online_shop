@@ -3,7 +3,7 @@ package com.shop.common.controller.impl;
 import com.shop.carrier.dto.CarrierResponse;
 import com.shop.carrier.service.CarrierService;
 import com.shop.common.controller.PublicController;
-import com.shop.common.service.CountryService;
+import com.shop.country.service.CountryService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -37,7 +37,7 @@ public class PublicControllerImpl implements PublicController {
     /** {@inheritDoc} */
     @Override
     public ResponseEntity<List<Map<String, String>>> listCountries() {
-        List<Map<String, String>> countries = countryService.listAll().stream()
+        List<Map<String, String>> countries = countryService.listCountries().stream()
                 .map(c -> Map.of("code", c.getCode(), "nameFr", c.getNameFr(), "nameEn", c.getNameEn()))
                 .toList();
         return ResponseEntity.ok(countries);

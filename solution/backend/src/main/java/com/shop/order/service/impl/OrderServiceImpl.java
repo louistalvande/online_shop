@@ -1,5 +1,6 @@
 package com.shop.order.service.impl;
 
+import com.shop.account.exception.AccountNotFoundException;
 import com.shop.account.repository.AccountRepository;
 import com.shop.cart.entity.Cart;
 import com.shop.cart.entity.CartItem;
@@ -7,7 +8,8 @@ import com.shop.cart.repository.CartRepository;
 import com.shop.carrier.entity.Carrier;
 import com.shop.carrier.repository.CarrierRepository;
 import com.shop.catalog.entity.Product;
-import com.shop.common.repository.CountryRepository;
+import com.shop.catalog.repository.ProductRepository;
+import com.shop.country.repository.CountryRepository;
 import com.shop.notification.service.NotificationService;
 import com.shop.order.dto.CheckoutInitResponse;
 import com.shop.order.dto.CreateOrderRequest;
@@ -20,6 +22,7 @@ import com.shop.order.exception.CarrierNotAvailableException;
 import com.shop.order.exception.EmptyCartException;
 import com.shop.order.exception.InvalidDeliveryCountryException;
 import com.shop.order.exception.InvalidOrderStateException;
+import com.shop.order.exception.MissingBuyerIbanException;
 import com.shop.order.exception.OrderNotFoundException;
 import com.shop.order.exception.PaymentFailedException;
 import com.shop.order.repository.OrderRepository;
@@ -50,6 +53,7 @@ public class OrderServiceImpl implements com.shop.order.service.OrderService {
     private final CarrierRepository carrierRepository;
     private final CountryRepository countryRepository;
     private final AccountRepository accountRepository;
+    private final ProductRepository productRepository;
     private final PaymentGateway paymentGateway;
     private final NotificationService notificationService;
     private final String bankIban;
@@ -62,7 +66,8 @@ public class OrderServiceImpl implements com.shop.order.service.OrderService {
      * @param cartRepository      JPA repository for carts
      * @param carrierRepository   JPA repository for carriers
      * @param countryRepository   JPA repository for Eurozone country codes
-     * @param accountRepository   JPA repository for accounts (vendor email lookup)
+     * @param accountRepository   JPA repository for accounts (buyer/vendor lookup)
+     * @param productRepository   JPA repository for products (stock restoration on cancellation)
      * @param paymentGateway      card payment abstraction (Stripe or stub)
      * @param notificationService email notification service
      * @param bankIban            vendor bank IBAN injected from configuration
@@ -74,6 +79,7 @@ public class OrderServiceImpl implements com.shop.order.service.OrderService {
             CarrierRepository carrierRepository,
             CountryRepository countryRepository,
             AccountRepository accountRepository,
+            ProductRepository productRepository,
             PaymentGateway paymentGateway,
             NotificationService notificationService,
             @Value("${shop.bank.iban}") String bankIban,
@@ -83,6 +89,7 @@ public class OrderServiceImpl implements com.shop.order.service.OrderService {
         this.carrierRepository = carrierRepository;
         this.countryRepository = countryRepository;
         this.accountRepository = accountRepository;
+        this.productRepository = productRepository;
         this.paymentGateway = paymentGateway;
         this.notificationService = notificationService;
         this.bankIban = bankIban;
@@ -91,7 +98,8 @@ public class OrderServiceImpl implements com.shop.order.service.OrderService {
 
     /** {@inheritDoc} */
     @Override
-    public CheckoutInitResponse initCheckout(UUID buyerId, CreateOrderRequest request, Locale locale) {
+    public CheckoutInitResponse initCheckout(String buyerEmail, CreateOrderRequest request, Locale locale) {
+        UUID buyerId = resolveAccountId(buyerEmail);
         Cart cart = cartRepository.findByBuyerId(buyerId)
                 .filter(c -> !c.getItems().isEmpty())
                 .orElseThrow(EmptyCartException::new);
@@ -145,8 +153,6 @@ public class OrderServiceImpl implements com.shop.order.service.OrderService {
             order.setStatus(OrderStatus.PAYMENT_PENDING_WIRE);
             Order saved = orderRepository.save(order);
             cartRepository.delete(cart);
-            String buyerEmail = accountRepository.findById(buyerId)
-                    .map(a -> a.getEmail()).orElse("");
             notificationService.sendWireTransferDetailsEmail(
                     buyerEmail, saved.getOrderNumber(), saved.getTotalAmountTtc(),
                     bankIban, bankBic, locale);
@@ -159,7 +165,8 @@ public class OrderServiceImpl implements com.shop.order.service.OrderService {
 
     /** {@inheritDoc} */
     @Override
-    public OrderResponse confirmCardPayment(UUID buyerId, UUID orderId, Locale locale) {
+    public OrderResponse confirmCardPayment(String buyerEmail, UUID orderId, Locale locale) {
+        UUID buyerId = resolveAccountId(buyerEmail);
         Order order = orderRepository.findByIdAndBuyerId(orderId, buyerId)
                 .orElseThrow(() -> new OrderNotFoundException(orderId));
 
@@ -175,8 +182,6 @@ public class OrderServiceImpl implements com.shop.order.service.OrderService {
         Order saved = orderRepository.save(order);
         OrderResponse response = OrderResponse.from(saved);
 
-        String buyerEmail = accountRepository.findById(buyerId)
-                .map(a -> a.getEmail()).orElse("");
         notificationService.sendOrderConfirmationEmail(buyerEmail, response, locale);
         notificationService.sendVendorNewOrderEmail(saved.getVendorEmail(), response, locale);
 
@@ -186,7 +191,8 @@ public class OrderServiceImpl implements com.shop.order.service.OrderService {
     /** {@inheritDoc} */
     @Override
     @Transactional(readOnly = true)
-    public List<OrderResponse> getMyOrders(UUID buyerId) {
+    public List<OrderResponse> getMyOrders(String buyerEmail) {
+        UUID buyerId = resolveAccountId(buyerEmail);
         return orderRepository.findByBuyerIdOrderByCreatedAtDesc(buyerId)
                 .stream()
                 .map(OrderResponse::from)
@@ -196,10 +202,48 @@ public class OrderServiceImpl implements com.shop.order.service.OrderService {
     /** {@inheritDoc} */
     @Override
     @Transactional(readOnly = true)
-    public OrderResponse getMyOrder(UUID buyerId, UUID orderId) {
+    public OrderResponse getMyOrder(String buyerEmail, UUID orderId) {
+        UUID buyerId = resolveAccountId(buyerEmail);
         return orderRepository.findByIdAndBuyerId(orderId, buyerId)
                 .map(OrderResponse::from)
                 .orElseThrow(() -> new OrderNotFoundException(orderId));
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public OrderResponse cancelOrder(String buyerEmail, UUID orderId, String buyerIban, Locale locale) {
+        UUID buyerId = resolveAccountId(buyerEmail);
+        Order order = orderRepository.findByIdAndBuyerId(orderId, buyerId)
+                .orElseThrow(() -> new OrderNotFoundException(orderId));
+
+        if (order.getStatus() != OrderStatus.AWAITING_PROCESSING
+                && order.getStatus() != OrderStatus.IN_PREPARATION
+                && order.getStatus() != OrderStatus.PAYMENT_PENDING_WIRE) {
+            throw new InvalidOrderStateException(orderId, order.getStatus());
+        }
+
+        restoreOrderStock(order);
+
+        if (order.getPaymentMethod() == PaymentMethod.WIRE_TRANSFER) {
+            if (buyerIban == null || buyerIban.isBlank()) {
+                throw new MissingBuyerIbanException(orderId);
+            }
+            order.setBuyerIban(buyerIban);
+            order.setStatus(OrderStatus.WIRE_REFUND_IN_PROGRESS);
+        } else {
+            if (order.getStripePaymentIntentId() != null) {
+                paymentGateway.refund(order.getStripePaymentIntentId());
+            }
+            order.setStatus(OrderStatus.CANCELLED);
+        }
+
+        Order saved = orderRepository.save(order);
+        OrderResponse response = OrderResponse.from(saved);
+
+        notificationService.sendBuyerCancellationEmail(buyerEmail, response, locale);
+        notificationService.sendVendorCancellationEmail(saved.getVendorEmail(), response, locale);
+
+        return response;
     }
 
     /**
@@ -272,6 +316,20 @@ public class OrderServiceImpl implements com.shop.order.service.OrderService {
     }
 
     /**
+     * Restores product stock for each order line (best-effort: skips deleted products).
+     *
+     * @param order the order whose stock should be restored
+     */
+    private void restoreOrderStock(Order order) {
+        order.getLines().forEach(line -> {
+            if (line.getProductId() != null) {
+                productRepository.findById(line.getProductId()).ifPresent(product ->
+                        product.setQuantity(product.getQuantity() + line.getQuantity()));
+            }
+        });
+    }
+
+    /**
      * Generates a human-readable order number in the format {@code ORD-YYYYMMDD-XXXXXXXX}.
      *
      * @return a unique order number
@@ -280,5 +338,18 @@ public class OrderServiceImpl implements com.shop.order.service.OrderService {
         String datePart = LocalDate.now().format(DATE_FORMAT);
         String suffix = UUID.randomUUID().toString().replace("-", "").substring(0, 8).toUpperCase();
         return "ORD-" + datePart + "-" + suffix;
+    }
+
+    /**
+     * Resolves the account UUID for the given email address.
+     *
+     * @param email the account email
+     * @return the account UUID
+     * @throws AccountNotFoundException if no account exists with that email
+     */
+    private UUID resolveAccountId(String email) {
+        return accountRepository.findByEmail(email)
+                .map(a -> a.getId())
+                .orElseThrow(() -> new AccountNotFoundException(email));
     }
 }

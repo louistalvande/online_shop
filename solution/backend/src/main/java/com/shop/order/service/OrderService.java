@@ -18,39 +18,56 @@ public interface OrderService {
      *   <li>WIRE: sets status to PAYMENT_PENDING_WIRE and emails bank details to the buyer.</li>
      * </ul>
      *
-     * @param buyerId the authenticated buyer UUID
-     * @param request delivery address and payment choice
-     * @param locale  buyer locale for notification emails
+     * @param buyerEmail the authenticated buyer's email address
+     * @param request    delivery address and payment choice
+     * @param locale     buyer locale for notification emails
      * @return checkout initialisation payload (client secret for card, bank details for wire)
      */
-    CheckoutInitResponse initCheckout(UUID buyerId, CreateOrderRequest request, Locale locale);
+    CheckoutInitResponse initCheckout(String buyerEmail, CreateOrderRequest request, Locale locale);
 
     /**
      * Confirms that the Stripe card payment succeeded after the frontend called Stripe.js.
      * Transitions the order from PAYMENT_PENDING_CARD to AWAITING_PROCESSING
      * and sends confirmation emails (US-ORD-03, US-ORD-05).
      *
-     * @param buyerId the authenticated buyer UUID
-     * @param orderId the order UUID returned by {@link #initCheckout}
-     * @param locale  buyer locale for notification emails
+     * @param buyerEmail the authenticated buyer's email address
+     * @param orderId    the order UUID returned by {@link #initCheckout}
+     * @param locale     buyer locale for notification emails
      * @return the updated order
      */
-    OrderResponse confirmCardPayment(UUID buyerId, UUID orderId, Locale locale);
+    OrderResponse confirmCardPayment(String buyerEmail, UUID orderId, Locale locale);
 
     /**
      * Returns all orders placed by the given buyer, newest first.
      *
-     * @param buyerId the authenticated buyer UUID
+     * @param buyerEmail the authenticated buyer's email address
      * @return list of order responses
      */
-    List<OrderResponse> getMyOrders(UUID buyerId);
+    List<OrderResponse> getMyOrders(String buyerEmail);
 
     /**
      * Returns a single order belonging to the given buyer.
      *
-     * @param buyerId the authenticated buyer UUID
-     * @param orderId the order UUID
+     * @param buyerEmail the authenticated buyer's email address
+     * @param orderId    the order UUID
      * @return the order response
      */
-    OrderResponse getMyOrder(UUID buyerId, UUID orderId);
+    OrderResponse getMyOrder(String buyerEmail, UUID orderId);
+
+    /**
+     * Cancels an order placed by the buyer (US-CAN-01).
+     * Valid from {@code AWAITING_PROCESSING} or {@code IN_PREPARATION}.
+     * <ul>
+     *   <li>CARD payment: triggers Stripe refund, transitions to {@code CANCELLED}.</li>
+     *   <li>WIRE payment: requires {@code buyerIban}; transitions to {@code WIRE_REFUND_IN_PROGRESS}.</li>
+     * </ul>
+     * Stock is always released and the vendor is notified.
+     *
+     * @param buyerEmail the authenticated buyer's email address
+     * @param orderId    the order UUID
+     * @param buyerIban  the buyer's IBAN for wire refund; {@code null} for card orders
+     * @param locale     locale for notification emails
+     * @return the updated order
+     */
+    OrderResponse cancelOrder(String buyerEmail, UUID orderId, String buyerIban, Locale locale);
 }

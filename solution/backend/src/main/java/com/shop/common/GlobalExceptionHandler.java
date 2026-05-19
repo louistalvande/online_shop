@@ -18,6 +18,7 @@ import com.shop.order.exception.CarrierNotAvailableException;
 import com.shop.order.exception.EmptyCartException;
 import com.shop.order.exception.InvalidDeliveryCountryException;
 import com.shop.order.exception.InvalidOrderStateException;
+import com.shop.order.exception.MissingBuyerIbanException;
 import com.shop.order.exception.OrderNotFoundException;
 import com.shop.order.exception.PaymentFailedException;
 import org.springframework.context.MessageSource;
@@ -337,6 +338,21 @@ public class GlobalExceptionHandler {
         String message = messageSource.getMessage("error.order.payment.failed", null, locale);
         return ResponseEntity.status(HttpStatus.PAYMENT_REQUIRED)
                 .body(Map.of("error", "PAYMENT_FAILED", "message", message));
+    }
+
+    /**
+     * Handles missing buyer IBAN when cancelling a wire transfer order — returns HTTP 422 (US-CAN-01).
+     *
+     * @param ex     the exception
+     * @param locale the request locale
+     * @return a 422 response with a localised error body
+     */
+    @ExceptionHandler(MissingBuyerIbanException.class)
+    public ResponseEntity<Map<String, String>> handleMissingBuyerIban(
+            MissingBuyerIbanException ex, Locale locale) {
+        String message = messageSource.getMessage("error.order.missing.buyer.iban", null, locale);
+        return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY)
+                .body(Map.of("error", "MISSING_BUYER_IBAN", "message", message));
     }
 
     /**

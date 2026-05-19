@@ -1,5 +1,6 @@
 package com.shop.common;
 
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -85,6 +86,9 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.DELETE, "/api/vendor/**").hasRole("VENDOR")
                 .anyRequest().permitAll()
             )
+            .exceptionHandling(eh -> eh
+                .authenticationEntryPoint((req, res, ex) ->
+                        res.sendError(HttpServletResponse.SC_UNAUTHORIZED)))
             .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }

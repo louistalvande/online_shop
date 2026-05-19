@@ -2,6 +2,7 @@ package com.shop.order.controller;
 
 import com.shop.order.dto.OrderResponse;
 import com.shop.order.dto.ShipOrderRequest;
+import com.shop.order.dto.VendorReturnRequest;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -87,4 +88,74 @@ public interface VendorOrderController {
     ResponseEntity<OrderResponse> ship(@PathVariable UUID orderId,
                                        @RequestBody ShipOrderRequest request,
                                        Principal principal, Locale locale);
+
+    /**
+     * Accepts a post-shipment cancellation requiring parcel return (US-CAN-03).
+     * Transitions the order from {@code SHIPPED} to {@code PENDING_RETURN} and notifies the buyer.
+     *
+     * @param orderId   the order UUID
+     * @param request   optional buyer IBAN for wire refund
+     * @param principal the authenticated vendor principal
+     * @param locale    locale for buyer notification
+     * @return 200 with the updated order
+     */
+    @Operation(summary = "Accept post-shipment cancellation with return requirement (US-CAN-03)")
+    @ApiResponse(responseCode = "200", description = "Order moved to PENDING_RETURN")
+    @ApiResponse(responseCode = "409", description = "Order not in SHIPPED state")
+    @ApiResponse(responseCode = "422", description = "Buyer IBAN missing for wire transfer order")
+    @PostMapping("/{orderId}/accept-return")
+    ResponseEntity<OrderResponse> acceptReturn(@PathVariable UUID orderId,
+                                               @RequestBody(required = false) VendorReturnRequest request,
+                                               Principal principal, Locale locale);
+
+    /**
+     * Confirms receipt of the returned parcel and triggers refund (US-CAN-03).
+     * Transitions from {@code PENDING_RETURN} to {@code CANCELLED} (card) or {@code WIRE_REFUND_IN_PROGRESS} (wire).
+     *
+     * @param orderId   the order UUID
+     * @param principal the authenticated vendor principal
+     * @param locale    locale for buyer notification
+     * @return 200 with the updated order
+     */
+    @Operation(summary = "Confirm return parcel received and process refund (US-CAN-03)")
+    @ApiResponse(responseCode = "200", description = "Return confirmed, refund triggered")
+    @ApiResponse(responseCode = "409", description = "Order not in PENDING_RETURN state")
+    @PostMapping("/{orderId}/confirm-return")
+    ResponseEntity<OrderResponse> confirmReturn(@PathVariable UUID orderId,
+                                                Principal principal, Locale locale);
+
+    /**
+     * Accepts a post-shipment cancellation without requiring return (US-CAN-04).
+     * Transitions from {@code SHIPPED} to {@code CANCELLED} (card) or {@code WIRE_REFUND_IN_PROGRESS} (wire).
+     *
+     * @param orderId   the order UUID
+     * @param request   optional buyer IBAN for wire refund
+     * @param principal the authenticated vendor principal
+     * @param locale    locale for buyer notification
+     * @return 200 with the updated order
+     */
+    @Operation(summary = "Accept post-shipment cancellation without return requirement (US-CAN-04)")
+    @ApiResponse(responseCode = "200", description = "Cancellation accepted, refund triggered or wire initiated")
+    @ApiResponse(responseCode = "409", description = "Order not in SHIPPED state")
+    @ApiResponse(responseCode = "422", description = "Buyer IBAN missing for wire transfer order")
+    @PostMapping("/{orderId}/waive-return")
+    ResponseEntity<OrderResponse> waiveReturn(@PathVariable UUID orderId,
+                                              @RequestBody(required = false) VendorReturnRequest request,
+                                              Principal principal, Locale locale);
+
+    /**
+     * Confirms that the wire transfer refund has been sent to the buyer (US-CAN-05).
+     * Transitions from {@code WIRE_REFUND_IN_PROGRESS} to {@code CANCELLED}.
+     *
+     * @param orderId   the order UUID
+     * @param principal the authenticated vendor principal
+     * @param locale    locale for buyer notification
+     * @return 200 with the updated order
+     */
+    @Operation(summary = "Confirm wire refund has been sent to the buyer (US-CAN-05)")
+    @ApiResponse(responseCode = "200", description = "Wire refund confirmed, order cancelled")
+    @ApiResponse(responseCode = "409", description = "Order not in WIRE_REFUND_IN_PROGRESS state")
+    @PostMapping("/{orderId}/confirm-wire-refund")
+    ResponseEntity<OrderResponse> confirmWireRefund(@PathVariable UUID orderId,
+                                                    Principal principal, Locale locale);
 }
