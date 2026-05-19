@@ -53,6 +53,16 @@ public class CarrierServiceImpl implements CarrierService {
 
     /** {@inheritDoc} */
     @Override
+    @Transactional(readOnly = true)
+    public List<CarrierResponse> listActiveForCountry(String countryCode) {
+        return carrierRepository.findAll().stream()
+                .filter(c -> c.isActive() && c.getSupportedCountries().contains(countryCode))
+                .map(CarrierResponse::from)
+                .toList();
+    }
+
+    /** {@inheritDoc} */
+    @Override
     public CarrierResponse updateCarrier(UUID id, UpdateCarrierRequest request) {
         Carrier carrier = carrierRepository.findById(id)
                 .orElseThrow(() -> new CarrierNotFoundException(id));

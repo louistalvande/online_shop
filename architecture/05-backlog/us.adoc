@@ -259,38 +259,38 @@ _Fonctions ARCADIA : FS-B06, FS-B07, FS-P01, FS-P02, CS-02, CS-04 — UCSA-05 �
 | *US-ORD-01*
 | En tant qu'acheteur, je peux saisir une adresse de livraison restreinte aux pays de la zone euro.
 a|
-- [ ] Liste déroulante limitée aux pays de la zone euro (CS-04)
-- [ ] Adresse hors zone euro bloquée avec message d'erreur
-| À faire
+- [x] Liste déroulante limitée aux pays de la zone euro (CS-04)
+- [x] Adresse hors zone euro bloquée avec message d'erreur
+| Terminée
 
 | *US-ORD-02*
 | En tant qu'acheteur, je peux choisir un mode de livraison parmi les transporteurs actifs couvrant mon pays de destination.
 a|
-- [ ] Seuls les transporteurs actifs et compatibles avec le pays de livraison sont proposés
-- [ ] Tarif affiché pour chaque option
-| À faire
+- [x] Seuls les transporteurs actifs et compatibles avec le pays de livraison sont proposés
+- [x] Tarif affiché pour chaque option
+| Terminée
 
 | *US-ORD-03*
 | En tant qu'acheteur, je peux régler ma commande par carte bancaire avec autorisation immédiate via Stripe.
 a|
-- [ ] Données carte transmises directement à Stripe sans transit en clair par le backend (PCI-DSS)
-- [ ] Commande confirmée et vendeur notifié si la transaction est autorisée ; stock réservé
-- [ ] Message d'erreur explicite si la transaction est refusée
-| À faire
+- [x] Données carte transmises directement à Stripe sans transit en clair par le backend (PCI-DSS)
+- [x] Commande confirmée et vendeur notifié si la transaction est autorisée ; stock réservé
+- [x] Message d'erreur explicite si la transaction est refusée
+| Terminée
 
 | *US-ORD-04*
 | En tant qu'acheteur, je peux régler ma commande par virement bancaire ; je reçois les coordonnées bancaires du vendeur et ma commande est placée en attente de confirmation.
 a|
-- [ ] Commande créée en statut `paiement_en_attente_virement`
-- [ ] Coordonnées bancaires et référence à inclure affichées et envoyées par email
-- [ ] Stock pré-réservé ; vendeur notifié du virement en attente
-| À faire
+- [x] Commande créée en statut `paiement_en_attente_virement`
+- [x] Coordonnées bancaires et référence à inclure affichées et envoyées par email
+- [x] Stock pré-réservé ; vendeur notifié du virement en attente
+| Terminée
 
 | *US-ORD-05*
 | En tant qu'acheteur, je reçois un email de confirmation après validation de ma commande.
 a|
-- [ ] Email envoyé via SendGrid contenant le numéro de commande, le récapitulatif et la livraison estimée
-| À faire
+- [x] Email envoyé via SendGrid contenant le numéro de commande, le récapitulatif et la livraison estimée
+| Terminée
 
 |===
 

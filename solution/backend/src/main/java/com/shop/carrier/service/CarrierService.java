@@ -26,6 +26,14 @@ public interface CarrierService {
     List<CarrierResponse> listCarriers();
 
     /**
+     * Returns active carriers that support the given delivery country (US-ORD-02).
+     *
+     * @param countryCode ISO 3166-1 alpha-2 country code
+     * @return list of active carrier DTOs covering that country
+     */
+    List<CarrierResponse> listActiveForCountry(String countryCode);
+
+    /**
      * Updates a carrier's name, tracking URL and supported countries (US-ADM-07).
      *
      * @param id      the carrier's UUID

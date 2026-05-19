@@ -173,3 +173,46 @@ CREATE TABLE cart_item (
 
 CREATE INDEX idx_cart_item_cart_id ON cart_item (cart_id);
 
+
+-- Order domain (US-ORD-01..05)
+-- Snapshot of carrier and product data at order creation time — independent of later changes.
+
+CREATE TABLE orders (
+    id                       UUID          PRIMARY KEY DEFAULT gen_random_uuid(),
+    order_number             VARCHAR(50)   NOT NULL UNIQUE,
+    buyer_id                 UUID          NOT NULL REFERENCES accounts(id),
+    carrier_id               UUID          NOT NULL REFERENCES carriers(id),
+    carrier_name             VARCHAR(100)  NOT NULL,
+    carrier_tracking_url     VARCHAR(500)  NOT NULL,
+    delivery_address_line    VARCHAR(255)  NOT NULL,
+    delivery_city            VARCHAR(100)  NOT NULL,
+    delivery_postal_code     VARCHAR(20)   NOT NULL,
+    delivery_country_code    VARCHAR(2)    NOT NULL REFERENCES countries(code),
+    payment_method           VARCHAR(20)   NOT NULL,
+    status                   VARCHAR(50)   NOT NULL,
+    total_amount_ttc         NUMERIC(10,2) NOT NULL,
+    stripe_payment_intent_id VARCHAR(100),
+    buyer_iban               VARCHAR(34),
+    tracking_number          VARCHAR(100),
+    vendor_email             VARCHAR(255)  NOT NULL DEFAULT '',
+    created_at               TIMESTAMP     NOT NULL DEFAULT NOW(),
+    updated_at               TIMESTAMP     NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX idx_orders_buyer_id    ON orders (buyer_id);
+CREATE INDEX idx_orders_status      ON orders (status);
+CREATE INDEX idx_orders_order_number ON orders (order_number);
+
+CREATE TABLE order_lines (
+    id                  UUID          PRIMARY KEY DEFAULT gen_random_uuid(),
+    order_id            UUID          NOT NULL REFERENCES orders(id) ON DELETE CASCADE,
+    product_id          UUID          REFERENCES products(id) ON DELETE SET NULL,
+    product_name        VARCHAR(200)  NOT NULL,
+    unit_price_excl_tax NUMERIC(10,2) NOT NULL,
+    unit_price_ttc      NUMERIC(10,2) NOT NULL,
+    quantity            INTEGER       NOT NULL CHECK (quantity > 0),
+    line_total_ttc      NUMERIC(10,2) NOT NULL
+);
+
+CREATE INDEX idx_order_lines_order_id ON order_lines (order_id);
+

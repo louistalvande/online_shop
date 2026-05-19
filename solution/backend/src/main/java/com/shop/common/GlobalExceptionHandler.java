@@ -14,6 +14,12 @@ import com.shop.cart.exception.ProductOutOfStockException;
 import com.shop.carrier.exception.CarrierNotFoundException;
 import com.shop.catalog.exception.ProductArchivedConflictException;
 import com.shop.catalog.exception.ProductNotFoundException;
+import com.shop.order.exception.CarrierNotAvailableException;
+import com.shop.order.exception.EmptyCartException;
+import com.shop.order.exception.InvalidDeliveryCountryException;
+import com.shop.order.exception.InvalidOrderStateException;
+import com.shop.order.exception.OrderNotFoundException;
+import com.shop.order.exception.PaymentFailedException;
 import org.springframework.context.MessageSource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -241,6 +247,96 @@ public class GlobalExceptionHandler {
         String message = messageSource.getMessage("error.product.out.of.stock", null, locale);
         return ResponseEntity.status(HttpStatus.CONFLICT)
                 .body(Map.of("error", "PRODUCT_OUT_OF_STOCK", "message", message));
+    }
+
+    /**
+     * Handles checkout with empty cart — returns HTTP 400 (US-ORD-01).
+     *
+     * @param ex     the exception
+     * @param locale the request locale
+     * @return a 400 response with a localised error body
+     */
+    @ExceptionHandler(EmptyCartException.class)
+    public ResponseEntity<Map<String, String>> handleEmptyCart(
+            EmptyCartException ex, Locale locale) {
+        String message = messageSource.getMessage("error.order.empty.cart", null, locale);
+        return ResponseEntity.badRequest()
+                .body(Map.of("error", "EMPTY_CART", "message", message));
+    }
+
+    /**
+     * Handles non-Eurozone delivery country — returns HTTP 422 (US-ORD-01, CS-04).
+     *
+     * @param ex     the exception
+     * @param locale the request locale
+     * @return a 422 response with a localised error body
+     */
+    @ExceptionHandler(InvalidDeliveryCountryException.class)
+    public ResponseEntity<Map<String, String>> handleInvalidDeliveryCountry(
+            InvalidDeliveryCountryException ex, Locale locale) {
+        String message = messageSource.getMessage("error.order.invalid.country", null, locale);
+        return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY)
+                .body(Map.of("error", "INVALID_DELIVERY_COUNTRY", "message", message));
+    }
+
+    /**
+     * Handles carrier unavailable for the delivery country — returns HTTP 409 (US-ORD-02).
+     *
+     * @param ex     the exception
+     * @param locale the request locale
+     * @return a 409 response with a localised error body
+     */
+    @ExceptionHandler(CarrierNotAvailableException.class)
+    public ResponseEntity<Map<String, String>> handleCarrierNotAvailable(
+            CarrierNotAvailableException ex, Locale locale) {
+        String message = messageSource.getMessage("error.order.carrier.not.available", null, locale);
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(Map.of("error", "CARRIER_NOT_AVAILABLE", "message", message));
+    }
+
+    /**
+     * Handles order not found or not owned by the buyer — returns HTTP 404 (US-ORD-03..05).
+     *
+     * @param ex     the exception
+     * @param locale the request locale
+     * @return a 404 response with a localised error body
+     */
+    @ExceptionHandler(OrderNotFoundException.class)
+    public ResponseEntity<Map<String, String>> handleOrderNotFound(
+            OrderNotFoundException ex, Locale locale) {
+        String message = messageSource.getMessage("error.order.not.found", null, locale);
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(Map.of("error", "ORDER_NOT_FOUND", "message", message));
+    }
+
+    /**
+     * Handles an operation on an order in an incompatible status — returns HTTP 409.
+     *
+     * @param ex     the exception
+     * @param locale the request locale
+     * @return a 409 response with a localised error body
+     */
+    @ExceptionHandler(InvalidOrderStateException.class)
+    public ResponseEntity<Map<String, String>> handleInvalidOrderState(
+            InvalidOrderStateException ex, Locale locale) {
+        String message = messageSource.getMessage("error.order.invalid.state", null, locale);
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(Map.of("error", "INVALID_ORDER_STATE", "message", message));
+    }
+
+    /**
+     * Handles a failed or declined Stripe card payment — returns HTTP 402 (US-ORD-03).
+     *
+     * @param ex     the exception
+     * @param locale the request locale
+     * @return a 402 response with a localised error body
+     */
+    @ExceptionHandler(PaymentFailedException.class)
+    public ResponseEntity<Map<String, String>> handlePaymentFailed(
+            PaymentFailedException ex, Locale locale) {
+        String message = messageSource.getMessage("error.order.payment.failed", null, locale);
+        return ResponseEntity.status(HttpStatus.PAYMENT_REQUIRED)
+                .body(Map.of("error", "PAYMENT_FAILED", "message", message));
     }
 
     /**

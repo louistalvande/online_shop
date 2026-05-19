@@ -56,3 +56,12 @@ sendgrid:
   api-key: ${SENDGRID_API_KEY:}
   from-email: ${SENDGRID_FROM_EMAIL:noreply@shop.example.com}
   from-name: ${SENDGRID_FROM_NAME:Online Shop}
+
+stripe:
+  secret-key: ${STRIPE_SECRET_KEY:}
+  public-key: ${STRIPE_PUBLIC_KEY:}
+
+shop:
+  bank:
+    iban: ${SHOP_BANK_IBAN:FR7630006000011234567890189}
+    bic: ${SHOP_BANK_BIC:BNPAFRPPXXX}
