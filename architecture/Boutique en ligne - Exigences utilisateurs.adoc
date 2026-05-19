@@ -135,6 +135,14 @@ Un besoin opérationnel exprime **la nécessité d'un acteur** (ce qu'il doit po
 | BES-VND-011
 | Le vendeur a besoin de créer, modifier et supprimer des annonces défilantes affichées sur la page d'accueil de la boutique.
 | UC_V9, Activités vendeur
+
+| BES-VND-012
+| Le vendeur a besoin d'importer en masse de nouveaux produits dans son catalogue depuis un fichier CSV, afin de gagner du temps lors d'une initialisation ou d'un renouvellement important de l'offre.
+| UC_V1, Activités vendeur
+
+| BES-VND-013
+| Le vendeur a besoin d'exporter l'ensemble de son catalogue produits au format CSV afin de le consulter hors ligne, le partager ou le réimporter ultérieurement.
+| UC_V1, Activités vendeur
 |===
 
 ---
@@ -249,6 +257,8 @@ Le tableau ci-dessous relie chaque besoin opérationnel aux activités et cas d'
 | BES-VND-009 | Vendeur | Activité « Émettre un virement inverse de remboursement »
 | BES-VND-010 | Vendeur | UC_V6 — Consulter les rapports de ventes
 | BES-VND-011 | Vendeur | UC_V9 — Gérer les annonces défilantes
+| BES-VND-012 | Vendeur | UC_V1 — Import CSV catalogue (nouveaux produits)
+| BES-VND-013 | Vendeur | UC_V1 — Export CSV catalogue
 | BES-ACH-001 | Acheteur | UC_B0 — S'inscrire
 | BES-ACH-002 | Acheteur | UC_B0B — Activer son compte via email ; COp-04
 | BES-ACH-003 | Acheteur | UC_B_AUTH — S'authentifier

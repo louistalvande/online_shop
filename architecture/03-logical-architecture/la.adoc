@@ -55,8 +55,8 @@ Le système est structuré en cinq couches logiques : *Présentation*, *Applicat
 
 | *Service Catalogue*
 | Application
-| CRUD produits, gestion des catégories, recherche et filtrage, publication / archivage, suivi des niveaux de stock, réservation à la commande, libération à l'annulation, alertes de rupture
-| FS-V02, FS-V03, FS-B03
+| CRUD produits, gestion des catégories, recherche et filtrage, publication / archivage, suivi des niveaux de stock, réservation à la commande, libération à l'annulation, alertes de rupture, import CSV de nouveaux produits, export CSV du catalogue
+| FS-V02, FS-V03, FS-V12, FS-V13, FS-B03
 
 | *Service Commande*
 | Application
@@ -223,8 +223,8 @@ Les interfaces logiques définissent les contrats d'échange entre composants, i
 | *IFL-02*
 | Portails (UI)
 | Service Catalogue
-| Lister produits, rechercher, filtrer, CRUD produits et catégories
-| FS-B03, FS-V02
+| Lister produits, rechercher, filtrer, CRUD produits et catégories, import CSV (`POST /produits/import` — `multipart/form-data`), export CSV (`GET /produits/export`)
+| FS-B03, FS-V02, FS-V12, FS-V13
 
 | *IFL-03*
 | Portail Acheteur
@@ -756,6 +756,8 @@ end note
 | FS-B10 | Activer le compte via token (CS-07) | Service Compte | IFL-01, IFL-13
 | FS-V02 | Gérer le catalogue produits | Service Catalogue | IFL-02, IFL-13
 | FS-V03 | Gérer les stocks et alertes | Service Catalogue | IFL-06, IFL-09, IFL-13
+| FS-V12 | Importer de nouveaux produits depuis un fichier CSV | Service Catalogue | IFL-02, IFL-13
+| FS-V13 | Exporter le catalogue au format CSV | Service Catalogue | IFL-02, IFL-13
 | FS-V04 | Traiter les commandes reçues | Service Commande | IFL-04, IFL-09, IFL-13
 | FS-V05 | Déclarer l'expédition avec saisie du numéro de suivi | Service Expédition | IFL-05, IFL-09, IFL-13
 | FS-V06 | Traiter les litiges et réclamations | Service Commande, Service Paiement | IFL-04, IFL-08

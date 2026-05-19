@@ -166,6 +166,8 @@ Les fonctions système (FS) sont dérivées des cas d'utilisation opérationnels
 | FS-V09 | Confirmer manuellement la réception d'un virement bancaire et déclencher la prise en charge de la commande correspondante | —
 | FS-V10 | Confirmer l'émission d'un virement inverse de remboursement vers l'acheteur à la suite d'une annulation de commande réglée par virement bancaire | UC_V7
 | FS-V11 | Créer, modifier, réordonner et supprimer les annonces défilantes affichées sur la page d'accueil ; chaque annonce comporte un contenu texte, une image ou les deux, et un lien de redirection optionnel au clic | UC_V9
+| FS-V12 | Importer en masse de nouveaux produits depuis un fichier CSV : validation du format, création des fiches produits, rapport d'erreurs ligne par ligne | UC_V1
+| FS-V13 | Exporter le catalogue produits au format CSV (toutes les fiches actives et archivées) | UC_V1
 |===
 
 === Expérience d'achat (Acheteur)
@@ -1398,7 +1400,7 @@ package "Système — Boutique en ligne" {
 
   package "Noyau Métier" {
     [Gestion des comptes\n(FS-A01..A03, FS-B01..B02)] as AccountSvc
-    [Gestion du catalogue\net des stocks (FS-V02..V03, FS-B03)] as CatalogSvc
+    [Gestion du catalogue\net des stocks (FS-V02..V03, FS-V12..V13, FS-B03)] as CatalogSvc
     [Gestion du panier\n(FS-B04..B05 / CS-03)] as CartSvc
     [Orchestrateur de commande\n(FS-B06..B09, FS-V04..V08)] as OrderSvc
     [Moteur de rapports\n(FS-V07)] as ReportSvc

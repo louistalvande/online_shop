@@ -818,7 +818,7 @@ include::diagrams/ihm/ihm-admin-form-transporteur.puml[]
 | Service Catalogue
 | module-catalogue
 | Conteneur API Spring Boot
-| Spring Boot / Spring Data JPA / Hibernate
+| Spring Boot / Spring Data JPA / Hibernate — import : `POST /produits/import` (`multipart/form-data`, OpenCSV) créations uniquement, rapport ligne par ligne (créé / erreur) ; export : `GET /produits/export` (`text/csv`, UTF-8 BOM, `Content-Disposition: attachment`)
 
 | Service Panier
 | module-panier
