@@ -244,7 +244,7 @@ actor "Acheteur" as Buyer
 actor "Transporteur\n(système externe)" as Carrier
 actor "Prestataire\nde paiement" as Payment
 
-rectangle "Système — Application Ecommerce" {
+rectangle "Système — Application e-commerce" {
 
   package "Gestion des comptes" {
     usecase (UCSA-12\nGérer les comptes\nutilisateurs et transporteurs) as UC12
@@ -1400,7 +1400,7 @@ actor "Acheteur" as Buyer
 actor "Vendeur" as Vendor
 actor "Administrateur" as Admin
 
-package "Système — Application Ecommerce" {
+package "Système — Application e-commerce" {
 
   package "Front-office (IFS-01)" {
     [Portail Acheteur\n(catalogue, panier, tunnel d'achat)] as FrontBuyer

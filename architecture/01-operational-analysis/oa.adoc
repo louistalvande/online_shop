@@ -151,7 +151,7 @@ left to right direction
 actor "Administrateur" as Admin
 rectangle "Transporteur\n(système externe)" as Carrier <<system>>
 
-rectangle "Application Ecommerce" {
+rectangle "Application e-commerce" {
   usecase (S'authentifier) as UC_A0
   package "Gestion des comptes" {
     usecase (Créer / suspendre /\nsupprimer un compte\nacheteur ou vendeur) as UC_A1
@@ -201,7 +201,7 @@ left to right direction
 actor "Vendeur" as Vendor
 rectangle "Transporteur\n(système externe)" as Carrier <<system>>
 
-rectangle "Application Ecommerce" {
+rectangle "Application e-commerce" {
   usecase (S'authentifier) as UC_V_AUTH
   package "Gestion du compte" {
     usecase (Mettre à jour\nson compte) as UC_V0
@@ -268,7 +268,7 @@ rectangle "Service de\nmessagerie" as Mail <<system>>
 rectangle "Prestataire\nde paiement" as Payment <<system>>
 rectangle "Transporteur\n(système externe)" as Carrier <<system>>
 
-rectangle "Application Ecommerce" {
+rectangle "Application e-commerce" {
   package "Inscription et compte" {
     usecase (S'inscrire) as UC_B0
     usecase (Activer son compte\nvia email) as UC_B0B

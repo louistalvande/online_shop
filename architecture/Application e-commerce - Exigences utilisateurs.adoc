@@ -1,4 +1,4 @@
-= Application Ecommerce - Exigences métier
+= Application e-commerce - Exigences métier
 :doctype: article
 :toc: left
 :toclevels: 3
