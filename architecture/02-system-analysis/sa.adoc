@@ -54,7 +54,7 @@ NOTE: Le système couvre l'ensemble des interactions numériques entre les six a
 | *Service de messagerie*
 | Système externe
 | Acheminement des emails transactionnels (activation de compte, notifications)
-| SMTP / SMS Gateway — sortant (IFS-06)
+| SMTP — sortant (IFS-06)
 |===
 
 == Contraintes système
@@ -1360,8 +1360,8 @@ end note
 | L'acheteur utilise le numéro de suivi pour consulter l'acheminement directement sur le site du transporteur ; aucun appel API entre le système et le transporteur
 
 | *IFS-06*
-| Notifications email / SMS
-| SMTP / SMS Gateway — sortant
+| Notifications email
+| SMTP — sortant
 | Confirmation de commande, expédition, annulation, alerte de rupture de stock
 |===
 
@@ -1406,7 +1406,7 @@ package "Système — Boutique en ligne" {
 
   package "Intégrations externes" {
     [Connecteur Paiement\n(FS-P01..P03 / IFS-04)] as PaySvc
-    [Service Notifications\n(email / SMS / IFS-06)] as NotifSvc
+    [Service Notifications\n(email / IFS-06)] as NotifSvc
   }
 
 }

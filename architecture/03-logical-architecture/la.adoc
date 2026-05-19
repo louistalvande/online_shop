@@ -704,7 +704,7 @@ package "Entités techniques (LA)" #FFF8E8 {
   class TemplateNotification {
     + id : UUID
     + code : String
-    + canal : Enum {email, sms}
+    + canal : Enum {email}
     + sujet : String
     + corps : Text
   }
