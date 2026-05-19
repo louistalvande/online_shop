@@ -195,6 +195,7 @@ CREATE TABLE orders (
     buyer_iban               VARCHAR(34),
     tracking_number          VARCHAR(100),
     vendor_email             VARCHAR(255)  NOT NULL DEFAULT '',
+    vendor_id                UUID          REFERENCES accounts(id),
     created_at               TIMESTAMP     NOT NULL DEFAULT NOW(),
     updated_at               TIMESTAMP     NOT NULL DEFAULT NOW()
 );
@@ -202,6 +203,7 @@ CREATE TABLE orders (
 CREATE INDEX idx_orders_buyer_id    ON orders (buyer_id);
 CREATE INDEX idx_orders_status      ON orders (status);
 CREATE INDEX idx_orders_order_number ON orders (order_number);
+CREATE INDEX idx_orders_vendor_id   ON orders (vendor_id);
 
 CREATE TABLE order_lines (
     id                  UUID          PRIMARY KEY DEFAULT gen_random_uuid(),

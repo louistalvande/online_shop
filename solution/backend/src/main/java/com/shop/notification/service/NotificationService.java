@@ -50,4 +50,13 @@ public interface NotificationService {
      * @param locale  the locale used to select the email language
      */
     void sendVendorNewOrderEmail(String toEmail, OrderResponse order, Locale locale);
+
+    /**
+     * Notifies the buyer that the vendor has rejected their wire transfer payment and the order is cancelled (US-VND-02).
+     *
+     * @param toEmail the buyer's email address
+     * @param order   the cancelled order
+     * @param locale  the locale used to select the email language
+     */
+    void sendWirePaymentRejectedEmail(String toEmail, OrderResponse order, Locale locale);
 }
