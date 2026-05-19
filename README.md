@@ -1,4 +1,11 @@
-# Application Web E-commerce
+# Application Web E-commerce / E-commerce Web Application
+
+![MBSE](https://img.shields.io/badge/Method-MBSE-blue)
+![ARCADIA](https://img.shields.io/badge/Framework-ARCADIA-4A90D9)
+![AsciiDoc](https://img.shields.io/badge/Docs-AsciiDoc-E40046)
+![PlantUML](https://img.shields.io/badge/Diagrams-PlantUML-brightgreen)
+![AI](https://img.shields.io/badge/Agentic-AI-8A2BE2)
+![Engineering](https://img.shields.io/badge/Software-Engineering-orange)
 
 ## Table of Contents / Sommaire
 
