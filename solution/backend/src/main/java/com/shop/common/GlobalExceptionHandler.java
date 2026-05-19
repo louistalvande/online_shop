@@ -1,6 +1,9 @@
 package com.shop.common;
 
 import com.shop.account.exception.AccountNotFoundException;
+import com.shop.claim.exception.ClaimAlreadyOpenException;
+import com.shop.claim.exception.ClaimNotFoundException;
+import com.shop.claim.exception.InvalidClaimStateException;
 import com.shop.account.exception.EmailAlreadyUsedException;
 import com.shop.account.exception.InvalidAccountStateException;
 import com.shop.account.exception.WrongCurrentPasswordException;
@@ -353,6 +356,51 @@ public class GlobalExceptionHandler {
         String message = messageSource.getMessage("error.order.missing.buyer.iban", null, locale);
         return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY)
                 .body(Map.of("error", "MISSING_BUYER_IBAN", "message", message));
+    }
+
+    /**
+     * Handles claim not found or not owned by the requesting user — returns HTTP 404 (US-CLM-01, US-CLM-02).
+     *
+     * @param ex     the exception
+     * @param locale the request locale
+     * @return a 404 response with a localised error body
+     */
+    @ExceptionHandler(ClaimNotFoundException.class)
+    public ResponseEntity<Map<String, String>> handleClaimNotFound(
+            ClaimNotFoundException ex, Locale locale) {
+        String message = messageSource.getMessage("error.claim.not.found", null, locale);
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(Map.of("error", "CLAIM_NOT_FOUND", "message", message));
+    }
+
+    /**
+     * Handles an operation on a claim in an incompatible state — returns HTTP 409 (US-CLM-02).
+     *
+     * @param ex     the exception
+     * @param locale the request locale
+     * @return a 409 response with a localised error body
+     */
+    @ExceptionHandler(InvalidClaimStateException.class)
+    public ResponseEntity<Map<String, String>> handleInvalidClaimState(
+            InvalidClaimStateException ex, Locale locale) {
+        String message = messageSource.getMessage("error.claim.invalid.state", null, locale);
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(Map.of("error", "INVALID_CLAIM_STATE", "message", message));
+    }
+
+    /**
+     * Handles a duplicate open claim on the same order — returns HTTP 409 (US-CLM-01).
+     *
+     * @param ex     the exception
+     * @param locale the request locale
+     * @return a 409 response with a localised error body
+     */
+    @ExceptionHandler(ClaimAlreadyOpenException.class)
+    public ResponseEntity<Map<String, String>> handleClaimAlreadyOpen(
+            ClaimAlreadyOpenException ex, Locale locale) {
+        String message = messageSource.getMessage("error.claim.already.open", null, locale);
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(Map.of("error", "CLAIM_ALREADY_OPEN", "message", message));
     }
 
     /**
