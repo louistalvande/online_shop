@@ -7,6 +7,7 @@ import RegisterPage from './RegisterPage'
 import ActivatePage from './ActivatePage'
 import ProfilePage from './ProfilePage'
 import CatalogPage from './CatalogPage'
+import CartPage from './CartPage'
 const path = window.location.pathname
 const token = new URLSearchParams(window.location.search).get('token') ?? ''
 
@@ -15,6 +16,7 @@ function Root() {
   if (path === '/activate') return <ActivatePage token={token} />
   if (path === '/profile') return <ProfilePage />
   if (path === '/catalog') return <CatalogPage />
+  if (path === '/cart') return <CartPage />
   return <App openLogin={path === '/login'} />
 }
 

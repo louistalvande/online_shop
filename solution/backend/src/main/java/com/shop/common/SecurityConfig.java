@@ -70,6 +70,7 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.POST, "/api/auth/login").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/auth/setup-password").authenticated()
                 .requestMatchers("/api/me", "/api/me/**").authenticated()
+                .requestMatchers("/api/cart", "/api/cart/**").hasRole("BUYER")
                 .requestMatchers("/swagger-ui/**", "/api-docs/**", "/actuator/health", "/actuator/info").permitAll()
                 .requestMatchers(HttpMethod.GET,    "/api/admin/**").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.POST,   "/api/admin/**").hasRole("ADMIN")

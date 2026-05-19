@@ -101,5 +101,20 @@
   "catalog.page.prev": "< Previous",
   "catalog.page.next": "Next >",
   "catalog.page.info": "Page {{current}} of {{total}}",
-  "catalog.error.load": "Unable to load the catalogue. Please try again."
+  "catalog.error.load": "Unable to load the catalogue. Please try again.",
+  "cart.title": "My cart",
+  "cart.loading": "Loading cart…",
+  "cart.empty": "Your cart is empty.",
+  "cart.loginRequired": "Sign in to access your cart.",
+  "cart.col.product": "Product",
+  "cart.col.unitPrice": "Price incl. tax",
+  "cart.col.quantity": "Quantity",
+  "cart.col.total": "Subtotal",
+  "cart.remove": "Remove",
+  "cart.outOfStock": "(unavailable)",
+  "cart.grandTotal": "Total incl. tax",
+  "cart.checkout": "Proceed to checkout",
+  "cart.error.load": "Unable to load your cart. Please try again.",
+  "cart.error.outOfStock": "This product is out of stock or the requested quantity exceeds available stock.",
+  "cart.error.update": "An error occurred while updating the cart."
 }

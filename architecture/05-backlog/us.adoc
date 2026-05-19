@@ -235,16 +235,16 @@ _Fonctions ARCADIA : FS-B04, FS-B05, CS-03 — UCSA-04 — LA : Service Panier_
 | *US-CRT-01*
 | En tant qu'acheteur authentifié, je peux ajouter des produits à mon panier, modifier les quantités et retirer des articles.
 a|
-- [ ] Ajout bloqué si le produit est en rupture de stock (message explicite)
-- [ ] Récapitulatif (lignes + total) mis à jour en temps réel
-| À faire
+- [x] Ajout bloqué si le produit est en rupture de stock (message explicite)
+- [x] Récapitulatif (lignes + total) mis à jour en temps réel
+| Terminée
 
 | *US-CRT-02*
 | En tant qu'acheteur authentifié, mon panier est automatiquement sauvegardé et intégralement restauré à ma reconnexion.
 a|
-- [ ] Panier persisté en base après chaque modification (CS-03)
-- [ ] Contenu (produits, quantités) restauré à la reconnexion suivante
-| À faire
+- [x] Panier persisté en base après chaque modification (CS-03)
+- [x] Contenu (produits, quantités) restauré à la reconnexion suivante
+| Terminée
 
 |===
 
