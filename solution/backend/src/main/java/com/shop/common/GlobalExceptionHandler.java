@@ -4,6 +4,7 @@ import com.shop.account.exception.AccountNotFoundException;
 import com.shop.claim.exception.ClaimAlreadyOpenException;
 import com.shop.claim.exception.ClaimNotFoundException;
 import com.shop.claim.exception.InvalidClaimStateException;
+import com.shop.report.exception.InvalidPeriodException;
 import com.shop.account.exception.EmailAlreadyUsedException;
 import com.shop.account.exception.InvalidAccountStateException;
 import com.shop.account.exception.WrongCurrentPasswordException;
@@ -401,6 +402,21 @@ public class GlobalExceptionHandler {
         String message = messageSource.getMessage("error.claim.already.open", null, locale);
         return ResponseEntity.status(HttpStatus.CONFLICT)
                 .body(Map.of("error", "CLAIM_ALREADY_OPEN", "message", message));
+    }
+
+    /**
+     * Handles an invalid sales report period format — returns HTTP 400 (US-RPT-01).
+     *
+     * @param ex     the exception
+     * @param locale the request locale
+     * @return a 400 response with a localised error body
+     */
+    @ExceptionHandler(InvalidPeriodException.class)
+    public ResponseEntity<Map<String, String>> handleInvalidPeriod(
+            InvalidPeriodException ex, Locale locale) {
+        String message = messageSource.getMessage("error.report.invalid.period", null, locale);
+        return ResponseEntity.badRequest()
+                .body(Map.of("error", "INVALID_PERIOD", "message", message));
     }
 
     /**
