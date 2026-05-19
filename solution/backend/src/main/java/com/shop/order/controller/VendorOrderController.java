@@ -1,6 +1,7 @@
 package com.shop.order.controller;
 
 import com.shop.order.dto.OrderResponse;
+import com.shop.order.dto.ShipOrderRequest;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -68,4 +69,22 @@ public interface VendorOrderController {
     @ApiResponse(responseCode = "409", description = "Order not in PAYMENT_PENDING_WIRE state")
     @PostMapping("/{orderId}/reject-wire")
     ResponseEntity<OrderResponse> rejectWire(@PathVariable UUID orderId, Principal principal, Locale locale);
+
+    /**
+     * Declares shipment of an order by recording the carrier tracking number.
+     * Transitions the order to {@code SHIPPED} and notifies the buyer (US-EXP-01).
+     *
+     * @param orderId   the order UUID
+     * @param request   the shipment request containing the tracking number
+     * @param principal the authenticated vendor principal
+     * @param locale    locale for buyer notification
+     * @return 200 with the updated order
+     */
+    @Operation(summary = "Declare order shipment with tracking number")
+    @ApiResponse(responseCode = "200", description = "Order marked as shipped")
+    @ApiResponse(responseCode = "409", description = "Order not in a shippable state")
+    @PostMapping("/{orderId}/ship")
+    ResponseEntity<OrderResponse> ship(@PathVariable UUID orderId,
+                                       @RequestBody ShipOrderRequest request,
+                                       Principal principal, Locale locale);
 }

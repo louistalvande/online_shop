@@ -145,6 +145,29 @@ public class NotificationServiceImpl implements NotificationService {
     /** {@inheritDoc} */
     @Async
     @Override
+    public void sendShipmentNotificationEmail(String toEmail, OrderResponse order, Locale locale) {
+        if (!sendGridConfigured) {
+            log.info("[EMAIL] Shipment notification for {} — order #{} tracking={}",
+                    toEmail, order.getOrderNumber(), order.getTrackingNumber());
+            return;
+        }
+
+        String subject = messageSource.getMessage(
+                "email.shipment.subject",
+                new Object[]{order.getOrderNumber()},
+                locale);
+        String htmlBody = messageSource.getMessage(
+                "email.shipment.body.html",
+                new Object[]{order.getOrderNumber(), order.getTrackingNumber(),
+                        order.getCarrierTrackingUrl(), order.getCarrierName()},
+                locale);
+
+        sendEmail(toEmail, subject, htmlBody);
+    }
+
+    /** {@inheritDoc} */
+    @Async
+    @Override
     public void sendWirePaymentRejectedEmail(String toEmail, OrderResponse order, Locale locale) {
         if (!sendGridConfigured) {
             log.info("[EMAIL] Wire payment rejected for {} — order #{}", toEmail, order.getOrderNumber());

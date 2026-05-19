@@ -46,4 +46,16 @@ public interface VendorOrderService {
      * @return the updated order response
      */
     OrderResponse rejectWirePayment(UUID vendorId, UUID orderId, Locale locale);
+
+    /**
+     * Marks an order as shipped by recording the carrier tracking number and transitioning the order
+     * to {@code SHIPPED}. The buyer is notified by email (US-EXP-01).
+     *
+     * @param vendorId       the authenticated vendor's account UUID
+     * @param orderId        the order UUID
+     * @param trackingNumber the carrier-issued tracking number
+     * @param locale         buyer notification locale
+     * @return the updated order response
+     */
+    OrderResponse shipOrder(UUID vendorId, UUID orderId, String trackingNumber, Locale locale);
 }
