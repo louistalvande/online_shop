@@ -17,5 +17,5 @@ asciidoctor -r asciidoctor-diagram -a data-uri -a webfonts! -o "Application e-co
 ## Document des besoins opérationnels (PDF)
 
 ```bash
-asciidoctor -o "../Exigences utilisateurs.pdf" "Application e-commerce - Exigences utilisateurs.adoc"
+asciidoctor -o "../Exigences utilisateurs.pdf" "Exigences utilisateurs.adoc"
 ```
