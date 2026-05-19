@@ -19,7 +19,6 @@
 - [1. Rédaction du document d'architecture](#1-rédaction-du-document-darchitecture)
 - [2. Mise en place de l'infrastructure](#2-mise-en-place-de-linfrastructure-de-la-solution)
 - [3. Développement itératif](#3-développement-des-cas-dutilisation-de-manière-itérative)
-- [4. Documentation utilisateur](#4-rédaction-de-la-documentation-utilisateur)
 
 </td>
 <td valign="top">
@@ -29,7 +28,6 @@
 - [1. Writing the Architecture Document](#1-writing-the-architecture-document)
 - [2. Setting Up the Infrastructure](#2-setting-up-the-solution-infrastructure)
 - [3. Iterative Development](#3-iterative-development-of-use-cases)
-- [4. User Documentation](#4-writing-the-user-documentation)
 
 </td>
 </tr>
@@ -39,26 +37,25 @@
 
 ## Introduction 🇫🇷
 
-Le projet a pour objectif de développer une application web de site e-commerce dans l'état de l'art actuel, aussi bien en terme d'ergonomie que de cybersécurité ([recommandations ANSSI](https://fr.wikipedia.org/wiki/Agence_nationale_de_la_s%C3%A9curit%C3%A9_des_syst%C3%A8mes_d%27information)), en suivant un processus d'ingénierie logiciel éprouvé. Il débute par la rédaction d'un [document d'architecture](architecture/Boutique%20en%20ligne%20-%20Documentation%20d%27Architecture.pdf) à partir des [exigences](architecture/Boutique%20en%20ligne%20-%20Exigences%20d%27utilisateurs.pdf) avant de passer au développement de la solution logicielle concrète.
+Le projet a pour objectif de développer un site e-commerce dans l'état de l'art actuel, aussi bien en terme d'ergonomie que de cybersécurité ([recommandations ANSSI](https://fr.wikipedia.org/wiki/Agence_nationale_de_la_s%C3%A9curit%C3%A9_des_syst%C3%A8mes_d%27information)), en suivant un processus d'ingénierie logiciel éprouvé. Il débute par la rédaction d'un [document d'architecture](architecture/Boutique%20en%20ligne%20-%20Documentation%20d%27Architecture.pdf) à partir des [exigences](architecture/Boutique%20en%20ligne%20-%20Exigences%20d%27utilisateurs.pdf) avant de passer au développement de la solution logicielle concrète.
 
 La démarche adoptée est volontairement rigoureuse et structurée. Un site e-commerce n'est pas le cas d'usage le plus représentatif pour une méthode issue du génie logiciel industriel — mais c'est précisément ce qui en fait un exemple intéressant : démontrer que la démarche s'adapte à tout type de projet, y compris web. Elle présente également un avantage concret dans le contexte actuel : disposer d'une architecture documentée et structurée permet de cadrer efficacement la génération de code par une IA, en lui fournissant un contexte précis et des contraintes claires plutôt que de partir d'une page blanche. Elle s'appuie sur le principe fondamental que *l'architecture précède le code* : avant d'écrire la moindre ligne de code, le système est entièrement modélisé, documenté et validé. Cette approche, issue du génie logiciel industriel, permet de détecter les incohérences et les ambiguïtés en amont, là où elles coûtent le moins cher à corriger. Cette démarche peut très bien prendre en compte de nouvelles exigences en cours de développement, à condition qu'elles repassent par l'ensemble du processus de conception afin de maintenir la documentation d'architecture à jour.
 
-L'architecture est modélisée selon la méthode [ARCADIA](https://fr.wikipedia.org/wiki/Arcadia_(ing%C3%A9nierie)) (MBSE - Model-Based System Engineering), sans recourir à des outils lourds tels qu'Enterprise Architect, Rhapsody ou Capella. La stack retenue est volontairement légère : AsciiDoc pour la rédaction du document d'architecture, PlantUML pour tous les diagrammes UML en notation textuelle versionnée avec le code, et Git pour la traçabilité. AsciiDoc et PlantUML étant des formats textuels, une IA agentique peut les lire, les analyser et les produire nativement — sans interface graphique, sans plugin, sans export. Concrètement, à partir du document des exigences, elle génère les quatre vues ARCADIA (OA, SA, LA, PA) avec leurs diagrammes UML, et propage tout changement d'exigence à travers toute la chaîne — architecture, diagrammes, code — sans rupture de traçabilité.
+L'architecture est modélisée selon une approche **MBSE no tool** — appliquer la méthode [ARCADIA](https://fr.wikipedia.org/wiki/Arcadia_(ing%C3%A9nierie)) (MBSE - Model-Based System Engineering) sans recourir à des outils puissants mais lourds tels qu'IBM Rhapsody, Enterprise Architect ou Capella, et sans engendrer de surcoût — ni en licences, ni en outillage, ni en courbe d'apprentissage. La stack retenue est volontairement légère : AsciiDoc pour la rédaction du document d'architecture, PlantUML pour tous les diagrammes UML en notation textuelle versionnée avec le code, et Git pour la gestion de version. Ces deux formats textuels présentent deux avantages complémentaires : les modifications de l'architecture sont directement lisibles dans une pull request, comme n'importe quel changement de code — contrairement aux modèles binaires des outils MBSE traditionnels, impossibles à relire ou à commenter dans une revue de code — et une IA agentique peut les lire, les analyser et les produire nativement — sans interface graphique, sans plugin, sans export. À partir du document des exigences, elle assiste l'ingénieur pour construire les quatre vues ARCADIA (OA, SA, LA, PA) avec leurs diagrammes UML, et propage tout changement d'exigence à travers toute la chaîne — architecture, diagrammes, code — sans rupture de traçabilité.
 
 L'absence d'outil MBSE dédié est aussi une liberté : sans contrainte logicielle, la méthode peut être appliquée à la carte — en ne retenant que les niveaux d'analyse et les diagrammes réellement utiles au contexte du projet, plutôt que de suivre la démarche dans son intégralité par obligation.
 
-Le processus global se déroule en quatre phases séquentielles et interdépendantes :
+Le processus global se déroule en trois phases séquentielles et interdépendantes :
 
 - **Rédaction du document d'architecture** — Le besoin utilisateur est analysé en profondeur selon la méthode [ARCADIA](https://fr.wikipedia.org/wiki/Arcadia_(ing%C3%A9nierie)) (méthode MBSE - Model-Based System Engineering), du contexte opérationnel jusqu'à l'architecture physique de déploiement. Ce document constitue la référence technique et fonctionnelle de tout le projet.
 - **Mise en place de l'infrastructure** — Les environnements (développement, gestion de version, production) sont configurés et validés avant le début du développement fonctionnel. Aucune User Story n'est implémentée tant que la plateforme de livraison n'est pas opérationnelle.
-- **Développement itératif des cas d'utilisation** — Les fonctionnalités sont implémentées une par une, chacune suivant un cycle complet d'analyse, de développement, de tests et d'intégration. Chaque itération s'appuie sur l'architecture définie et laisse le système dans un état stable et livrable.
-- **Rédaction de la documentation utilisateur** — Une fois l'ensemble des fonctionnalités développées et validées, la documentation destinée aux utilisateurs finaux est produite sur la base de l'application telle qu'elle a été livrée.
+- **Développement itératif des cas d'utilisation** — Les fonctionnalités sont implémentées une par une, chacune suivant un cycle complet d'analyse, de développement, de tests et d'intégration. Chaque itération s'appuie sur l'architecture définie et laisse le système dans un état stable et livrable. Une fois toutes les fonctionnalités livrées, la documentation utilisateur est produite sur la base de l'application telle qu'elle a été livrée.
 
 ### 1. Rédaction du document d'architecture
 
 Le document d'architecture est rédigé en suivant la méthodologie ARCADIA (Architecture Analysis & Design Integrated Approach).
 
-En voici les grandes phases d'analyse :
+En voici les grandes phases d'analyse, qui représentent le besoin ou le système à des niveaux d'abstraction différents :
 
 ![ARCADIA](architecture/arcadia.png)
 
@@ -160,11 +157,7 @@ Pour chaque User Story, le cycle suivant est appliqué dans son intégralité :
 
 Cette approche garantit une livraison progressive et maîtrisée, tout en limitant les risques de régression au fil des itérations.
 
-### 4. Rédaction de la documentation utilisateur
-
-Une fois l'ensemble des cas d'utilisation développés et validés, la documentation destinée aux utilisateurs finaux est produite sur la base des fonctionnalités implémentées.
-
-Cette documentation comprend notamment :
+Une fois l'ensemble des cas d'utilisation développés et validés, la documentation utilisateur est produite sur la base de l'application telle qu'elle a été livrée. Elle comprend notamment :
 
 - un guide utilisateur décrivant les principales fonctionnalités du site e-commerce (navigation, recherche de produits, gestion du panier, tunnel d'achat, suivi de commande, etc.) ;
 - des guides pas à pas illustrant les parcours utilisateurs clés ;
@@ -178,24 +171,25 @@ L'objectif est de fournir une documentation claire, accessible et maintenable, c
 
 ## Introduction 🇬🇧
 
-The project aims to develop an e-commerce web application built to current best practices, in terms of both user experience and cybersecurity ([ANSSI recommendations](https://en.wikipedia.org/wiki/Agence_nationale_de_la_s%C3%A9curit%C3%A9_des_syst%C3%A8mes_d%27information)), following a proven software engineering process. It begins with the writing of an [architecture document](architecture/Boutique%20en%20ligne%20-%20Documentation%20d%27Architecture.pdf) from the [requirements](architecture/Boutique%20en%20ligne%20-%20Exigences%20d%27utilisateurs.pdf), before moving on to the concrete development of the software solution.
+The project aims to develop an e-commerce website built to current best practices, in terms of both user experience and cybersecurity ([ANSSI recommendations](https://en.wikipedia.org/wiki/Agence_nationale_de_la_s%C3%A9curit%C3%A9_des_syst%C3%A8mes_d%27information)), following a proven software engineering process. It begins with the writing of an [architecture document](architecture/Boutique%20en%20ligne%20-%20Documentation%20d%27Architecture.pdf) from the [requirements](architecture/Boutique%20en%20ligne%20-%20Exigences%20d%27utilisateurs.pdf), before moving on to the concrete development of the software solution.
 
 The approach is deliberately rigorous and structured. An e-commerce website is not the most representative use case for a method rooted in industrial software engineering — but that is precisely what makes it an interesting example: demonstrating that the approach adapts to any type of project, including web applications. It also offers a concrete advantage in today's context: having a documented and structured architecture makes it possible to effectively frame AI-assisted code generation, providing precise context and clear constraints rather than starting from a blank page. It rests on the fundamental principle that *architecture precedes code*: before a single line of code is written, the system is fully modelled, documented, and validated. This approach, rooted in industrial software engineering, makes it possible to detect inconsistencies and ambiguities early — where they are least costly to fix. This approach can very well accommodate new requirements arising during development, provided they go through the full design process in order to keep the architecture documentation up to date.
 
-The architecture is modelled using the [ARCADIA](https://en.wikipedia.org/wiki/Arcadia_(methodology)) method (MBSE - Model-Based System Engineering), without resorting to heavy tools such as Enterprise Architect, Rhapsody or Capella. The chosen stack is deliberately lightweight: AsciiDoc for writing the architecture document, PlantUML for all UML diagrams in text-based notation versioned alongside the code, and Git for traceability. Since AsciiDoc and PlantUML are text-based formats, an agentic AI can read, analyse and produce them natively — no graphical interface, no plugin, no export. In practice, from the requirements document, it generates all four ARCADIA views (OA, SA, LA, PA) with their UML diagrams, and propagates any requirement change across the entire chain — architecture, diagrams, code — with no break in traceability.
+The architecture is modelled following a **MBSE no tool** approach — applying the [ARCADIA](https://en.wikipedia.org/wiki/Arcadia_(methodology)) method (MBSE - Model-Based System Engineering) without resorting to powerful but heavy tools such as IBM Rhapsody, Enterprise Architect or Capella, and without incurring additional costs — no licences, no heavy tooling, no steep learning curve. The chosen stack is deliberately lightweight: AsciiDoc for writing the architecture document, PlantUML for all UML diagrams in text-based notation versioned alongside the code, and Git for version control. Both being text-based formats, they bring two complementary advantages: architecture changes are directly readable in a pull request, just like any code change — unlike the binary models produced by traditional MBSE tools, which are impossible to review or comment on in a code review — and an agentic AI can read, analyse and produce them natively — no graphical interface, no plugin, no export. From the requirements document, it assists the engineer in building all four ARCADIA views (OA, SA, LA, PA) with their UML diagrams, and propagates any requirement change across the entire chain — architecture, diagrams, code — with no break in traceability.
 
 The absence of a dedicated MBSE tool is also a freedom: without software constraints, the method can be applied selectively — retaining only the analysis levels and diagrams that are genuinely useful for the project's context, rather than following the full process out of obligation.
 
-The overall process unfolds across four sequential, interdependent phases:
+The overall process unfolds across three sequential, interdependent phases:
 
 - **Writing the architecture document** — The user requirements are analysed in depth using the [ARCADIA](https://en.wikipedia.org/wiki/Arcadia_(methodology)) method (MBSE - Model-Based System Engineering), from the operational context down to the physical deployment architecture. This document serves as the technical and functional reference for the entire project.
 - **Setting up the infrastructure** — The environments (development, version control, production) and CI/CD tooling are configured and validated before any functional development begins. No User Story is implemented until the delivery platform is fully operational.
-- **Iterative development of use cases** — Features are implemented one by one, each following a complete cycle of analysis, development, testing, and integration. Every iteration builds on the defined architecture and leaves the system in a stable, deliverable state.
-- **Writing the user documentation** — Once all features have been developed and validated, end-user documentation is produced based on the application as it has been delivered.
+- **Iterative development of use cases** — Features are implemented one by one, each following a complete cycle of analysis, development, testing, and integration. Every iteration builds on the defined architecture and leaves the system in a stable, deliverable state. Once all features have been delivered, user documentation is produced based on the application as it has been delivered.
 
 ### 1. Writing the Architecture Document
 
 The architecture document is written following the ARCADIA methodology (Architecture Analysis & Design Integrated Approach).
+
+Here are the main analysis phases, each representing the need or the system at a different level of abstraction:
 
 ![ARCADIA](architecture/arcadia.png)
 
@@ -297,11 +291,7 @@ For each User Story, the following cycle is applied in full:
 
 This approach ensures progressive, controlled delivery while minimising the risk of regression across iterations.
 
-### 4. Writing the User Documentation
-
-Once all use cases have been developed and validated, end-user documentation is produced based on the implemented features.
-
-This documentation includes in particular:
+Once all use cases have been developed and validated, user documentation is produced based on the application as it has been delivered. It includes in particular:
 
 - a user guide describing the main features of the e-commerce website (browsing, product search, cart management, checkout flow, order tracking, etc.);
 - step-by-step guides illustrating key user journeys;
