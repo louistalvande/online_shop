@@ -1,4 +1,4 @@
-# Application Web de boutique en ligne / Online Shop Web App
+# Application e-commerce / E-commerce Application
 
 ## Table of Contents / Sommaire
 
@@ -12,7 +12,7 @@
 
 ## 🇫🇷 Français
 
-Le projet a pour objectif de développer une application web de boutique en ligne dans l'état de l'art actuel, aussi bien en terme d'ergonomie que de cybersécurité et en suivant un processus d'ingénierie logiciel éprouvé. Il débute par la rédaction d'un [document d'architecture](architecture/Boutique%20en%20ligne%20-%20Documentation%20d%27Architecture.pdf) à partir des [exigences](architecture/Boutique%20en%20ligne%20-%20Exigences%20d%27utilisateurs.pdf) avant de passer au développement de la solution logicielle concrète.
+Le projet a pour objectif de développer une application web e-commerce dans l'état de l'art actuel, aussi bien en terme d'ergonomie que de cybersécurité et en suivant un processus d'ingénierie logiciel éprouvé. Il débute par la rédaction d'un [document d'architecture](Documentation%20d%27Architecture.pdf) à partir des [exigences](Exigences%20utilisateurs.pdf) avant de passer au développement de la solution logicielle concrète.
 
 La démarche adoptée est volontairement rigoureuse et structurée. Elle s'appuie sur le principe fondamental que *l'architecture précède le code* : avant d'écrire la moindre ligne de code, le système est entièrement modélisé, documenté et validé. Cette approche, issue du génie logiciel industriel, permet de détecter les incohérences et les ambiguïtés en amont, là où elles coûtent le moins cher à corriger. Cette démarche peut très bien prendre en compte de nouvelles exigences en cours de développement, à condition qu'elles repassent par l'ensemble du processus de conception afin de maintenir la documentation d'architecture à jour.
 
@@ -37,7 +37,7 @@ En voici les grandes phases d'analyse :
 
 La méthode ARCADIA est suivie en s'appuyant uniquement sur le langage de modélisation UML. Le document est construit avec AsciiDoc, et les diagrammes avec la notation textuelle de PlantUML, puis générés sous forme visuelle dans le document final.
 
-Le [document d'architecture](architecture/Boutique%20en%20ligne%20-%20Documentation%20d%27Architecture.pdf) est produit à partir du [**document des exigences utilisateurs**](architecture/Boutique%20en%20ligne%20-%20Exigences%20utilisateurs.pdf), qui constitue l'entrant formel de la démarche ARCADIA. Ce document recense les besoins opérationnels des acteurs (administrateur, vendeur, acheteur) ainsi que les exigences de sécurité issues des recommandations ANSSI, et sert de référence tout au long des quatre niveaux d'analyse.
+Le [document d'architecture](Documentation%20d%27Architecture.pdf) est produit à partir du [**document des exigences utilisateurs**](Exigences%20utilisateurs.pdf), qui constitue l'entrant formel de la démarche ARCADIA. Ce document recense les besoins opérationnels des acteurs (administrateur, vendeur, acheteur) ainsi que les exigences de sécurité issues des recommandations ANSSI, et sert de référence tout au long des quatre niveaux d'analyse.
 
 > **Note :** La solution respecte les **recommandations de sécurité de l'[ANSSI](https://www.ssi.gouv.fr/)** (Agence nationale de la sécurité des systèmes d'information), notamment le guide [authentification multifacteur et mots de passe](https://messervices.cyber.gouv.fr/guides/recommandations-relatives-lauthentification-multifacteur-et-aux-mots-de-passe). Ces recommandations sont déclinées sur les quatre niveaux ARCADIA de l'architecture — OA, SA, LA, PA — et implémentées dans le code : TLS 1.3, hachage BCrypt, protection contre la force brute, en-têtes HTTP de sécurité (CSP, HSTS, X-Frame-Options) et journalisation d'audit.
 
@@ -149,7 +149,7 @@ L'objectif est de fournir une documentation claire, accessible et maintenable, c
 
 ## 🇬🇧 English
 
-The project aims to develop an online shop web application built to current best practices, in terms of both user experience and cybersecurity, following a proven software engineering process. It begins with the writing of an [architecture document](architecture/Boutique%20en%20ligne%20-%20Documentation%20d%27Architecture.pdf) from the [requirements](architecture/Boutique%20en%20ligne%20-%20Exigences%20d%27utilisateurs.pdf), before moving on to the concrete development of the software solution.
+The project aims to develop an e-commerce web application built to current best practices, in terms of both user experience and cybersecurity, following a proven software engineering process. It begins with the writing of an [architecture document](Documentation%20d%27Architecture.pdf) from the [requirements](Exigences%20utilisateurs.pdf), before moving on to the concrete development of the software solution.
 
 The approach is deliberately rigorous and structured. It rests on the fundamental principle that *architecture precedes code*: before a single line of code is written, the system is fully modelled, documented, and validated. This approach, rooted in industrial software engineering, makes it possible to detect inconsistencies and ambiguities early — where they are least costly to fix. This approach can very well accommodate new requirements arising during development, provided they go through the full design process in order to keep the architecture documentation up to date.
 
@@ -172,7 +172,7 @@ The architecture document is written following the ARCADIA methodology (Architec
 
 The ARCADIA method is followed using exclusively UML modelling language. The document is written in AsciiDoc, and diagrams are expressed using PlantUML textual notation, then rendered visually in the final document.
 
-The [architecture document](architecture/Boutique%20en%20ligne%20-%20Documentation%20d%27Architecture.pdf) is produced from the [**user requirements document**](architecture/Boutique%20en%20ligne%20-%20Exigences%20utilisateurs.pdf), which constitutes the formal input to the ARCADIA process. This document captures the operational needs of all actors (administrator, vendor, buyer) as well as the security requirements derived from ANSSI recommendations, and serves as the reference throughout all four levels of analysis.
+The [architecture document](Documentation%20d%27Architecture.pdf) is produced from the [**user requirements document**](Exigences%20utilisateurs.pdf), which constitutes the formal input to the ARCADIA process. This document captures the operational needs of all actors (administrator, vendor, buyer) as well as the security requirements derived from ANSSI recommendations, and serves as the reference throughout all four levels of analysis.
 
 > **Note:** The solution complies with **[ANSSI](https://www.ssi.gouv.fr/en/) security recommendations** (French national cybersecurity agency), including the guide on [multi-factor authentication and passwords](https://messervices.cyber.gouv.fr/guides/recommandations-relatives-lauthentification-multifacteur-et-aux-mots-de-passe). These recommendations are traced across all four ARCADIA levels — OA, SA, LA, PA — and implemented in the code: TLS 1.3, BCrypt hashing, brute-force protection, HTTP security headers (CSP, HSTS, X-Frame-Options), and audit logging.
 

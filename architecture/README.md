@@ -5,7 +5,7 @@ Les commandes suivantes sont à exécuter depuis le répertoire `architecture/`.
 ## PDF
 
 ```bash
-asciidoctor-pdf -r asciidoctor-diagram main.adoc -o "Application e-commerce - Documentation d'Architecture.pdf"
+asciidoctor-pdf -r asciidoctor-diagram main.adoc -o "../Documentation d'Architecture.pdf"
 ```
 
 ## HTML
@@ -17,5 +17,5 @@ asciidoctor -r asciidoctor-diagram -a data-uri -a webfonts! -o "Application e-co
 ## Document des besoins opérationnels (PDF)
 
 ```bash
-asciidoctor -o "Application e-commerce - Exigences utilisateurs.pdf" "Application e-commerce - Exigences utilisateurs.adoc"
+asciidoctor -o "../Exigences utilisateurs.pdf" "Application e-commerce - Exigences utilisateurs.adoc"
 ```
