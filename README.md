@@ -1,5 +1,5 @@
 # Application Web E-commerce / E-commerce Web Application
-## Built with Model-Based Engineering Method
+### Built with Model-Based Engineering Method
 
 ![MBSE](https://img.shields.io/badge/Method-MBSE-blue)
 ![ARCADIA](https://img.shields.io/badge/Framework-ARCADIA-4A90D9)
@@ -10,11 +10,30 @@
 
 ## Table of Contents / Sommaire
 
+<table border="0">
+<tr>
+<td valign="top">
+
 ### 🇫🇷 Français
 - [Français](#français-)
+- [1. Rédaction du document d'architecture](#1-rédaction-du-document-darchitecture)
+- [2. Mise en place de l'infrastructure](#2-mise-en-place-de-linfrastructure-de-la-solution)
+- [3. Développement itératif](#3-développement-des-cas-dutilisation-de-manière-itérative)
+- [4. Documentation utilisateur](#4-rédaction-de-la-documentation-utilisateur)
+
+</td>
+<td valign="top">
 
 ### 🇬🇧 English
 - [English](#english-)
+- [1. Writing the Architecture Document](#1-writing-the-architecture-document)
+- [2. Setting Up the Infrastructure](#2-setting-up-the-solution-infrastructure)
+- [3. Iterative Development](#3-iterative-development-of-use-cases)
+- [4. User Documentation](#4-writing-the-user-documentation)
+
+</td>
+</tr>
+</table>
 
 ---
 
