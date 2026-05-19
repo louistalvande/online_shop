@@ -147,6 +147,15 @@ Cette phase comprend la configuration des environnements (développement, stagin
 
 Les [cas d'utilisation](architecture/05-backlog/us.adoc) sont implémentés de manière itérative, l'un après l'autre, en suivant un cycle de développement structuré et reproductible.
 
+```mermaid
+flowchart LR
+    A[Analyse &\nconception] --> B[Développement]
+    B --> C[Tests unitaires\n& intégration]
+    C --> D[Tests E2E]
+    D --> E[Revue &\nintégration]
+    E -->|User Story\nsuivante| A
+```
+
 Pour chaque User Story, le cycle suivant est appliqué dans son intégralité :
 
 - **Analyse & conception** — prise en compte des exigences fonctionnelles définies dans le document d'architecture ; en cas de doute ou d'incohérence, mise au point avec l'utilisateur avant de poursuivre.
@@ -280,6 +289,15 @@ This phase covers the configuration of environments (development, staging, produ
 ### 3. Iterative Development of Use Cases
 
 [Use cases](architecture/05-backlog/us.adoc) are implemented one by one in an iterative manner, following a structured and repeatable development cycle.
+
+```mermaid
+flowchart LR
+    A[Analysis &\nDesign] --> B[Development]
+    B --> C[Unit &\nIntegration Tests]
+    C --> D[E2E Tests]
+    D --> E[Review &\nIntegration]
+    E -->|Next\nUser Story| A
+```
 
 For each User Story, the following cycle is applied in full:
 
