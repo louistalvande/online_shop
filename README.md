@@ -1,5 +1,5 @@
 # Application Web E-commerce / E-commerce Web Application
-### Built with Model-Based Engineering Method
+### Conçu avec une méthode d'ingénierie système MBSE / Built with Model-Based Engineering Method
 
 ![MBSE](https://img.shields.io/badge/Method-MBSE-blue)
 ![ARCADIA](https://img.shields.io/badge/Framework-ARCADIA-4A90D9)
