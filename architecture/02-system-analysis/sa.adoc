@@ -183,10 +183,11 @@ Les fonctions système (FS) sont dérivées des cas d'utilisation opérationnels
 | FS-B03 | Afficher et filtrer le catalogue produits disponibles | UC_B1
 | FS-B04 | Gérer le panier (ajout, modification de quantité, suppression) | UC_B2
 | FS-B05 | Sauvegarder et restaurer le panier entre sessions (CS-03) | UC_B2B
-| FS-B06 | Orchestrer le tunnel d'achat (adresse, mode de livraison, validation) | UC_B3 / UC_B4B
+| FS-B06 | Orchestrer le tunnel d'achat (sélection d'une adresse du carnet ou saisie d'une nouvelle, mode de livraison, validation) | UC_B3 / UC_B4B
 | FS-B07 | Soumettre le paiement au prestataire externe — carte ou virement (CS-02) | UC_B4
 | FS-B08 | Afficher le numéro de suivi et le lien vers le site du transporteur dans l'espace commandes | UC_B5
 | FS-B09 | Permettre l'annulation d'une commande avant expédition | UC_B6
+| FS-B11 | Gérer le carnet d'adresses de livraison de l'acheteur : ajouter, modifier, supprimer des adresses et définir une adresse par défaut | UC_B_ACC
 |===
 
 === Interfaces externes
@@ -1308,6 +1309,17 @@ class Adresse {
   + paysZoneEuro : CodeISO
 }
 
+class AdresseLivraison {
+  + id : UUID
+  + libellé : String
+  + rue : String
+  + ville : String
+  + codePostal : String
+  + paysZoneEuro : CodeISO
+  + estParDefaut : Boolean
+}
+
+CompteUtilisateur "1" --> "1..*" AdresseLivraison : carnet
 CompteUtilisateur "1" --> "0..1" Panier : possède
 CompteUtilisateur "1" --> "0..*" Commande : passe
 Panier "1" *-- "0..*" LignePanier : contient

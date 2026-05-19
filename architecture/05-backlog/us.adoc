@@ -131,7 +131,7 @@ a|
 
 == Gestion du profil
 
-_Fonctions ARCADIA : FS-B02, FS-V01 — UCSA-02 — LA : Service Compte_
+_Fonctions ARCADIA : FS-B02, FS-B11, FS-V01 — UCSA-02 — LA : Service Compte_
 
 [cols="1,3,4,1", options="header"]
 |===
@@ -150,6 +150,17 @@ a|
 a|
 - [x] Même règles que US-PRF-01
 | Terminée
+
+| *US-PRF-03*
+| En tant qu'acheteur authentifié, je peux gérer un carnet d'adresses de livraison : ajouter une nouvelle adresse, modifier ou supprimer une adresse existante, et en définir une comme adresse par défaut.
+a|
+- [ ] Section « Mes adresses » accessible depuis l'espace compte
+- [ ] Formulaire d'ajout : libellé (ex. « Domicile »), rue, ville, code postal, pays (zone euro uniquement — CS-04)
+- [ ] L'adresse par défaut est présélectionnée automatiquement au passage de commande
+- [ ] Une seule adresse peut être marquée par défaut à la fois
+- [ ] Suppression bloquée si c'est la seule adresse du carnet
+- [ ] Minimum 1 adresse, pas de maximum imposé
+| À faire
 
 |===
 
@@ -486,6 +497,7 @@ a|
 | FS-A03 | Gérer les transporteurs | US-ADM-06, US-ADM-07, US-ADM-08, US-ADM-09
 | FS-B01 | Inscription + envoi email d'activation | US-REG-01
 | FS-B02 | Mise à jour du profil acheteur | US-PRF-01
+| FS-B11 | Gérer le carnet d'adresses de livraison | US-PRF-03
 | FS-B03 | Afficher et filtrer le catalogue | US-SHP-01, US-SHP-02
 | FS-B04 | Gérer le panier | US-CRT-01
 | FS-B05 | Persister et restaurer le panier | US-CRT-02

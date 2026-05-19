@@ -204,6 +204,10 @@ Un besoin opérationnel exprime **la nécessité d'un acteur** (ce qu'il doit po
 | BES-ACH-012
 | L'acheteur a besoin de contacter le vendeur pour demander l'annulation ou le retour d'une commande déjà expédiée, et d'être informé de l'acceptation ou du refus de sa demande.
 | UC_B7, Activités acheteur, Diagramme de séquence
+
+| BES-ACH-013
+| L'acheteur a besoin de gérer un carnet d'adresses de livraison : ajouter plusieurs adresses, les modifier, les supprimer et en désigner une par défaut, afin de sélectionner rapidement une adresse existante lors du passage d'une commande.
+| UC_B_ACC, Activités acheteur
 |===
 
 ---
@@ -276,6 +280,7 @@ Le tableau ci-dessous relie chaque besoin opérationnel aux activités et cas d'
 | BES-ACH-010 | Acheteur | UC_B5 — Suivre la livraison
 | BES-ACH-011 | Acheteur | UC_B6 — Annuler une commande (avant expédition)
 | BES-ACH-012 | Acheteur | UC_B7 — Demander une annulation après expédition
+| BES-ACH-013 | Acheteur | UC_B_ACC — Gérer le carnet d'adresses de livraison
 |===
 
 ---

@@ -569,10 +569,10 @@ end
 | Modifier ses informations personnelles (nom, adresse, mot de passe, coordonnées)
 
 | Gérer le catalogue produits
-| Créer, modifier et supprimer les fiches produits (photos, descriptions, prix, catégories)
+| Créer, modifier et supprimer les fiches produits (photos, descriptions, prix, catégories) ; importer en masse de nouveaux produits depuis un fichier CSV ; exporter le catalogue au format CSV
 
 | Gérer les stocks
-| Suivre les niveaux de stock, anticiper les ruptures, effectuer les réapprovisionnements
+| Suivre les niveaux de stock, anticiper les ruptures, effectuer les réapprovisionnements ; mettre à jour les stocks de plusieurs produits simultanément depuis la vue liste
 
 | Traiter les commandes
 | Prendre en charge les commandes reçues, vérifier le stock, préparer les colis
@@ -615,7 +615,10 @@ end
 | S'authentifier pour accéder aux fonctionnalités d'achat
 
 | Mettre à jour son compte
-| Modifier ses informations personnelles (adresse de livraison, mot de passe, coordonnées)
+| Modifier ses informations personnelles (mot de passe, coordonnées)
+
+| Gérer son carnet d'adresses de livraison
+| Ajouter, modifier et supprimer des adresses de livraison ; définir une adresse par défaut présélectionnée au passage de commande
 
 | Parcourir le catalogue
 | Rechercher, filtrer et consulter les produits disponibles
@@ -627,7 +630,7 @@ end
 | Le panier est automatiquement sauvegardé sur le compte de l'acheteur ; à la reconnexion, son contenu est restauré tel quel
 
 | Passer une commande
-| Saisir l'adresse de livraison dans un pays de la zone euro, choisir le mode de livraison, valider la commande
+| Sélectionner une adresse du carnet ou en saisir une nouvelle (zone euro uniquement), choisir le mode de livraison, valider la commande
 
 | Effectuer un paiement
 | Régler la commande par **carte bancaire** (autorisation immédiate) ou par **virement bancaire** (la commande reste en attente de la confirmation manuelle du vendeur jusqu'à réception effective des fonds)

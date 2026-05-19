@@ -50,8 +50,8 @@ Le système est structuré en cinq couches logiques : *Présentation*, *Applicat
 
 | *Service Compte*
 | Application
-| Inscription, activation par token email, authentification, gestion du profil, gestion des rôles
-| FS-B01, FS-B02, FS-B10, FS-A01, FS-A02
+| Inscription, activation par token email, authentification, gestion du profil, gestion du carnet d'adresses de livraison, gestion des rôles
+| FS-B01, FS-B02, FS-B10, FS-B11, FS-A01, FS-A02
 
 | *Service Catalogue*
 | Application
@@ -217,8 +217,8 @@ Les interfaces logiques définissent les contrats d'échange entre composants, i
 | *IFL-01*
 | Portails (UI)
 | Service Compte
-| Inscription, activation token, authentification, mise à jour profil, gestion rôles, gestion transporteurs
-| FS-B01, FS-B02, FS-B10, FS-A01..A03
+| Inscription, activation token, authentification, mise à jour profil, CRUD carnet d'adresses de livraison, gestion rôles, gestion transporteurs
+| FS-B01, FS-B02, FS-B10, FS-B11, FS-A01..A03
 
 | *IFL-02*
 | Portails (UI)
@@ -613,6 +613,16 @@ package "Entités métier (SA)" #F0F8FF {
     + dateCreation : DateTime
   }
 
+  class AdresseLivraison {
+    + id : UUID
+    + libellé : String
+    + rue : String
+    + ville : String
+    + codePostal : String
+    + paysZoneEuro : CodeISO
+    + estParDefaut : Boolean
+  }
+
   class Produit {
     + id : UUID
     + nom : String
@@ -711,6 +721,7 @@ package "Entités techniques (LA)" #FFF8E8 {
 }
 
 CompteUtilisateur "1" --> "0..*" TokenActivation : génère
+CompteUtilisateur "1" --> "1..*" AdresseLivraison : carnet
 CompteUtilisateur "1" --> "0..1" Panier : possède
 CompteUtilisateur "1" --> "0..*" Commande : passe
 Panier "1" *-- "0..*" LignePanier : contient
@@ -746,6 +757,7 @@ end note
 | FS-A06 | Configurer la langue de notification d'un compte | Service Compte | IFL-01, IFL-13
 | FS-B01 | Inscription + envoi email d'activation | Service Compte, Service Notification, Adaptateur Messagerie | IFL-01, IFL-09, IFL-12
 | FS-B02 | Mise à jour du profil acheteur | Service Compte | IFL-01, IFL-13
+| FS-B11 | Gérer le carnet d'adresses de livraison | Service Compte | IFL-01, IFL-13
 | FS-B03 | Afficher et filtrer le catalogue | Service Catalogue | IFL-02, IFL-13
 | FS-B04 | Gérer le panier | Service Panier | IFL-03, IFL-13
 | FS-B05 | Persister et restaurer le panier (CS-03) | Service Panier, Référentiel | IFL-03, IFL-13
