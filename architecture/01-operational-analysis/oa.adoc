@@ -10,7 +10,7 @@
 
 == Contexte et objectif
 
-L'Analyse du Besoin Opérationnel (OA) décrit le contexte métier réel d'une boutique en ligne, indépendamment de tout système à construire. Elle identifie les acteurs impliqués, leurs activités opérationnelles et les échanges entre eux.
+L'Analyse du Besoin Opérationnel (OA) décrit le contexte métier réel d'une application ecommerce, indépendamment de tout système à construire. Elle identifie les acteurs impliqués, leurs activités opérationnelles et les échanges entre eux.
 
 La boutique repose sur trois acteurs distincts. L'**administrateur** est l'unique responsable de la gestion des comptes utilisateurs. Le **vendeur** (propriétaire du site) prend en charge l'ensemble des opérations commerciales : catalogue, stocks, commandes et expéditions. L'**acheteur** est le client final qui navigue et passe commande. La boutique propose une livraison à destination des pays de la **zone euro**, via un ou plusieurs services de transport externes. Les paiements sont traités par un **prestataire de paiement externe** et acceptés par **carte bancaire** ou **virement bancaire**. L'activation du compte acheteur s'effectue via un lien envoyé par un **service de messagerie externe**.
 
@@ -151,7 +151,7 @@ left to right direction
 actor "Administrateur" as Admin
 rectangle "Transporteur\n(système externe)" as Carrier <<system>>
 
-rectangle "Boutique en ligne" {
+rectangle "Application Ecommerce" {
   usecase (S'authentifier) as UC_A0
   package "Gestion des comptes" {
     usecase (Créer / suspendre /\nsupprimer un compte\nacheteur ou vendeur) as UC_A1
@@ -201,7 +201,7 @@ left to right direction
 actor "Vendeur" as Vendor
 rectangle "Transporteur\n(système externe)" as Carrier <<system>>
 
-rectangle "Boutique en ligne" {
+rectangle "Application Ecommerce" {
   usecase (S'authentifier) as UC_V_AUTH
   package "Gestion du compte" {
     usecase (Mettre à jour\nson compte) as UC_V0
@@ -268,7 +268,7 @@ rectangle "Service de\nmessagerie" as Mail <<system>>
 rectangle "Prestataire\nde paiement" as Payment <<system>>
 rectangle "Transporteur\n(système externe)" as Carrier <<system>>
 
-rectangle "Boutique en ligne" {
+rectangle "Application Ecommerce" {
   package "Inscription et compte" {
     usecase (S'inscrire) as UC_B0
     usecase (Activer son compte\nvia email) as UC_B0B

@@ -10,7 +10,7 @@
 
 == Contexte et objectif
 
-L'Analyse Système (SA) décrit le système de boutique en ligne du point de vue des *fonctions que le logiciel doit remplir*, sans encore choisir de composants d'implémentation. Elle traduit les besoins opérationnels (OA) en exigences système, en identifiant les fonctions du système, leurs interfaces avec les acteurs externes et les contraintes techniques à respecter.
+L'Analyse Système (SA) décrit le système de application ecommerce du point de vue des *fonctions que le logiciel doit remplir*, sans encore choisir de composants d'implémentation. Elle traduit les besoins opérationnels (OA) en exigences système, en identifiant les fonctions du système, leurs interfaces avec les acteurs externes et les contraintes techniques à respecter.
 
 La SA repose sur les trois principes ARCADIA suivants :
 
@@ -244,7 +244,7 @@ actor "Acheteur" as Buyer
 actor "Transporteur\n(système externe)" as Carrier
 actor "Prestataire\nde paiement" as Payment
 
-rectangle "Système — Boutique en ligne" {
+rectangle "Système — Application Ecommerce" {
 
   package "Gestion des comptes" {
     usecase (UCSA-12\nGérer les comptes\nutilisateurs et transporteurs) as UC12
@@ -1400,7 +1400,7 @@ actor "Acheteur" as Buyer
 actor "Vendeur" as Vendor
 actor "Administrateur" as Admin
 
-package "Système — Boutique en ligne" {
+package "Système — Application Ecommerce" {
 
   package "Front-office (IFS-01)" {
     [Portail Acheteur\n(catalogue, panier, tunnel d'achat)] as FrontBuyer

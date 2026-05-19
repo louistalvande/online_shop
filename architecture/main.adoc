@@ -1,4 +1,4 @@
-= Boutique en ligne - Architecture du système
+= Application Ecommerce - Architecture du système
 :doctype: book
 :toc: left
 :toclevels: 3
