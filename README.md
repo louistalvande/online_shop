@@ -1,4 +1,4 @@
-# Application Web E-commerce / E-commerce Web Application
+# Application Web E-commerce
 
 ## Table of Contents / Sommaire
 
