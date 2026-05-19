@@ -15,7 +15,7 @@
 <td valign="top">
 
 ### 🇫🇷 Français
-- [Français](#français-)
+- [Introduction](#introduction-)
 - [1. Rédaction du document d'architecture](#1-rédaction-du-document-darchitecture)
 - [2. Mise en place de l'infrastructure](#2-mise-en-place-de-linfrastructure-de-la-solution)
 - [3. Développement itératif](#3-développement-des-cas-dutilisation-de-manière-itérative)
@@ -24,7 +24,7 @@
 <td valign="top">
 
 ### 🇬🇧 English
-- [English](#english-)
+- [Introduction](#introduction-)
 - [1. Writing the Architecture Document](#1-writing-the-architecture-document)
 - [2. Setting Up the Infrastructure](#2-setting-up-the-solution-infrastructure)
 - [3. Iterative Development](#3-iterative-development-of-use-cases)
