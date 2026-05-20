@@ -1,5 +1,6 @@
 package com.shop.common;
 
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -70,6 +71,8 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.POST, "/api/auth/login").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/auth/setup-password").authenticated()
                 .requestMatchers("/api/me", "/api/me/**").authenticated()
+                .requestMatchers("/api/cart", "/api/cart/**").hasRole("BUYER")
+                .requestMatchers("/api/orders", "/api/orders/**").hasRole("BUYER")
                 .requestMatchers("/swagger-ui/**", "/api-docs/**", "/actuator/health", "/actuator/info").permitAll()
                 .requestMatchers(HttpMethod.GET,    "/api/admin/**").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.POST,   "/api/admin/**").hasRole("ADMIN")
@@ -83,6 +86,9 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.DELETE, "/api/vendor/**").hasRole("VENDOR")
                 .anyRequest().permitAll()
             )
+            .exceptionHandling(eh -> eh
+                .authenticationEntryPoint((req, res, ex) ->
+                        res.sendError(HttpServletResponse.SC_UNAUTHORIZED)))
             .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }

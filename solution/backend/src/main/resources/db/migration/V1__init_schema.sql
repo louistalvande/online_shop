@@ -22,12 +22,12 @@ INSERT INTO accounts (id, email, password_hash, first_name, last_name, role, sta
 VALUES (
   gen_random_uuid(),
   'admin@onlineshop.com',
-  '$2a$10$eKsMdkG5gSwl1oclTnBad.NVyVPzDaFxT7tZt1TuRFyCuEMQJvHSm', -- admin
+  '$2a$12$p8qx.P/UPC0iBPtwiliBFO9fyoFK7k9ciql2mOOCWvgB.24.prp0O', -- Admin123456!
   'Admin',
   'System',
   'ADMIN',
   'ACTIVE',
-  TRUE,
+  FALSE,
   NOW()
 );
 
@@ -146,4 +146,100 @@ CREATE TABLE stock_alerts (
 
 CREATE INDEX idx_stock_alerts_product_id  ON stock_alerts (product_id);
 CREATE INDEX idx_stock_alerts_acknowledged ON stock_alerts (acknowledged);
+
+
+-- Cart domain (US-CRT-01, US-CRT-02)
+-- One persistent cart per authenticated buyer, with individual line items.
+
+CREATE TABLE cart (
+    id         UUID      PRIMARY KEY DEFAULT gen_random_uuid(),
+    buyer_id   UUID      NOT NULL REFERENCES accounts(id) ON DELETE CASCADE,
+    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    UNIQUE (buyer_id)
+);
+
+CREATE INDEX idx_cart_buyer_id ON cart (buyer_id);
+
+CREATE TABLE cart_item (
+    id         UUID    PRIMARY KEY DEFAULT gen_random_uuid(),
+    cart_id    UUID    NOT NULL REFERENCES cart(id) ON DELETE CASCADE,
+    product_id UUID    NOT NULL REFERENCES products(id),
+    quantity   INTEGER NOT NULL CHECK (quantity > 0),
+    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    UNIQUE (cart_id, product_id)
+);
+
+CREATE INDEX idx_cart_item_cart_id ON cart_item (cart_id);
+
+
+-- Order domain (US-ORD-01..05)
+-- Snapshot of carrier and product data at order creation time — independent of later changes.
+
+CREATE TABLE orders (
+    id                       UUID          PRIMARY KEY DEFAULT gen_random_uuid(),
+    order_number             VARCHAR(50)   NOT NULL UNIQUE,
+    buyer_id                 UUID          NOT NULL REFERENCES accounts(id),
+    carrier_id               UUID          NOT NULL REFERENCES carriers(id),
+    carrier_name             VARCHAR(100)  NOT NULL,
+    carrier_tracking_url     VARCHAR(500)  NOT NULL,
+    delivery_address_line    VARCHAR(255)  NOT NULL,
+    delivery_city            VARCHAR(100)  NOT NULL,
+    delivery_postal_code     VARCHAR(20)   NOT NULL,
+    delivery_country_code    VARCHAR(2)    NOT NULL REFERENCES countries(code),
+    payment_method           VARCHAR(20)   NOT NULL,
+    status                   VARCHAR(50)   NOT NULL,
+    total_amount_ttc         NUMERIC(10,2) NOT NULL,
+    stripe_payment_intent_id VARCHAR(100),
+    buyer_iban               VARCHAR(34),
+    tracking_number          VARCHAR(100),
+    vendor_email             VARCHAR(255)  NOT NULL DEFAULT '',
+    vendor_id                UUID          REFERENCES accounts(id),
+    created_at               TIMESTAMP     NOT NULL DEFAULT NOW(),
+    updated_at               TIMESTAMP     NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX idx_orders_buyer_id    ON orders (buyer_id);
+CREATE INDEX idx_orders_status      ON orders (status);
+CREATE INDEX idx_orders_order_number ON orders (order_number);
+CREATE INDEX idx_orders_vendor_id   ON orders (vendor_id);
+
+CREATE TABLE order_lines (
+    id                  UUID          PRIMARY KEY DEFAULT gen_random_uuid(),
+    order_id            UUID          NOT NULL REFERENCES orders(id) ON DELETE CASCADE,
+    product_id          UUID          REFERENCES products(id) ON DELETE SET NULL,
+    product_name        VARCHAR(200)  NOT NULL,
+    unit_price_excl_tax NUMERIC(10,2) NOT NULL,
+    unit_price_ttc      NUMERIC(10,2) NOT NULL,
+    quantity            INTEGER       NOT NULL CHECK (quantity > 0),
+    line_total_ttc      NUMERIC(10,2) NOT NULL
+);
+
+CREATE INDEX idx_order_lines_order_id ON order_lines (order_id);
+
+
+-- Claims domain (US-CLM-01, US-CLM-02)
+-- One claim per order per buyer; multiple claims allowed after the previous one is closed.
+
+CREATE TABLE claims (
+    id           UUID         PRIMARY KEY DEFAULT gen_random_uuid(),
+    order_id     UUID         NOT NULL REFERENCES orders(id),
+    order_number VARCHAR(50)  NOT NULL,
+    buyer_id     UUID         NOT NULL REFERENCES accounts(id),
+    buyer_email  VARCHAR(255) NOT NULL,
+    vendor_id    UUID         NOT NULL REFERENCES accounts(id),
+    vendor_email VARCHAR(255) NOT NULL,
+    reason       VARCHAR(30)  NOT NULL,
+    message      TEXT         NOT NULL,
+    status       VARCHAR(20)  NOT NULL DEFAULT 'OPEN',
+    decision     VARCHAR(20),
+    created_at   TIMESTAMP    NOT NULL DEFAULT NOW(),
+    updated_at   TIMESTAMP    NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX idx_claims_buyer_id  ON claims (buyer_id);
+CREATE INDEX idx_claims_vendor_id ON claims (vendor_id);
+CREATE INDEX idx_claims_order_id  ON claims (order_id);
+CREATE INDEX idx_claims_status    ON claims (status);
 

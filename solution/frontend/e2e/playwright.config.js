@@ -41,5 +41,21 @@ export default defineConfig({
         baseURL: process.env.BUYER_URL ?? 'http://buyer.localhost',
       },
     },
+    {
+      name: 'cart',
+      testMatch: ['cart/**/*.spec.js'],
+      use: {
+        ...devices['Desktop Chrome'],
+        baseURL: process.env.BUYER_URL ?? 'http://buyer.localhost',
+      },
+    },
+    {
+      name: 'order',
+      testMatch: ['order/**/*.spec.js'],
+      use: {
+        ...devices['Desktop Chrome'],
+        baseURL: process.env.BUYER_URL ?? 'http://buyer.localhost',
+      },
+    },
   ],
 });

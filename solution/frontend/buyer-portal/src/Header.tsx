@@ -39,7 +39,7 @@ export default function Header({ session, onShowLogin, onLogout, children }: Pro
               {t('nav.login')}
             </Button>
           )}
-          <Button variant="ghost" size="sm" aria-label={t('nav.cart')}>
+          <Button variant="ghost" size="sm" aria-label={t('nav.cart')} onClick={() => { window.location.href = '/cart' }}>
             <CartIcon size={22} />
           </Button>
         </div>
