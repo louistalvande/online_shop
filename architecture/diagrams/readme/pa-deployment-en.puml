@@ -9,6 +9,8 @@ skinparam databaseBackgroundColor #E8F4FD
 skinparam rectangleBorderColor #2E75B6
 skinparam rectangleBackgroundColor #EEF4FB
 
+left to right direction
+
 actor "Client Browser" as Client
 
 node "Web Server\n(React)" as Web
