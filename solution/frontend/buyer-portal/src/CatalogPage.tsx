@@ -80,7 +80,7 @@ export default function CatalogPage() {
         { label: t('nav.catalog'), href: '/catalog' },
       ]}
       actions={
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+        <div className="header-actions">
           <LangToggle
             lang={i18n.language}
             onToggle={() => i18n.changeLanguage(i18n.language === 'fr' ? 'en' : 'fr')}
@@ -105,49 +105,39 @@ export default function CatalogPage() {
         </div>
       }
     >
-      <div style={{ maxWidth: 1200, margin: '0 auto', padding: '32px 24px 64px' }}>
+      <div className="catalog-layout">
         {/* Search bar */}
-        <form onSubmit={handleSearchSubmit} style={{ display: 'flex', gap: 8, marginBottom: 32 }}>
+        <form onSubmit={handleSearchSubmit} className="catalog-search-form">
           <input
             type="search"
             value={pendingSearch}
             onChange={e => setPendingSearch(e.target.value)}
             placeholder={t('catalog.search.placeholder')}
             aria-label={t('catalog.search.placeholder')}
-            style={{
-              flex: 1, padding: '8px 12px', border: '1px solid var(--border)',
-              borderRadius: 6, fontSize: 14, background: 'var(--bg)',
-            }}
+            className="catalog-search-input"
           />
           <Button type="submit">{t('catalog.search.submit')}</Button>
         </form>
 
-        <div style={{ display: 'grid', gridTemplateColumns: '220px 1fr', gap: 32, alignItems: 'start' }}>
+        <div className="catalog-grid-layout">
           {/* Filters sidebar */}
           <aside>
-            <Card style={{ padding: '20px 18px' }}>
-              <h2 style={{ fontSize: 15, fontWeight: 700, marginBottom: 16 }}>{t('catalog.filters.title')}</h2>
+            <Card className="catalog-filter-card">
+              <h2 className="catalog-filter-title">{t('catalog.filters.title')}</h2>
 
-              <label style={{ display: 'block', marginBottom: 12 }}>
-                <span style={{ fontSize: 13, color: 'var(--text-muted)', display: 'block', marginBottom: 4 }}>
-                  {t('catalog.filters.category')}
-                </span>
+              <label className="catalog-filter-label">
+                <span className="catalog-filter-hint">{t('catalog.filters.category')}</span>
                 <input
                   type="text"
                   value={category}
                   onChange={e => { setCategory(e.target.value); handleFilterChange() }}
                   placeholder={t('catalog.filters.categoryAll')}
-                  style={{
-                    width: '100%', padding: '6px 10px', border: '1px solid var(--border)',
-                    borderRadius: 4, fontSize: 13, background: 'var(--bg)',
-                  }}
+                  className="catalog-filter-input"
                 />
               </label>
 
-              <label style={{ display: 'block', marginBottom: 12 }}>
-                <span style={{ fontSize: 13, color: 'var(--text-muted)', display: 'block', marginBottom: 4 }}>
-                  {t('catalog.filters.maxPrice')}
-                </span>
+              <label className="catalog-filter-label">
+                <span className="catalog-filter-hint">{t('catalog.filters.maxPrice')}</span>
                 <input
                   type="number"
                   min={0}
@@ -155,23 +145,20 @@ export default function CatalogPage() {
                   value={maxPrice}
                   onChange={e => { setMaxPrice(e.target.value); handleFilterChange() }}
                   placeholder="—"
-                  style={{
-                    width: '100%', padding: '6px 10px', border: '1px solid var(--border)',
-                    borderRadius: 4, fontSize: 13, background: 'var(--bg)',
-                  }}
+                  className="catalog-filter-input"
                 />
               </label>
 
-              <label style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16, cursor: 'pointer' }}>
+              <label className="catalog-filter-stock-label">
                 <input
                   type="checkbox"
                   checked={inStockOnly}
                   onChange={e => { setInStockOnly(e.target.checked); handleFilterChange() }}
                 />
-                <span style={{ fontSize: 13 }}>{t('catalog.filters.inStockOnly')}</span>
+                <span className="catalog-filter-stock-text">{t('catalog.filters.inStockOnly')}</span>
               </label>
 
-              <Button variant="secondary" size="sm" onClick={handleReset} style={{ width: '100%' }}>
+              <Button variant="secondary" size="sm" onClick={handleReset} className="catalog-filter-reset-btn">
                 {t('catalog.filters.reset')}
               </Button>
             </Card>
@@ -180,49 +167,43 @@ export default function CatalogPage() {
           {/* Product grid */}
           <main>
             {loading && (
-              <p style={{ color: 'var(--text-muted)', textAlign: 'center', padding: 40 }}>
-                {t('catalog.loading')}
-              </p>
+              <p className="catalog-status-text">{t('catalog.loading')}</p>
             )}
             {error && (
-              <p style={{ color: 'var(--text-muted)', textAlign: 'center', padding: 40 }}>
-                {t('catalog.error.load')}
-              </p>
+              <p className="catalog-status-text">{t('catalog.error.load')}</p>
             )}
             {!loading && !error && products.length === 0 && (
-              <div style={{ textAlign: 'center', padding: '48px 24px' }}>
-                <p style={{ color: 'var(--text-muted)', marginBottom: 16 }}>{t('catalog.noResults')}</p>
+              <div className="catalog-empty">
+                <p className="catalog-empty-text">{t('catalog.noResults')}</p>
                 <Button variant="secondary" onClick={handleReset}>{t('catalog.filters.reset')}</Button>
               </div>
             )}
             {!loading && products.length > 0 && (
               <>
-                <p style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 20 }}>
+                <p className="catalog-result-count">
                   {t('catalog.resultCount', { count: totalElements })}
                 </p>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: 20 }}>
+                <div className="catalog-product-grid">
                   {products.map(p => (
                     <Card key={p.id}>
                       {p.photoUrls.length > 0 ? (
                         <img
                           src={p.photoUrls[0]}
                           alt={p.name}
-                          style={{ width: '100%', height: 180, objectFit: 'cover' }}
+                          className="catalog-product-image"
                         />
                       ) : (
-                        <div style={{ background: '#f0ece4', height: 180 }} />
+                        <div className="catalog-product-placeholder" />
                       )}
-                      <div style={{ padding: '14px 16px 16px' }}>
+                      <div className="catalog-product-body">
                         {p.category && (
-                          <span style={{ fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--accent)' }}>
-                            {p.category}
-                          </span>
+                          <span className="catalog-product-category">{p.category}</span>
                         )}
-                        <h3 style={{ fontSize: 15, fontWeight: 600, margin: '6px 0 8px', lineHeight: 1.3 }}>{p.name}</h3>
-                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 12 }}>
+                        <h3 className="catalog-product-name">{p.name}</h3>
+                        <div className="catalog-product-footer">
                           <div>
-                            <div style={{ fontWeight: 700, fontSize: 15 }}>{formatPrice(p.priceTTC)}</div>
-                            <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>
+                            <div className="catalog-product-price">{formatPrice(p.priceTTC)}</div>
+                            <div className="catalog-product-excl-tax">
                               {t('catalog.priceExclTax', { price: formatPrice(p.priceExclTax) })}
                             </div>
                           </div>
@@ -243,7 +224,7 @@ export default function CatalogPage() {
 
                 {/* Pagination */}
                 {totalPages > 1 && (
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12, marginTop: 32 }}>
+                  <div className="catalog-pagination">
                     <Button
                       variant="secondary"
                       size="sm"
@@ -252,7 +233,7 @@ export default function CatalogPage() {
                     >
                       {t('catalog.page.prev')}
                     </Button>
-                    <span style={{ fontSize: 13, color: 'var(--text-muted)' }}>
+                    <span className="catalog-page-info">
                       {t('catalog.page.info', { current: page + 1, total: totalPages })}
                     </span>
                     <Button

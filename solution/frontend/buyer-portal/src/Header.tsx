@@ -20,7 +20,7 @@ export default function Header({ session, onShowLogin, onLogout, children }: Pro
         { label: t('nav.catalog'), href: '/catalog' },
       ]}
       actions={
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+        <div className="header-actions">
           <LangToggle
             lang={i18n.language}
             onToggle={() => i18n.changeLanguage(i18n.language === 'fr' ? 'en' : 'fr')}

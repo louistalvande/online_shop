@@ -60,7 +60,7 @@ export default function CartPage() {
   }
 
   const headerActions = (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+    <div className="header-actions">
       <LangToggle
         lang={i18n.language}
         onToggle={() => i18n.changeLanguage(i18n.language === 'fr' ? 'en' : 'fr')}
@@ -98,7 +98,7 @@ export default function CartPage() {
         ]}
         actions={headerActions}
       >
-        <div style={{ maxWidth: 800, margin: '0 auto', padding: '2rem 1rem' }}>
+        <div className="cart-container">
           <h1>{t('cart.title')}</h1>
 
           {!session && (
@@ -111,7 +111,7 @@ export default function CartPage() {
           {session && loading && <p>{t('cart.loading')}</p>}
 
           {session && !loading && error && (
-            <p style={{ color: 'red' }}>{error}</p>
+            <p className="cart-error">{error}</p>
           )}
 
           {session && !loading && cart && cart.items.length === 0 && (
@@ -120,38 +120,34 @@ export default function CartPage() {
 
           {session && !loading && cart && cart.items.length > 0 && (
             <>
-              <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+              <table className="cart-table">
                 <thead>
                   <tr>
-                    <th style={{ textAlign: 'left', padding: '0.5rem' }}>{t('cart.col.product')}</th>
-                    <th style={{ textAlign: 'right', padding: '0.5rem' }}>{t('cart.col.unitPrice')}</th>
-                    <th style={{ textAlign: 'center', padding: '0.5rem' }}>{t('cart.col.quantity')}</th>
-                    <th style={{ textAlign: 'right', padding: '0.5rem' }}>{t('cart.col.total')}</th>
+                    <th className="cart-th--left">{t('cart.col.product')}</th>
+                    <th className="cart-th--right">{t('cart.col.unitPrice')}</th>
+                    <th className="cart-th--center">{t('cart.col.quantity')}</th>
+                    <th className="cart-th--right">{t('cart.col.total')}</th>
                     <th />
                   </tr>
                 </thead>
                 <tbody>
                   {cart.items.map(item => (
-                    <tr key={item.id} style={{ borderTop: '1px solid #eee' }}>
-                      <td style={{ padding: '0.75rem 0.5rem' }}>
+                    <tr key={item.id} className="cart-row">
+                      <td className="cart-td--product">
                         {item.photoUrl && (
                           <img
                             src={item.photoUrl}
                             alt={item.productName}
-                            style={{ width: 48, height: 48, objectFit: 'cover', marginRight: 8, verticalAlign: 'middle' }}
+                            className="cart-product-img"
                           />
                         )}
                         {item.productName}
                         {!item.inStock && (
-                          <span style={{ color: 'red', marginLeft: 8, fontSize: '0.85em' }}>
-                            {t('cart.outOfStock')}
-                          </span>
+                          <span className="cart-out-of-stock">{t('cart.outOfStock')}</span>
                         )}
                       </td>
-                      <td style={{ textAlign: 'right', padding: '0.75rem 0.5rem' }}>
-                        {item.priceTTC.toFixed(2)} €
-                      </td>
-                      <td style={{ textAlign: 'center', padding: '0.75rem 0.5rem' }}>
+                      <td className="cart-td--right">{item.priceTTC.toFixed(2)} €</td>
+                      <td className="cart-td--center">
                         <input
                           type="number"
                           min={1}
@@ -161,13 +157,11 @@ export default function CartPage() {
                             const qty = parseInt(e.target.value, 10)
                             if (qty >= 1) handleQuantityChange(item.id, qty)
                           }}
-                          style={{ width: 60, textAlign: 'center' }}
+                          className="cart-qty-input"
                         />
                       </td>
-                      <td style={{ textAlign: 'right', padding: '0.75rem 0.5rem' }}>
-                        {item.lineTotal.toFixed(2)} €
-                      </td>
-                      <td style={{ padding: '0.75rem 0.5rem' }}>
+                      <td className="cart-td--right">{item.lineTotal.toFixed(2)} €</td>
+                      <td className="cart-td--action">
                         <Button
                           variant="ghost"
                           size="sm"
@@ -182,11 +176,11 @@ export default function CartPage() {
                 </tbody>
               </table>
 
-              <div style={{ textAlign: 'right', marginTop: '1.5rem', fontSize: '1.2rem', fontWeight: 600 }}>
+              <div className="cart-total">
                 {t('cart.grandTotal')} : {cart.total.toFixed(2)} €
               </div>
 
-              <div style={{ textAlign: 'right', marginTop: '1rem' }}>
+              <div className="cart-checkout-row">
                 <Button
                   variant="primary"
                   onClick={() => { window.location.href = '/checkout' }}

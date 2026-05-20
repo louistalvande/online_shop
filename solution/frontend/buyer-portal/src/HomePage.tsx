@@ -18,31 +18,25 @@ export default function HomePage() {
 
   return (
     <>
-      <section style={{ background: 'var(--bg)', textAlign: 'center', padding: '80px 24px 72px' }}>
-        <h1 style={{ fontFamily: 'var(--font-serif)', fontSize: 'clamp(28px,4vw,48px)', fontWeight: 700, letterSpacing: '-0.02em', maxWidth: 700, margin: '0 auto 20px' }}>
-          {t('home.title')}
-        </h1>
-        <p style={{ fontSize: 16, color: 'var(--text-muted)', maxWidth: 560, margin: '0 auto', lineHeight: 1.7 }}>
-          {t('home.subtitle')}
-        </p>
+      <section className="home-hero">
+        <h1 className="home-hero-title">{t('home.title')}</h1>
+        <p className="home-hero-subtitle">{t('home.subtitle')}</p>
       </section>
 
-      <section id="catalogue" style={{ maxWidth: 1100, margin: '0 auto', padding: '48px 24px 64px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 32 }}>
-          <h2 style={{ fontFamily: 'var(--font-serif)', fontSize: 26, fontWeight: 700 }}>{t('home.featured')}</h2>
+      <section id="catalogue" className="home-catalog-section">
+        <div className="home-catalog-header">
+          <h2 className="home-catalog-title">{t('home.featured')}</h2>
           <Button onClick={() => { window.location.href = '/catalog' }}>{t('home.viewAll')}</Button>
         </div>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(230px, 1fr))', gap: 24 }}>
+        <div className="home-catalog-grid">
           {WORKS.map(w => (
             <Card key={w.id}>
-              <div style={{ background: '#f0ece4', height: 200 }} />
-              <div style={{ padding: '16px 18px 18px' }}>
-                <span style={{ fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--accent)' }}>
-                  {w.category}
-                </span>
-                <h3 style={{ fontSize: 16, fontWeight: 600, marginTop: 6, marginBottom: 14 }}>{w.title}</h3>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                  <span style={{ fontWeight: 700 }}>{w.price}</span>
+              <div className="product-image-placeholder" />
+              <div className="product-card-body">
+                <span className="product-card-category">{w.category}</span>
+                <h3 className="product-card-title">{w.title}</h3>
+                <div className="product-card-footer">
+                  <span className="product-card-price">{w.price}</span>
                   <Button variant="secondary" size="sm">{t('product.addToCart')}</Button>
                 </div>
               </div>

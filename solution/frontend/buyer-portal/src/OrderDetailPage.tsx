@@ -41,36 +41,34 @@ export default function OrderDetailPage({ orderId }: Props) {
 
   if (!session) {
     return (
-      <>
-        <Header />
-        <main style={{ padding: '2rem' }}>
+      <Header session={null} onShowLogin={() => {}} onLogout={() => {}}>
+        <div className="order-detail-login-required">
           <p>{t('orders.error.loginRequired')}</p>
-        </main>
-      </>
+        </div>
+      </Header>
     )
   }
 
   return (
-    <>
-      <Header />
-      <main style={{ padding: '2rem', maxWidth: '900px', margin: '0 auto' }}>
+    <Header session={session} onShowLogin={() => {}} onLogout={() => { window.location.href = '/' }}>
+      <div className="order-detail-container">
         <p><a href="/my-orders">← {t('orders.list.title')}</a></p>
 
         {loading && <p>{t('orders.loading')}</p>}
-        {error && <p style={{ color: 'red' }}>{error}</p>}
+        {error && <p className="order-detail-error">{error}</p>}
 
         {!loading && order && (
           <>
             <h1>{t('orders.detail.title', { number: order.orderNumber })}</h1>
 
-            <section style={{ marginBottom: '1.5rem' }}>
+            <section className="order-detail-section">
               <p><strong>{t('orders.status')}:</strong> {t(STATUS_LABELS[order.status] ?? order.status)}</p>
               <p><strong>{t('orders.paymentMethod')}:</strong> {t(`orders.paymentMethod.${order.paymentMethod}`)}</p>
               <p><strong>{t('orders.total')}:</strong> {order.totalAmountTtc.toFixed(2)} €</p>
               <p><strong>{t('orders.date')}:</strong> {new Date(order.createdAt).toLocaleString()}</p>
             </section>
 
-            <section style={{ marginBottom: '1.5rem' }}>
+            <section className="order-detail-section">
               <h2>{t('orders.detail.delivery')}</h2>
               <p>{order.deliveryAddressLine}, {order.deliveryPostalCode} {order.deliveryCity} ({order.deliveryCountryCode})</p>
               <p><strong>{t('orders.detail.carrier')}:</strong> {order.carrierName}</p>
@@ -78,7 +76,7 @@ export default function OrderDetailPage({ orderId }: Props) {
 
             {/* Tracking section — US-EXP-02 */}
             {(order.status === 'SHIPPED' || order.status === 'DELIVERED') && (
-              <section style={{ background: '#e3f2fd', padding: '1rem', borderRadius: '4px', marginBottom: '1.5rem' }}>
+              <section className="order-detail-tracking">
                 <h2>{t('orders.tracking.title')}</h2>
                 {order.trackingNumber ? (
                   <p>
@@ -94,19 +92,19 @@ export default function OrderDetailPage({ orderId }: Props) {
             )}
 
             {order.status === 'IN_PREPARATION' && (
-              <section style={{ background: '#fff9c4', padding: '1rem', borderRadius: '4px', marginBottom: '1.5rem' }}>
+              <section className="order-detail-in-prep">
                 <p>{t('orders.tracking.inPreparation')}</p>
               </section>
             )}
 
             {/* Cancel section — US-CAN-01 */}
             {(order.status === 'AWAITING_PROCESSING' || order.status === 'IN_PREPARATION') && (
-              <section style={{ background: '#ffebee', padding: '1rem', borderRadius: '4px', marginBottom: '1.5rem' }}>
+              <section className="order-detail-cancel">
                 <h2>{t('orders.cancel.title')}</h2>
                 <p>{t('orders.cancel.description')}</p>
                 {order.paymentMethod === 'WIRE_TRANSFER' && (
-                  <div style={{ marginBottom: '0.75rem' }}>
-                    <label style={{ display: 'block', marginBottom: '0.25rem' }}>
+                  <div className="order-detail-cancel-iban">
+                    <label className="order-detail-cancel-iban-label">
                       {t('orders.cancel.ibanLabel')} *
                     </label>
                     <input
@@ -114,12 +112,13 @@ export default function OrderDetailPage({ orderId }: Props) {
                       value={buyerIban}
                       onChange={e => setBuyerIban(e.target.value)}
                       placeholder={t('orders.cancel.ibanPlaceholder')}
-                      style={{ padding: '0.4rem 0.8rem', border: '1px solid #ccc', borderRadius: '4px', width: '100%', maxWidth: '400px' }}
+                      className="order-detail-cancel-iban-input"
                     />
                   </div>
                 )}
-                {cancelError && <p style={{ color: 'red' }}>{cancelError}</p>}
+                {cancelError && <p className="order-detail-cancel-error">{cancelError}</p>}
                 <button
+                  className="order-detail-cancel-btn"
                   onClick={async () => {
                     if (!window.confirm(t('orders.cancel.confirmPrompt'))) return
                     setCancelLoading(true)
@@ -137,14 +136,14 @@ export default function OrderDetailPage({ orderId }: Props) {
                     }
                   }}
                   disabled={cancelLoading || (order.paymentMethod === 'WIRE_TRANSFER' && !buyerIban.trim())}
-                  style={{ padding: '0.5rem 1.2rem', background: '#c62828', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>
+                >
                   {cancelLoading ? t('orders.cancel.cancelling') : t('orders.cancel.submit')}
                 </button>
               </section>
             )}
 
             {order.status === 'WIRE_REFUND_IN_PROGRESS' && (
-              <section style={{ background: '#fff9c4', padding: '1rem', borderRadius: '4px', marginBottom: '1.5rem' }}>
+              <section className="order-detail-wire-refund">
                 <p><strong>{t('orders.cancel.wireRefundInProgress')}</strong></p>
                 {order.buyerIban && <p>{t('orders.cancel.ibanUsed')}: <code>{order.buyerIban}</code></p>}
               </section>
@@ -152,22 +151,22 @@ export default function OrderDetailPage({ orderId }: Props) {
 
             <section>
               <h2>{t('orders.detail.lines')}</h2>
-              <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+              <table className="order-detail-table">
                 <thead>
-                  <tr style={{ borderBottom: '2px solid #ddd' }}>
-                    <th style={{ textAlign: 'left', padding: '0.4rem' }}>{t('orders.detail.product')}</th>
-                    <th style={{ textAlign: 'right', padding: '0.4rem' }}>{t('orders.detail.unitPrice')}</th>
-                    <th style={{ textAlign: 'right', padding: '0.4rem' }}>{t('orders.items')}</th>
-                    <th style={{ textAlign: 'right', padding: '0.4rem' }}>{t('orders.total')}</th>
+                  <tr className="order-detail-thead-row">
+                    <th className="order-detail-th--left">{t('orders.detail.product')}</th>
+                    <th className="order-detail-th--right">{t('orders.detail.unitPrice')}</th>
+                    <th className="order-detail-th--right">{t('orders.items')}</th>
+                    <th className="order-detail-th--right">{t('orders.total')}</th>
                   </tr>
                 </thead>
                 <tbody>
                   {order.lines.map(line => (
-                    <tr key={line.id} style={{ borderBottom: '1px solid #eee' }}>
-                      <td style={{ padding: '0.4rem' }}>{line.productName}</td>
-                      <td style={{ textAlign: 'right', padding: '0.4rem' }}>{line.unitPriceTtc.toFixed(2)} €</td>
-                      <td style={{ textAlign: 'right', padding: '0.4rem' }}>{line.quantity}</td>
-                      <td style={{ textAlign: 'right', padding: '0.4rem' }}>{line.lineTotalTtc.toFixed(2)} €</td>
+                    <tr key={line.id} className="order-detail-tbody-row">
+                      <td className="order-detail-td">{line.productName}</td>
+                      <td className="order-detail-td--right">{line.unitPriceTtc.toFixed(2)} €</td>
+                      <td className="order-detail-td--right">{line.quantity}</td>
+                      <td className="order-detail-td--right">{line.lineTotalTtc.toFixed(2)} €</td>
                     </tr>
                   ))}
                 </tbody>
@@ -175,7 +174,7 @@ export default function OrderDetailPage({ orderId }: Props) {
             </section>
           </>
         )}
-      </main>
-    </>
+      </div>
+    </Header>
   )
 }

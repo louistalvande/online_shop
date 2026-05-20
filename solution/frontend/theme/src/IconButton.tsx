@@ -4,19 +4,10 @@ interface IconButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   children: ReactNode
 }
 
-export function IconButton({ style, ...props }: IconButtonProps) {
+export function IconButton({ className, style: _style, ...props }: IconButtonProps) {
   return (
     <button
-      style={{
-        background: 'none',
-        border: 'none',
-        display: 'flex',
-        alignItems: 'center',
-        color: 'var(--text)',
-        cursor: 'pointer',
-        padding: 4,
-        ...style,
-      }}
+      className={['icon-btn', className].filter(Boolean).join(' ')}
       {...props}
     />
   )

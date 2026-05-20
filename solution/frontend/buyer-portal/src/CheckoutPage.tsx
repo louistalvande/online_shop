@@ -59,12 +59,11 @@ export default function CheckoutPage() {
 
   if (!session) {
     return (
-      <div>
-        <Header />
-        <main style={{ maxWidth: 600, margin: '2rem auto', padding: '0 1rem' }}>
+      <Header session={null} onShowLogin={() => {}} onLogout={() => {}}>
+        <div className="checkout-login-required">
           <p>{t('cart.loginRequired')}</p>
-        </main>
-      </div>
+        </div>
+      </Header>
     )
   }
 
@@ -129,9 +128,8 @@ export default function CheckoutPage() {
   const locale = i18n.language
 
   return (
-    <div>
-      <Header />
-      <main style={{ maxWidth: 700, margin: '2rem auto', padding: '0 1rem' }}>
+    <Header session={session} onShowLogin={() => {}} onLogout={() => { window.location.href = '/' }}>
+      <div className="checkout-main">
         <h1>{t('checkout.title')}</h1>
 
         {/* ─── STEP 1: ADDRESS ─── */}
@@ -139,7 +137,7 @@ export default function CheckoutPage() {
           <form onSubmit={handleAddressSubmit}>
             <h2>{t('checkout.address.title')}</h2>
 
-            <div style={{ marginBottom: '1rem' }}>
+            <div className="checkout-field">
               <label htmlFor="addressLine">{t('checkout.address.line')}</label>
               <input
                 id="addressLine"
@@ -147,12 +145,12 @@ export default function CheckoutPage() {
                 value={addressLine}
                 onChange={e => setAddressLine(e.target.value)}
                 required
-                style={{ display: 'block', width: '100%', marginTop: '0.25rem' }}
+                className="checkout-input"
               />
             </div>
 
-            <div style={{ display: 'flex', gap: '1rem', marginBottom: '1rem' }}>
-              <div style={{ flex: 1 }}>
+            <div className="checkout-row">
+              <div className="checkout-row-item-sm">
                 <label htmlFor="postalCode">{t('checkout.address.postalCode')}</label>
                 <input
                   id="postalCode"
@@ -160,10 +158,10 @@ export default function CheckoutPage() {
                   value={postalCode}
                   onChange={e => setPostalCode(e.target.value)}
                   required
-                  style={{ display: 'block', width: '100%', marginTop: '0.25rem' }}
+                  className="checkout-input"
                 />
               </div>
-              <div style={{ flex: 2 }}>
+              <div className="checkout-row-item-lg">
                 <label htmlFor="city">{t('checkout.address.city')}</label>
                 <input
                   id="city"
@@ -171,19 +169,19 @@ export default function CheckoutPage() {
                   value={city}
                   onChange={e => setCity(e.target.value)}
                   required
-                  style={{ display: 'block', width: '100%', marginTop: '0.25rem' }}
+                  className="checkout-input"
                 />
               </div>
             </div>
 
-            <div style={{ marginBottom: '1rem' }}>
+            <div className="checkout-field">
               <label htmlFor="country">{t('checkout.address.country')}</label>
               <select
                 id="country"
                 value={countryCode}
                 onChange={e => setCountryCode(e.target.value)}
                 required
-                style={{ display: 'block', width: '100%', marginTop: '0.25rem' }}
+                className="checkout-input"
               >
                 <option value="">{t('checkout.address.countryPlaceholder')}</option>
                 {countries.map(c => (
@@ -195,20 +193,20 @@ export default function CheckoutPage() {
             </div>
 
             {countryCode && (
-              <div style={{ marginBottom: '1rem' }}>
+              <div className="checkout-field">
                 <label>{t('checkout.carrier.title')}</label>
                 {carriers.length === 0 ? (
-                  <p style={{ color: '#e53e3e' }}>{t('checkout.carrier.none')}</p>
+                  <p className="checkout-error">{t('checkout.carrier.none')}</p>
                 ) : (
                   carriers.map(c => (
-                    <label key={c.id} style={{ display: 'block', margin: '0.5rem 0' }}>
+                    <label key={c.id} className="checkout-carrier-label">
                       <input
                         type="radio"
                         name="carrier"
                         value={c.id}
                         checked={carrierId === c.id}
                         onChange={() => setCarrierId(c.id)}
-                        style={{ marginRight: '0.5rem' }}
+                        className="checkout-radio"
                       />
                       {c.name}
                     </label>
@@ -217,9 +215,9 @@ export default function CheckoutPage() {
               </div>
             )}
 
-            {addressError && <p style={{ color: '#e53e3e' }}>{addressError}</p>}
+            {addressError && <p className="checkout-error">{addressError}</p>}
 
-            <div style={{ display: 'flex', gap: '1rem', marginTop: '1.5rem' }}>
+            <div className="checkout-actions">
               <button type="button" onClick={() => { window.location.href = '/cart' }}>
                 {t('checkout.backToCart')}
               </button>
@@ -235,53 +233,51 @@ export default function CheckoutPage() {
           <form onSubmit={handlePaymentSubmit}>
             <h2>{t('checkout.payment.title')}</h2>
 
-            <div style={{ background: '#f7fafc', padding: '1rem', borderRadius: 8, marginBottom: '1.5rem' }}>
-              <h3 style={{ margin: '0 0 0.5rem' }}>{t('checkout.summary.title')}</h3>
-              <p style={{ margin: 0 }}>
+            <div className="checkout-summary">
+              <h3 className="checkout-summary-title">{t('checkout.summary.title')}</h3>
+              <p className="checkout-summary-text">
                 {t('checkout.summary.carrier')}: {selectedCarrier?.name}
               </p>
-              <p style={{ margin: 0 }}>
+              <p className="checkout-summary-text">
                 {t('checkout.summary.address')}: {addressLine}, {postalCode} {city}, {countryCode}
               </p>
             </div>
 
-            <div style={{ marginBottom: '1.5rem' }}>
-              <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 600 }}>
+            <div className="checkout-payment-label-group">
+              <label className="checkout-payment-method-heading">
                 {t('checkout.payment.method')}
               </label>
-              <label style={{ display: 'block', marginBottom: '0.5rem' }}>
+              <label className="checkout-payment-method-option">
                 <input
                   type="radio"
                   name="paymentMethod"
                   value="CARD"
                   checked={paymentMethod === 'CARD'}
                   onChange={() => setPaymentMethod('CARD')}
-                  style={{ marginRight: '0.5rem' }}
+                  className="checkout-radio"
                 />
                 {t('checkout.payment.card')}
               </label>
-              <label style={{ display: 'block' }}>
+              <label className="checkout-payment-method-option">
                 <input
                   type="radio"
                   name="paymentMethod"
                   value="WIRE_TRANSFER"
                   checked={paymentMethod === 'WIRE_TRANSFER'}
                   onChange={() => setPaymentMethod('WIRE_TRANSFER')}
-                  style={{ marginRight: '0.5rem' }}
+                  className="checkout-radio"
                 />
                 {t('checkout.payment.wire')}
               </label>
             </div>
 
             {paymentMethod === 'WIRE_TRANSFER' && (
-              <p style={{ color: '#718096', fontStyle: 'italic', marginBottom: '1rem' }}>
-                {t('checkout.payment.wireNote')}
-              </p>
+              <p className="checkout-wire-note">{t('checkout.payment.wireNote')}</p>
             )}
 
-            {paymentError && <p style={{ color: '#e53e3e' }}>{paymentError}</p>}
+            {paymentError && <p className="checkout-error">{paymentError}</p>}
 
-            <div style={{ display: 'flex', gap: '1rem', marginTop: '1.5rem' }}>
+            <div className="checkout-actions">
               <button type="button" onClick={() => setStep('address')}>
                 {t('checkout.back')}
               </button>
@@ -296,7 +292,7 @@ export default function CheckoutPage() {
         {step === 'confirmation' && checkoutInit && (
           <div>
             <h2>{t('checkout.confirmation.title')}</h2>
-            <p style={{ color: '#38a169', fontWeight: 600 }}>
+            <p className="checkout-confirmation-order">
               {t('checkout.confirmation.orderNumber')}: {checkoutInit.orderNumber}
             </p>
 
@@ -305,26 +301,26 @@ export default function CheckoutPage() {
             )}
 
             {paymentMethod === 'WIRE_TRANSFER' && (
-              <div style={{ background: '#fff3cd', padding: '1rem', borderRadius: 8, marginBottom: '1rem' }}>
+              <div className="checkout-wire-info">
                 <h3>{t('checkout.confirmation.wireTitle')}</h3>
                 <p><strong>{t('checkout.confirmation.wireIban')}:</strong> {checkoutInit.bankIban}</p>
                 <p><strong>{t('checkout.confirmation.wireBic')}:</strong> {checkoutInit.bankBic}</p>
                 <p><strong>{t('checkout.confirmation.wireReference')}:</strong> {checkoutInit.paymentReference}</p>
                 <p><strong>{t('checkout.confirmation.wireAmount')}:</strong> {checkoutInit.totalAmountTtc?.toFixed(2)} €</p>
-                <p style={{ fontStyle: 'italic', color: '#718096' }}>{t('checkout.confirmation.wireNote')}</p>
+                <p className="checkout-wire-footer">{t('checkout.confirmation.wireNote')}</p>
               </div>
             )}
 
             <p>{t('checkout.confirmation.emailSent')}</p>
 
-            <div style={{ display: 'flex', gap: '1rem', marginTop: '1.5rem' }}>
+            <div className="checkout-actions">
               <button onClick={() => { window.location.href = '/catalog' }}>
                 {t('checkout.confirmation.backToCatalog')}
               </button>
             </div>
           </div>
         )}
-      </main>
-    </div>
+      </div>
+    </Header>
   )
 }
