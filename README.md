@@ -72,9 +72,12 @@ On définit les fonctions du système vues de l'extérieur (ce qu'il doit accomp
 | **Diagramme d'activité** | Détaille les flux fonctionnels déclenchés par les acteurs |
 | **Diagramme de contexte** *(frontière système)* | Représente le système comme une boîte noire avec toutes ses interfaces |
 
-**Exemple de diagramme SA — Contexte système :**
+**Exemples de diagrammes SA :**
 
-![SA Context](architecture/diagrams/readme/sa-context.svg)
+<table><tr>
+<td><img src="architecture/diagrams/readme/sa-sequence-simple.svg" width="300"></td>
+<td><img src="architecture/diagrams/readme/sa-functions-simple.svg" width="300"></td>
+</tr></table>
 
 #### Analyse du système
 
@@ -207,9 +210,12 @@ This phase defines the system's functions as seen from the outside (what it must
 | **Activity Diagram** | Details functional flows triggered by actors |
 | **Context Diagram** *(system boundary)* | Represents the system as a black box with all its interfaces |
 
-**SA Diagram Example — System Context:**
+**SA Diagram Examples:**
 
-![SA Context](architecture/diagrams/readme/sa-context.svg)
+<table><tr>
+<td><img src="architecture/diagrams/readme/sa-sequence-simple.svg" width="300"></td>
+<td><img src="architecture/diagrams/readme/sa-functions-simple.svg" width="300"></td>
+</tr></table>
 
 #### System Analysis
 
