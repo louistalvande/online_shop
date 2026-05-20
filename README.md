@@ -1,6 +1,7 @@
 # Application Web E-commerce / E-commerce Web Application
 ### Conçu avec une méthode d'ingénierie système MBSE / Built with Model-Based Engineering Method
 
+![PoC](https://img.shields.io/badge/Status-Proof%20of%20Concept-yellow)
 ![MBSE](https://img.shields.io/badge/Method-MBSE-blue)
 ![ARCADIA](https://img.shields.io/badge/Framework-ARCADIA-4A90D9)
 ![AsciiDoc](https://img.shields.io/badge/Docs-AsciiDoc-E40046)
