@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="generator" content="Asciidoctor 2.0.26">
-<title>Boutique en ligne - Exigences métier</title>
+<title>Application e-commerce - Exigences métier</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans:300,300italic,400,400italic,600,600italic%7CNoto+Serif:400,400italic,700,700italic%7CDroid+Sans+Mono:400,700">
 <style>
 /*! Asciidoctor default stylesheet | MIT License | https://asciidoctor.org */
@@ -437,7 +437,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </head>
 <body class="article toc2 toc-left">
 <div id="header">
-<h1>Boutique en ligne - Exigences métier</h1>
+<h1>Application e-commerce - Exigences métier</h1>
 <div id="toc" class="toc2">
 <div id="toctitle">Table of Contents</div>
 <ul class="sectlevel1">
@@ -464,7 +464,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <h2 id="_objectif_et_périmètre">1. Objectif et périmètre</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>Ce document recense les <strong>besoins opérationnels</strong> de la boutique en ligne, c&#8217;est-à-dire ce que les acteurs ont besoin de pouvoir faire dans leur contexte métier réel, indépendamment de tout système à construire.</p>
+<p>Ce document recense les <strong>besoins opérationnels</strong> de l&#8217;application e-commerce, c&#8217;est-à-dire ce que les acteurs ont besoin de pouvoir faire dans leur contexte métier réel, indépendamment de tout système à construire.</p>
 </div>
 <div class="paragraph">
 <p>Les besoins sont dérivés directement de l&#8217;Analyse du Besoin Opérationnel (OA — voir <code>01-operational-analysis/oa.adoc</code>). Ils constituent la référence à satisfaire ; la manière dont le système y répond est documentée aux niveaux SA, LA et PA de l&#8217;architecture ARCADIA.</p>
@@ -1182,7 +1182,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2026-05-20 00:25:49 +0200
+Last updated 2026-05-20 18:39:43 +0200
 </div>
 </div>
 </body>

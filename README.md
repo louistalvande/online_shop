@@ -139,7 +139,7 @@ Une fois l'ensemble des cas d'utilisation développés et validés, la documenta
 
 Cette documentation comprend notamment :
 
-- un guide utilisateur décrivant les principales fonctionnalités de la boutique en ligne (navigation, recherche de produits, gestion du panier, tunnel d'achat, suivi de commande, etc.) ;
+- un guide utilisateur décrivant les principales fonctionnalités de l'application e-commerce (navigation, recherche de produits, gestion du panier, tunnel d'achat, suivi de commande, etc.) ;
 - des guides pas à pas illustrant les parcours utilisateurs clés ;
 - le cas échéant, une documentation administrateur à destination des gestionnaires de la boutique (gestion du catalogue, des commandes, des utilisateurs, etc.).
 

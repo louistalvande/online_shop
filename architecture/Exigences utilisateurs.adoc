@@ -8,7 +8,7 @@
 
 == Objectif et périmètre
 
-Ce document recense les **besoins opérationnels** de la boutique en ligne, c'est-à-dire ce que les acteurs ont besoin de pouvoir faire dans leur contexte métier réel, indépendamment de tout système à construire.
+Ce document recense les **besoins opérationnels** de l'application e-commerce, c'est-à-dire ce que les acteurs ont besoin de pouvoir faire dans leur contexte métier réel, indépendamment de tout système à construire.
 
 Les besoins sont dérivés directement de l'Analyse du Besoin Opérationnel (OA — voir `01-operational-analysis/oa.adoc`). Ils constituent la référence à satisfaire ; la manière dont le système y répond est documentée aux niveaux SA, LA et PA de l'architecture ARCADIA.
 
