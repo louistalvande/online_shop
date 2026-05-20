@@ -167,7 +167,7 @@ export default function ActivatePage({ token }: Props) {
         <form onSubmit={handleSubmit}>
           <label className="form-field">
             {t('activate.password')}
-            <input className="form-input" type="password" required minLength={8} value={password} onChange={e => setPassword(e.target.value)} />
+            <input className="form-input" type="password" required minLength={12} value={password} onChange={e => setPassword(e.target.value)} />
           </label>
           <label className="form-field">
             {t('activate.confirmPassword')}

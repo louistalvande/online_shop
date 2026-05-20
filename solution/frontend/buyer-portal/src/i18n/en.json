@@ -32,7 +32,7 @@
   "activate.subtitle": "This link was sent to you by email when your account was created.",
   "activate.password": "Password",
   "activate.confirmPassword": "Confirm password",
-  "activate.passwordHint": "Minimum 8 characters.",
+  "activate.passwordHint": "Minimum 12 characters, including uppercase, lowercase, a digit, and a special character (@$!%*?&_-#).",
   "activate.submit": "Activate my account",
   "activate.success": "Account activated! Redirecting to login…",
   "activate.resendLink": "Request a new activation link",

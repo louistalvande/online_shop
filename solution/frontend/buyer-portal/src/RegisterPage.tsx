@@ -58,7 +58,7 @@ export default function RegisterPage() {
               </label>
               <label className="form-field">
                 {t('register.password')}
-                <input className="form-input" type="password" required minLength={8} value={password} onChange={e => setPassword(e.target.value)} />
+                <input className="form-input" type="password" required minLength={12} value={password} onChange={e => setPassword(e.target.value)} />
               </label>
               <label className="form-field">
                 {t('register.confirmPassword')}
