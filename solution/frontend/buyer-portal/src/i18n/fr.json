@@ -116,6 +116,8 @@
   "cart.checkout": "Passer commande",
   "cart.error.load": "Impossible de charger votre panier. Veuillez réessayer.",
   "cart.error.outOfStock": "Ce produit est en rupture de stock ou la quantité demandée dépasse le stock disponible.",
+  "cart.added": "Ajouté au panier !",
+  "cart.error.add": "Impossible d'ajouter ce produit au panier.",
   "cart.error.update": "Une erreur est survenue lors de la mise à jour du panier.",
   "checkout.title": "Passer commande",
   "checkout.address.title": "Adresse de livraison",

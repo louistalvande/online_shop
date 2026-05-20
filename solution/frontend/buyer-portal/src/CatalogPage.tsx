@@ -2,7 +2,10 @@ import { useState, useEffect, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Button, Card, AppShell, LangToggle, CartIcon, UserMenu } from '@workspace/theme'
 import { fetchProducts, type BuyerProduct, type CatalogFilters } from './api/catalogApi'
+import { addToCart } from './api/cartApi'
 import { getSession, logout, type BuyerSession } from './api/authApi'
+import LoginModal from './LoginModal'
+import { useCartCount } from './hooks/useCartCount'
 
 const PAGE_SIZE = 20
 
@@ -27,6 +30,11 @@ export default function CatalogPage() {
   const [error, setError] = useState(false)
 
   const [pendingSearch, setPendingSearch] = useState('')
+
+  const [addingId, setAddingId] = useState<string | null>(null)
+  const [cartFeedback, setCartFeedback] = useState<{ id: string; ok: boolean } | null>(null)
+  const [showLogin, setShowLogin] = useState(false)
+  const cartCount = useCartCount()
 
   const load = useCallback(async (filters: CatalogFilters) => {
     setLoading(true)
@@ -72,7 +80,30 @@ export default function CatalogPage() {
     setPage(0)
   }
 
+  async function handleAddToCart(productId: string) {
+    if (!session) { setShowLogin(true); return }
+    setAddingId(productId)
+    setCartFeedback(null)
+    try {
+      await addToCart(productId, 1)
+      window.dispatchEvent(new Event('cart-updated'))
+      setCartFeedback({ id: productId, ok: true })
+    } catch {
+      setCartFeedback({ id: productId, ok: false })
+    } finally {
+      setAddingId(null)
+      setTimeout(() => setCartFeedback(null), 2500)
+    }
+  }
+
   return (
+    <>
+    {showLogin && (
+      <LoginModal
+        onClose={() => setShowLogin(false)}
+        onLogin={() => { setSession(getSession()); setShowLogin(false) }}
+      />
+    )}
     <AppShell
       appName={t('app.name')}
       navLinks={[
@@ -99,8 +130,11 @@ export default function CatalogPage() {
               {t('nav.login')}
             </Button>
           )}
-          <Button variant="ghost" size="sm" aria-label={t('nav.cart')}>
-            <CartIcon size={22} />
+          <Button variant="ghost" size="sm" aria-label={t('nav.cart')} onClick={() => { window.location.href = '/cart' }}>
+            <span className="cart-btn-wrapper">
+              <CartIcon size={22} />
+              {cartCount > 0 && <span className="cart-badge">{cartCount > 99 ? '99+' : cartCount}</span>}
+            </span>
           </Button>
         </div>
       }
@@ -212,8 +246,17 @@ export default function CatalogPage() {
                               {t('catalog.outOfStock')}
                             </Button>
                           ) : (
-                            <Button variant="secondary" size="sm">
-                              {t('product.addToCart')}
+                            <Button
+                              variant="secondary"
+                              size="sm"
+                              disabled={addingId === p.id}
+                              onClick={() => handleAddToCart(p.id)}
+                            >
+                              {cartFeedback?.id === p.id
+                                ? t(cartFeedback.ok ? 'cart.added' : 'cart.error.add')
+                                : addingId === p.id
+                                  ? '…'
+                                  : t('product.addToCart')}
                             </Button>
                           )}
                         </div>
@@ -252,5 +295,6 @@ export default function CatalogPage() {
         </div>
       </div>
     </AppShell>
+    </>
   )
 }
