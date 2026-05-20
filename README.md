@@ -38,13 +38,13 @@
 
 ## Introduction 🇫🇷
 
-Le projet a pour objectif de développer un site e-commerce dans l'état de l'art actuel, aussi bien en terme de technologie que de cybersécurité, en suivant un processus d'ingénierie logiciel basée sur les modèles éprouvé ([IDM](https://fr.wikipedia.org/wiki/Ing%C3%A9nierie_dirig%C3%A9e_par_les_mod%C3%A8les)). Il débute par la rédaction d'un [document d'architecture](architecture/Boutique%20en%20ligne%20-%20Documentation%20d%27Architecture.pdf) à partir des [exigences](architecture/Boutique%20en%20ligne%20-%20Exigences%20d%27utilisateurs.pdf) avant de passer au développement de la solution logicielle concrète.
+Le projet a pour objectif de développer un site e-commerce dans l'état de l'art actuel, aussi bien en terme de technologie que de cybersécurité, en suivant un processus éprouvé d'ingénierie logicielle basée sur les modèles ([IDM](https://fr.wikipedia.org/wiki/Ing%C3%A9nierie_dirig%C3%A9e_par_les_mod%C3%A8les)). Il débute par la rédaction d'un [document d'architecture](architecture/Boutique%20en%20ligne%20-%20Documentation%20d%27Architecture.pdf) à partir des [exigences](architecture/Boutique%20en%20ligne%20-%20Exigences%20d%27utilisateurs.pdf) avant de passer au développement de la solution logicielle concrète.
 
 > **Note :** La solution suit dans les grandes lignes les **recommandations de sécurité de l'[ANSSI](https://www.ssi.gouv.fr/)**, notamment le guide [authentification multifacteur et mots de passe](https://messervices.cyber.gouv.fr/guides/recommandations-relatives-lauthentification-multifacteur-et-aux-mots-de-passe) et le guide [sécurité des sites web](https://cyber.gouv.fr/guide-sites-web). Ces recommandations sont déclinées des exigences, jusqu'au code source de la solution, en passant par les documents d'architecture.
 
 Un site e-commerce n'est pas le cas d'usage le plus représentatif pour une méthode issue du génie logiciel industriel — mais c'est précisément ce qui en fait un exemple intéressant : démontrer que la démarche s'adapte à tout type de projet, y compris web. Elle présente également un avantage concret dans le contexte actuel : disposer d'une architecture documentée et structurée permet de cadrer efficacement la génération de code par une IA, en lui fournissant un contexte précis et des contraintes claires plutôt que de partir d'une page blanche. L'approche consiste à modéliser, documenter et valider entièrement le système avant de commencer les développements. Issue du génie logiciel industriel, elle permet de détecter les incohérences et les ambiguïtés en amont, là où elles coûtent le moins cher à corriger. Cette démarche peut très bien prendre en compte de nouvelles exigences en cours de développement, à condition qu'elles repassent par l'ensemble du processus de conception afin de maintenir la documentation d'architecture à jour, et identifier d'éventuels problèmes pour les intégrer.
 
-L'architecture système est modélisée selon une approche que l'on pourrait appeler **MBSE no tool** — appliquer la méthode [ARCADIA](https://fr.wikipedia.org/wiki/Arcadia_(ing%C3%A9nierie)) ([MBSE](https://fr.wikipedia.org/wiki/Ing%C3%A9nierie_syst%C3%A8me_bas%C3%A9e_sur_les_mod%C3%A8les) - Model-Based System Engineering) sans recourir à des outils puissants mais lourds tels qu'IBM Rhapsody, Enterprise Architect ou Capella, et sans engendrer de surcoût — ni en licences, ni en outillage, ni en courbe d'apprentissage. La stack retenue est volontairement légère : [AsciiDoc](https://asciidoc.org) pour la rédaction du document d'architecture, [PlantUML](https://plantuml.com) pour tous les diagrammes [UML](https://fr.wikipedia.org/wiki/UML_(informatique)) en notation textuelle versionnée avec le code, et [Git](https://git-scm.com) pour la gestion de version. Ces deux formats textuels présentent deux avantages complémentaires : les modifications de l'architecture sont directement lisibles dans une pull request, comme n'importe quel changement de code — contrairement aux modèles binaires des outils MBSE traditionnels, impossibles à relire ou à commenter dans une revue de code Git — et une IA agentique peut les lire, les analyser et les produire nativement. À partir du document des exigences, elle assiste l'ingénieur pour construire les différentes vues ARCADIA avec leurs diagrammes UML, et propage tout changement d'exigence à travers toute la chaîne — architecture, diagrammes, code — sans rupture de traçabilité.
+L'architecture système est modélisée selon une approche que l'on pourrait appeler **MBSE no tool** — appliquer la méthode [ARCADIA](https://fr.wikipedia.org/wiki/Arcadia_(ing%C3%A9nierie)) ([MBSE](https://fr.wikipedia.org/wiki/Ing%C3%A9nierie_syst%C3%A8me_bas%C3%A9e_sur_les_mod%C3%A8les) - Model-Based System Engineering) sans recourir à des outils puissants mais lourds tels qu'IBM Rhapsody, Enterprise Architect ou Capella, et sans engendrer de surcoût — ni en licences, ni en outillage, ni en courbe d'apprentissage. La stack retenue est volontairement légère : [AsciiDoc](https://asciidoc.org) pour la rédaction du document d'architecture, [PlantUML](https://plantuml.com) pour tous les diagrammes [UML](https://fr.wikipedia.org/wiki/UML_(informatique)) en notation textuelle versionnée avec le code, et [Git](https://git-scm.com) pour la gestion de version. Ces formats textuels présentent deux avantages complémentaires : les modifications de l'architecture sont directement lisibles dans une pull request, comme n'importe quel changement de code — contrairement aux modèles binaires des outils MBSE traditionnels, impossibles à relire ou à commenter dans une revue de code Git — et une IA agentique peut les lire, les analyser et les produire nativement. À partir du document des exigences, elle assiste l'ingénieur pour construire les différentes vues ARCADIA avec leurs diagrammes UML, et propage tout changement d'exigence à travers toute la chaîne — architecture, diagrammes, code — sans rupture de traçabilité.
 
 L'absence d'outil MBSE dédié est aussi une liberté : sans contrainte logicielle, la méthode peut être appliquée à la carte — en ne retenant que les niveaux d'analyse et les diagrammes réellement utiles au contexte du projet, plutôt que de suivre la démarche dans son intégralité par obligation.
 
@@ -64,9 +64,9 @@ En voici les grandes phases d'analyse, qui représentent le besoin ou le systèm
 
 La méthode ARCADIA est suivie, dans cet exemple, en s'appuyant uniquement sur le langage de modélisation [UML](https://fr.wikipedia.org/wiki/UML_(informatique)). Le [document d'architecture](architecture/Boutique%20en%20ligne%20-%20Documentation%20d%27Architecture.pdf) est produit à partir du [**document des exigences utilisateurs**](architecture/Boutique%20en%20ligne%20-%20Exigences%20utilisateurs.pdf), qui constitue l'entrant formel de la démarche ARCADIA. Ce document recense les besoins opérationnels des acteurs (administrateur, vendeur, acheteur) ainsi que les exigences de sécurité issues des recommandations de l'ANSSI, et sert de référence tout au long des quatre niveaux d'analyse.
 
-#### Analyse du besoin
+### Analyse du besoin
 
-##### 1.1. Analyse du Besoin Opérationnel (OA — Operational Analysis)
+#### 1.1. Analyse du Besoin Opérationnel (OA — Operational Analysis)
 
 Que font les utilisateurs et pourquoi ?
 On modélise ici les acteurs (opérateurs, systèmes externes), leurs activités opérationnelles et les échanges entre eux, indépendamment de tout système à construire. On décrit le contexte métier réel.
@@ -75,7 +75,7 @@ On modélise ici les acteurs (opérateurs, systèmes externes), leurs activités
 
 ![OA Use Case](architecture/diagrams/readme/oa-use-case.svg)
 
-##### 1.2. Analyse du Besoin Système (SA — System Need Analysis)
+#### 1.2. Analyse du Besoin Système (SA — System Need Analysis)
 
 Que doit faire le système pour satisfaire ce besoin ?
 On définit les fonctions du système vues de l'extérieur (ce qu'il doit accomplir), les interfaces avec les acteurs, et les scénarios d'usage. On reste volontairement agnostique sur l'architecture interne. Les exigences sont déduites de cette analyse fonctionnelle, et non l'inverse.
@@ -84,9 +84,9 @@ On définit les fonctions du système vues de l'extérieur (ce qu'il doit accomp
 
 ![SA Context](architecture/diagrams/readme/sa-context.svg)
 
-#### Analyse du système
+### Analyse du système
 
-##### 1.3. Architecture Logique (LA — Logical Architecture)
+#### 1.3. Architecture Logique (LA — Logical Architecture)
 
 Comment organiser les fonctions en composants logiques ?
 On décompose le système en composants logiques (sans préjuger des technologies) et on alloue les fonctions à ces composants. On travaille les flux d'échanges internes, la cohérence du découpage, et on identifie les premiers choix d'architecture. C'est le cœur de la conception système.
@@ -95,7 +95,7 @@ On décompose le système en composants logiques (sans préjuger des technologie
 
 ![LA Components](architecture/diagrams/readme/la-components.svg)
 
-##### 1.4. Architecture Physique (PA — Physical Architecture)
+#### 1.4. Architecture Physique (PA — Physical Architecture)
 
 Quelles solutions concrètes implémentent l'architecture logique ?
 On mappe les composants logiques sur des composants physiques réels (matériel, logiciel, réseaux). On gère les contraintes de déploiement, de performance, de redondance. On prépare la répartition du travail entre les parties prenantes.
@@ -153,7 +153,7 @@ The project aims to develop an e-commerce website built to current best practice
 
 An e-commerce website is not the most representative use case for a method rooted in industrial software engineering — but that is precisely what makes it an interesting example: demonstrating that the approach adapts to any type of project, including web applications. It also offers a concrete advantage in today's context: having a documented and structured architecture makes it possible to effectively frame AI-assisted code generation, providing precise context and clear constraints rather than starting from a blank page. The approach consists of fully modelling, documenting and validating the system before any development begins. Rooted in industrial software engineering, it makes it possible to detect inconsistencies and ambiguities early — where they are least costly to fix. New requirements can very well be accommodated during development, provided they go through the full design process in order to keep the architecture documentation up to date and identify any issues before integrating them.
 
-The system architecture is designed following an approach that could be called **MBSE no tool** — applying the [ARCADIA](https://en.wikipedia.org/wiki/Arcadia_(methodology)) method ([MBSE](https://en.wikipedia.org/wiki/Model-based_systems_engineering) - Model-Based System Engineering) without resorting to powerful but heavy tools such as IBM Rhapsody, Enterprise Architect or Capella, and without incurring additional costs — no licences, no heavy tooling, no steep learning curve. The chosen stack is deliberately lightweight: [AsciiDoc](https://asciidoc.org) for writing the architecture document, [PlantUML](https://plantuml.com) for all [UML](https://en.wikipedia.org/wiki/Unified_Modeling_Language) diagrams in text-based notation versioned alongside the code, and [Git](https://git-scm.com) for version control. Both being text-based formats, they bring two complementary advantages: architecture changes are directly readable in a pull request, just like any code change — unlike the binary models produced by traditional MBSE tools, which are impossible to review or comment on in a code review — and an agentic AI can read, analyse and produce them natively. From the requirements document, it assists the engineer in building the various ARCADIA views with their UML diagrams, and propagates any requirement change across the entire chain — architecture, diagrams, code — with no break in traceability.
+The system architecture is designed following an approach that could be called **MBSE no tool** — applying the [ARCADIA](https://en.wikipedia.org/wiki/Arcadia_(methodology)) method ([MBSE](https://en.wikipedia.org/wiki/Model-based_systems_engineering) - Model-Based System Engineering) without resorting to powerful but heavy tools such as IBM Rhapsody, Enterprise Architect or Capella, and without incurring additional costs — no licences, no heavy tooling, no steep learning curve. The chosen stack is deliberately lightweight: [AsciiDoc](https://asciidoc.org) for writing the architecture document, [PlantUML](https://plantuml.com) for all [UML](https://en.wikipedia.org/wiki/Unified_Modeling_Language) diagrams in text-based notation versioned alongside the code, and [Git](https://git-scm.com) for version control. Being text-based formats, they bring two complementary advantages: architecture changes are directly readable in a pull request, just like any code change — unlike the binary models produced by traditional MBSE tools, which are impossible to review or comment on in a code review — and an agentic AI can read, analyse and produce them natively. From the requirements document, it assists the engineer in building the various ARCADIA views with their UML diagrams, and propagates any requirement change across the entire chain — architecture, diagrams, code — with no break in traceability.
 
 The absence of a dedicated MBSE tool is also a freedom: without software constraints, the method can be applied selectively — retaining only the analysis levels and diagrams that are genuinely useful for the project's context, rather than following the full process out of obligation.
 
@@ -173,9 +173,9 @@ Here are the main analysis phases, each representing the need or the system at a
 
 The ARCADIA method is followed in this example using exclusively [UML](https://en.wikipedia.org/wiki/Unified_Modeling_Language) modelling language. The [architecture document](architecture/Boutique%20en%20ligne%20-%20Documentation%20d%27Architecture.pdf) is produced from the [**user requirements document**](architecture/Boutique%20en%20ligne%20-%20Exigences%20utilisateurs.pdf), which constitutes the formal input to the ARCADIA process. This document captures the operational needs of all actors (administrator, vendor, buyer) as well as the security requirements derived from ANSSI recommendations, and serves as the reference throughout all four levels of analysis.
 
-#### Needs Analysis
+### Needs Analysis
 
-##### 1.1. Operational Analysis (OA)
+#### 1.1. Operational Analysis (OA)
 
 What do users do, and why?
 This phase models the actors (operators, external systems), their operational activities, and the exchanges between them, independently of any system to be built. It describes the real business context.
@@ -184,7 +184,7 @@ This phase models the actors (operators, external systems), their operational ac
 
 ![OA Use Case](architecture/diagrams/readme/oa-use-case.svg)
 
-##### 1.2. System Need Analysis (SA)
+#### 1.2. System Need Analysis (SA)
 
 What must the system do to satisfy this need?
 This phase defines the system's functions as seen from the outside (what it must accomplish), its interfaces with actors, and the usage scenarios. The internal architecture is deliberately left unspecified at this stage. Requirements are derived from this functional analysis — not the other way around.
@@ -193,9 +193,9 @@ This phase defines the system's functions as seen from the outside (what it must
 
 ![SA Context](architecture/diagrams/readme/sa-context.svg)
 
-#### System Analysis
+### System Analysis
 
-##### 1.3. Logical Architecture (LA)
+#### 1.3. Logical Architecture (LA)
 
 How should functions be organised into logical components?
 The system is broken down into logical components (without assuming any specific technology) and functions are allocated to those components. Internal exchange flows are defined, the decomposition is checked for consistency, and initial architectural decisions are made. This is the core of system design.
@@ -204,7 +204,7 @@ The system is broken down into logical components (without assuming any specific
 
 ![LA Components](architecture/diagrams/readme/la-components.svg)
 
-##### 1.4. Physical Architecture (PA)
+#### 1.4. Physical Architecture (PA)
 
 Which concrete solutions implement the logical architecture?
 Logical components are mapped onto real physical components (hardware, software, networks). Deployment, performance, and redundancy constraints are addressed, and the division of work between stakeholders is defined.
