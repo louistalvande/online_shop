@@ -10,7 +10,7 @@
 
 == Contexte et objectif
 
-L'Analyse Système (SA) décrit le système de application ecommerce du point de vue des *fonctions que le logiciel doit remplir*, sans encore choisir de composants d'implémentation. Elle traduit les besoins opérationnels (OA) en exigences système, en identifiant les fonctions du système, leurs interfaces avec les acteurs externes et les contraintes techniques à respecter.
+L'Analyse Système (SA) décrit le système e-commerce du point de vue des *fonctions que le logiciel doit remplir*, sans encore choisir de composants d'implémentation. Elle traduit les besoins opérationnels (OA) en exigences système, en identifiant les fonctions du système, leurs interfaces avec les acteurs externes et les contraintes techniques à respecter.
 
 La SA repose sur les trois principes ARCADIA suivants :
 
@@ -19,6 +19,10 @@ La SA repose sur les trois principes ARCADIA suivants :
 * Identifier les échanges entre le système et les acteurs externes (flux, données, événements).
 
 NOTE: Le système couvre l'ensemble des interactions numériques entre les six acteurs de la boutique : Administrateur, Vendeur, Acheteur, Transporteur (externe), Prestataire de paiement (externe) et Service de messagerie (externe). Les trois acteurs externes sont des systèmes tiers ; le système ne les implémente pas, mais définit les interfaces d'échange avec eux.
+
+=== Mission du système
+
+Le système a pour mission de fournir une plateforme de vente en ligne permettant à un vendeur unique de commercialiser ses produits auprès d'acheteurs résidant dans la zone euro, en couvrant l'intégralité du cycle de vie d'une commande — de la présentation du catalogue jusqu'à la livraison et au service après-vente — avec gestion des paiements par carte bancaire et par virement bancaire, et administration centralisée des comptes par un administrateur.
 
 === Acteurs système et interfaces
 
@@ -131,6 +135,108 @@ Un compte suspendu ou supprimé ne peut pas s'authentifier. Les messages d'erreu
 | Les données personnelles et les données de paiement sont protégées au repos. Les données bancaires ne sont jamais stockées sur la plateforme ; leur traitement est délégué intégralement au prestataire certifié PCI-DSS.
 |===
 
+== Capacités système
+
+Les capacités système raffinent les capacités opérationnelles (CAP-xxx) de l'OA en les exprimant du point de vue du système. Elles constituent le lien entre les besoins opérationnels et les fonctions système (FS) qui les réalisent.
+
+[cols="1,2,1,2", options="header"]
+|===
+| Identifiant | Capacité système | OA | Fonctions système allouées
+
+| CAPS-001
+| Gérer les identités et les accès utilisateurs
+| CAP-001
+| FS-A01..A04, FS-B01, FS-B02, FS-B10, FS-B11
+
+| CAPS-002
+| Gérer le catalogue et les stocks
+| CAP-002
+| FS-V02, FS-V03, FS-V12, FS-V13, FS-V14
+
+| CAPS-003
+| Fournir une expérience d'achat complète
+| CAP-003
+| FS-B03, FS-B04, FS-B05, FS-B06, FS-B11
+
+| CAPS-004
+| Traiter les paiements
+| CAP-004
+| FS-P01, FS-P02, FS-P03, FS-V09, FS-V10
+
+| CAPS-005
+| Gérer la logistique et les expéditions
+| CAP-005
+| FS-V05, FS-C01, FS-B08
+
+| CAPS-006
+| Assurer le service client et les remboursements
+| CAP-006
+| FS-B09, FS-V06, FS-V08
+
+| CAPS-007
+| Fournir le reporting et la gestion de la vitrine
+| CAP-007
+| FS-V07, FS-V11
+
+| CAPS-008
+| Assurer la communication transactionnelle
+| CAP-008
+| Via IFS-06 (déclenché par FS-B01, FS-V04, FS-V05, FS-V08, FS-P01..P03)
+|===
+
+=== Diagramme Mission — Capacités — Fonctions
+
+.SA — Mission, capacités système et fonctions allouées
+[plantuml, sa-mission-caps-functions, svg]
+----
+@startwbs
+<style>
+wbsDiagram {
+  .mission {
+    BackgroundColor #E8F4FD
+    FontStyle bold
+  }
+  .caps {
+    BackgroundColor #EEF4FB
+  }
+  .funcs {
+    BackgroundColor #FAFAFA
+    FontSize 11
+  }
+}
+</style>
+
+* <&task> Mission <<mission>>\nPlateforme de vente en ligne zone euro\ncycle de vie complet d'une commande
+
+** CAPS-001 — Identités & accès <<caps>>
+***_ FS-A01..A04 <<funcs>>
+***_ FS-B01, B02, B10, B11 <<funcs>>
+
+** CAPS-002 — Catalogue & stocks <<caps>>
+***_ FS-V02, V03, V11 <<funcs>>
+***_ FS-V12, V13, V14 <<funcs>>
+
+** CAPS-003 — Expérience d'achat <<caps>>
+***_ FS-B03, B04, B05, B06, B11 <<funcs>>
+
+** CAPS-004 — Paiements <<caps>>
+***_ FS-P01, P02, P03 <<funcs>>
+***_ FS-V09, V10 <<funcs>>
+
+** CAPS-005 — Logistique <<caps>>
+***_ FS-V05, FS-C01, FS-B08 <<funcs>>
+
+** CAPS-006 — Service client <<caps>>
+***_ FS-B09, FS-V06, FS-V08 <<funcs>>
+
+** CAPS-007 — Reporting & vitrine <<caps>>
+***_ FS-V07, FS-V11 <<funcs>>
+
+** CAPS-008 — Communication <<caps>>
+***_ IFS-06 (FS-B01, V04, V05, V08...) <<funcs>>
+@endwbs
+----
+
 == Exigences fonctionnelles système
 
 Les fonctions système (FS) sont dérivées des cas d'utilisation opérationnels de l'OA et allouées à chaque acteur.
@@ -216,6 +322,94 @@ Les fonctions système (FS) sont dérivées des cas d'utilisation opérationnels
 | FS-S06 | Appliquer les en-têtes de sécurité HTTP (CSP, Strict-Transport-Security, X-Frame-Options) sur toutes les réponses | CS-13, CS-14
 | FS-S07 | Journaliser les événements de sécurité (connexion, échec d'auth, action admin, transaction) avec horodatage, identifiant et IP | CS-15
 |===
+
+== Relations entre fonctions système
+
+Le diagramme ci-dessous représente les invocations directes entre fonctions système (FS).
+Les fonctions de sécurité transverse *FS-S01 à FS-S07* (validation des entrées, anti-CSRF, journalisation, etc.) s'appliquent à l'ensemble des fonctions et sont représentées par une note globale.
+
+.Dépendances fonctionnelles entre fonctions système (SA)
+[plantuml, sa-fs-relations, svg]
+----
+skinparam componentStyle rectangle
+skinparam defaultFontSize 9
+skinparam shadowing false
+skinparam ArrowColor #444444
+skinparam componentBackgroundColor #FEFEFE
+skinparam componentBorderColor #2E75B6
+skinparam packageBackgroundColor #EEF4FB
+skinparam packageBorderColor #2E75B6
+skinparam noteBackgroundColor #FFFBE6
+skinparam noteBorderColor #F0A500
+
+left to right direction
+
+package "Administrateur" {
+  [FS-A01\nCréer compte] as FSA01
+}
+
+package "Acheteur" {
+  [FS-B01\nInscription] as FSB01
+  [FS-B10\nActivation compte] as FSB10
+  [FS-B03\nCatalogue] as FSB03
+  [FS-B04\nPanier] as FSB04
+  [FS-B05\nPersistance panier] as FSB05
+  [FS-B11\nAdresses] as FSB11
+  [FS-B06\nTunnel d'achat] as FSB06
+  [FS-B07\nPaiement] as FSB07
+  [FS-B08\nSuivi commande] as FSB08
+  [FS-B09\nAnnulation] as FSB09
+}
+
+package "Vendeur" {
+  [FS-V02\nCatalogue CRUD] as FSV02
+  [FS-V03\nStock] as FSV03
+  [FS-V04\nCommandes] as FSV04
+  [FS-V05\nExpédition] as FSV05
+  [FS-V06\nLitiges] as FSV06
+  [FS-V08\nAnnulation post-exp.] as FSV08
+  [FS-V09\nConf. virement] as FSV09
+  [FS-V10\nRembours. virement] as FSV10
+  [FS-V12\nImport CSV] as FSV12
+  [FS-V13\nExport CSV] as FSV13
+  [FS-V14\nStock multiple] as FSV14
+}
+
+package "Paiement" {
+  [FS-P01\nAutorisation] as FSP01
+  [FS-P02\nConfirmation] as FSP02
+  [FS-P03\nRemboursement] as FSP03
+}
+
+package "Transporteur" {
+  [FS-C01\nSuivi transporteur] as FSC01
+}
+
+note "FS-S01–S07 : sécurité transverse\n(s'appliquent à toutes les FS)" as NoteS
+
+FSA01 --> FSB10 : activation
+FSB01 --> FSB10 : activation
+FSB03 --> FSV02 : lecture
+FSB05 --> FSB04 : restauration
+FSB06 --> FSB04 : contenu panier
+FSB06 --> FSB11 : adresse livraison
+FSB06 --> FSB07 : paiement
+FSB06 --> FSV04 : création commande
+FSB07 --> FSP01 : autorisation
+FSB08 --> FSC01 : affichage suivi
+FSB09 --> FSP03 : remboursement
+FSP02 --> FSV04 : confirmation paiement
+FSV04 --> FSV03 : vérif. stock
+FSV05 --> FSC01 : URL transporteur
+FSV05 --> FSB08 : notif. acheteur
+FSV06 --> FSP03 : remboursement litige
+FSV08 --> FSP03 : remboursement carte
+FSV08 --> FSV10 : virement inverse
+FSV09 --> FSV04 : déclenchement
+FSV12 --> FSV02 : import
+FSV13 --> FSV02 : export
+FSV14 --> FSV03 : maj stock
+----
 
 == Diagramme de cas d'utilisation système
 
@@ -1380,79 +1574,7 @@ end note
 | Confirmation de commande, expédition, annulation, alerte de rupture de stock
 |===
 
-== Diagramme de composants système
-
-Ce diagramme identifie les grands blocs fonctionnels du système et leurs dépendances, sans préjuger de l'architecture technique retenue lors de la LA (Logical Architecture).
-
-[plantuml, sa-components, svg]
-----
-skinparam componentBackgroundColor #FEFEFE
-skinparam componentBorderColor #2E75B6
-skinparam arrowColor #2E75B6
-skinparam interfaceBackgroundColor #E8F4FD
-skinparam interfaceBorderColor #2E75B6
-skinparam noteBackgroundColor #FFFBE6
-skinparam noteBorderColor #F0A500
-skinparam packageBackgroundColor #F0F8FF
-skinparam packageBorderColor #AAAAAA
-
-actor "Acheteur" as Buyer
-actor "Vendeur" as Vendor
-actor "Administrateur" as Admin
-
-package "Système — Application e-commerce" {
-
-  package "Front-office (IFS-01)" {
-    [Portail Acheteur\n(catalogue, panier, tunnel d'achat)] as FrontBuyer
-  }
-
-  package "Back-office (IFS-02 / IFS-03)" {
-    [Espace Vendeur\n(catalogue, stock, commandes, rapports)] as BackVendor
-    [Console Admin\n(comptes, transporteurs)] as BackAdmin
-  }
-
-  package "Noyau Métier" {
-    [Gestion des comptes\n(FS-A01..A03, FS-B01..B02)] as AccountSvc
-    [Gestion du catalogue\net des stocks (FS-V02..V03, FS-V12..V14, FS-B03)] as CatalogSvc
-    [Gestion du panier\n(FS-B04..B05 / CS-03)] as CartSvc
-    [Orchestrateur de commande\n(FS-B06..B09, FS-V04..V08)] as OrderSvc
-    [Moteur de rapports\n(FS-V07)] as ReportSvc
-  }
-
-  package "Intégrations externes" {
-    [Connecteur Paiement\n(FS-P01..P03 / IFS-04)] as PaySvc
-    [Service Notifications\n(email / IFS-06)] as NotifSvc
-  }
-
-}
-
-component "Prestataire\nde paiement" as ExtPayment #D5E8F0
-
-Buyer --> FrontBuyer : IFS-01
-Vendor --> BackVendor : IFS-02
-Admin --> BackAdmin : IFS-03
-
-FrontBuyer --> AccountSvc
-FrontBuyer --> CatalogSvc
-FrontBuyer --> CartSvc
-FrontBuyer --> OrderSvc
-
-BackVendor --> CatalogSvc
-BackVendor --> OrderSvc
-BackVendor --> ReportSvc
-
-BackAdmin --> AccountSvc
-
-OrderSvc --> PaySvc
-OrderSvc --> NotifSvc
-AccountSvc --> NotifSvc
-CatalogSvc --> NotifSvc
-
-PaySvc --> ExtPayment : IFS-04\nREST/HTTPS
-ExtPayment --> PaySvc : webhook
-
-note "IFS-05 : lien sortant vers site transporteur\n(consulté par l'acheteur — aucun appel API système)" as N1
-----
+NOTE: La décomposition en composants logiciels (blocs fonctionnels, dépendances, sous-systèmes) appartient au niveau *LA* (Logical Architecture) — voir `03-logical-architecture/la.adoc`. La SA ne décrit pas de composants ; elle identifie uniquement les fonctions système (FS), les interfaces externes (IFS) et les chaînes fonctionnelles.
 
 == Matrice de traçabilité OA → SA
 
