@@ -1,0 +1,26 @@
+@startuml pa-deployment-fr
+skinparam defaultFontSize 11
+skinparam shadowing false
+skinparam ArrowColor #2E75B6
+skinparam nodeBorderColor #2E75B6
+skinparam nodeBackgroundColor #E8F4FD
+skinparam databaseBorderColor #2E75B6
+skinparam databaseBackgroundColor #E8F4FD
+skinparam rectangleBorderColor #2E75B6
+skinparam rectangleBackgroundColor #EEF4FB
+
+actor "Navigateur Client" as Client
+
+node "Serveur Web\n(React)" as Web
+node "Serveur API\n(Spring Boot)" as API
+database "Base de données\n(PostgreSQL)" as DB
+rectangle "Stripe API\n(externe)" as Stripe
+rectangle "SMTP\n(externe)" as SMTP
+
+Client --> Web : HTTPS
+Web --> API : REST/JSON
+API --> DB : SQL
+API --> Stripe : HTTPS
+API --> SMTP : HTTPS
+
+@enduml

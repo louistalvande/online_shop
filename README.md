@@ -57,7 +57,7 @@ On modélise ici les acteurs (opérateurs, systèmes externes), leurs activités
 
 **Exemple de diagramme OA — Cas d'utilisation opérationnel :**
 
-![OA Use Case](architecture/diagrams/readme/oa-use-case.svg)
+![OA Use Case](architecture/diagrams/readme/oa-use-case-fr.svg)
 
 ##### 1.2. Analyse du Besoin Système (SA — System Need Analysis)
 
@@ -75,8 +75,8 @@ On définit les fonctions du système vues de l'extérieur (ce qu'il doit accomp
 **Exemples de diagrammes SA :**
 
 <table><tr>
-<td><img src="architecture/diagrams/readme/sa-sequence-simple.svg" width="300"></td>
-<td><img src="architecture/diagrams/readme/sa-functions-simple.svg" width="300"></td>
+<td><img src="architecture/diagrams/readme/sa-sequence-simple-fr.svg" width="300"></td>
+<td><img src="architecture/diagrams/readme/sa-functions-simple-fr.svg" width="300"></td>
 </tr></table>
 
 #### Analyse du système
@@ -97,7 +97,7 @@ On décompose le système en composants logiques (sans préjuger des technologie
 
 **Exemple de diagramme LA — Architecture logique des composants :**
 
-![LA Components](architecture/diagrams/readme/la-components.svg)
+![LA Components](architecture/diagrams/readme/la-components-fr.svg)
 
 ##### 1.4. Architecture Physique (PA — Physical Architecture)
 
@@ -114,7 +114,7 @@ On mappe les composants logiques sur des composants physiques réels (matériel,
 
 **Exemple de diagramme PA — Architecture de déploiement :**
 
-![PA Deployment](architecture/diagrams/readme/pa-deployment.svg)
+![PA Deployment](architecture/diagrams/readme/pa-deployment-fr.svg)
 
 ### 2. Mise en place de l'infrastructure de la solution
 
@@ -195,7 +195,7 @@ This phase models the actors (operators, external systems), their operational ac
 
 **OA Diagram Example — Operational Use Case:**
 
-![OA Use Case](architecture/diagrams/readme/oa-use-case.svg)
+![OA Use Case](architecture/diagrams/readme/oa-use-case-en.svg)
 
 ##### 1.2. System Need Analysis (SA)
 
@@ -213,8 +213,8 @@ This phase defines the system's functions as seen from the outside (what it must
 **SA Diagram Examples:**
 
 <table><tr>
-<td><img src="architecture/diagrams/readme/sa-sequence-simple.svg" width="300"></td>
-<td><img src="architecture/diagrams/readme/sa-functions-simple.svg" width="300"></td>
+<td><img src="architecture/diagrams/readme/sa-sequence-simple-en.svg" width="300"></td>
+<td><img src="architecture/diagrams/readme/sa-functions-simple-en.svg" width="300"></td>
 </tr></table>
 
 #### System Analysis
@@ -235,7 +235,7 @@ The system is broken down into logical components (without assuming any specific
 
 **LA Diagram Example — Logical Component Architecture:**
 
-![LA Components](architecture/diagrams/readme/la-components.svg)
+![LA Components](architecture/diagrams/readme/la-components-en.svg)
 
 ##### 1.4. Physical Architecture (PA)
 
@@ -252,7 +252,7 @@ Logical components are mapped onto real physical components (hardware, software,
 
 **PA Diagram Example — Deployment Architecture:**
 
-![PA Deployment](architecture/diagrams/readme/pa-deployment.svg)
+![PA Deployment](architecture/diagrams/readme/pa-deployment-en.svg)
 
 ### 2. Setting Up the Solution Infrastructure
 
