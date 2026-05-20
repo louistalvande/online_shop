@@ -1,4 +1,4 @@
-# Application Web E-commerce / E-commerce Web Application
+# Application E-commerce / E-commerce Application
 ## Conçu avec une méthode d'ingénierie système MBSE / Built with Model-Based Engineering Method
 
 ![PoC](https://img.shields.io/badge/Status-Proof%20of%20Concept-yellow)
