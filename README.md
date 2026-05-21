@@ -103,6 +103,8 @@ On décompose le système en composants logiques (sans préjuger des technologie
 Quelles solutions concrètes implémentent l'architecture logique ?
 On mappe les composants logiques sur des composants physiques réels (matériel, logiciel, réseaux). On gère les contraintes de déploiement, de performance, de redondance. On prépare la répartition du travail entre les parties prenantes.
 
+Le diagramme ci-dessous présente l'architecture de déploiement conteneurisée : trois conteneurs frontend distincts — portail acheteur (`buyer-portal`), back-office vendeur (`vendor-backoffice`) et console admin (`admin-console`), chacun servi par Nginx — un conteneur API Spring Boot, une base de données PostgreSQL 16 et un cache Redis 7. Chaque frontend communique avec le backend via TLS ; le backend dialogue avec les bases de données internes et les services externes (Stripe pour le paiement, SendGrid pour les e-mails transactionnels).
+
 **Exemple simplifié de diagramme PA — Architecture de déploiement :**
 
 ![PA Deployment](architecture/diagrams/readme/pa-deployment-fr.svg)
@@ -210,6 +212,8 @@ The system is broken down into logical components (without assuming any specific
 
 Which concrete solutions implement the logical architecture?
 Logical components are mapped onto real physical components (hardware, software, networks). Deployment, performance, and redundancy constraints are addressed, and the division of work between stakeholders is defined.
+
+The diagram below presents the containerised deployment architecture: three distinct frontend containers — buyer portal (`buyer-portal`), vendor back-office (`vendor-backoffice`) and admin console (`admin-console`), each served by Nginx — a Spring Boot API container, a PostgreSQL 16 database, and a Redis 7 cache. Each frontend communicates with the backend over TLS; the backend interacts with the internal databases and external services (Stripe for payments, SendGrid for transactional emails).
 
 **Simplified PA Diagram Example — Deployment Architecture:**
 
