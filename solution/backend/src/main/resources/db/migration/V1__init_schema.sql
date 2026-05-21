@@ -1,7 +1,7 @@
 -- V1: initial schema — account domain (US-ADM-01) + profile fields (US-PRF-01, US-PRF-02)
 
 CREATE TABLE accounts (
-    id                   UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
+    id                   UUID         PRIMARY KEY DEFAULT gen_random_uuid(),
     email                VARCHAR(255) NOT NULL UNIQUE,
     password_hash        VARCHAR(255),
     first_name           VARCHAR(100) NOT NULL,
@@ -15,10 +15,18 @@ CREATE TABLE accounts (
     address_line         VARCHAR(255),
     city                 VARCHAR(100),
     postal_code          VARCHAR(20),
-    country_code         VARCHAR(2)
+    country_code         VARCHAR(2),
+    -- SEC-PWD-003/004 (CPA-17): NULL = no expiry (BUYER), set for ADMIN
+    password_expires_at  TIMESTAMPTZ,
+    -- SEC-PWD-005 (CPA-17): flag for immediate revocation
+    password_revoked     BOOLEAN      NOT NULL DEFAULT FALSE,
+    -- SEC-AUTH-007/008 (CPA-15): TOTP MFA for VENDOR and ADMIN
+    totp_secret          VARCHAR(64),
+    totp_enabled         BOOLEAN      NOT NULL DEFAULT FALSE
 );
 
-INSERT INTO accounts (id, email, password_hash, first_name, last_name, role, status, must_change_password, created_at)
+-- Admin password expires in 2 years (SEC-PWD-004 / CPA-17)
+INSERT INTO accounts (id, email, password_hash, first_name, last_name, role, status, must_change_password, created_at, password_expires_at)
 VALUES (
   gen_random_uuid(),
   'admin@onlineshop.com',
@@ -28,7 +36,8 @@ VALUES (
   'ADMIN',
   'ACTIVE',
   FALSE,
-  NOW()
+  NOW(),
+  NOW() + INTERVAL '2 years'
 );
 
 
@@ -38,6 +47,17 @@ CREATE TABLE activation_tokens (
     account_id UUID         NOT NULL REFERENCES accounts(id) ON DELETE CASCADE,
     expires_at TIMESTAMP    NOT NULL
 );
+
+
+-- Password reset tokens — SEC-PWD-006 (CPA-17): temp unique link, 1 h TTL
+CREATE TABLE password_reset_tokens (
+    token      VARCHAR(36)  PRIMARY KEY,
+    account_id UUID         NOT NULL REFERENCES accounts(id) ON DELETE CASCADE,
+    expires_at TIMESTAMPTZ  NOT NULL,
+    used       BOOLEAN      NOT NULL DEFAULT FALSE
+);
+
+CREATE INDEX idx_pwd_reset_tokens_account_id ON password_reset_tokens (account_id);
 
 
 -- Eurozone country reference data (CS-04)

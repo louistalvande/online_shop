@@ -9,7 +9,7 @@ test.describe('US-CAT-05 — Stock alert notification', () => {
 
   test('nominal — product created below threshold generates alert visible in catalog', async ({ page }) => {
     const email = `cat05-${Date.now()}@shop-test.example`;
-    const password = 'VendorPass123!';
+    const password = 'sHp-E2e!Vnd-X9pZ';
 
     await createActiveVendorViaApi(page, email, password);
     const token = await getVendorToken(page, email, password);
@@ -34,7 +34,7 @@ test.describe('US-CAT-05 — Stock alert notification', () => {
 
   test('alert badge shown on Catalogue nav link when on dashboard', async ({ page }) => {
     const email = `cat05b-${Date.now()}@shop-test.example`;
-    const password = 'VendorPass123!';
+    const password = 'sHp-E2e!Vnd-X9pZ';
 
     await createActiveVendorViaApi(page, email, password);
     const token = await getVendorToken(page, email, password);
@@ -59,7 +59,7 @@ test.describe('US-CAT-05 — Stock alert notification', () => {
 
   test('acknowledge — removes alert from the panel', async ({ page }) => {
     const email = `cat05c-${Date.now()}@shop-test.example`;
-    const password = 'VendorPass123!';
+    const password = 'sHp-E2e!Vnd-X9pZ';
 
     await createActiveVendorViaApi(page, email, password);
     const token = await getVendorToken(page, email, password);
@@ -87,7 +87,7 @@ test.describe('US-CAT-05 — Stock alert notification', () => {
 
   test('no duplicate alert for same product when already pending', async ({ page }) => {
     const email = `cat05d-${Date.now()}@shop-test.example`;
-    const password = 'VendorPass123!';
+    const password = 'sHp-E2e!Vnd-X9pZ';
 
     await createActiveVendorViaApi(page, email, password);
     const token = await getVendorToken(page, email, password);

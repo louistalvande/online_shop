@@ -9,7 +9,7 @@ test.describe('US-REG-03 — Resend activation link', () => {
     const email = `reg03-${Date.now()}@shop-test.example`;
 
     await page.request.post(`${API_URL}/api/auth/register`, {
-      data: { email, password: 'Test123456!', firstName: 'Test', lastName: 'User' },
+      data: { email, password: 'sHp-E2e!Tst-X9pZ', firstName: 'Test', lastName: 'User' },
     });
 
     await page.route('**/api/auth/activate', route =>

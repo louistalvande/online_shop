@@ -9,7 +9,7 @@ test.describe('US-CAT-01 — Create product', () => {
 
   test('nominal — fills form, submits, product appears in list', async ({ page }) => {
     const email = `cat01-${Date.now()}@shop-test.example`;
-    const password = 'VendorPass123!';
+    const password = 'sHp-E2e!Vnd-X9pZ';
 
     await createActiveVendorViaApi(page, email, password);
     const token = await getVendorToken(page, email, password);
@@ -42,7 +42,7 @@ test.describe('US-CAT-01 — Create product', () => {
 
   test('error — name blank shows validation error', async ({ page }) => {
     const email = `cat01b-${Date.now()}@shop-test.example`;
-    const password = 'VendorPass123!';
+    const password = 'sHp-E2e!Vnd-X9pZ';
 
     await createActiveVendorViaApi(page, email, password);
     const token = await getVendorToken(page, email, password);
@@ -62,7 +62,7 @@ test.describe('US-CAT-01 — Create product', () => {
 
   test('error — price missing shows validation error', async ({ page }) => {
     const email = `cat01c-${Date.now()}@shop-test.example`;
-    const password = 'VendorPass123!';
+    const password = 'sHp-E2e!Vnd-X9pZ';
 
     await createActiveVendorViaApi(page, email, password);
     const token = await getVendorToken(page, email, password);

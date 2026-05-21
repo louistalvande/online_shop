@@ -16,8 +16,13 @@ import com.shop.auth.exception.InvalidActivationTokenException;
 import com.shop.auth.exception.InvalidCredentialsException;
 import com.shop.auth.exception.TokenNotFoundException;
 import com.shop.auth.exception.TooManyLoginAttemptsException;
+import com.shop.auth.repository.PasswordResetTokenRepository;
 import com.shop.auth.service.LoginAttemptService;
 import com.shop.common.JwtUtil;
+import com.shop.notification.service.NotificationService;
+import com.shop.security.PasswordBreachService;
+import com.shop.security.TotpService;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -37,11 +42,16 @@ class AuthServiceImplTest {
 
     @Mock AccountRepository accountRepository;
     @Mock ActivationTokenRepository activationTokenRepository;
+    @Mock PasswordResetTokenRepository passwordResetTokenRepository;
     @Mock PasswordEncoder passwordEncoder;
     @Mock JwtUtil jwtUtil;
     @Mock AccountServiceImpl accountServiceImpl;
     @Mock LoginAttemptService loginAttemptService;
     @Mock AuditLogService auditLogService;
+    @Mock NotificationService notificationService;
+    @Mock PasswordBreachService passwordBreachService;
+    @Mock TotpService totpService;
+    @Mock StringRedisTemplate redisTemplate;
 
     AuthServiceImpl service;
 
@@ -54,11 +64,17 @@ class AuthServiceImplTest {
         service = new AuthServiceImpl(
                 accountRepository,
                 activationTokenRepository,
+                passwordResetTokenRepository,
                 passwordEncoder,
                 jwtUtil,
                 accountServiceImpl,
                 loginAttemptService,
-                auditLogService);
+                auditLogService,
+                notificationService,
+                passwordBreachService,
+                totpService,
+                redisTemplate,
+                "http://localhost:3000");
     }
 
     private LoginRequest loginRequest() {

@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Button } from '@workspace/theme'
-import { login } from './api/authApi'
+import { login, verifyMfa } from './api/authApi'
 
 interface Props {
   onClose: () => void
@@ -12,6 +12,9 @@ export default function LoginModal({ onClose, onLogin }: Props) {
   const { t } = useTranslation()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [mfaStep, setMfaStep] = useState(false)
+  const [mfaToken, setMfaToken] = useState('')
+  const [mfaCode, setMfaCode] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
 
@@ -20,14 +23,71 @@ export default function LoginModal({ onClose, onLogin }: Props) {
     setError(null)
     setLoading(true)
     try {
-      await login(email, password)
-      onLogin()
+      const result = await login(email, password)
+      if (result.requiresMfa && result.mfaToken) {
+        setMfaToken(result.mfaToken)
+        setMfaStep(true)
+      } else {
+        onLogin()
+      }
     } catch (err: unknown) {
       const code = err instanceof Error ? (err as { code?: string }).code : undefined
-      setError(code === 'INVALID_CREDENTIALS' ? t('login.error.invalid') : t('login.error.generic'))
+      if (code === 'INVALID_CREDENTIALS') setError(t('login.error.invalid'))
+      else if (code === 'TOO_MANY_ATTEMPTS') setError(t('login.error.tooMany'))
+      else setError(t('login.error.generic'))
     } finally {
       setLoading(false)
     }
+  }
+
+  async function handleMfaSubmit(e: React.FormEvent) {
+    e.preventDefault()
+    setError(null)
+    setLoading(true)
+    try {
+      await verifyMfa(mfaToken, mfaCode)
+      onLogin()
+    } catch (err: unknown) {
+      const code = err instanceof Error ? (err as { code?: string }).code : undefined
+      setError(code === 'INVALID_MFA_CODE' ? t('login.mfa.error.invalid') : t('login.error.generic'))
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  if (mfaStep) {
+    return (
+      <div className="modal-overlay" onClick={onClose}>
+        <div className="modal" onClick={e => e.stopPropagation()}>
+          <h2 className="modal-title">{t('login.mfa.title')}</h2>
+          <p className="modal-subtitle">{t('login.mfa.subtitle')}</p>
+
+          {error && <div className="alert-error">{error}</div>}
+
+          <form onSubmit={handleMfaSubmit}>
+            <label className="form-field">
+              {t('login.mfa.code')}
+              <input
+                className="form-input"
+                type="text"
+                inputMode="numeric"
+                pattern="\d{6}"
+                maxLength={6}
+                required
+                autoFocus
+                value={mfaCode}
+                onChange={e => setMfaCode(e.target.value)}
+                placeholder="000000"
+              />
+            </label>
+
+            <Button type="submit" className="btn-full" disabled={loading}>
+              {loading ? '…' : t('login.mfa.submit')}
+            </Button>
+          </form>
+        </div>
+      </div>
+    )
   }
 
   return (

@@ -133,6 +133,26 @@ Un compte suspendu ou supprimé ne peut pas s'authentifier. Les messages d'erreu
 | CS-16
 | Protection des données sensibles au repos (COp-05 / SEC-DAT-001..003)
 | Les données personnelles et les données de paiement sont protégées au repos. Les données bancaires ne sont jamais stockées sur la plateforme ; leur traitement est délégué intégralement au prestataire certifié PCI-DSS.
+
+| CS-17
+| Authentification multifacteur (SEC-AUTH-007)
+| L'authentification multifacteur (MFA) doit être proposée pour les comptes Vendeur et Administrateur. Le SMS ne doit pas être utilisé comme canal de réception d'un facteur d'authentification (SEC-AUTH-008).
+
+| CS-18
+| Politique de mots de passe étendue (SEC-PWD-001..006)
+| Aucune longueur maximale de mot de passe ne doit être imposée. Les mots de passe figurant dans des listes de mots de passe compromis doivent être rejetés à la création et au renouvellement. Les mots de passe des comptes Acheteur n'ont pas de durée d'expiration automatique ; ceux des comptes Administrateur expirent entre 1 et 3 ans. En cas de compromission suspectée ou avérée, les mots de passe concernés doivent être révoqués dans la journée et les comptes non renouvelés désactivés.
+
+| CS-19
+| Réinitialisation sécurisée du mot de passe (SEC-PWD-006)
+| Le système doit proposer un mécanisme de recouvrement d'accès par lien de réinitialisation temporaire et à usage unique. Le mot de passe ne doit jamais être transmis en clair par quelque canal que ce soit.
+
+| CS-20
+| Sel cryptographique par compte (SEC-STORE-002)
+| Un sel aléatoire d'au moins 128 bits, unique par compte, doit être utilisé lors du calcul de l'empreinte du mot de passe.
+
+| CS-21
+| Détection des comportements d'authentification anormaux (SEC-LOG-002)
+| Les journaux d'authentification doivent permettre la détection de comportements anormaux (tentatives répétées, connexions depuis des adresses ou localisations inhabituelles) et faciliter les investigations en cas d'incident.
 |===
 
 == Capacités système
@@ -314,19 +334,25 @@ Les fonctions système (FS) sont dérivées des cas d'utilisation opérationnels
 |===
 | ID | Fonction système | Contrainte source
 
-| FS-S01 | Enforcer la politique de mots de passe à la création et au changement de mot de passe (longueur, complexité, hachage bcrypt/Argon2id) | CS-11
+| FS-S01 | Enforcer la politique de mots de passe à la création et au changement de mot de passe (longueur min 12, complexité, pas de longueur max, hachage bcrypt/Argon2id avec sel ≥ 128 bits) | CS-11, CS-18, CS-20
 | FS-S02 | Détecter les tentatives d'authentification répétées échouées et appliquer une temporisation progressive | CS-12
 | FS-S03 | Invalider la session côté serveur à la déconnexion explicite et après 30 minutes d'inactivité | CS-08, CS-13
 | FS-S04 | Valider et assainir toutes les entrées utilisateur côté serveur avant tout traitement ou persistance | CS-14
 | FS-S05 | Protéger les requêtes d'état (commande, paiement, modification de compte) contre le CSRF | CS-14
 | FS-S06 | Appliquer les en-têtes de sécurité HTTP (CSP, Strict-Transport-Security, X-Frame-Options) sur toutes les réponses | CS-13, CS-14
 | FS-S07 | Journaliser les événements de sécurité (connexion, échec d'auth, action admin, transaction) avec horodatage, identifiant et IP | CS-15
+| FS-S08 | Proposer et enforcer l'authentification multifacteur (MFA) pour les comptes Vendeur et Administrateur ; interdire le SMS comme facteur | CS-17
+| FS-S09 | Rejeter tout mot de passe figurant dans une liste de mots de passe compromis connus lors de la création ou du renouvellement | CS-18
+| FS-S10 | Gérer l'expiration des mots de passe selon le rôle : sans expiration pour l'Acheteur, entre 1 et 3 ans pour l'Administrateur | CS-18
+| FS-S11 | Révoquer immédiatement les mots de passe suspectés ou avérés compromis et désactiver les comptes non renouvelés | CS-18
+| FS-S12 | Émettre un lien de réinitialisation de mot de passe temporaire et à usage unique ; ne jamais transmettre le mot de passe en clair | CS-19
+| FS-S13 | Détecter les comportements d'authentification anormaux (tentatives répétées, connexions inhabituelles) à partir des journaux | CS-21
 |===
 
 == Relations entre fonctions système
 
 Le diagramme ci-dessous représente les invocations directes entre fonctions système (FS).
-Les fonctions de sécurité transverse *FS-S01 à FS-S07* (validation des entrées, anti-CSRF, journalisation, etc.) s'appliquent à l'ensemble des fonctions et sont représentées par une note globale.
+Les fonctions de sécurité transverse *FS-S01 à FS-S13* (validation des entrées, anti-CSRF, journalisation, MFA, gestion des mots de passe compromis, expiration, révocation, détection d'anomalies, etc.) s'appliquent à l'ensemble des fonctions et sont représentées par une note globale.
 
 .Dépendances fonctionnelles entre fonctions système (SA)
 [plantuml, sa-fs-relations, svg]

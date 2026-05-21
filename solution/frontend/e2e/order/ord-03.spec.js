@@ -11,7 +11,7 @@ import {
 } from '../helpers/login.js';
 
 const BUYER_EMAIL = `ord03-buyer-${Date.now()}@example.com`;
-const BUYER_PASSWORD = 'Buyer123456!';
+const BUYER_PASSWORD = 'sHp-E2e!Byr-X9pZ';
 const VENDOR_EMAIL = `ord03-vendor-${Date.now()}@example.com`;
 const VENDOR_PASSWORD = 'Vendor123456!';
 
@@ -100,7 +100,7 @@ test.describe('US-ORD-03 — Card payment', () => {
     expect(order.status).toBe('AWAITING_PROCESSING');
   });
 
-  test('unauthenticated checkout returns 403', async ({ request }) => {
+  test('unauthenticated checkout returns 401', async ({ request }) => {
     const res = await request.post(`${API_URL}/api/orders`, {
       data: {
         deliveryAddressLine: '1 rue Test',
@@ -111,6 +111,6 @@ test.describe('US-ORD-03 — Card payment', () => {
         paymentMethod: 'CARD',
       },
     });
-    expect(res.status()).toBe(403);
+    expect(res.status()).toBe(401);
   });
 });

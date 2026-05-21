@@ -7,7 +7,7 @@ test.describe('US-SHP-02 — Filter and search catalog', () => {
 
   async function setupProducts(page) {
     const email = `shp02-${Date.now()}@shop-test.example`;
-    const password = 'VendorPass123!';
+    const password = 'sHp-E2e!Vnd-X9pZ';
     await createActiveVendorViaApi(page, email, password);
     const token = await getVendorToken(page, email, password);
 

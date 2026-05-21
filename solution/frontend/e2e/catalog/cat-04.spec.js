@@ -10,7 +10,7 @@ test.describe('US-CAT-04 — Stock management', () => {
 
   test('product list shows quantity and threshold columns', async ({ page }) => {
     const email = `cat04-${Date.now()}@shop-test.example`;
-    const password = 'VendorPass123!';
+    const password = 'sHp-E2e!Vnd-X9pZ';
 
     await createActiveVendorViaApi(page, email, password);
     const token = await getVendorToken(page, email, password);
@@ -36,7 +36,7 @@ test.describe('US-CAT-04 — Stock management', () => {
 
   test('product with quantity=0 shows "Rupture" badge', async ({ page }) => {
     const email = `cat04b-${Date.now()}@shop-test.example`;
-    const password = 'VendorPass123!';
+    const password = 'sHp-E2e!Vnd-X9pZ';
 
     await createActiveVendorViaApi(page, email, password);
     const token = await getVendorToken(page, email, password);
@@ -58,7 +58,7 @@ test.describe('US-CAT-04 — Stock management', () => {
 
   test('product with quantity below threshold shows "Stock bas" badge', async ({ page }) => {
     const email = `cat04c-${Date.now()}@shop-test.example`;
-    const password = 'VendorPass123!';
+    const password = 'sHp-E2e!Vnd-X9pZ';
 
     await createActiveVendorViaApi(page, email, password);
     const token = await getVendorToken(page, email, password);
@@ -80,7 +80,7 @@ test.describe('US-CAT-04 — Stock management', () => {
 
   test('stock update via API is reflected in product list', async ({ page }) => {
     const email = `cat04d-${Date.now()}@shop-test.example`;
-    const password = 'VendorPass123!';
+    const password = 'sHp-E2e!Vnd-X9pZ';
 
     await createActiveVendorViaApi(page, email, password);
     const token = await getVendorToken(page, email, password);

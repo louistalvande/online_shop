@@ -6,6 +6,7 @@ import com.shop.order.dto.VendorReturnRequest;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -86,7 +87,7 @@ public interface VendorOrderController {
     @ApiResponse(responseCode = "409", description = "Order not in a shippable state")
     @PostMapping("/{orderId}/ship")
     ResponseEntity<OrderResponse> ship(@PathVariable UUID orderId,
-                                       @RequestBody ShipOrderRequest request,
+                                       @Valid @RequestBody ShipOrderRequest request,
                                        Principal principal, Locale locale);
 
     /**
