@@ -50,13 +50,13 @@ Le système est structuré en cinq couches logiques : *Présentation*, *Applicat
 
 | *Service Compte*
 | Application
-| Inscription, activation par token email, authentification, gestion du profil, gestion des rôles
-| FS-B01, FS-B02, FS-B10, FS-A01, FS-A02
+| Inscription, activation par token email, authentification, gestion du profil, gestion du carnet d'adresses de livraison, gestion des rôles
+| FS-B01, FS-B02, FS-B10, FS-B11, FS-A01, FS-A02
 
 | *Service Catalogue*
 | Application
-| CRUD produits, gestion des catégories, recherche et filtrage, publication / archivage, suivi des niveaux de stock, réservation à la commande, libération à l'annulation, alertes de rupture
-| FS-V02, FS-V03, FS-B03
+| CRUD produits, gestion des catégories, recherche et filtrage, publication / archivage, suivi des niveaux de stock, mise à jour en masse des stocks, réservation à la commande, libération à l'annulation, alertes de rupture, import CSV de nouveaux produits, export CSV du catalogue
+| FS-V02, FS-V03, FS-V12, FS-V13, FS-V14, FS-B03
 
 | *Service Commande*
 | Application
@@ -217,14 +217,14 @@ Les interfaces logiques définissent les contrats d'échange entre composants, i
 | *IFL-01*
 | Portails (UI)
 | Service Compte
-| Inscription, activation token, authentification, mise à jour profil, gestion rôles, gestion transporteurs
-| FS-B01, FS-B02, FS-B10, FS-A01..A03
+| Inscription, activation token, authentification, mise à jour profil, CRUD carnet d'adresses de livraison, gestion rôles, gestion transporteurs
+| FS-B01, FS-B02, FS-B10, FS-B11, FS-A01..A03
 
 | *IFL-02*
 | Portails (UI)
 | Service Catalogue
-| Lister produits, rechercher, filtrer, CRUD produits et catégories
-| FS-B03, FS-V02
+| Lister produits, rechercher, filtrer, CRUD produits et catégories, import CSV (`POST /produits/import` — `multipart/form-data`), export CSV (`GET /produits/export`)
+| FS-B03, FS-V02, FS-V12, FS-V13
 
 | *IFL-03*
 | Portail Acheteur
@@ -613,6 +613,16 @@ package "Entités métier (SA)" #F0F8FF {
     + dateCreation : DateTime
   }
 
+  class AdresseLivraison {
+    + id : UUID
+    + libellé : String
+    + rue : String
+    + ville : String
+    + codePostal : String
+    + paysZoneEuro : CodeISO
+    + estParDefaut : Boolean
+  }
+
   class Produit {
     + id : UUID
     + nom : String
@@ -704,13 +714,14 @@ package "Entités techniques (LA)" #FFF8E8 {
   class TemplateNotification {
     + id : UUID
     + code : String
-    + canal : Enum {email, sms}
+    + canal : Enum {email}
     + sujet : String
     + corps : Text
   }
 }
 
 CompteUtilisateur "1" --> "0..*" TokenActivation : génère
+CompteUtilisateur "1" --> "1..*" AdresseLivraison : carnet
 CompteUtilisateur "1" --> "0..1" Panier : possède
 CompteUtilisateur "1" --> "0..*" Commande : passe
 Panier "1" *-- "0..*" LignePanier : contient
@@ -746,6 +757,7 @@ end note
 | FS-A06 | Configurer la langue de notification d'un compte | Service Compte | IFL-01, IFL-13
 | FS-B01 | Inscription + envoi email d'activation | Service Compte, Service Notification, Adaptateur Messagerie | IFL-01, IFL-09, IFL-12
 | FS-B02 | Mise à jour du profil acheteur | Service Compte | IFL-01, IFL-13
+| FS-B11 | Gérer le carnet d'adresses de livraison | Service Compte | IFL-01, IFL-13
 | FS-B03 | Afficher et filtrer le catalogue | Service Catalogue | IFL-02, IFL-13
 | FS-B04 | Gérer le panier | Service Panier | IFL-03, IFL-13
 | FS-B05 | Persister et restaurer le panier (CS-03) | Service Panier, Référentiel | IFL-03, IFL-13
@@ -756,6 +768,9 @@ end note
 | FS-B10 | Activer le compte via token (CS-07) | Service Compte | IFL-01, IFL-13
 | FS-V02 | Gérer le catalogue produits | Service Catalogue | IFL-02, IFL-13
 | FS-V03 | Gérer les stocks et alertes | Service Catalogue | IFL-06, IFL-09, IFL-13
+| FS-V14 | Mettre à jour les stocks de plusieurs produits simultanément | Service Catalogue | IFL-02, IFL-13
+| FS-V12 | Importer de nouveaux produits depuis un fichier CSV | Service Catalogue | IFL-02, IFL-13
+| FS-V13 | Exporter le catalogue au format CSV | Service Catalogue | IFL-02, IFL-13
 | FS-V04 | Traiter les commandes reçues | Service Commande | IFL-04, IFL-09, IFL-13
 | FS-V05 | Déclarer l'expédition avec saisie du numéro de suivi | Service Expédition | IFL-05, IFL-09, IFL-13
 | FS-V06 | Traiter les litiges et réclamations | Service Commande, Service Paiement | IFL-04, IFL-08

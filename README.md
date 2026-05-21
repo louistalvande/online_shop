@@ -73,7 +73,7 @@ On modélise ici les acteurs (opérateurs, systèmes externes), leurs activités
 
 **Exemple de diagramme OA — Cas d'utilisation opérationnel :**
 
-![OA Use Case](architecture/diagrams/readme/oa-use-case.svg)
+![OA Use Case](architecture/diagrams/readme/oa-use-case-fr.svg)
 
 #### 1.2. Analyse du Besoin Système (SA — System Need Analysis)
 
@@ -82,7 +82,10 @@ On définit les fonctions du système vues de l'extérieur (ce qu'il doit accomp
 
 **Exemple de diagramme SA — Contexte système :**
 
-![SA Context](architecture/diagrams/readme/sa-context.svg)
+<table><tr>
+<td><img src="architecture/diagrams/readme/sa-sequence-simple-fr.svg" width="300"></td>
+<td><img src="architecture/diagrams/readme/sa-functions-simple-fr.svg" width="300"></td>
+</tr></table>
 
 ### Analyse du système
 
@@ -93,7 +96,7 @@ On décompose le système en composants logiques (sans préjuger des technologie
 
 **Exemple de diagramme LA — Architecture logique des composants :**
 
-![LA Components](architecture/diagrams/readme/la-components.svg)
+![LA Components](architecture/diagrams/readme/la-components-fr.svg)
 
 #### 1.4. Architecture Physique (PA — Physical Architecture)
 
@@ -102,7 +105,7 @@ On mappe les composants logiques sur des composants physiques réels (matériel,
 
 **Exemple de diagramme PA — Architecture de déploiement :**
 
-![PA Deployment](architecture/diagrams/readme/pa-deployment.svg)
+![PA Deployment](architecture/diagrams/readme/pa-deployment-fr.svg)
 
 ## 2. Mise en place de l'infrastructure de la solution
 
@@ -133,11 +136,7 @@ Pour chaque User Story, le cycle suivant est appliqué dans son intégralité :
 
 Cette approche garantit une livraison progressive et maîtrisée, tout en limitant les risques de régression au fil des itérations.
 
-Une fois l'ensemble des cas d'utilisation développés et validés, la documentation utilisateur est produite sur la base de l'application telle qu'elle a été livrée. Elle comprend notamment :
-
-- un guide utilisateur décrivant les principales fonctionnalités du site e-commerce (navigation, recherche de produits, gestion du panier, tunnel d'achat, suivi de commande, etc.) ;
-- des guides pas à pas illustrant les parcours utilisateurs clés ;
-- le cas échéant, une documentation administrateur à destination des gestionnaires de la boutique (gestion du catalogue, des commandes, des utilisateurs, etc.).
+Une fois l'ensemble des cas d'utilisation développés et validés, la documentation utilisateur est produite sur la base de l'application telle qu'elle a été livrée.
 
 L'objectif est de fournir une documentation claire, accessible et maintenable, cohérente avec l'état final de l'application livrée.
 
@@ -182,7 +181,7 @@ This phase models the actors (operators, external systems), their operational ac
 
 **OA Diagram Example — Operational Use Case:**
 
-![OA Use Case](architecture/diagrams/readme/oa-use-case.svg)
+![OA Use Case](architecture/diagrams/readme/oa-use-case-en.svg)
 
 #### 1.2. System Need Analysis (SA)
 
@@ -191,7 +190,10 @@ This phase defines the system's functions as seen from the outside (what it must
 
 **SA Diagram Example — System Context:**
 
-![SA Context](architecture/diagrams/readme/sa-context.svg)
+<table><tr>
+<td><img src="architecture/diagrams/readme/sa-sequence-simple-en.svg" width="300"></td>
+<td><img src="architecture/diagrams/readme/sa-functions-simple-en.svg" width="300"></td>
+</tr></table>
 
 ### System Analysis
 
@@ -202,7 +204,7 @@ The system is broken down into logical components (without assuming any specific
 
 **LA Diagram Example — Logical Component Architecture:**
 
-![LA Components](architecture/diagrams/readme/la-components.svg)
+![LA Components](architecture/diagrams/readme/la-components-en.svg)
 
 #### 1.4. Physical Architecture (PA)
 
@@ -211,7 +213,7 @@ Logical components are mapped onto real physical components (hardware, software,
 
 **PA Diagram Example — Deployment Architecture:**
 
-![PA Deployment](architecture/diagrams/readme/pa-deployment.svg)
+![PA Deployment](architecture/diagrams/readme/pa-deployment-en.svg)
 
 ## 2. Setting Up the Solution Infrastructure
 

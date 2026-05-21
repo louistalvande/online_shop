@@ -1,6 +1,6 @@
 = Introduction
 
-Ce document décrit l'architecture du système de boutique en ligne selon la méthode *ARCADIA* (Architecture Analysis and Design Integrated Approach), une approche MBSE (Model-Based Systems Engineering).
+Ce document décrit l'architecture du système selon la méthode *ARCADIA* (Architecture Analysis and Design Integrated Approach), une approche MBSE (Model-Based Systems Engineering).
 
 Il est organisé en quatre niveaux d'analyse :
 

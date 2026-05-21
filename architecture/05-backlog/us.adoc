@@ -131,7 +131,7 @@ a|
 
 == Gestion du profil
 
-_Fonctions ARCADIA : FS-B02, FS-V01 — UCSA-02 — LA : Service Compte_
+_Fonctions ARCADIA : FS-B02, FS-B11, FS-V01 — UCSA-02 — LA : Service Compte_
 
 [cols="1,3,4,1", options="header"]
 |===
@@ -151,11 +151,22 @@ a|
 - [x] Même règles que US-PRF-01
 | Terminée
 
+| *US-PRF-03*
+| En tant qu'acheteur authentifié, je peux gérer un carnet d'adresses de livraison : ajouter une nouvelle adresse, modifier ou supprimer une adresse existante, et en définir une comme adresse par défaut.
+a|
+- [ ] Section « Mes adresses » accessible depuis l'espace compte
+- [ ] Formulaire d'ajout : libellé (ex. « Domicile »), rue, ville, code postal, pays (zone euro uniquement — CS-04)
+- [ ] L'adresse par défaut est présélectionnée automatiquement au passage de commande
+- [ ] Une seule adresse peut être marquée par défaut à la fois
+- [ ] Suppression bloquée si c'est la seule adresse du carnet
+- [ ] Minimum 1 adresse, pas de maximum imposé
+| À faire
+
 |===
 
 == Catalogue produits — Vendeur
 
-_Fonctions ARCADIA : FS-V02, FS-V03 — UCSA-10 — LA : Service Catalogue_
+_Fonctions ARCADIA : FS-V02, FS-V03, FS-V12, FS-V13, FS-V14 — UCSA-10 — LA : Service Catalogue_
 
 [cols="1,3,4,1", options="header"]
 |===
@@ -197,6 +208,39 @@ a|
 - [x] Notification déclenchée automatiquement lors du franchissement du seuil (table `stock_alerts`)
 - [x] Indicateur visible dans le back-office vendeur (panneau alertes + badge sur nav)
 | Terminée
+
+| *US-CAT-08*
+| En tant que vendeur, je peux mettre à jour les niveaux de stock de plusieurs produits simultanément depuis la vue liste du catalogue.
+a|
+- [ ] La vue liste affiche une colonne « Stock » éditable en ligne pour chaque produit
+- [ ] Le vendeur peut modifier les quantités de plusieurs produits sans quitter la liste
+- [ ] Un bouton « Enregistrer les modifications » soumet toutes les mises à jour en une seule requête (`PATCH /produits/stocks`)
+- [ ] Seules les lignes modifiées sont envoyées au serveur
+- [ ] Les alertes de rupture sont réévaluées après enregistrement (FS-V03)
+- [ ] En cas d'erreur partielle, les lignes en succès sont appliquées et les erreurs sont signalées
+| À faire
+
+| *US-CAT-06*
+| En tant que vendeur, je peux importer de nouveaux produits depuis un fichier CSV afin de créer plusieurs fiches en une seule opération.
+a|
+- [ ] Un bouton « Importer CSV » est disponible dans la section gestion du catalogue du back-office vendeur
+- [ ] Le fichier CSV respecte un en-tête défini : `nom,description,prix,categorie,quantite,seuil_alerte` ; les colonnes obligatoires sont : `nom` et `prix`
+- [ ] Chaque ligne du CSV crée un nouveau produit ; aucune mise à jour de produit existant n'est effectuée
+- [ ] Le système valide le format de l'en-tête avant traitement ; en cas d'en-tête invalide, l'import est rejeté en totalité
+- [ ] Un rapport ligne par ligne est affiché après traitement : créé / erreur avec message explicite
+- [ ] Les lignes valides sont importées même si d'autres lignes sont en erreur (import partiel)
+- [ ] L'import est accessible uniquement aux comptes vendeur authentifiés (FS-V02 / CS-01)
+| À faire
+
+| *US-CAT-07*
+| En tant que vendeur, je peux exporter mon catalogue produits au format CSV afin de le consulter ou le réimporter ultérieurement.
+a|
+- [ ] Un bouton « Exporter CSV » est disponible dans la section gestion du catalogue du back-office vendeur
+- [ ] Le fichier généré contient toutes les fiches produits (publiées et archivées) avec les colonnes : `nom,description,prix,categorie,quantite,seuil_alerte,statut`
+- [ ] Le fichier est téléchargé directement par le navigateur avec le nom `catalogue_export_YYYYMMDD.csv`
+- [ ] L'encodage du fichier est UTF-8 avec BOM pour compatibilité tableur
+- [ ] L'export est accessible uniquement aux comptes vendeur authentifiés (FS-V02 / CS-01)
+| À faire
 
 |===
 
@@ -453,6 +497,7 @@ a|
 | FS-A03 | Gérer les transporteurs | US-ADM-06, US-ADM-07, US-ADM-08, US-ADM-09
 | FS-B01 | Inscription + envoi email d'activation | US-REG-01
 | FS-B02 | Mise à jour du profil acheteur | US-PRF-01
+| FS-B11 | Gérer le carnet d'adresses de livraison | US-PRF-03
 | FS-B03 | Afficher et filtrer le catalogue | US-SHP-01, US-SHP-02
 | FS-B04 | Gérer le panier | US-CRT-01
 | FS-B05 | Persister et restaurer le panier | US-CRT-02
@@ -463,7 +508,10 @@ a|
 | FS-B10 | Activer le compte via token | US-REG-02, US-REG-03
 | FS-V01 | Mise à jour du profil vendeur | US-PRF-02
 | FS-V02 | Gérer le catalogue produits | US-CAT-01, US-CAT-02, US-CAT-03
+| FS-V12 | Importer de nouveaux produits depuis un fichier CSV | US-CAT-06
+| FS-V13 | Exporter le catalogue au format CSV | US-CAT-07
 | FS-V03 | Gérer les stocks et alertes | US-CAT-04, US-CAT-05
+| FS-V14 | Mise à jour en masse des stocks | US-CAT-08
 | FS-V04 | Traiter les commandes reçues | US-VND-01
 | FS-V05 | Déclarer l'expédition avec numéro de suivi | US-EXP-01
 | FS-V06 | Traiter les litiges et réclamations | US-CLM-01, US-CLM-02

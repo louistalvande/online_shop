@@ -1,0 +1,37 @@
+@startuml la-components-en
+skinparam componentStyle rectangle
+skinparam defaultFontSize 11
+skinparam shadowing false
+skinparam ArrowColor #2E75B6
+skinparam componentBackgroundColor #E8F4FD
+skinparam componentBorderColor #2E75B6
+skinparam packageBackgroundColor #EEF4FB
+skinparam packageBorderColor #2E75B6
+
+left to right direction
+
+package "Front-office" {
+  [Buyer Portal] as PA
+  [Seller Space] as EV
+}
+
+package "Business Core" {
+  [Order Management] as GC
+  [Catalogue Service] as GCat
+  [Payment Service] as SP
+}
+
+package "External Systems" {
+  [Payment Provider] as PP
+  [Carrier] as TR
+}
+
+PA --> GC
+PA --> GCat
+EV --> GCat
+EV --> GC
+GC --> SP
+SP --> PP
+GC --> TR
+
+@enduml

@@ -1,49 +1,94 @@
+import { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Button, Card } from '@workspace/theme'
-
-const WORKS = [
-  { id: 1, title: 'Forêt en automne', category: 'Paysage', price: '4,90 €' },
-  { id: 2, title: 'Rue pavée sous la pluie', category: 'Lieux urbains', price: '4,90 €' },
-  { id: 3, title: 'Portrait au fusain', category: 'Portrait', price: '4,90 €' },
-  { id: 4, title: 'Bord de mer au crépuscule', category: 'Paysage', price: '4,90 €' },
-  { id: 5, title: 'Vieille bicyclette', category: 'Objets', price: '4,90 €' },
-  { id: 6, title: 'Chat endormi', category: 'Animaux', price: '4,90 €' },
-  { id: 7, title: 'Marché provençal', category: 'Lieux urbains', price: '4,90 €' },
-  { id: 8, title: 'Bouquet sauvage', category: 'Nature', price: '4,90 €' },
-]
+import { fetchProducts, type BuyerProduct } from './api/catalogApi'
+import { addToCart } from './api/cartApi'
+import { getSession, type BuyerSession } from './api/authApi'
+import LoginModal from './LoginModal'
 
 /** Hero banner + featured catalog for the buyer portal home page. */
 export default function HomePage() {
   const { t } = useTranslation()
+  const [session, setSession] = useState<BuyerSession | null>(getSession)
+  const [products, setProducts] = useState<BuyerProduct[]>([])
+  const [showLogin, setShowLogin] = useState(false)
+  const [addingId, setAddingId] = useState<string | null>(null)
+  const [cartFeedback, setCartFeedback] = useState<{ id: string; ok: boolean } | null>(null)
+
+  useEffect(() => {
+    fetchProducts({ page: 0, size: 8 })
+      .then(data => setProducts(data.content))
+      .catch(() => {})
+  }, [])
+
+  async function handleAddToCart(productId: string) {
+    if (!session) { setShowLogin(true); return }
+    setAddingId(productId)
+    setCartFeedback(null)
+    try {
+      await addToCart(productId, 1)
+      window.dispatchEvent(new Event('cart-updated'))
+      setCartFeedback({ id: productId, ok: true })
+    } catch {
+      setCartFeedback({ id: productId, ok: false })
+    } finally {
+      setAddingId(null)
+      setTimeout(() => setCartFeedback(null), 2500)
+    }
+  }
 
   return (
     <>
-      <section style={{ background: 'var(--bg)', textAlign: 'center', padding: '80px 24px 72px' }}>
-        <h1 style={{ fontFamily: 'var(--font-serif)', fontSize: 'clamp(28px,4vw,48px)', fontWeight: 700, letterSpacing: '-0.02em', maxWidth: 700, margin: '0 auto 20px' }}>
-          {t('home.title')}
-        </h1>
-        <p style={{ fontSize: 16, color: 'var(--text-muted)', maxWidth: 560, margin: '0 auto', lineHeight: 1.7 }}>
-          {t('home.subtitle')}
-        </p>
+      {showLogin && (
+        <LoginModal
+          onClose={() => setShowLogin(false)}
+          onLogin={() => { setSession(getSession()); setShowLogin(false) }}
+        />
+      )}
+
+      <section className="home-hero">
+        <h1 className="home-hero-title">{t('home.title')}</h1>
+        <p className="home-hero-subtitle">{t('home.subtitle')}</p>
       </section>
 
-      <section id="catalogue" style={{ maxWidth: 1100, margin: '0 auto', padding: '48px 24px 64px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 32 }}>
-          <h2 style={{ fontFamily: 'var(--font-serif)', fontSize: 26, fontWeight: 700 }}>{t('home.featured')}</h2>
+      <section id="catalogue" className="home-catalog-section">
+        <div className="home-catalog-header">
+          <h2 className="home-catalog-title">{t('home.featured')}</h2>
           <Button onClick={() => { window.location.href = '/catalog' }}>{t('home.viewAll')}</Button>
         </div>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(230px, 1fr))', gap: 24 }}>
-          {WORKS.map(w => (
-            <Card key={w.id}>
-              <div style={{ background: '#f0ece4', height: 200 }} />
-              <div style={{ padding: '16px 18px 18px' }}>
-                <span style={{ fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--accent)' }}>
-                  {w.category}
-                </span>
-                <h3 style={{ fontSize: 16, fontWeight: 600, marginTop: 6, marginBottom: 14 }}>{w.title}</h3>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                  <span style={{ fontWeight: 700 }}>{w.price}</span>
-                  <Button variant="secondary" size="sm">{t('product.addToCart')}</Button>
+        <div className="home-catalog-grid">
+          {products.map(p => (
+            <Card key={p.id}>
+              {p.photoUrls.length > 0 ? (
+                <img src={p.photoUrls[0]} alt={p.name} className="catalog-product-image" />
+              ) : (
+                <div className="product-image-placeholder" />
+              )}
+              <div className="product-card-body">
+                {p.category && <span className="product-card-category">{p.category}</span>}
+                <h3 className="product-card-title">{p.name}</h3>
+                <div className="product-card-footer">
+                  <span className="product-card-price">
+                    {p.priceTTC.toLocaleString('fr-FR', { style: 'currency', currency: 'EUR' })}
+                  </span>
+                  {p.outOfStock ? (
+                    <Button variant="secondary" size="sm" disabled>
+                      {t('catalog.outOfStock')}
+                    </Button>
+                  ) : (
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      disabled={addingId === p.id}
+                      onClick={() => handleAddToCart(p.id)}
+                    >
+                      {cartFeedback?.id === p.id
+                        ? t(cartFeedback.ok ? 'cart.added' : 'cart.error.add')
+                        : addingId === p.id
+                          ? '…'
+                          : t('product.addToCart')}
+                    </Button>
+                  )}
                 </div>
               </div>
             </Card>

@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next'
 import { AppShell, CartIcon, Button, LangToggle, UserMenu } from '@workspace/theme'
 import type { BuyerSession } from './api/authApi'
+import { useCartCount } from './hooks/useCartCount'
 
 interface Props {
   session: BuyerSession | null
@@ -11,6 +12,7 @@ interface Props {
 
 export default function Header({ session, onShowLogin, onLogout, children }: Props) {
   const { t, i18n } = useTranslation()
+  const cartCount = useCartCount()
 
   return (
     <AppShell
@@ -20,7 +22,7 @@ export default function Header({ session, onShowLogin, onLogout, children }: Pro
         { label: t('nav.catalog'), href: '/catalog' },
       ]}
       actions={
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+        <div className="header-actions">
           <LangToggle
             lang={i18n.language}
             onToggle={() => i18n.changeLanguage(i18n.language === 'fr' ? 'en' : 'fr')}
@@ -40,7 +42,10 @@ export default function Header({ session, onShowLogin, onLogout, children }: Pro
             </Button>
           )}
           <Button variant="ghost" size="sm" aria-label={t('nav.cart')} onClick={() => { window.location.href = '/cart' }}>
-            <CartIcon size={22} />
+            <span className="cart-btn-wrapper">
+              <CartIcon size={22} />
+              {cartCount > 0 && <span className="cart-badge">{cartCount > 99 ? '99+' : cartCount}</span>}
+            </span>
           </Button>
         </div>
       }

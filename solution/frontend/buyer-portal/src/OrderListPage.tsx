@@ -34,45 +34,43 @@ export default function OrderListPage() {
 
   if (!session) {
     return (
-      <>
-        <Header />
-        <main style={{ padding: '2rem' }}>
+      <Header session={null} onShowLogin={() => {}} onLogout={() => {}}>
+        <div className="orders-login-required">
           <p>{t('orders.error.loginRequired')}</p>
-        </main>
-      </>
+        </div>
+      </Header>
     )
   }
 
   return (
-    <>
-      <Header />
-      <main style={{ padding: '2rem', maxWidth: '1000px', margin: '0 auto' }}>
+    <Header session={session} onShowLogin={() => {}} onLogout={() => { window.location.href = '/' }}>
+      <div className="orders-container">
         <h1>{t('orders.list.title')}</h1>
 
         {loading && <p>{t('orders.loading')}</p>}
-        {error && <p style={{ color: 'red' }}>{error}</p>}
+        {error && <p className="orders-error">{error}</p>}
 
         {!loading && !error && orders.length === 0 && <p>{t('orders.list.empty')}</p>}
 
         {!loading && !error && orders.length > 0 && (
-          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+          <table className="orders-table">
             <thead>
-              <tr style={{ borderBottom: '2px solid #ddd' }}>
-                <th style={{ textAlign: 'left', padding: '0.5rem' }}>{t('orders.ref')}</th>
-                <th style={{ textAlign: 'left', padding: '0.5rem' }}>{t('orders.status')}</th>
-                <th style={{ textAlign: 'left', padding: '0.5rem' }}>{t('orders.total')}</th>
-                <th style={{ textAlign: 'left', padding: '0.5rem' }}>{t('orders.date')}</th>
+              <tr className="orders-thead-row">
+                <th className="orders-th">{t('orders.ref')}</th>
+                <th className="orders-th">{t('orders.status')}</th>
+                <th className="orders-th">{t('orders.total')}</th>
+                <th className="orders-th">{t('orders.date')}</th>
                 <th></th>
               </tr>
             </thead>
             <tbody>
               {orders.map(o => (
-                <tr key={o.id} style={{ borderBottom: '1px solid #eee' }}>
-                  <td style={{ padding: '0.5rem' }}><strong>{o.orderNumber}</strong></td>
-                  <td style={{ padding: '0.5rem' }}>{t(STATUS_LABELS[o.status] ?? o.status)}</td>
-                  <td style={{ padding: '0.5rem' }}>{o.totalAmountTtc.toFixed(2)} €</td>
-                  <td style={{ padding: '0.5rem' }}>{new Date(o.createdAt).toLocaleDateString()}</td>
-                  <td style={{ padding: '0.5rem' }}>
+                <tr key={o.id} className="orders-tbody-row">
+                  <td className="orders-td"><strong>{o.orderNumber}</strong></td>
+                  <td className="orders-td">{t(STATUS_LABELS[o.status] ?? o.status)}</td>
+                  <td className="orders-td">{o.totalAmountTtc.toFixed(2)} €</td>
+                  <td className="orders-td">{new Date(o.createdAt).toLocaleDateString()}</td>
+                  <td className="orders-td">
                     <a href={`/my-orders/${o.id}`}>{t('orders.viewDetail')}</a>
                   </td>
                 </tr>
@@ -80,7 +78,7 @@ export default function OrderListPage() {
             </tbody>
           </table>
         )}
-      </main>
-    </>
+      </div>
+    </Header>
   )
 }

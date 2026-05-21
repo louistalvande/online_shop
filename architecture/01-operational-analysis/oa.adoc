@@ -10,7 +10,7 @@
 
 == Contexte et objectif
 
-L'Analyse du Besoin Opérationnel (OA) décrit le contexte métier réel d'une boutique en ligne, indépendamment de tout système à construire. Elle identifie les acteurs impliqués, leurs activités opérationnelles et les échanges entre eux.
+L'Analyse du Besoin Opérationnel (OA) décrit le contexte métier réel d'une application ecommerce, indépendamment de tout système à construire. Elle identifie les acteurs impliqués, leurs activités opérationnelles et les échanges entre eux.
 
 La boutique repose sur trois acteurs distincts. L'**administrateur** est l'unique responsable de la gestion des comptes utilisateurs. Le **vendeur** (propriétaire du site) prend en charge l'ensemble des opérations commerciales : catalogue, stocks, commandes et expéditions. L'**acheteur** est le client final qui navigue et passe commande. La boutique propose une livraison à destination des pays de la **zone euro**, via un ou plusieurs services de transport externes. Les paiements sont traités par un **prestataire de paiement externe** et acceptés par **carte bancaire** ou **virement bancaire**. L'activation du compte acheteur s'effectue via un lien envoyé par un **service de messagerie externe**.
 
@@ -78,6 +78,55 @@ Les contraintes suivantes sont issues du contexte d'usage réel des acteurs et s
 | Toutes les communications entre les acteurs et la plateforme doivent être protégées contre l'interception et la falsification. Les données bancaires des acheteurs ne transitent jamais en clair et ne sont pas stockées sur la plateforme. _(SEC-TLS-001..003)_
 |===
 
+=== Capacités opérationnelles
+
+Les capacités expriment ce que la boutique doit être en mesure d'accomplir pour répondre aux besoins des acteurs, indépendamment de toute solution technique.
+
+[cols="1,2,3,2", options="header"]
+|===
+| Identifiant | Capacité | Description | Acteurs concernés
+
+| CAP-001
+| Gestion des identités et des accès
+| Inscrire, activer, authentifier et administrer les comptes ; gérer les droits d'accès par rôle
+| Administrateur, Acheteur, Vendeur
+
+| CAP-002
+| Gestion du catalogue et des stocks
+| Créer et maintenir les fiches produits, gérer les niveaux de stock et alertes, importer / exporter le catalogue en CSV
+| Vendeur
+
+| CAP-003
+| Expérience d'achat
+| Parcourir le catalogue, gérer le panier, sélectionner une adresse du carnet, choisir le mode de livraison et passer commande
+| Acheteur
+
+| CAP-004
+| Traitement des paiements
+| Régler par carte ou virement, confirmer la réception des fonds, gérer les autorisations et les remboursements
+| Acheteur, Vendeur, Prestataire de paiement
+
+| CAP-005
+| Logistique et expéditions
+| Préparer les colis, déclarer l'expédition avec numéro de suivi, suivre la livraison
+| Vendeur, Transporteur, Acheteur
+
+| CAP-006
+| Service client
+| Annuler des commandes, traiter les litiges et réclamations, gérer les retours après expédition
+| Acheteur, Vendeur
+
+| CAP-007
+| Reporting et pilotage
+| Consulter les rapports de ventes et les statistiques commerciales
+| Vendeur
+
+| CAP-008
+| Communication transactionnelle
+| Délivrer les emails d'activation, de confirmation de commande, d'expédition et de remboursement
+| Acheteur, Service de messagerie
+|===
+
 == Diagrammes de cas d'utilisation opérationnels
 
 Les cas d'utilisation opérationnels sont répartis en trois vues focalisées, une par acteur principal de la boutique.
@@ -100,9 +149,9 @@ skinparam actor {
 left to right direction
 
 actor "Administrateur" as Admin
-actor "Transporteur\n(système externe)" as Carrier
+rectangle "Transporteur\n(système externe)" as Carrier <<system>>
 
-rectangle "Boutique en ligne" {
+rectangle "Application e-commerce" {
   usecase (S'authentifier) as UC_A0
   package "Gestion des comptes" {
     usecase (Créer / suspendre /\nsupprimer un compte\nacheteur ou vendeur) as UC_A1
@@ -150,9 +199,9 @@ skinparam actor {
 left to right direction
 
 actor "Vendeur" as Vendor
-actor "Transporteur\n(système externe)" as Carrier
+rectangle "Transporteur\n(système externe)" as Carrier <<system>>
 
-rectangle "Boutique en ligne" {
+rectangle "Application e-commerce" {
   usecase (S'authentifier) as UC_V_AUTH
   package "Gestion du compte" {
     usecase (Mettre à jour\nson compte) as UC_V0
@@ -215,16 +264,17 @@ skinparam actor {
 left to right direction
 
 actor "Acheteur" as Buyer
-actor "Service de\nmessagerie" as Mail
-actor "Prestataire\nde paiement" as Payment
-actor "Transporteur\n(système externe)" as Carrier
+rectangle "Service de\nmessagerie" as Mail <<system>>
+rectangle "Prestataire\nde paiement" as Payment <<system>>
+rectangle "Transporteur\n(système externe)" as Carrier <<system>>
 
-rectangle "Boutique en ligne" {
+rectangle "Application e-commerce" {
   package "Inscription et compte" {
     usecase (S'inscrire) as UC_B0
     usecase (Activer son compte\nvia email) as UC_B0B
     usecase (S'authentifier) as UC_B_AUTH
     usecase (Mettre à jour\nson compte) as UC_B_ACC
+    usecase (Gérer son carnet\nd'adresses) as UC_B_ADDR
   }
   package "Navigation et panier" {
     usecase (Parcourir le catalogue) as UC_B1
@@ -247,6 +297,7 @@ Buyer --> UC_B0
 Buyer --> UC_B0B
 Buyer --> UC_B_AUTH
 Buyer --> UC_B_ACC
+Buyer --> UC_B_ADDR
 Buyer --> UC_B1
 Buyer --> UC_B2
 Buyer --> UC_B2B
@@ -258,6 +309,7 @@ Buyer --> UC_B6
 Buyer --> UC_B7
 
 UC_B_ACC ..> UC_B_AUTH : <<include>>
+UC_B_ADDR ..> UC_B_AUTH : <<include>>
 UC_B2B ..> UC_B_AUTH : <<include>>
 UC_B3 ..> UC_B_AUTH : <<include>>
 UC_B4B ..> UC_B_AUTH : <<include>>
@@ -430,214 +482,135 @@ endif
 stop
 ----
 
-== Diagramme de séquence opérationnel — Passation de commande
+NOTE: Le diagramme de séquence détaillant les échanges entre acteurs et système appartient au niveau *SA* (System Analysis) — voir `02-system-analysis/sa.adoc`. À ce niveau OA, le diagramme d'activité ci-dessus est suffisant pour modéliser le flux opérationnel.
 
-Ce diagramme représente les échanges chronologiques entre les acteurs lors du processus de commande, incluant l'activation de compte via le service de messagerie.
-
-[plantuml, oa-sequence, svg]
-----
-skinparam sequenceArrowColor #2E75B6
-skinparam sequenceParticipantBackgroundColor #E8F4FD
-skinparam sequenceParticipantBorderColor #2E75B6
-skinparam sequenceLifeLineBorderColor #2E75B6
-skinparam noteBorderColor #F0A500
-skinparam noteBackgroundColor #FFFBE6
-
-actor Acheteur as Buyer
-participant "Boutique\nen ligne" as Shop
-actor Vendeur as Vendor
-actor Administrateur as Admin
-participant "Service de\nmessagerie" as Mail
-participant "Transporteur\n(zone euro)" as Carrier
-participant "Prestataire\nde paiement" as Payment
-
-== Inscription et activation ==
-Buyer -> Shop : S'inscrire
-Shop -> Mail : Transmettre le lien d'activation
-Mail --> Buyer : Acheminer l'email vers la boîte mail
-Buyer -> Shop : Cliquer sur le lien d'activation
-Shop --> Buyer : Confirmer l'activation du compte
-
-== Navigation et commande ==
-Buyer -> Shop : Parcourir le catalogue
-Shop --> Buyer : Afficher les produits disponibles
-
-Buyer -> Shop : Ajouter produit au panier
-Shop --> Buyer : Mettre à jour le panier
-
-Buyer -> Shop : Valider la commande\n(adresse + paiement)
-
-alt Paiement par carte
-  Shop -> Payment : Soumettre la demande de paiement
-  Payment --> Shop : Confirmer la transaction
-  Shop --> Buyer : Confirmer la commande
-  Shop -> Mail : Transmettre l'email de confirmation
-  Mail --> Buyer : Acheminer la confirmation de commande
-  Shop -> Vendor : Notifier nouvelle commande
-
-else Paiement par virement
-  Shop --> Buyer : Transmettre les coordonnées bancaires\n(commande en attente de virement)
-  Shop -> Vendor : Notifier virement bancaire en attente
-  Buyer -> Buyer : Effectuer le virement bancaire
-  Vendor -> Shop : Confirmer la réception du virement
-  Shop --> Buyer : Confirmer la commande
-  Shop -> Mail : Transmettre l'email de confirmation
-  Mail --> Buyer : Acheminer la confirmation de commande
-  Shop -> Vendor : Notifier nouvelle commande à traiter
-
-else Paiement refusé (carte)
-  Payment --> Shop : Refuser la transaction
-  Shop -> Mail : Transmettre la notification d'échec
-  Mail --> Buyer : Notifier échec du paiement
-  note right : L'acheteur peut\nretenter ou annuler
-end
-
-  Vendor -> Shop : Vérifier le stock
-  Vendor -> Shop : Mettre à jour le statut (en préparation)
-  Shop -> Mail : Transmettre la notification de préparation
-  Mail --> Buyer : Notifier mise en préparation
-
-  opt Annulation avant expédition (autonome)
-    Buyer -> Shop : Annuler la commande depuis son compte
-    Shop -> Payment : Déclencher le remboursement automatique
-    Payment --> Shop : Confirmer le remboursement
-    Shop -> Mail : Transmettre la notification d'annulation
-    Mail --> Buyer : Notifier annulation et remboursement
-  end
-
-  Vendor -> Carrier : Déposer le colis (hors système)
-  Carrier --> Vendor : Remettre le reçu avec n° de suivi
-  Vendor -> Shop : Marquer commande expédiée\n+ saisir numéro de suivi
-  Shop -> Mail : Transmettre la notification d'expédition
-  Mail --> Buyer : Notifier expédition avec n° de suivi
-
-  Buyer -> Shop : Confirmer réception
-  Shop --> Vendor : Notifier réception confirmée
-
-  opt Annulation ou retour après expédition
-    Buyer -> Shop : Envoyer demande d'annulation / retour
-    alt Acceptée — avec condition de renvoi
-      Shop -> Mail : Notifier l'acheteur du renvoi requis
-      Mail --> Buyer : Instruction de renvoi
-      Buyer -> Carrier : Renvoyer le colis au vendeur
-      Carrier -> Vendor : Livrer le colis retourné
-      Vendor -> Shop : Confirmer la réception du retour
-      Shop -> Payment : Déclencher le remboursement
-      Payment --> Shop : Confirmer le remboursement
-      Shop -> Mail : Transmettre confirmation remboursement
-      Mail --> Buyer : Confirmer le remboursement
-    else Acceptée — sans condition de renvoi
-      Shop -> Payment : Déclencher le remboursement direct
-      Payment --> Shop : Confirmer le remboursement
-      Shop -> Mail : Transmettre confirmation remboursement
-      Mail --> Buyer : Confirmer le remboursement
-    else Refusée
-      Shop -> Mail : Transmettre le refus
-      Mail --> Buyer : Notification de refus
-    end
-  end
-
-  Vendor -> Shop : Consulter les rapports de ventes
-  Shop --> Vendor : Afficher statistiques et historique
-----
-
-== Synthèse des activités opérationnelles
+== Activités opérationnelles
 
 === Administrateur
 
-[cols="1,3", options="header"]
+[cols="1,2,3", options="header"]
 |===
-| Activité | Description
+| ID | Activité | Description
 
+| UC_A1 / UC_A1b
 | Gérer les comptes utilisateurs
 | Créer, suspendre et supprimer les comptes du vendeur et des acheteurs ; gérer les droits d'accès à la plateforme
 
+| UC_A2a / UC_A2b
 | Gérer les transporteurs
 | Ajouter, modifier et supprimer les transporteurs disponibles sur la plateforme pour les expéditions zone euro
 
+| UC_A3
 | Basculer en mode maintenance
 | Activer ou désactiver le mode maintenance de la boutique ; lorsqu'il est actif, tout internaute non administrateur est redirigé vers une page « Site en maintenance » et les autres pages sont inaccessibles
 |===
 
 === Vendeur
 
-[cols="1,3", options="header"]
+[cols="1,2,3", options="header"]
 |===
-| Activité | Description
+| ID | Activité | Description
 
+| UC_V0
 | Mettre à jour son compte
 | Modifier ses informations personnelles (nom, adresse, mot de passe, coordonnées)
 
+| UC_V1
 | Gérer le catalogue produits
-| Créer, modifier et supprimer les fiches produits (photos, descriptions, prix, catégories)
+| Créer, modifier et supprimer les fiches produits (photos, descriptions, prix, catégories) ; importer en masse de nouveaux produits depuis un fichier CSV ; exporter le catalogue au format CSV
 
+| UC_V2
 | Gérer les stocks
-| Suivre les niveaux de stock, anticiper les ruptures, effectuer les réapprovisionnements
+| Suivre les niveaux de stock, anticiper les ruptures, effectuer les réapprovisionnements ; mettre à jour les stocks de plusieurs produits simultanément depuis la vue liste
 
+| UC_V3
 | Traiter les commandes
 | Prendre en charge les commandes reçues, vérifier le stock, préparer les colis
 
+| UC_V4
 | Gérer les expéditions vers la zone euro
 | Préparer le colis, le déposer auprès d'un transporteur (ex. La Poste), récupérer le numéro de suivi sur le reçu, puis saisir ce numéro dans la boutique pour marquer la commande comme expédiée et notifier l'acheteur
 
+| UC_V5
 | Traiter les litiges et réclamations
 | Répondre aux demandes de remboursement, gérer les retours produits
 
+| UC_V8
 | Traiter une annulation après expédition
 | Recevoir la demande d'annulation de l'acheteur ; accepter ou refuser la demande. En cas d'acceptation, choisir entre deux modalités : (1) **avec condition de renvoi** — notifier l'acheteur qu'il doit renvoyer le colis, attendre la réception du retour, puis déclencher le remboursement ; (2) **sans condition de renvoi** — déclencher le remboursement directement, sans exiger le retour du colis. Si le paiement initial était par virement bancaire, le remboursement ne peut pas être traité automatiquement par le prestataire : le vendeur doit émettre un virement inverse vers l'acheteur et confirmer l'émission dans la boutique.
 
+| UC_V8
 | Émettre un virement inverse de remboursement
 | Lorsqu'une commande réglée par virement est annulée (avant ou après expédition), effectuer un virement bancaire du montant de la commande vers le compte de l'acheteur, puis confirmer manuellement l'émission dans la boutique pour clôturer le remboursement.
 
+| —
 | Confirmer la réception d'un virement bancaire
-| Après réception effective des fonds sur le compte bancaire du vendeur, confirmer manuellement dans la boutique la réception du virement pour déclencher la prise en charge de la commande correspondante
+| Après réception effective des fonds sur le compte bancaire du vendeur, confirmer manuellement dans la boutique la réception du virement pour déclencher la prise en charge de la commande correspondante (COp-02)
 
+| UC_V6
 | Consulter les rapports de ventes
 | Analyser les performances commerciales, le chiffre d'affaires, les produits les plus vendus
 
+| UC_V9
 | Gérer les annonces défilantes
 | Créer, modifier et supprimer des annonces défilantes affichées sur la page d'accueil de la boutique (texte, lien, ordre d'affichage)
 |===
 
 === Acheteur
 
-[cols="1,3", options="header"]
+[cols="1,2,3", options="header"]
 |===
-| Activité | Description
+| ID | Activité | Description
 
+| UC_B0
 | S'inscrire
 | Créer un compte en saisissant ses informations personnelles
 
+| UC_B0B
 | Activer son compte via email
 | Consulter sa boîte mail, ouvrir l'email reçu de la boutique et cliquer sur le lien d'activation pour rendre son compte opérationnel (COp-04)
 
+| UC_B_AUTH
 | Se connecter
 | S'authentifier pour accéder aux fonctionnalités d'achat
 
+| UC_B_ACC
 | Mettre à jour son compte
-| Modifier ses informations personnelles (adresse de livraison, mot de passe, coordonnées)
+| Modifier ses informations personnelles (mot de passe, coordonnées)
 
+| UC_B_ADDR
+| Gérer son carnet d'adresses de livraison
+| Ajouter, modifier et supprimer des adresses de livraison ; définir une adresse par défaut présélectionnée au passage de commande
+
+| UC_B1
 | Parcourir le catalogue
 | Rechercher, filtrer et consulter les produits disponibles
 
+| UC_B2
 | Gérer le panier
 | Ajouter, modifier la quantité ou retirer des produits du panier
 
+| UC_B2B
 | Sauvegarder / restaurer le panier
 | Le panier est automatiquement sauvegardé sur le compte de l'acheteur ; à la reconnexion, son contenu est restauré tel quel
 
+| UC_B3 / UC_B4B
 | Passer une commande
-| Saisir l'adresse de livraison dans un pays de la zone euro, choisir le mode de livraison, valider la commande
+| Sélectionner une adresse du carnet ou en saisir une nouvelle (zone euro uniquement), choisir le mode de livraison, valider la commande
 
+| UC_B4
 | Effectuer un paiement
 | Régler la commande par **carte bancaire** (autorisation immédiate) ou par **virement bancaire** (la commande reste en attente de la confirmation manuelle du vendeur jusqu'à réception effective des fonds)
 
+| UC_B5
 | Suivre la livraison
 | Consulter le statut d'expédition et le numéro de suivi du colis
 
+| UC_B6
 | Annuler une commande (avant expédition)
 | Depuis son espace compte, annuler une commande tant que le colis n'a pas encore été remis au transporteur ; le remboursement est déclenché automatiquement, sans intervention du vendeur
 
+| UC_B7
 | Demander une annulation après expédition
 | Contacter le vendeur pour demander l'annulation d'une commande déjà expédiée ; le vendeur décide d'accepter ou de refuser. En cas d'acceptation avec condition de renvoi : renvoyer le colis au vendeur avant d'obtenir le remboursement. En cas d'acceptation sans condition de renvoi : recevoir le remboursement directement sans obligation de renvoyer le colis.
 |===

@@ -1,0 +1,21 @@
+@startuml sa-sequence-simple-en
+skinparam sequenceArrowColor #2E75B6
+skinparam sequenceParticipantBackgroundColor #E8F4FD
+skinparam sequenceParticipantBorderColor #2E75B6
+skinparam sequenceLifeLineBorderColor #2E75B6
+skinparam sequenceMessageAlign center
+skinparam shadowing false
+skinparam defaultFontSize 11
+skinparam responseMessageBelowArrow true
+
+actor "Buyer" as Buyer
+participant "System" as Sys
+participant "Payment\nProvider" as Pay
+
+Buyer -> Sys : Checkout cart
+Sys -> Pay : Authorize transaction (IFS-04)
+Pay --> Sys : Transaction authorized
+Sys --> Buyer : Order confirmed
+Sys -> Buyer : Confirmation email (IFS-06)
+
+@enduml

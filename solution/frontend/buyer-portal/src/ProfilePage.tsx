@@ -85,27 +85,10 @@ export default function ProfilePage() {
     }
   }
 
-  const tabStyle = (active: boolean): React.CSSProperties => ({
-    padding: '10px 24px',
-    background: 'none',
-    border: 'none',
-    borderBottom: active ? '2px solid var(--accent)' : '2px solid transparent',
-    fontWeight: active ? 600 : 400,
-    color: active ? 'var(--accent)' : 'var(--text-muted)',
-    cursor: 'pointer',
-    fontSize: 15,
-  })
-
-  const fieldStyle: React.CSSProperties = { display: 'flex', flexDirection: 'column', gap: 6 }
-  const labelStyle: React.CSSProperties = { fontSize: 14, fontWeight: 500, color: 'var(--text)' }
-  const inputStyle: React.CSSProperties = { padding: '8px 12px', border: '1px solid var(--border)', borderRadius: 6, fontSize: 14, background: 'var(--surface)', color: 'var(--text)', width: '100%', boxSizing: 'border-box' }
-  const readonlyStyle: React.CSSProperties = { ...inputStyle, background: 'var(--bg)', color: 'var(--text-muted)' }
-  const rowStyle: React.CSSProperties = { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }
-
   if (loadError) {
     return (
-      <div style={{ maxWidth: 480, margin: '120px auto', textAlign: 'center' }}>
-        <p style={{ color: 'var(--text-muted)' }}>{t('profile.error.load')}</p>
+      <div className="profile-error-state">
+        <p className="profile-error-text">{t('profile.error.load')}</p>
         <Button onClick={() => window.location.reload()}>{t('profile.retry')}</Button>
       </div>
     )
@@ -119,7 +102,7 @@ export default function ProfilePage() {
         { label: t('nav.catalog'), href: '/#catalogue' },
       ]}
       actions={
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+        <div className="header-actions">
           <LangToggle lang={i18n.language} onToggle={() => i18n.changeLanguage(i18n.language === 'fr' ? 'en' : 'fr')} />
           <Button variant="ghost" size="sm" onClick={() => { logout(); window.location.href = '/' }}>
             {t('nav.logout')}
@@ -127,79 +110,83 @@ export default function ProfilePage() {
         </div>
       }
     >
-      <div style={{ maxWidth: 680, margin: '0 auto', padding: '48px 24px' }}>
-        <h1 style={{ fontFamily: 'var(--font-serif)', fontSize: 28, fontWeight: 700, marginBottom: 32 }}>
-          {t('profile.title')}
-        </h1>
+      <div className="profile-page">
+        <h1 className="profile-title">{t('profile.title')}</h1>
 
-        <div style={{ display: 'flex', borderBottom: '1px solid var(--border)', marginBottom: 36 }}>
-          <button style={tabStyle(activeTab === 'profile')} onClick={() => { setActiveTab('profile'); clearMessages() }}>
+        <div className="profile-tabs">
+          <button
+            className={`profile-tab${activeTab === 'profile' ? ' profile-tab--active' : ''}`}
+            onClick={() => { setActiveTab('profile'); clearMessages() }}
+          >
             {t('profile.tab.profile')}
           </button>
-          <button style={tabStyle(activeTab === 'security')} onClick={() => { setActiveTab('security'); clearMessages() }}>
+          <button
+            className={`profile-tab${activeTab === 'security' ? ' profile-tab--active' : ''}`}
+            onClick={() => { setActiveTab('security'); clearMessages() }}
+          >
             {t('profile.tab.security')}
           </button>
         </div>
 
-        {successMsg && <div role="status" style={{ padding: '12px 16px', borderRadius: 6, background: '#dcfce7', color: '#15803d', marginBottom: 24, fontSize: 14 }}>{successMsg}</div>}
-        {errorMsg   && <div role="alert"  style={{ padding: '12px 16px', borderRadius: 6, background: '#fee2e2', color: '#dc2626', marginBottom: 24, fontSize: 14 }}>{errorMsg}</div>}
+        {successMsg && <div role="status" className="profile-alert-success">{successMsg}</div>}
+        {errorMsg   && <div role="alert"  className="profile-alert-error">{errorMsg}</div>}
 
         {activeTab === 'profile' && (
-          <form onSubmit={handleSaveProfile} style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-            <div style={rowStyle}>
-              <div style={fieldStyle}>
-                <label htmlFor="firstName" style={labelStyle}>{t('profile.firstName')}</label>
-                <input id="firstName" style={inputStyle} value={firstName} onChange={e => setFirstName(e.target.value)} required />
+          <form onSubmit={handleSaveProfile} className="profile-form">
+            <div className="profile-row">
+              <div className="profile-field">
+                <label htmlFor="firstName" className="profile-label">{t('profile.firstName')}</label>
+                <input id="firstName" className="profile-input" value={firstName} onChange={e => setFirstName(e.target.value)} required />
               </div>
-              <div style={fieldStyle}>
-                <label htmlFor="lastName" style={labelStyle}>{t('profile.lastName')}</label>
-                <input id="lastName" style={inputStyle} value={lastName} onChange={e => setLastName(e.target.value)} required />
+              <div className="profile-field">
+                <label htmlFor="lastName" className="profile-label">{t('profile.lastName')}</label>
+                <input id="lastName" className="profile-input" value={lastName} onChange={e => setLastName(e.target.value)} required />
               </div>
             </div>
 
-            <div style={fieldStyle}>
-              <label htmlFor="email" style={labelStyle}>{t('profile.email')}</label>
-              <input id="email" style={readonlyStyle} value={profile?.email ?? ''} readOnly aria-readonly="true" />
+            <div className="profile-field">
+              <label htmlFor="email" className="profile-label">{t('profile.email')}</label>
+              <input id="email" className="profile-input profile-input--readonly" value={profile?.email ?? ''} readOnly aria-readonly="true" />
             </div>
 
-            <div style={fieldStyle}>
-              <label htmlFor="phone" style={labelStyle}>{t('profile.phone')}</label>
-              <input id="phone" style={inputStyle} value={phone} onChange={e => setPhone(e.target.value)} />
+            <div className="profile-field">
+              <label htmlFor="phone" className="profile-label">{t('profile.phone')}</label>
+              <input id="phone" className="profile-input" value={phone} onChange={e => setPhone(e.target.value)} />
             </div>
 
-            <div style={fieldStyle}>
-              <label htmlFor="language" style={labelStyle}>{t('profile.language')}</label>
-              <select id="language" style={inputStyle} value={language} onChange={e => setLanguage(e.target.value as 'FR' | 'EN')}>
+            <div className="profile-field">
+              <label htmlFor="language" className="profile-label">{t('profile.language')}</label>
+              <select id="language" className="profile-input" value={language} onChange={e => setLanguage(e.target.value as 'FR' | 'EN')}>
                 <option value="FR">{t('profile.language.fr')}</option>
                 <option value="EN">{t('profile.language.en')}</option>
               </select>
             </div>
 
-            <hr style={{ border: 'none', borderTop: '1px solid var(--border)', margin: '4px 0' }} />
-            <h2 style={{ fontSize: 16, fontWeight: 600, margin: 0 }}>{t('profile.address.title')}</h2>
+            <hr className="profile-divider" />
+            <h2 className="profile-section-title">{t('profile.address.title')}</h2>
 
-            <div style={fieldStyle}>
-              <label htmlFor="addressLine" style={labelStyle}>{t('profile.address.line')}</label>
-              <input id="addressLine" style={inputStyle} value={addressLine} onChange={e => setAddressLine(e.target.value)} />
+            <div className="profile-field">
+              <label htmlFor="addressLine" className="profile-label">{t('profile.address.line')}</label>
+              <input id="addressLine" className="profile-input" value={addressLine} onChange={e => setAddressLine(e.target.value)} />
             </div>
 
-            <div style={rowStyle}>
-              <div style={fieldStyle}>
-                <label htmlFor="city" style={labelStyle}>{t('profile.address.city')}</label>
-                <input id="city" style={inputStyle} value={city} onChange={e => setCity(e.target.value)} />
+            <div className="profile-row">
+              <div className="profile-field">
+                <label htmlFor="city" className="profile-label">{t('profile.address.city')}</label>
+                <input id="city" className="profile-input" value={city} onChange={e => setCity(e.target.value)} />
               </div>
-              <div style={fieldStyle}>
-                <label htmlFor="postalCode" style={labelStyle}>{t('profile.address.postalCode')}</label>
-                <input id="postalCode" style={inputStyle} value={postalCode} onChange={e => setPostalCode(e.target.value)} />
+              <div className="profile-field">
+                <label htmlFor="postalCode" className="profile-label">{t('profile.address.postalCode')}</label>
+                <input id="postalCode" className="profile-input" value={postalCode} onChange={e => setPostalCode(e.target.value)} />
               </div>
             </div>
 
-            <div style={fieldStyle}>
-              <label htmlFor="countryCode" style={labelStyle}>{t('profile.address.country')}</label>
-              <input id="countryCode" style={inputStyle} value={countryCode} onChange={e => setCountryCode(e.target.value.toUpperCase().slice(0, 2))} maxLength={2} placeholder="FR" />
+            <div className="profile-field">
+              <label htmlFor="countryCode" className="profile-label">{t('profile.address.country')}</label>
+              <input id="countryCode" className="profile-input" value={countryCode} onChange={e => setCountryCode(e.target.value.toUpperCase().slice(0, 2))} maxLength={2} placeholder="FR" />
             </div>
 
-            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 12, marginTop: 8 }}>
+            <div className="profile-actions">
               <Button type="button" variant="ghost" onClick={() => window.location.href = '/'}>{t('profile.cancel')}</Button>
               <Button type="submit" disabled={saving}>{saving ? t('profile.saving') : t('profile.save')}</Button>
             </div>
@@ -207,21 +194,21 @@ export default function ProfilePage() {
         )}
 
         {activeTab === 'security' && (
-          <form onSubmit={handleSavePassword} style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-            <div style={fieldStyle}>
-              <label htmlFor="currentPassword" style={labelStyle}>{t('profile.security.currentPassword')}</label>
-              <input id="currentPassword" type="password" style={inputStyle} value={currentPassword} onChange={e => setCurrentPassword(e.target.value)} required />
+          <form onSubmit={handleSavePassword} className="profile-form">
+            <div className="profile-field">
+              <label htmlFor="currentPassword" className="profile-label">{t('profile.security.currentPassword')}</label>
+              <input id="currentPassword" type="password" className="profile-input" value={currentPassword} onChange={e => setCurrentPassword(e.target.value)} required />
             </div>
-            <div style={fieldStyle}>
-              <label htmlFor="newPassword" style={labelStyle}>{t('profile.security.newPassword')}</label>
-              <input id="newPassword" type="password" style={inputStyle} value={newPassword} onChange={e => setNewPassword(e.target.value)} required minLength={8} />
+            <div className="profile-field">
+              <label htmlFor="newPassword" className="profile-label">{t('profile.security.newPassword')}</label>
+              <input id="newPassword" type="password" className="profile-input" value={newPassword} onChange={e => setNewPassword(e.target.value)} required minLength={8} />
             </div>
-            <div style={fieldStyle}>
-              <label htmlFor="confirmPassword" style={labelStyle}>{t('profile.security.confirmPassword')}</label>
-              <input id="confirmPassword" type="password" style={inputStyle} value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} required />
+            <div className="profile-field">
+              <label htmlFor="confirmPassword" className="profile-label">{t('profile.security.confirmPassword')}</label>
+              <input id="confirmPassword" type="password" className="profile-input" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} required />
             </div>
 
-            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 12, marginTop: 8 }}>
+            <div className="profile-actions">
               <Button type="submit" disabled={saving}>{saving ? t('profile.saving') : t('profile.security.submit')}</Button>
             </div>
           </form>
