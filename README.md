@@ -71,7 +71,7 @@ La méthode ARCADIA est suivie, dans cet exemple, en s'appuyant uniquement sur l
 Que font les utilisateurs et pourquoi ?
 On modélise ici les acteurs (opérateurs, systèmes externes), leurs activités opérationnelles et les échanges entre eux, indépendamment de tout système à construire. On décrit le contexte métier réel.
 
-**Exemple de diagramme OA — Cas d'utilisation opérationnel :**
+**Exemple simplifié de diagramme OA — Cas d'utilisation opérationnel :**
 
 ![OA Use Case](architecture/diagrams/readme/oa-use-case-fr.svg)
 
@@ -80,7 +80,7 @@ On modélise ici les acteurs (opérateurs, systèmes externes), leurs activités
 Que doit faire le système pour satisfaire ce besoin ?
 On définit les fonctions du système vues de l'extérieur (ce qu'il doit accomplir), les interfaces avec les acteurs, et les scénarios d'usage. On reste volontairement agnostique sur l'architecture interne. Les exigences sont déduites de cette analyse fonctionnelle, et non l'inverse.
 
-**Exemple de diagramme SA — Contexte système :**
+**Exemple simplifié de diagramme SA — Contexte système :**
 
 <table><tr>
 <td><img src="architecture/diagrams/readme/sa-sequence-simple-fr.svg" width="300"></td>
@@ -94,7 +94,7 @@ On définit les fonctions du système vues de l'extérieur (ce qu'il doit accomp
 Comment organiser les fonctions en composants logiques ?
 On décompose le système en composants logiques (sans préjuger des technologies) et on alloue les fonctions à ces composants. On travaille les flux d'échanges internes, la cohérence du découpage, et on identifie les premiers choix d'architecture. C'est le cœur de la conception système.
 
-**Exemple de diagramme LA — Architecture logique des composants :**
+**Exemple simplifié de diagramme LA — Architecture logique des composants :**
 
 ![LA Components](architecture/diagrams/readme/la-components-fr.svg)
 
@@ -103,7 +103,7 @@ On décompose le système en composants logiques (sans préjuger des technologie
 Quelles solutions concrètes implémentent l'architecture logique ?
 On mappe les composants logiques sur des composants physiques réels (matériel, logiciel, réseaux). On gère les contraintes de déploiement, de performance, de redondance. On prépare la répartition du travail entre les parties prenantes.
 
-**Exemple de diagramme PA — Architecture de déploiement :**
+**Exemple simplifié de diagramme PA — Architecture de déploiement :**
 
 ![PA Deployment](architecture/diagrams/readme/pa-deployment-fr.svg)
 
@@ -179,7 +179,7 @@ The ARCADIA method is followed in this example using exclusively [UML](https://e
 What do users do, and why?
 This phase models the actors (operators, external systems), their operational activities, and the exchanges between them, independently of any system to be built. It describes the real business context.
 
-**OA Diagram Example — Operational Use Case:**
+**Simplified OA Diagram Example — Operational Use Case:**
 
 ![OA Use Case](architecture/diagrams/readme/oa-use-case-en.svg)
 
@@ -188,7 +188,7 @@ This phase models the actors (operators, external systems), their operational ac
 What must the system do to satisfy this need?
 This phase defines the system's functions as seen from the outside (what it must accomplish), its interfaces with actors, and the usage scenarios. The internal architecture is deliberately left unspecified at this stage. Requirements are derived from this functional analysis — not the other way around.
 
-**SA Diagram Example — System Context:**
+**Simplified SA Diagram Example — System Context:**
 
 <table><tr>
 <td><img src="architecture/diagrams/readme/sa-sequence-simple-en.svg" width="300"></td>
@@ -202,7 +202,7 @@ This phase defines the system's functions as seen from the outside (what it must
 How should functions be organised into logical components?
 The system is broken down into logical components (without assuming any specific technology) and functions are allocated to those components. Internal exchange flows are defined, the decomposition is checked for consistency, and initial architectural decisions are made. This is the core of system design.
 
-**LA Diagram Example — Logical Component Architecture:**
+**Simplified LA Diagram Example — Logical Component Architecture:**
 
 ![LA Components](architecture/diagrams/readme/la-components-en.svg)
 
@@ -211,7 +211,7 @@ The system is broken down into logical components (without assuming any specific
 Which concrete solutions implement the logical architecture?
 Logical components are mapped onto real physical components (hardware, software, networks). Deployment, performance, and redundancy constraints are addressed, and the division of work between stakeholders is defined.
 
-**PA Diagram Example — Deployment Architecture:**
+**Simplified PA Diagram Example — Deployment Architecture:**
 
 ![PA Deployment](architecture/diagrams/readme/pa-deployment-en.svg)
 
