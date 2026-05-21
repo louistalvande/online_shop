@@ -10,7 +10,7 @@ import {
 } from '../helpers/login.js';
 
 const BUYER_EMAIL = `vnd01-buyer-${Date.now()}@example.com`;
-const BUYER_PASSWORD = 'Buyer123456!';
+const BUYER_PASSWORD = 'sHp-E2e!Byr-X9pZ';
 const VENDOR_EMAIL = `vnd01-vendor-${Date.now()}@example.com`;
 const VENDOR_PASSWORD = 'Vendor123456!';
 
@@ -99,8 +99,8 @@ test.describe('US-VND-01 — Vendor order listing and details', () => {
     expect(res.status()).toBe(404);
   });
 
-  test('GET /api/vendor/orders returns 403 for unauthenticated request', async ({ request }) => {
+  test('GET /api/vendor/orders returns 401 for unauthenticated request', async ({ request }) => {
     const res = await request.get(`${API_URL}/api/vendor/orders`);
-    expect(res.status()).toBe(403);
+    expect(res.status()).toBe(401);
   });
 });

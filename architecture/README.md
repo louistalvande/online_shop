@@ -17,5 +17,5 @@ asciidoctor -r asciidoctor-diagram -a data-uri -a webfonts! -o "Documentation d'
 ## Document des besoins opérationnels (PDF)
 
 ```bash
-asciidoctor -o "../Exigences utilisateurs.pdf" "Exigences utilisateurs.adoc"
+asciidoctor-pdf "exigences.adoc" -o "../Exigences utilisateurs et de sécurité.pdf"
 ```

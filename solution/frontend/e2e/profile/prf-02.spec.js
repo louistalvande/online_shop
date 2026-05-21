@@ -26,7 +26,7 @@ test.describe('US-PRF-02 — Vendor profile', () => {
 
   test('nominal — pre-filled form, update personal info, shows confirmation', async ({ page }) => {
     const email = `prf02-${Date.now()}@shop-test.example`;
-    const password = 'VendorPass123!';
+    const password = 'sHp-E2e!Vnd-X9pZ';
 
     await createActiveVendorViaApi(page, email, password);
 
@@ -60,7 +60,7 @@ test.describe('US-PRF-02 — Vendor profile', () => {
 
   test('security tab — successful password change', async ({ page }) => {
     const email = `prf02b-${Date.now()}@shop-test.example`;
-    const password = 'VendorPass123!';
+    const password = 'sHp-E2e!Vnd-X9pZ';
     const newPassword = 'NewVendorPass456!';
 
     await createActiveVendorViaApi(page, email, password);

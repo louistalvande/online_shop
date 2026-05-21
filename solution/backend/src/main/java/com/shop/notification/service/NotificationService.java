@@ -89,6 +89,16 @@ public interface NotificationService {
     void sendVendorCancellationEmail(String toEmail, OrderResponse order, Locale locale);
 
     /**
+     * Sends a password-reset email containing the one-time recovery link (SEC-PWD-006 / CPA-17).
+     * Callers must not reveal whether the address exists — always call this silently.
+     *
+     * @param toEmail   the recipient email address
+     * @param resetLink the full reset URL including the one-time token
+     * @param locale    the locale used to select the email language
+     */
+    void sendPasswordResetEmail(String toEmail, String resetLink, Locale locale);
+
+    /**
      * Notifies the buyer that they must return the parcel before the refund is issued (US-CAN-03).
      *
      * @param toEmail the buyer's email address

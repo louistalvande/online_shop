@@ -105,13 +105,13 @@ Le système est structuré en cinq couches logiques : *Présentation*, *Applicat
 
 | *Service Sécurité*
 | Infrastructure
-| Contrôle transverse d'authentification et d'autorisation : validation de la politique de mots de passe, détection des attaques par force brute (temporisation), gestion du cycle de vie des sessions, protection CSRF, application des en-têtes de sécurité HTTP (CSP, HSTS, X-Frame-Options), validation et assainissement des entrées
-| FS-S01, FS-S02, FS-S03, FS-S04, FS-S05, FS-S06
+| Contrôle transverse d'authentification et d'autorisation : validation de la politique de mots de passe (longueur min, complexité, pas de longueur max, sel ≥ 128 bits), vérification des mots de passe compromis (liste HIBP), gestion de l'expiration selon le rôle, détection des attaques par force brute (temporisation), gestion du cycle de vie des sessions, MFA pour Vendeur/Admin (TOTP — pas de SMS), révocation de mots de passe compromis, émission de liens de réinitialisation à usage unique, protection CSRF, application des en-têtes de sécurité HTTP (CSP, HSTS, X-Frame-Options), validation et assainissement des entrées
+| FS-S01, FS-S02, FS-S03, FS-S04, FS-S05, FS-S06, FS-S08, FS-S09, FS-S10, FS-S11, FS-S12
 
 | *Service Journalisation*
 | Infrastructure
-| Centralisation et persistance des événements de sécurité (connexions, échecs d'authentification, actions d'administration, transactions) ; horodatage, identifiant utilisateur, adresse IP ; conservation ≥ 12 mois ; accès restreint aux administrateurs
-| FS-S07
+| Centralisation et persistance des événements de sécurité (connexions, échecs d'authentification, création de compte, demandes de renouvellement, révocations, actions d'administration, transactions) ; horodatage, identifiant utilisateur, adresse IP ; détection des comportements anormaux ; conservation ≥ 12 mois ; accès restreint aux administrateurs
+| FS-S07, FS-S13
 |===
 
 == Diagramme de composants logiques

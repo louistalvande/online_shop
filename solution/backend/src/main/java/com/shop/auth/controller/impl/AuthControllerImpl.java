@@ -1,12 +1,7 @@
 package com.shop.auth.controller.impl;
 
 import com.shop.auth.controller.AuthController;
-import com.shop.auth.dto.ActivateAccountRequest;
-import com.shop.auth.dto.AuthResponse;
-import com.shop.auth.dto.LoginRequest;
-import com.shop.auth.dto.RegisterRequest;
-import com.shop.auth.dto.ResendActivationRequest;
-import com.shop.auth.dto.SetupPasswordRequest;
+import com.shop.auth.dto.*;
 import com.shop.auth.service.AuthService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
@@ -56,5 +51,38 @@ public class AuthControllerImpl implements AuthController {
     public ResponseEntity<Void> setupPassword(SetupPasswordRequest request, Principal principal) {
         authService.setupPassword(principal.getName(), request);
         return ResponseEntity.noContent().build();
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public ResponseEntity<Void> forgotPassword(ForgotPasswordRequest request) {
+        authService.forgotPassword(request);
+        return ResponseEntity.noContent().build();
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public ResponseEntity<Void> resetPassword(ResetPasswordRequest request) {
+        authService.resetPassword(request);
+        return ResponseEntity.noContent().build();
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public ResponseEntity<MfaSetupResponse> initMfaSetup(Principal principal) {
+        return ResponseEntity.ok(authService.initMfaSetup(principal.getName()));
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public ResponseEntity<Void> confirmMfaSetup(MfaConfirmRequest request, Principal principal) {
+        authService.confirmMfaSetup(principal.getName(), request);
+        return ResponseEntity.noContent().build();
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public ResponseEntity<AuthResponse> verifyMfa(MfaVerifyRequest request) {
+        return ResponseEntity.ok(authService.verifyMfa(request));
     }
 }

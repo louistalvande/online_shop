@@ -17,7 +17,7 @@ test.describe('US-CRT-01 — Cart management', () => {
   test.beforeEach(async ({ page }) => {
     const ts = Date.now();
     vendorEmail = `crt01-v-${ts}@shop-test.example`;
-    vendorPassword = 'VendorPass123!';
+    vendorPassword = 'sHp-E2e!Vnd-X9pZ';
     buyerEmail = `crt01-b-${ts}@shop-test.example`;
     buyerPassword = 'BuyerPass123!';
 

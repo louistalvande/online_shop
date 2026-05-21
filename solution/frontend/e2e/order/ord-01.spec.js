@@ -11,7 +11,7 @@ import {
 } from '../helpers/login.js';
 
 const BUYER_EMAIL = `ord01-buyer-${Date.now()}@example.com`;
-const BUYER_PASSWORD = 'Buyer123456!';
+const BUYER_PASSWORD = 'sHp-E2e!Byr-X9pZ';
 const VENDOR_EMAIL = `ord01-vendor-${Date.now()}@example.com`;
 const VENDOR_PASSWORD = 'Vendor123456!';
 

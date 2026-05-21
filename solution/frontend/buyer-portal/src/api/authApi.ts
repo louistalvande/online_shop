@@ -12,6 +12,14 @@ export interface RegisterPayload {
   password: string
 }
 
+export interface LoginResult {
+  session?: BuyerSession
+  requiresMfa?: boolean
+  mfaToken?: string
+  email?: string
+  requiresPasswordSetup?: boolean
+}
+
 export async function register(payload: RegisterPayload): Promise<void> {
   const res = await fetch('/api/auth/register', {
     method: 'POST',
@@ -19,6 +27,7 @@ export async function register(payload: RegisterPayload): Promise<void> {
     body: JSON.stringify(payload),
   })
   if (res.status === 409) throw Object.assign(new Error('Email already used'), { code: 'EMAIL_ALREADY_USED' })
+  if (res.status === 422) throw Object.assign(new Error('Password compromised'), { code: 'PASSWORD_COMPROMISED' })
   if (!res.ok) throw new Error('Registration failed')
 }
 
@@ -34,6 +43,7 @@ export async function activate(token: string, password?: string, confirmPassword
   })
   if (res.status === 404) throw Object.assign(new Error('Token not found'), { code: 'TOKEN_NOT_FOUND' })
   if (res.status === 410) throw Object.assign(new Error('Token expired'), { code: 'TOKEN_EXPIRED' })
+  if (res.status === 422) throw Object.assign(new Error('Password compromised'), { code: 'PASSWORD_COMPROMISED' })
   if (res.status === 401) throw Object.assign(new Error('Password required'), { code: 'PASSWORD_REQUIRED' })
   if (res.status === 400) {
     const data = await res.json().catch(() => ({}))
@@ -43,15 +53,38 @@ export async function activate(token: string, password?: string, confirmPassword
   if (!res.ok) throw new Error('Activation failed')
 }
 
-export async function login(email: string, password: string): Promise<BuyerSession> {
+export async function login(email: string, password: string): Promise<LoginResult> {
   const res = await fetch('/api/auth/login', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ email, password }),
   })
   if (res.status === 401) throw Object.assign(new Error('Invalid credentials'), { code: 'INVALID_CREDENTIALS' })
+  if (res.status === 429) throw Object.assign(new Error('Too many attempts'), { code: 'TOO_MANY_ATTEMPTS' })
   if (!res.ok) throw new Error('Login failed')
-  const session: BuyerSession = await res.json()
+
+  const data = await res.json()
+
+  if (data.requiresMfa) {
+    return { requiresMfa: true, mfaToken: data.mfaToken, email: data.email }
+  }
+
+  const session: BuyerSession = { email: data.email, token: data.token }
+  localStorage.setItem(SESSION_KEY, JSON.stringify(session))
+  return { session, requiresPasswordSetup: data.requiresPasswordSetup }
+}
+
+export async function verifyMfa(mfaToken: string, code: string): Promise<BuyerSession> {
+  const res = await fetch('/api/auth/mfa/verify', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ mfaToken, code }),
+  })
+  if (res.status === 401) throw Object.assign(new Error('Invalid MFA code'), { code: 'INVALID_MFA_CODE' })
+  if (!res.ok) throw new Error('MFA verification failed')
+
+  const data = await res.json()
+  const session: BuyerSession = { email: data.email, token: data.token }
   localStorage.setItem(SESSION_KEY, JSON.stringify(session))
   return session
 }
@@ -72,4 +105,24 @@ export async function resendActivation(email: string): Promise<void> {
     body: JSON.stringify({ email }),
   })
   if (!res.ok) throw new Error('Resend failed')
+}
+
+export async function forgotPassword(email: string): Promise<void> {
+  const res = await fetch('/api/auth/forgot-password', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email }),
+  })
+  if (!res.ok) throw new Error('Request failed')
+}
+
+export async function resetPassword(token: string, newPassword: string): Promise<void> {
+  const res = await fetch('/api/auth/reset-password', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ token, newPassword }),
+  })
+  if (res.status === 410) throw Object.assign(new Error('Token invalid'), { code: 'RESET_TOKEN_INVALID' })
+  if (res.status === 422) throw Object.assign(new Error('Password compromised'), { code: 'PASSWORD_COMPROMISED' })
+  if (!res.ok) throw new Error('Reset failed')
 }

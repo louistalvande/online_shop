@@ -11,12 +11,18 @@ import CartPage from './CartPage'
 import CheckoutPage from './CheckoutPage'
 import OrderListPage from './OrderListPage'
 import OrderDetailPage from './OrderDetailPage'
+import ForgotPasswordPage from './ForgotPasswordPage'
+import ResetPasswordPage from './ResetPasswordPage'
+
 const path = window.location.pathname
-const token = new URLSearchParams(window.location.search).get('token') ?? ''
+const params = new URLSearchParams(window.location.search)
+const token = params.get('token') ?? ''
 
 function Root() {
   if (path === '/register') return <RegisterPage />
   if (path === '/activate') return <ActivatePage token={token} />
+  if (path === '/forgot-password') return <ForgotPasswordPage />
+  if (path === '/reset-password') return <ResetPasswordPage token={token} />
   if (path === '/profile') return <ProfilePage />
   if (path === '/catalog') return <CatalogPage />
   if (path === '/cart') return <CartPage />

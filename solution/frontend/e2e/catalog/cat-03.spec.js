@@ -9,7 +9,7 @@ test.describe('US-CAT-03 — Archive product', () => {
 
   test('nominal — archive removes product from default list, visible when toggle enabled', async ({ page }) => {
     const email = `cat03-${Date.now()}@shop-test.example`;
-    const password = 'VendorPass123!';
+    const password = 'sHp-E2e!Vnd-X9pZ';
 
     await createActiveVendorViaApi(page, email, password);
     const token = await getVendorToken(page, email, password);
@@ -44,7 +44,7 @@ test.describe('US-CAT-03 — Archive product', () => {
 
   test('archived product has no Archive button', async ({ page }) => {
     const email = `cat03b-${Date.now()}@shop-test.example`;
-    const password = 'VendorPass123!';
+    const password = 'sHp-E2e!Vnd-X9pZ';
 
     await createActiveVendorViaApi(page, email, password);
     const token = await getVendorToken(page, email, password);

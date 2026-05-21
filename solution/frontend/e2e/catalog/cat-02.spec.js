@@ -9,7 +9,7 @@ test.describe('US-CAT-02 — Edit product', () => {
 
   test('nominal — opens edit form pre-filled, saves changes, list reflects update', async ({ page }) => {
     const email = `cat02-${Date.now()}@shop-test.example`;
-    const password = 'VendorPass123!';
+    const password = 'sHp-E2e!Vnd-X9pZ';
 
     await createActiveVendorViaApi(page, email, password);
     const token = await getVendorToken(page, email, password);

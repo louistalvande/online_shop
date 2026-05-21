@@ -2,6 +2,7 @@ package com.shop.account.entity;
 
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.UUID;
 
 /** Platform account — buyer, vendor, or admin. */
@@ -72,6 +73,25 @@ public class Account {
     /** ISO 3166-1 alpha-2 country code restricted to euro zone (CS-04 / UCSA-02). */
     @Column(name = "country_code", length = 2)
     private String countryCode;
+
+    /**
+     * Timestamp after which the password is considered expired (SEC-PWD-003/004 / CPA-17).
+     * {@code null} for BUYER accounts (no expiry). Set to NOW()+2 years for ADMIN at creation.
+     */
+    @Column(name = "password_expires_at")
+    private OffsetDateTime passwordExpiresAt;
+
+    /** Whether the password has been administratively revoked (SEC-PWD-005 / CPA-17). */
+    @Column(name = "password_revoked", nullable = false)
+    private boolean passwordRevoked = false;
+
+    /** Base32-encoded TOTP shared secret — {@code null} until MFA is configured (SEC-AUTH-007 / CPA-15). */
+    @Column(name = "totp_secret", length = 64)
+    private String totpSecret;
+
+    /** Whether TOTP MFA has been confirmed and is active for this account (SEC-AUTH-007 / CPA-15). */
+    @Column(name = "totp_enabled", nullable = false)
+    private boolean totpEnabled = false;
 
     /** Sets creation timestamp before first persist. */
     @PrePersist
@@ -162,4 +182,28 @@ public class Account {
 
     /** @param countryCode the ISO 3166-1 alpha-2 country code to set */
     public void setCountryCode(String countryCode) { this.countryCode = countryCode; }
+
+    /** @return the password expiry timestamp, or {@code null} for accounts with no expiry */
+    public OffsetDateTime getPasswordExpiresAt() { return passwordExpiresAt; }
+
+    /** @param passwordExpiresAt the expiry timestamp to set, or {@code null} to remove expiry */
+    public void setPasswordExpiresAt(OffsetDateTime passwordExpiresAt) { this.passwordExpiresAt = passwordExpiresAt; }
+
+    /** @return {@code true} if the password has been administratively revoked */
+    public boolean isPasswordRevoked() { return passwordRevoked; }
+
+    /** @param passwordRevoked whether the password is revoked */
+    public void setPasswordRevoked(boolean passwordRevoked) { this.passwordRevoked = passwordRevoked; }
+
+    /** @return the Base32-encoded TOTP secret, or {@code null} if MFA is not configured */
+    public String getTotpSecret() { return totpSecret; }
+
+    /** @param totpSecret the Base32-encoded TOTP secret to set */
+    public void setTotpSecret(String totpSecret) { this.totpSecret = totpSecret; }
+
+    /** @return {@code true} if TOTP MFA is active for this account */
+    public boolean isTotpEnabled() { return totpEnabled; }
+
+    /** @param totpEnabled whether TOTP MFA is active */
+    public void setTotpEnabled(boolean totpEnabled) { this.totpEnabled = totpEnabled; }
 }

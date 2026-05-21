@@ -10,6 +10,9 @@ import com.shop.account.exception.InvalidAccountStateException;
 import com.shop.account.exception.WrongCurrentPasswordException;
 import com.shop.auth.exception.InvalidActivationTokenException;
 import com.shop.auth.exception.InvalidCredentialsException;
+import com.shop.auth.exception.InvalidMfaCodeException;
+import com.shop.auth.exception.InvalidResetTokenException;
+import com.shop.auth.exception.PasswordCompromisedException;
 import com.shop.auth.exception.PasswordsMismatchException;
 import com.shop.auth.exception.TokenNotFoundException;
 import com.shop.auth.exception.TooManyLoginAttemptsException;
@@ -417,6 +420,51 @@ public class GlobalExceptionHandler {
         String message = messageSource.getMessage("error.report.invalid.period", null, locale);
         return ResponseEntity.badRequest()
                 .body(Map.of("error", "INVALID_PERIOD", "message", message));
+    }
+
+    /**
+     * Handles a password found in the HIBP compromised-password database — returns HTTP 422 (SEC-PWD-002).
+     *
+     * @param ex     the exception
+     * @param locale the request locale
+     * @return a 422 response with a localised error body
+     */
+    @ExceptionHandler(PasswordCompromisedException.class)
+    public ResponseEntity<Map<String, String>> handlePasswordCompromised(
+            PasswordCompromisedException ex, Locale locale) {
+        String message = messageSource.getMessage("error.password.compromised", null, locale);
+        return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY)
+                .body(Map.of("error", "PASSWORD_COMPROMISED", "message", message));
+    }
+
+    /**
+     * Handles an expired, unknown, or already-used password-reset token — returns HTTP 410 (SEC-PWD-006).
+     *
+     * @param ex     the exception
+     * @param locale the request locale
+     * @return a 410 response with a localised error body
+     */
+    @ExceptionHandler(InvalidResetTokenException.class)
+    public ResponseEntity<Map<String, String>> handleInvalidResetToken(
+            InvalidResetTokenException ex, Locale locale) {
+        String message = messageSource.getMessage("error.reset.token.invalid", null, locale);
+        return ResponseEntity.status(HttpStatus.GONE)
+                .body(Map.of("error", "RESET_TOKEN_INVALID", "message", message));
+    }
+
+    /**
+     * Handles an invalid or expired TOTP code during MFA verification — returns HTTP 401 (SEC-AUTH-007).
+     *
+     * @param ex     the exception
+     * @param locale the request locale
+     * @return a 401 response with a localised error body
+     */
+    @ExceptionHandler(InvalidMfaCodeException.class)
+    public ResponseEntity<Map<String, String>> handleInvalidMfaCode(
+            InvalidMfaCodeException ex, Locale locale) {
+        String message = messageSource.getMessage("error.mfa.code.invalid", null, locale);
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .body(Map.of("error", "INVALID_MFA_CODE", "message", message));
     }
 
     /**

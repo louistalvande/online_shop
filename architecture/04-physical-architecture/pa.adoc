@@ -61,8 +61,8 @@ Les contraintes physiques complètent les contraintes système (CS) en ajoutant 
 | Nginx termine TLS 1.3 (TLS 1.2 minimum autorisé ; SSLv3, TLS 1.0, TLS 1.1 interdits) avec des certificats valides. Les en-têtes `Strict-Transport-Security`, `Content-Security-Policy`, `X-Frame-Options: DENY` et `X-Content-Type-Options: nosniff` sont appliqués sur toutes les réponses. Les cookies de session portent les attributs `Secure; HttpOnly; SameSite=Strict`.
 
 | CPA-10
-| Politique de mots de passe et hachage (CS-11 / SEC-AUTH-001..002)
-| Spring Security enforces une longueur minimale de 12 caractères et une complexité requise à la création et au changement de mot de passe. Le hachage utilise BCrypt avec un coût de 12 (upgrade depuis coût 10 à l'occasion d'une prochaine migration).
+| Politique de mots de passe et hachage (CS-11, CS-18, CS-20 / SEC-AUTH-001..002, SEC-PWD-001, SEC-STORE-002)
+| Spring Security enforces une longueur minimale de 12 caractères, une complexité requise (majuscule, chiffre, caractère spécial), et l'absence de longueur maximale à la création et au changement de mot de passe. Le hachage utilise BCrypt (coût 12) qui génère automatiquement un sel aléatoire de 128 bits unique par compte. Le mot de passe n'est jamais transmis ni stocké en clair.
 
 | CPA-11
 | Protection contre la force brute (CS-12 / SEC-AUTH-003)
@@ -73,12 +73,24 @@ Les contraintes physiques complètent les contraintes système (CS) en ajoutant 
 | Tous les contrôleurs Spring Boot valident les DTOs entrants via Jakarta Bean Validation (`@Valid`). La protection CSRF est assurée par le mécanisme `SameSite=Strict` des cookies de session pour les requêtes navigateur, et par la validation du jeton JWT Bearer pour les appels API.
 
 | CPA-13
-| Journalisation de sécurité (CS-15 / SEC-LOG-001..003)
-| Spring AOP intercepte les événements de sécurité (connexion, échec d'auth, action admin, transaction) et les persiste en base (`audit_log`) avec horodatage UTC, `user_id`, `ip_address` et `action`. La table `audit_log` est en lecture seule pour tous les rôles applicatifs sauf le composant de journalisation. Conservation : partition mensuelle, purge après 13 mois.
+| Journalisation de sécurité (CS-15, CS-21 / SEC-LOG-001..004)
+| Spring AOP intercepte les événements de sécurité (création de compte, connexion, échec d'auth, demande de renouvellement de mot de passe, révocation, action admin, transaction) et les persiste en base (`audit_log`) avec horodatage UTC, `user_id`, `ip_address` et `action`. La table `audit_log` est en lecture seule pour tous les rôles applicatifs sauf le composant de journalisation. La détection de comportements anormaux (rafales d'échecs, connexions depuis IP inhabituelles) s'appuie sur les compteurs Redis (CPA-11) et les alertes loggées. Conservation : partition mensuelle, purge après 13 mois.
 
 | CPA-14
 | Protection des données sensibles au repos (CS-16 / SEC-DAT-001..003)
 | Les colonnes sensibles de la base PostgreSQL (données personnelles) sont chiffrées via `pgcrypto`. Les données bancaires ne sont jamais persistées sur la plateforme ; Stripe (certifié PCI-DSS Level 1) gère intégralement le stockage et le traitement des données de carte (délégation IFS-04).
+
+| CPA-15
+| Authentification multifacteur (CS-17 / SEC-AUTH-007..008)
+| Les comptes Vendeur et Administrateur doivent activer un second facteur d'authentification basé sur TOTP (RFC 6238 — ex. Google Authenticator, Aegis). Le SMS est explicitement exclu comme canal OTP (vulnérabilité SIM-swap). Le secret TOTP est stocké chiffré en base (pgcrypto). L'enrôlement se fait lors de la première connexion post-activation.
+
+| CPA-16
+| Vérification des mots de passe compromis (CS-18 / SEC-PWD-002)
+| Lors de la création ou du renouvellement d'un mot de passe, le service de sécurité interroge l'API HaveIBeenPwned (k-anonymat SHA-1 — seuls les 5 premiers caractères du hash sont transmis) pour rejeter les mots de passe présents dans des listes de compromission connues.
+
+| CPA-17
+| Gestion de l'expiration et révocation des mots de passe (CS-18, CS-19 / SEC-PWD-003..006)
+| La colonne `password_expires_at` de la table `account` est `NULL` pour les comptes Acheteur (pas d'expiration) et définie à `NOW() + INTERVAL '2 years'` pour les comptes Administrateur (configurable entre 1 et 3 ans). En cas de compromission avérée, un flag `password_revoked` est positionné à `true` ; la connexion est alors redirigée vers la réinitialisation obligatoire. Le lien de réinitialisation est un UUID v4 à usage unique (invalidé dès utilisation ou après 1 h) stocké dans Redis.
 |===
 
 == Pile technologique retenue

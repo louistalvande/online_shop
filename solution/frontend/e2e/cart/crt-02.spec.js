@@ -15,7 +15,7 @@ test.describe('US-CRT-02 — Cart persistence', () => {
   test('nominal — cart is persisted and restored after logout + login', async ({ page }) => {
     const ts = Date.now();
     const vendorEmail = `crt02-v-${ts}@shop-test.example`;
-    const vendorPassword = 'VendorPass123!';
+    const vendorPassword = 'sHp-E2e!Vnd-X9pZ';
     const buyerEmail = `crt02-b-${ts}@shop-test.example`;
     const buyerPassword = 'BuyerPass123!';
 
@@ -63,7 +63,7 @@ test.describe('US-CRT-02 — Cart persistence', () => {
   test('nominal — cart API returns saved items after session expiry simulation', async ({ page }) => {
     const ts = Date.now();
     const vendorEmail = `crt02c-v-${ts}@shop-test.example`;
-    const vendorPassword = 'VendorPass123!';
+    const vendorPassword = 'sHp-E2e!Vnd-X9pZ';
     const buyerEmail = `crt02c-b-${ts}@shop-test.example`;
     const buyerPassword = 'BuyerPass123!';
 

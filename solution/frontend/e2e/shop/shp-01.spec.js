@@ -8,7 +8,7 @@ test.describe('US-SHP-01 — Browse catalog', () => {
   test('nominal — catalog page lists published products without authentication', async ({ page }) => {
     // Create a vendor and a published product via API
     const email = `shp01-${Date.now()}@shop-test.example`;
-    const password = 'VendorPass123!';
+    const password = 'sHp-E2e!Vnd-X9pZ';
     await createActiveVendorViaApi(page, email, password);
     const token = await getVendorToken(page, email, password);
     await createProductViaApi(page, token, {
@@ -29,7 +29,7 @@ test.describe('US-SHP-01 — Browse catalog', () => {
 
   test('nominal — catalog shows product price TTC and availability', async ({ page }) => {
     const email = `shp01b-${Date.now()}@shop-test.example`;
-    const password = 'VendorPass123!';
+    const password = 'sHp-E2e!Vnd-X9pZ';
     await createActiveVendorViaApi(page, email, password);
     const token = await getVendorToken(page, email, password);
     await createProductViaApi(page, token, {
@@ -54,7 +54,7 @@ test.describe('US-SHP-01 — Browse catalog', () => {
 
   test('nominal — out-of-stock product shows unavailable button', async ({ page }) => {
     const email = `shp01c-${Date.now()}@shop-test.example`;
-    const password = 'VendorPass123!';
+    const password = 'sHp-E2e!Vnd-X9pZ';
     await createActiveVendorViaApi(page, email, password);
     const token = await getVendorToken(page, email, password);
     await createProductViaApi(page, token, {

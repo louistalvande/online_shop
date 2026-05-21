@@ -9,7 +9,7 @@ import {
   createProductViaApi,
 } from '../helpers/login.js';
 
-const BUYER_PASSWORD = 'Buyer123456!';
+const BUYER_PASSWORD = 'sHp-E2e!Byr-X9pZ';
 const VENDOR_EMAIL = `exp01-vendor-${Date.now()}@example.com`;
 const VENDOR_PASSWORD = 'Vendor123456!';
 
@@ -107,12 +107,12 @@ test.describe('US-EXP-01 — Vendor declares shipment with tracking number', () 
     expect(res.status()).toBe(409);
   });
 
-  test('unauthenticated ship returns 403', async ({ request }) => {
+  test('unauthenticated ship returns 401', async ({ request }) => {
     const orderId = await placeAndConfirmOrder(request);
 
     const res = await request.post(`${API_URL}/api/vendor/orders/${orderId}/ship`, {
       data: { trackingNumber: 'SOME-TRACK' },
     });
-    expect(res.status()).toBe(403);
+    expect(res.status()).toBe(401);
   });
 });
