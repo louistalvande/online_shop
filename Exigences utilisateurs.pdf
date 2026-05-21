@@ -451,9 +451,11 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <li><a href="#_exigences_de_sécurité">8. Exigences de sécurité</a>
 <ul class="sectlevel2">
 <li><a href="#_authentification_et_gestion_des_accès">8.1. Authentification et gestion des accès</a></li>
-<li><a href="#_sécurité_des_communications">8.2. Sécurité des communications</a></li>
-<li><a href="#_sécurité_applicative">8.3. Sécurité applicative</a></li>
-<li><a href="#_journalisation_et_surveillance">8.4. Journalisation et surveillance</a></li>
+<li><a href="#_mots_de_passe">8.2. Mots de passe</a></li>
+<li><a href="#_stockage_des_mots_de_passe">8.3. Stockage des mots de passe</a></li>
+<li><a href="#_sécurité_des_communications">8.4. Sécurité des communications</a></li>
+<li><a href="#_sécurité_applicative">8.5. Sécurité applicative</a></li>
+<li><a href="#_journalisation_et_surveillance">8.6. Journalisation et surveillance</a></li>
 </ul>
 </li>
 </ul>
@@ -1009,55 +1011,191 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <div class="paragraph">
 <p>Les exigences suivantes sont issues des guides et recommandations publiés par l&#8217;ANSSI (Agence nationale de la sécurité des systèmes d&#8217;information). Elles s&#8217;appliquent à la plateforme indépendamment des besoins métier.</p>
 </div>
+<div class="paragraph">
+<p><em>Sources principales : <a href="https://cyber.gouv.fr/publications/recommandations-relatives-lauthentification-multifacteur-et-aux-mots-de-passe">ANSSI-BP-076</a> et <a href="https://cyber.gouv.fr/publications/recommandations-relatives-lauthentification-multifacteur-et-aux-mots-de-passe">ANSSI-PG-078 v2.0</a> — Recommandations relatives à l&#8217;authentification multifacteur et aux mots de passe.</em></p>
+</div>
 <div class="sect2">
 <h3 id="_authentification_et_gestion_des_accès">8.1. Authentification et gestion des accès</h3>
 <div class="paragraph">
-<p><em>Référence : <a href="https://cyber.gouv.fr/publications/recommandations-relatives-lauthentification-multifacteur-et-aux-mots-de-passe">ANSSI-BP-076 — Recommandations relatives à l&#8217;authentification multifacteur et aux mots de passe</a></em></p>
+<p><em>Référence : ANSSI-BP-076 / ANSSI-PG-078 v2.0</em></p>
 </div>
 <table class="tableblock frame-all grid-all stretch">
 <colgroup>
-<col style="width: 16.6666%;">
-<col style="width: 66.6666%;">
-<col style="width: 16.6668%;">
+<col style="width: 12.5%;">
+<col style="width: 50%;">
+<col style="width: 12.5%;">
+<col style="width: 25%;">
 </colgroup>
 <thead>
 <tr>
 <th class="tableblock halign-left valign-top">Identifiant</th>
 <th class="tableblock halign-left valign-top">Exigence</th>
-<th class="tableblock halign-left valign-top">Référence ANSSI</th>
+<th class="tableblock halign-left valign-top">Réf. ANSSI</th>
+<th class="tableblock halign-left valign-top">Acteurs</th>
 </tr>
 </thead>
 <tbody>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">SEC-AUTH-001</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Les mots de passe des comptes doivent comporter au minimum 12 caractères et combiner majuscules, minuscules, chiffres et caractères spéciaux.</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">ANSSI-BP-076 §3.1</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">PG-078 R21, R23</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Tous</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">SEC-AUTH-002</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Les mots de passe doivent être stockés sous forme hachée avec un algorithme résistant (bcrypt, Argon2id ou scrypt) ; le stockage en clair ou en MD5/SHA-1 est interdit.</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">ANSSI-BP-076 §3.3</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Les mots de passe doivent être stockés sous forme hachée avec un algorithme résistant (BCrypt, Argon2id ou scrypt) ; le stockage en clair ou en MD5/SHA-1 est interdit.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">BP-076 §3.3 / PG-078 R28, R29</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">—</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">SEC-AUTH-003</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Les tentatives d&#8217;authentification échouées répétées doivent déclencher un mécanisme de protection (temporisation progressive, verrouillage temporaire ou CAPTCHA) afin de prévenir les attaques par force brute.</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">ANSSI-BP-076 §3.2</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">BP-076 §3.2 / PG-078 R10</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Tous</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">SEC-AUTH-004</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Les sessions authentifiées doivent expirer après une période d&#8217;inactivité de 30 minutes maximum. La déconnexion explicite doit invalider immédiatement le jeton de session côté serveur.</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">ANSSI-BP-076 §4.1</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Les sessions authentifiées doivent expirer après une période d&#8217;inactivité de 30 minutes maximum. La déconnexion explicite doit invalider immédiatement le jeton de session côté serveur. Les cookies de session doivent avoir une durée de vie limitée.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">BP-076 §4.1 / PG-078 R12</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Tous</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">SEC-AUTH-005</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Les droits d&#8217;accès doivent respecter le principe du moindre privilège : chaque rôle (administrateur, vendeur, acheteur) ne doit accéder qu&#8217;aux ressources strictement nécessaires à ses activités.</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">ANSSI-BP-076 §2.1</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">BP-076 §2.1</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Tous</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">SEC-AUTH-006</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">En cas d&#8217;échec d&#8217;authentification, le système ne doit pas indiquer quel facteur (identifiant ou mot de passe) a conduit à l&#8217;échec. Un message générique uniforme doit être retourné.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">PG-078 R14</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Tous</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">SEC-AUTH-007</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">L&#8217;authentification multifacteur (MFA) doit être proposée pour les comptes Vendeur et Administrateur.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">PG-078 R1</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Vendeur, Administrateur</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">SEC-AUTH-008</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Le SMS ne doit pas être utilisé comme canal de réception d&#8217;un facteur d&#8217;authentification (vulnérabilité SIM-swap et interception réseau).</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">PG-078 R8</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Tous</p></td>
 </tr>
 </tbody>
 </table>
 </div>
 <div class="sect2">
-<h3 id="_sécurité_des_communications">8.2. Sécurité des communications</h3>
+<h3 id="_mots_de_passe">8.2. Mots de passe</h3>
+<div class="paragraph">
+<p><em>Référence : ANSSI-PG-078 v2.0</em></p>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 12.5%;">
+<col style="width: 50%;">
+<col style="width: 12.5%;">
+<col style="width: 25%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Identifiant</th>
+<th class="tableblock halign-left valign-top">Exigence</th>
+<th class="tableblock halign-left valign-top">Réf. ANSSI</th>
+<th class="tableblock halign-left valign-top">Acteurs</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">SEC-PWD-001</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Aucune longueur maximale ne doit être imposée sur les mots de passe, afin de permettre l&#8217;utilisation de phrases de passe longues.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">PG-078 R22</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Tous</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">SEC-PWD-002</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">La robustesse du mot de passe doit être contrôlée automatiquement à la création et au renouvellement. Les mots de passe figurant dans des listes de mots de passe compromis (ex. HaveIBeenPwned) doivent être rejetés.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">PG-078 R27</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Tous</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">SEC-PWD-003</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Aucune expiration automatique de mot de passe ne doit être imposée aux comptes Acheteur (sensibilité non élevée).</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">PG-078 R24</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Acheteur</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">SEC-PWD-004</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Un délai d&#8217;expiration doit être imposé sur les mots de passe des comptes Administrateur (entre 1 et 3 ans).</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">PG-078 R25</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Administrateur</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">SEC-PWD-005</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">En cas de compromission suspectée ou avérée, tous les mots de passe concernés doivent être révoqués dans la journée. Les comptes dont le mot de passe n&#8217;a pas été renouvelé doivent être désactivés.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">PG-078 R26</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Tous</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">SEC-PWD-006</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Une méthode de recouvrement d&#8217;accès doit être proposée sous forme de lien de réinitialisation temporaire et à usage unique. Le mot de passe ne doit jamais être transmis en clair par quelque canal que ce soit.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">PG-078 R30</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Tous</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sect2">
+<h3 id="_stockage_des_mots_de_passe">8.3. Stockage des mots de passe</h3>
+<div class="paragraph">
+<p><em>Référence : ANSSI-PG-078 v2.0</em></p>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 12.5%;">
+<col style="width: 50%;">
+<col style="width: 12.5%;">
+<col style="width: 25%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Identifiant</th>
+<th class="tableblock halign-left valign-top">Exigence</th>
+<th class="tableblock halign-left valign-top">Réf. ANSSI</th>
+<th class="tableblock halign-left valign-top">Acteurs</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">SEC-STORE-001</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Les mots de passe ne doivent jamais être stockés en clair. Seules leurs empreintes cryptographiques doivent être conservées.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">PG-078 R28, R29</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">—</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">SEC-STORE-002</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Un sel aléatoire d&#8217;au moins 128 bits, unique par compte, doit être utilisé lors du calcul de l&#8217;empreinte du mot de passe.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">PG-078 R28</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">—</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">SEC-STORE-003</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Les empreintes doivent être calculées avec une fonction de dérivation à coût mémoire élevé : Argon2 ou scrypt en priorité, BCrypt en alternative acceptable.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">PG-078 R29, R29-</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">—</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">SEC-STORE-004</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">L&#8217;accès à la base de données contenant les empreintes de mots de passe doit être protégé en confidentialité et en intégrité (accès réseau restreint, chiffrement des colonnes sensibles).</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">PG-078 R13</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">—</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sect2">
+<h3 id="_sécurité_des_communications">8.4. Sécurité des communications</h3>
 <div class="paragraph">
 <p><em>Référence : <a href="https://cyber.gouv.fr/publications/recommandations-de-securite-relatives-tls">ANSSI-BP-113 — Recommandations de sécurité relatives à TLS</a></em></p>
 </div>
@@ -1094,7 +1232,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </table>
 </div>
 <div class="sect2">
-<h3 id="_sécurité_applicative">8.3. Sécurité applicative</h3>
+<h3 id="_sécurité_applicative">8.5. Sécurité applicative</h3>
 <div class="paragraph">
 <p><em>Référence : ANSSI — Recommandations pour la sécurisation des sites web</em></p>
 </div>
@@ -1141,38 +1279,49 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </table>
 </div>
 <div class="sect2">
-<h3 id="_journalisation_et_surveillance">8.4. Journalisation et surveillance</h3>
+<h3 id="_journalisation_et_surveillance">8.6. Journalisation et surveillance</h3>
 <div class="paragraph">
-<p><em>Référence : ANSSI — Recommandations de sécurité pour l&#8217;administration des systèmes d&#8217;information</em></p>
+<p><em>Référence : ANSSI — Recommandations de sécurité pour l&#8217;administration des systèmes d&#8217;information / ANSSI-PG-078 v2.0</em></p>
 </div>
 <table class="tableblock frame-all grid-all stretch">
 <colgroup>
-<col style="width: 16.6666%;">
-<col style="width: 66.6666%;">
-<col style="width: 16.6668%;">
+<col style="width: 12.5%;">
+<col style="width: 50%;">
+<col style="width: 12.5%;">
+<col style="width: 25%;">
 </colgroup>
 <thead>
 <tr>
 <th class="tableblock halign-left valign-top">Identifiant</th>
 <th class="tableblock halign-left valign-top">Exigence</th>
-<th class="tableblock halign-left valign-top">Référence ANSSI</th>
+<th class="tableblock halign-left valign-top">Réf. ANSSI</th>
+<th class="tableblock halign-left valign-top">Acteurs</th>
 </tr>
 </thead>
 <tbody>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">SEC-LOG-001</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Les événements de sécurité suivants doivent être journalisés avec horodatage, identifiant utilisateur et adresse IP : connexions réussies et échouées, modifications de compte, actions d&#8217;administration, transactions de paiement.</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">ANSSI Admin §4.1</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Les événements liés à l&#8217;authentification doivent être journalisés avec horodatage, identifiant utilisateur et adresse IP : création de compte, tentatives réussies et échouées, demandes de renouvellement de mot de passe, révocations, actions d&#8217;administration, transactions de paiement.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">ANSSI Admin §4.1 / PG-078 R9</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Tous</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">SEC-LOG-002</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Les journaux de sécurité doivent être conservés pendant une durée minimale de 12 mois et protégés contre toute modification ou suppression non autorisée.</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">ANSSI Admin §4.2</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Les journaux d&#8217;authentification et de sécurité doivent permettre la détection de comportements anormaux (tentatives répétées, connexions inhabituelles) et faciliter les investigations en cas d&#8217;incident.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">ANSSI Admin §4.2 / PG-078</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Tous</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">SEC-LOG-003</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Les journaux de sécurité doivent être conservés pendant une durée minimale de 12 mois et protégés contre toute modification ou suppression non autorisée.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">ANSSI Admin §4.2</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">—</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">SEC-LOG-004</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Les accès aux journaux doivent être restreints aux seuls administrateurs de la plateforme.</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">ANSSI Admin §4.3</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Administrateur</p></td>
 </tr>
 </tbody>
 </table>
@@ -1182,7 +1331,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2026-05-20 18:39:43 +0200
+Last updated 2026-05-21 06:55:52 +0200
 </div>
 </div>
 </body>

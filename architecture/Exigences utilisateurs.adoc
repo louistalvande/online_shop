@@ -289,32 +289,120 @@ Le tableau ci-dessous relie chaque besoin opérationnel aux activités et cas d'
 
 Les exigences suivantes sont issues des guides et recommandations publiés par l'ANSSI (Agence nationale de la sécurité des systèmes d'information). Elles s'appliquent à la plateforme indépendamment des besoins métier.
 
-=== Authentification et gestion des accès
-_Référence : link:https://cyber.gouv.fr/publications/recommandations-relatives-lauthentification-multifacteur-et-aux-mots-de-passe[ANSSI-BP-076 — Recommandations relatives à l'authentification multifacteur et aux mots de passe]_
+_Sources principales : link:https://cyber.gouv.fr/publications/recommandations-relatives-lauthentification-multifacteur-et-aux-mots-de-passe[ANSSI-BP-076] et link:https://cyber.gouv.fr/publications/recommandations-relatives-lauthentification-multifacteur-et-aux-mots-de-passe[ANSSI-PG-078 v2.0] — Recommandations relatives à l'authentification multifacteur et aux mots de passe._
 
-[cols="1,4,1", options="header"]
+=== Authentification et gestion des accès
+_Référence : ANSSI-BP-076 / ANSSI-PG-078 v2.0_
+
+[cols="1,4,1,2", options="header"]
 |===
-| Identifiant | Exigence | Référence ANSSI
+| Identifiant | Exigence | Réf. ANSSI | Acteurs
 
 | SEC-AUTH-001
 | Les mots de passe des comptes doivent comporter au minimum 12 caractères et combiner majuscules, minuscules, chiffres et caractères spéciaux.
-| ANSSI-BP-076 §3.1
+| PG-078 R21, R23
+| Tous
 
 | SEC-AUTH-002
-| Les mots de passe doivent être stockés sous forme hachée avec un algorithme résistant (bcrypt, Argon2id ou scrypt) ; le stockage en clair ou en MD5/SHA-1 est interdit.
-| ANSSI-BP-076 §3.3
+| Les mots de passe doivent être stockés sous forme hachée avec un algorithme résistant (BCrypt, Argon2id ou scrypt) ; le stockage en clair ou en MD5/SHA-1 est interdit.
+| BP-076 §3.3 / PG-078 R28, R29
+| —
 
 | SEC-AUTH-003
 | Les tentatives d'authentification échouées répétées doivent déclencher un mécanisme de protection (temporisation progressive, verrouillage temporaire ou CAPTCHA) afin de prévenir les attaques par force brute.
-| ANSSI-BP-076 §3.2
+| BP-076 §3.2 / PG-078 R10
+| Tous
 
 | SEC-AUTH-004
-| Les sessions authentifiées doivent expirer après une période d'inactivité de 30 minutes maximum. La déconnexion explicite doit invalider immédiatement le jeton de session côté serveur.
-| ANSSI-BP-076 §4.1
+| Les sessions authentifiées doivent expirer après une période d'inactivité de 30 minutes maximum. La déconnexion explicite doit invalider immédiatement le jeton de session côté serveur. Les cookies de session doivent avoir une durée de vie limitée.
+| BP-076 §4.1 / PG-078 R12
+| Tous
 
 | SEC-AUTH-005
 | Les droits d'accès doivent respecter le principe du moindre privilège : chaque rôle (administrateur, vendeur, acheteur) ne doit accéder qu'aux ressources strictement nécessaires à ses activités.
-| ANSSI-BP-076 §2.1
+| BP-076 §2.1
+| Tous
+
+| SEC-AUTH-006
+| En cas d'échec d'authentification, le système ne doit pas indiquer quel facteur (identifiant ou mot de passe) a conduit à l'échec. Un message générique uniforme doit être retourné.
+| PG-078 R14
+| Tous
+
+| SEC-AUTH-007
+| L'authentification multifacteur (MFA) doit être proposée pour les comptes Vendeur et Administrateur.
+| PG-078 R1
+| Vendeur, Administrateur
+
+| SEC-AUTH-008
+| Le SMS ne doit pas être utilisé comme canal de réception d'un facteur d'authentification (vulnérabilité SIM-swap et interception réseau).
+| PG-078 R8
+| Tous
+|===
+
+=== Mots de passe
+_Référence : ANSSI-PG-078 v2.0_
+
+[cols="1,4,1,2", options="header"]
+|===
+| Identifiant | Exigence | Réf. ANSSI | Acteurs
+
+| SEC-PWD-001
+| Aucune longueur maximale ne doit être imposée sur les mots de passe, afin de permettre l'utilisation de phrases de passe longues.
+| PG-078 R22
+| Tous
+
+| SEC-PWD-002
+| La robustesse du mot de passe doit être contrôlée automatiquement à la création et au renouvellement. Les mots de passe figurant dans des listes de mots de passe compromis (ex. HaveIBeenPwned) doivent être rejetés.
+| PG-078 R27
+| Tous
+
+| SEC-PWD-003
+| Aucune expiration automatique de mot de passe ne doit être imposée aux comptes Acheteur (sensibilité non élevée).
+| PG-078 R24
+| Acheteur
+
+| SEC-PWD-004
+| Un délai d'expiration doit être imposé sur les mots de passe des comptes Administrateur (entre 1 et 3 ans).
+| PG-078 R25
+| Administrateur
+
+| SEC-PWD-005
+| En cas de compromission suspectée ou avérée, tous les mots de passe concernés doivent être révoqués dans la journée. Les comptes dont le mot de passe n'a pas été renouvelé doivent être désactivés.
+| PG-078 R26
+| Tous
+
+| SEC-PWD-006
+| Une méthode de recouvrement d'accès doit être proposée sous forme de lien de réinitialisation temporaire et à usage unique. Le mot de passe ne doit jamais être transmis en clair par quelque canal que ce soit.
+| PG-078 R30
+| Tous
+|===
+
+=== Stockage des mots de passe
+_Référence : ANSSI-PG-078 v2.0_
+
+[cols="1,4,1,2", options="header"]
+|===
+| Identifiant | Exigence | Réf. ANSSI | Acteurs
+
+| SEC-STORE-001
+| Les mots de passe ne doivent jamais être stockés en clair. Seules leurs empreintes cryptographiques doivent être conservées.
+| PG-078 R28, R29
+| —
+
+| SEC-STORE-002
+| Un sel aléatoire d'au moins 128 bits, unique par compte, doit être utilisé lors du calcul de l'empreinte du mot de passe.
+| PG-078 R28
+| —
+
+| SEC-STORE-003
+| Les empreintes doivent être calculées avec une fonction de dérivation à coût mémoire élevé : Argon2 ou scrypt en priorité, BCrypt en alternative acceptable.
+| PG-078 R29, R29-
+| —
+
+| SEC-STORE-004
+| L'accès à la base de données contenant les empreintes de mots de passe doit être protégé en confidentialité et en intégrité (accès réseau restreint, chiffrement des colonnes sensibles).
+| PG-078 R13
+| —
 |===
 
 === Sécurité des communications
@@ -366,21 +454,29 @@ _Référence : ANSSI — Recommandations pour la sécurisation des sites web_
 |===
 
 === Journalisation et surveillance
-_Référence : ANSSI — Recommandations de sécurité pour l'administration des systèmes d'information_
+_Référence : ANSSI — Recommandations de sécurité pour l'administration des systèmes d'information / ANSSI-PG-078 v2.0_
 
-[cols="1,4,1", options="header"]
+[cols="1,4,1,2", options="header"]
 |===
-| Identifiant | Exigence | Référence ANSSI
+| Identifiant | Exigence | Réf. ANSSI | Acteurs
 
 | SEC-LOG-001
-| Les événements de sécurité suivants doivent être journalisés avec horodatage, identifiant utilisateur et adresse IP : connexions réussies et échouées, modifications de compte, actions d'administration, transactions de paiement.
-| ANSSI Admin §4.1
+| Les événements liés à l'authentification doivent être journalisés avec horodatage, identifiant utilisateur et adresse IP : création de compte, tentatives réussies et échouées, demandes de renouvellement de mot de passe, révocations, actions d'administration, transactions de paiement.
+| ANSSI Admin §4.1 / PG-078 R9
+| Tous
 
 | SEC-LOG-002
-| Les journaux de sécurité doivent être conservés pendant une durée minimale de 12 mois et protégés contre toute modification ou suppression non autorisée.
-| ANSSI Admin §4.2
+| Les journaux d'authentification et de sécurité doivent permettre la détection de comportements anormaux (tentatives répétées, connexions inhabituelles) et faciliter les investigations en cas d'incident.
+| ANSSI Admin §4.2 / PG-078
+| Tous
 
 | SEC-LOG-003
+| Les journaux de sécurité doivent être conservés pendant une durée minimale de 12 mois et protégés contre toute modification ou suppression non autorisée.
+| ANSSI Admin §4.2
+| —
+
+| SEC-LOG-004
 | Les accès aux journaux doivent être restreints aux seuls administrateurs de la plateforme.
 | ANSSI Admin §4.3
+| Administrateur
 |===
