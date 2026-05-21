@@ -11,18 +11,30 @@ skinparam rectangleBackgroundColor #EEF4FB
 
 left to right direction
 
-actor "Client Browser" as Client
+actor "Buyer"         as Buyer
+actor "Vendor"        as Vendor
+actor "Administrator" as Admin
 
-node "Web Server\n(React)" as Web
-node "API Server\n(Spring Boot)" as API
-database "Database\n(PostgreSQL)" as DB
+node "Container\nbuyer-portal\n(React · Nginx)" as FrontB
+node "Container\nvendor-backoffice\n(React · Nginx)" as FrontV
+node "Container\nadmin-console\n(React · Nginx)" as FrontA
+node "Container\nbackend\n(Spring Boot)" as API
+database "Container\nPostgreSQL 16" as DB
+database "Container\nRedis 7" as Redis
 rectangle "Stripe API\n(external)" as Stripe
-rectangle "SMTP\n(external)" as SMTP
+rectangle "SendGrid\n(external)" as SMTP
 
-Client --> Web : HTTPS
-Web --> API : REST/JSON
-API --> DB : SQL
+Buyer  --> FrontB : HTTPS
+Vendor --> FrontV : HTTPS
+Admin  --> FrontA : HTTPS
+
+FrontB --> API : TLS
+FrontV --> API : TLS
+FrontA --> API : TLS
+
+API --> DB    : SQL (JPA / Flyway)
+API --> Redis : cache · sessions
 API --> Stripe : HTTPS
-API --> SMTP : HTTPS
+API --> SMTP   : HTTPS
 
 @enduml
