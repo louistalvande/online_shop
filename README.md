@@ -1,5 +1,5 @@
 # Site E-commerce
-## Conçu avec une méthode d'ingénierie système MBSE / Built with Model-Based Engineering Method
+## Conçu avec une méthode d'ingénierie MBSE / Built with MBSE Method (Model-Based System Engineering)
 
 ![PoC](https://img.shields.io/badge/Status-Proof%20of%20Concept-yellow)
 ![MBSE](https://img.shields.io/badge/Method-MBSE-blue)
