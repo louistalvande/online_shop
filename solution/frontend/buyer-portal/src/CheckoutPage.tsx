@@ -4,31 +4,29 @@ import Header from './Header'
 import {
   CarrierData,
   CheckoutInitResponse,
-  CountryData,
   OrderData,
   confirmCardPayment,
   initCheckout,
   listCarriers,
-  listCountries,
 } from './api/orderApi'
 import { getSession } from './api/authApi'
+import { listAddresses, type DeliveryAddressData } from './api/profileApi'
 
 type Step = 'address' | 'payment' | 'confirmation'
 
 export default function CheckoutPage() {
-  const { t, i18n } = useTranslation()
+  const { t } = useTranslation()
   const session = getSession()
 
-  // Step state
   const [step, setStep] = useState<Step>('address')
 
-  // Address form
-  const [addressLine, setAddressLine] = useState('')
-  const [city, setCity] = useState('')
-  const [postalCode, setPostalCode] = useState('')
-  const [countryCode, setCountryCode] = useState('')
+  // Address picker
+  const [addresses, setAddresses] = useState<DeliveryAddressData[]>([])
+  const [addrLoading, setAddrLoading] = useState(true)
+  const [selectedAddressId, setSelectedAddressId] = useState('')
+
+  // Carrier selection
   const [carrierId, setCarrierId] = useState('')
-  const [countries, setCountries] = useState<CountryData[]>([])
   const [carriers, setCarriers] = useState<CarrierData[]>([])
 
   // Payment
@@ -42,20 +40,30 @@ export default function CheckoutPage() {
   const [submitting, setSubmitting] = useState(false)
 
   useEffect(() => {
-    listCountries().then(setCountries).catch(() => {})
+    if (!session) return
+    listAddresses()
+      .then(list => {
+        setAddresses(list)
+        const def = list.find(a => a.default) ?? list[0]
+        if (def) setSelectedAddressId(def.id)
+      })
+      .catch(() => {})
+      .finally(() => setAddrLoading(false))
   }, [])
 
+  const selectedAddress = addresses.find(a => a.id === selectedAddressId)
+
   useEffect(() => {
-    if (countryCode) {
-      listCarriers(countryCode).then(c => {
-        setCarriers(c)
-        setCarrierId(c[0]?.id ?? '')
-      }).catch(() => setCarriers([]))
+    const country = selectedAddress?.countryCode ?? ''
+    if (country) {
+      listCarriers(country)
+        .then(c => { setCarriers(c); setCarrierId(c[0]?.id ?? '') })
+        .catch(() => setCarriers([]))
     } else {
       setCarriers([])
       setCarrierId('')
     }
-  }, [countryCode])
+  }, [selectedAddress?.countryCode])
 
   if (!session) {
     return (
@@ -67,13 +75,11 @@ export default function CheckoutPage() {
     )
   }
 
-  async function handleAddressSubmit(e: React.FormEvent) {
+  function handleAddressSubmit(e: React.FormEvent) {
     e.preventDefault()
     setAddressError('')
-    if (!carrierId) {
-      setAddressError(t('checkout.error.noCarrier'))
-      return
-    }
+    if (!selectedAddressId) { setAddressError(t('checkout.error.noAddress')); return }
+    if (!carrierId) { setAddressError(t('checkout.error.noCarrier')); return }
     setStep('payment')
   }
 
@@ -82,14 +88,7 @@ export default function CheckoutPage() {
     setPaymentError('')
     setSubmitting(true)
     try {
-      const init = await initCheckout({
-        deliveryAddressLine: addressLine,
-        deliveryCity: city,
-        deliveryPostalCode: postalCode,
-        deliveryCountryCode: countryCode,
-        carrierId,
-        paymentMethod,
-      })
+      const init = await initCheckout({ addressId: selectedAddressId, carrierId, paymentMethod })
       setCheckoutInit(init)
 
       if (paymentMethod === 'WIRE_TRANSFER') {
@@ -109,7 +108,6 @@ export default function CheckoutPage() {
         }
       }
 
-      // Confirm server-side
       const order = await confirmCardPayment(init.orderId)
       setConfirmedOrder(order)
       setStep('confirmation')
@@ -125,74 +123,47 @@ export default function CheckoutPage() {
   }
 
   const selectedCarrier = carriers.find(c => c.id === carrierId)
-  const locale = i18n.language
 
   return (
     <Header session={session} onShowLogin={() => {}} onLogout={() => { window.location.href = '/' }}>
       <div className="checkout-main">
         <h1>{t('checkout.title')}</h1>
 
-        {/* ─── STEP 1: ADDRESS ─── */}
+        {/* ─── STEP 1: ADDRESS & CARRIER ─── */}
         {step === 'address' && (
           <form onSubmit={handleAddressSubmit}>
             <h2>{t('checkout.address.title')}</h2>
 
-            <div className="checkout-field">
-              <label htmlFor="addressLine">{t('checkout.address.line')}</label>
-              <input
-                id="addressLine"
-                type="text"
-                value={addressLine}
-                onChange={e => setAddressLine(e.target.value)}
-                required
-                className="checkout-input"
-              />
-            </div>
-
-            <div className="checkout-row">
-              <div className="checkout-row-item-sm">
-                <label htmlFor="postalCode">{t('checkout.address.postalCode')}</label>
-                <input
-                  id="postalCode"
-                  type="text"
-                  value={postalCode}
-                  onChange={e => setPostalCode(e.target.value)}
-                  required
-                  className="checkout-input"
-                />
+            {addrLoading ? (
+              <p>{t('orders.loading')}</p>
+            ) : addresses.length === 0 ? (
+              <div className="checkout-no-addresses">
+                <p className="checkout-error">{t('checkout.address.noAddresses')}</p>
+                <a href="/profile#addresses">{t('checkout.address.manageLink')}</a>
               </div>
-              <div className="checkout-row-item-lg">
-                <label htmlFor="city">{t('checkout.address.city')}</label>
-                <input
-                  id="city"
-                  type="text"
-                  value={city}
-                  onChange={e => setCity(e.target.value)}
-                  required
-                  className="checkout-input"
-                />
-              </div>
-            </div>
-
-            <div className="checkout-field">
-              <label htmlFor="country">{t('checkout.address.country')}</label>
-              <select
-                id="country"
-                value={countryCode}
-                onChange={e => setCountryCode(e.target.value)}
-                required
-                className="checkout-input"
-              >
-                <option value="">{t('checkout.address.countryPlaceholder')}</option>
-                {countries.map(c => (
-                  <option key={c.code} value={c.code}>
-                    {locale === 'en' ? c.nameEn : c.nameFr} ({c.code})
-                  </option>
+            ) : (
+              <div className="checkout-field">
+                {addresses.map(addr => (
+                  <label key={addr.id} className="checkout-carrier-label">
+                    <input
+                      type="radio"
+                      name="address"
+                      value={addr.id}
+                      checked={selectedAddressId === addr.id}
+                      onChange={() => setSelectedAddressId(addr.id)}
+                      className="checkout-radio"
+                    />
+                    <span>
+                      <strong>{addr.label}</strong>
+                      {addr.default && <span className="checkout-address-default"> ★</span>}
+                      {' — '}{addr.addressLine}, {addr.postalCode} {addr.city}, {addr.countryCode}
+                    </span>
+                  </label>
                 ))}
-              </select>
-            </div>
+              </div>
+            )}
 
-            {countryCode && (
+            {selectedAddressId && (
               <div className="checkout-field">
                 <label>{t('checkout.carrier.title')}</label>
                 {carriers.length === 0 ? (
@@ -221,7 +192,7 @@ export default function CheckoutPage() {
               <button type="button" onClick={() => { window.location.href = '/cart' }}>
                 {t('checkout.backToCart')}
               </button>
-              <button type="submit" disabled={!carrierId}>
+              <button type="submit" disabled={!selectedAddressId || !carrierId}>
                 {t('checkout.continueToPayment')}
               </button>
             </div>
@@ -239,7 +210,7 @@ export default function CheckoutPage() {
                 {t('checkout.summary.carrier')}: {selectedCarrier?.name}
               </p>
               <p className="checkout-summary-text">
-                {t('checkout.summary.address')}: {addressLine}, {postalCode} {city}, {countryCode}
+                {t('checkout.summary.address')}: {selectedAddress?.label} — {selectedAddress?.addressLine}, {selectedAddress?.postalCode} {selectedAddress?.city}, {selectedAddress?.countryCode}
               </p>
             </div>
 
