@@ -167,5 +167,7 @@
   "orders.wireRefund.amount": "Amount to refund",
   "orders.wireRefund.prompt": "Confirm that the wire refund has been sent?",
   "orders.wireRefund.submit": "Confirm wire refund",
-  "orders.wireRefund.error": "Error confirming wire refund."
+  "orders.wireRefund.error": "Error confirming wire refund.",
+  "maintenance.title": "Platform under maintenance",
+  "maintenance.message": "Our platform is temporarily unavailable for maintenance. Please try again in a few moments."
 }

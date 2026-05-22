@@ -167,5 +167,7 @@
   "orders.wireRefund.amount": "Montant à rembourser",
   "orders.wireRefund.prompt": "Confirmer l'émission du virement de remboursement ?",
   "orders.wireRefund.submit": "Confirmer le virement de remboursement",
-  "orders.wireRefund.error": "Erreur lors de la confirmation du virement."
+  "orders.wireRefund.error": "Erreur lors de la confirmation du virement.",
+  "maintenance.title": "Plateforme en maintenance",
+  "maintenance.message": "Notre plateforme est temporairement indisponible pour maintenance. Nous vous invitons à réessayer dans quelques instants."
 }

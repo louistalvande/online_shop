@@ -239,6 +239,15 @@ CREATE TABLE order_lines (
 CREATE INDEX idx_order_lines_order_id ON order_lines (order_id);
 
 
+-- Platform settings (US-ADM-10 — maintenance mode toggle)
+CREATE TABLE platform_settings (
+    key   VARCHAR(100) NOT NULL PRIMARY KEY,
+    value VARCHAR(500) NOT NULL
+);
+
+INSERT INTO platform_settings (key, value) VALUES ('maintenance_mode', 'false');
+
+
 -- Claims domain (US-CLM-01, US-CLM-02)
 -- One claim per order per buyer; multiple claims allowed after the previous one is closed.
 

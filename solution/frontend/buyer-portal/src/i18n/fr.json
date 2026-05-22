@@ -229,5 +229,7 @@
   "orders.cancel.submit": "Annuler la commande",
   "orders.cancel.cancelling": "Annulation…",
   "orders.cancel.wireRefundInProgress": "Remboursement par virement en cours",
-  "orders.cancel.ibanUsed": "IBAN de remboursement"
+  "orders.cancel.ibanUsed": "IBAN de remboursement",
+  "maintenance.title": "Plateforme en maintenance",
+  "maintenance.message": "Notre plateforme est temporairement indisponible pour maintenance. Nous vous invitons à réessayer dans quelques instants."
 }

@@ -229,5 +229,7 @@
   "orders.cancel.submit": "Cancel order",
   "orders.cancel.cancelling": "Cancelling…",
   "orders.cancel.wireRefundInProgress": "Wire refund in progress",
-  "orders.cancel.ibanUsed": "Refund IBAN"
+  "orders.cancel.ibanUsed": "Refund IBAN",
+  "maintenance.title": "Platform under maintenance",
+  "maintenance.message": "Our platform is temporarily unavailable for maintenance. Please try again in a few moments."
 }

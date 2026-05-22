@@ -6,6 +6,7 @@ import ActionMenu from './components/ActionMenu'
 import CarrierFormModal from './components/CarrierFormModal'
 import CarrierDeleteModal from './components/CarrierDeleteModal'
 import UserDetailModal from './components/UserDetailModal'
+import MaintenanceModeCard from './components/MaintenanceModeCard'
 import { logout } from './api/authApi'
 import { listAccounts, type AccountResponse } from './api/accountApi'
 import { listCarriers, deactivateCarrier, activateCarrier, type CarrierResponse } from './api/carrierApi'
@@ -161,6 +162,13 @@ export default function DashboardPage({ onUnauthorized }: Props) {
               <div style={{ fontSize: 28, fontWeight: 700 }}>{stat.value}</div>
             </Card>
           ))}
+        </div>
+
+        <div style={{ marginBottom: 48 }} id="settings">
+          <h2 style={{ fontFamily: 'var(--font-serif)', fontSize: 22, fontWeight: 700, marginBottom: 20 }}>
+            {t('maintenance.section.title')}
+          </h2>
+          <MaintenanceModeCard />
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }} id="users">
