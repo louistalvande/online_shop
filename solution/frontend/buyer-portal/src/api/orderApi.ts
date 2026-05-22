@@ -5,10 +5,7 @@ const BASE = '/api/orders'
 export type PaymentMethod = 'CARD' | 'WIRE_TRANSFER'
 
 export interface CreateOrderRequest {
-  deliveryAddressLine: string
-  deliveryCity: string
-  deliveryPostalCode: string
-  deliveryCountryCode: string
+  addressId: string
   carrierId: string
   paymentMethod: PaymentMethod
 }

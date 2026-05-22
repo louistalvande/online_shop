@@ -2,31 +2,66 @@ import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { AppShell, Button, LangToggle } from '@workspace/theme'
 import { getSession, logout } from './api/authApi'
-import { getProfile, updateProfile, type ProfileData } from './api/profileApi'
+import {
+  getProfile,
+  updateProfile,
+  listAddresses,
+  createAddress,
+  updateAddress,
+  deleteAddress,
+  setDefaultAddress,
+  type ProfileData,
+  type DeliveryAddressData,
+  type CreateDeliveryAddressPayload,
+} from './api/profileApi'
+import { listCountries, type CountryData } from './api/orderApi'
 
-type Tab = 'profile' | 'security'
+type Tab = 'profile' | 'addresses' | 'security'
+
+interface AddressFormState {
+  label: string
+  addressLine: string
+  city: string
+  postalCode: string
+  countryCode: string
+  makeDefault: boolean
+}
+
+const EMPTY_FORM: AddressFormState = {
+  label: '', addressLine: '', city: '', postalCode: '', countryCode: '', makeDefault: false,
+}
 
 export default function ProfilePage() {
   const { t, i18n } = useTranslation()
   const session = getSession()
+  const locale = i18n.language
 
   const [activeTab, setActiveTab] = useState<Tab>('profile')
   const [profile, setProfile] = useState<ProfileData | null>(null)
   const [loadError, setLoadError] = useState(false)
 
+  // Profile tab
   const [firstName, setFirstName] = useState('')
   const [lastName, setLastName] = useState('')
   const [phone, setPhone] = useState('')
-  const [addressLine, setAddressLine] = useState('')
-  const [city, setCity] = useState('')
-  const [postalCode, setPostalCode] = useState('')
-  const [countryCode, setCountryCode] = useState('')
   const [language, setLanguage] = useState<'FR' | 'EN'>('FR')
 
+  // Security tab
   const [currentPassword, setCurrentPassword] = useState('')
   const [newPassword, setNewPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
 
+  // Addresses tab
+  const [addresses, setAddresses] = useState<DeliveryAddressData[]>([])
+  const [countries, setCountries] = useState<CountryData[]>([])
+  const [addrLoading, setAddrLoading] = useState(false)
+  const [showAddrForm, setShowAddrForm] = useState(false)
+  const [editingId, setEditingId] = useState<string | null>(null)
+  const [addrForm, setAddrForm] = useState<AddressFormState>(EMPTY_FORM)
+  const [addrSaving, setAddrSaving] = useState(false)
+  const [addrFormError, setAddrFormError] = useState('')
+
+  // Shared UI state
   const [saving, setSaving] = useState(false)
   const [successMsg, setSuccessMsg] = useState('')
   const [errorMsg, setErrorMsg] = useState('')
@@ -39,14 +74,24 @@ export default function ProfilePage() {
         setFirstName(p.firstName)
         setLastName(p.lastName)
         setPhone(p.phone ?? '')
-        setAddressLine(p.addressLine ?? '')
-        setCity(p.city ?? '')
-        setPostalCode(p.postalCode ?? '')
-        setCountryCode(p.countryCode ?? '')
         setLanguage(p.language)
       })
       .catch(() => setLoadError(true))
   }, [])
+
+  useEffect(() => {
+    if (activeTab !== 'addresses') return
+    if (countries.length === 0) listCountries().then(setCountries).catch(() => {})
+    loadAddresses()
+  }, [activeTab])
+
+  function loadAddresses() {
+    setAddrLoading(true)
+    listAddresses()
+      .then(setAddresses)
+      .catch(() => setErrorMsg(t('profile.addresses.error.load')))
+      .finally(() => setAddrLoading(false))
+  }
 
   function clearMessages() { setSuccessMsg(''); setErrorMsg('') }
 
@@ -55,7 +100,7 @@ export default function ProfilePage() {
     clearMessages()
     setSaving(true)
     try {
-      const updated = await updateProfile({ firstName, lastName, phone: phone || undefined, addressLine: addressLine || undefined, city: city || undefined, postalCode: postalCode || undefined, countryCode: countryCode || undefined, language })
+      const updated = await updateProfile({ firstName, lastName, phone: phone || undefined, language })
       setProfile(updated)
       setSuccessMsg(t('profile.success'))
     } catch {
@@ -68,10 +113,7 @@ export default function ProfilePage() {
   async function handleSavePassword(e: React.FormEvent) {
     e.preventDefault()
     clearMessages()
-    if (newPassword !== confirmPassword) {
-      setErrorMsg(t('profile.error.passwordMismatch'))
-      return
-    }
+    if (newPassword !== confirmPassword) { setErrorMsg(t('profile.error.passwordMismatch')); return }
     setSaving(true)
     try {
       await updateProfile({ currentPassword, newPassword, confirmPassword })
@@ -82,6 +124,72 @@ export default function ProfilePage() {
       setErrorMsg(code === 'WRONG_PASSWORD' ? t('profile.error.wrongPassword') : t('profile.error.generic'))
     } finally {
       setSaving(false)
+    }
+  }
+
+  function openAddForm() {
+    setEditingId(null)
+    setAddrForm(EMPTY_FORM)
+    setAddrFormError('')
+    setShowAddrForm(true)
+  }
+
+  function openEditForm(addr: DeliveryAddressData) {
+    setEditingId(addr.id)
+    setAddrForm({
+      label: addr.label,
+      addressLine: addr.addressLine,
+      city: addr.city,
+      postalCode: addr.postalCode,
+      countryCode: addr.countryCode,
+      makeDefault: addr.default,
+    })
+    setAddrFormError('')
+    setShowAddrForm(true)
+  }
+
+  async function handleSaveAddress(e: React.FormEvent) {
+    e.preventDefault()
+    setAddrFormError('')
+    setAddrSaving(true)
+    try {
+      const payload: CreateDeliveryAddressPayload = { ...addrForm }
+      if (editingId) {
+        const updated = await updateAddress(editingId, payload)
+        setAddresses(prev => prev.map(a => a.id === editingId ? updated : (payload.makeDefault ? { ...a, default: false } : a)))
+      } else {
+        const created = await createAddress(payload)
+        setAddresses(prev => {
+          const cleared = payload.makeDefault ? prev.map(a => ({ ...a, default: false })) : prev
+          return [...cleared, created]
+        })
+      }
+      setShowAddrForm(false)
+    } catch (err: unknown) {
+      const code = (err as { code?: string }).code
+      setAddrFormError(code === 'INVALID_COUNTRY' ? t('profile.addresses.error.invalidCountry') : t('profile.addresses.error.save'))
+    } finally {
+      setAddrSaving(false)
+    }
+  }
+
+  async function handleDeleteAddress(id: string) {
+    if (!window.confirm(t('profile.addresses.deleteConfirm'))) return
+    try {
+      await deleteAddress(id)
+      setAddresses(prev => prev.filter(a => a.id !== id))
+    } catch (err: unknown) {
+      const code = (err as { code?: string }).code
+      setErrorMsg(code === 'LAST_ACTIVE_ADDRESS' ? t('profile.addresses.error.lastActive') : t('profile.addresses.error.delete'))
+    }
+  }
+
+  async function handleSetDefault(id: string) {
+    try {
+      await setDefaultAddress(id)
+      setAddresses(prev => prev.map(a => ({ ...a, default: a.id === id })))
+    } catch {
+      setErrorMsg(t('profile.addresses.error.save'))
     }
   }
 
@@ -121,6 +229,12 @@ export default function ProfilePage() {
             {t('profile.tab.profile')}
           </button>
           <button
+            className={`profile-tab${activeTab === 'addresses' ? ' profile-tab--active' : ''}`}
+            onClick={() => { setActiveTab('addresses'); clearMessages() }}
+          >
+            {t('profile.tab.addresses')}
+          </button>
+          <button
             className={`profile-tab${activeTab === 'security' ? ' profile-tab--active' : ''}`}
             onClick={() => { setActiveTab('security'); clearMessages() }}
           >
@@ -131,6 +245,7 @@ export default function ProfilePage() {
         {successMsg && <div role="status" className="profile-alert-success">{successMsg}</div>}
         {errorMsg   && <div role="alert"  className="profile-alert-error">{errorMsg}</div>}
 
+        {/* ─── PROFILE TAB ─── */}
         {activeTab === 'profile' && (
           <form onSubmit={handleSaveProfile} className="profile-form">
             <div className="profile-row">
@@ -162,30 +277,6 @@ export default function ProfilePage() {
               </select>
             </div>
 
-            <hr className="profile-divider" />
-            <h2 className="profile-section-title">{t('profile.address.title')}</h2>
-
-            <div className="profile-field">
-              <label htmlFor="addressLine" className="profile-label">{t('profile.address.line')}</label>
-              <input id="addressLine" className="profile-input" value={addressLine} onChange={e => setAddressLine(e.target.value)} />
-            </div>
-
-            <div className="profile-row">
-              <div className="profile-field">
-                <label htmlFor="city" className="profile-label">{t('profile.address.city')}</label>
-                <input id="city" className="profile-input" value={city} onChange={e => setCity(e.target.value)} />
-              </div>
-              <div className="profile-field">
-                <label htmlFor="postalCode" className="profile-label">{t('profile.address.postalCode')}</label>
-                <input id="postalCode" className="profile-input" value={postalCode} onChange={e => setPostalCode(e.target.value)} />
-              </div>
-            </div>
-
-            <div className="profile-field">
-              <label htmlFor="countryCode" className="profile-label">{t('profile.address.country')}</label>
-              <input id="countryCode" className="profile-input" value={countryCode} onChange={e => setCountryCode(e.target.value.toUpperCase().slice(0, 2))} maxLength={2} placeholder="FR" />
-            </div>
-
             <div className="profile-actions">
               <Button type="button" variant="ghost" onClick={() => window.location.href = '/'}>{t('profile.cancel')}</Button>
               <Button type="submit" disabled={saving}>{saving ? t('profile.saving') : t('profile.save')}</Button>
@@ -193,6 +284,128 @@ export default function ProfilePage() {
           </form>
         )}
 
+        {/* ─── ADDRESSES TAB ─── */}
+        {activeTab === 'addresses' && (
+          <div className="profile-addresses">
+            <h2 className="profile-section-title">{t('profile.addresses.title')}</h2>
+
+            {addrLoading ? (
+              <p className="profile-loading">{t('profile.loading')}</p>
+            ) : addresses.length === 0 ? (
+              <p className="profile-addresses-empty">{t('profile.addresses.empty')}</p>
+            ) : (
+              <table className="profile-addresses-table">
+                <thead>
+                  <tr>
+                    <th>{t('profile.addresses.col.label')}</th>
+                    <th>{t('profile.addresses.col.address')}</th>
+                    <th>{t('profile.addresses.col.city')}</th>
+                    <th>{t('profile.addresses.col.country')}</th>
+                    <th>{t('profile.addresses.col.default')}</th>
+                    <th>{t('profile.addresses.col.actions')}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {addresses.map(addr => (
+                    <tr key={addr.id}>
+                      <td>{addr.label}</td>
+                      <td>{addr.addressLine}</td>
+                      <td>{addr.city}</td>
+                      <td>{addr.countryCode}</td>
+                      <td className="profile-addresses-default">
+                        {addr.default ? <span title={t('profile.addresses.default')}>★</span> : '☆'}
+                      </td>
+                      <td className="profile-addresses-actions">
+                        <Button size="sm" variant="ghost" onClick={() => openEditForm(addr)}>
+                          {t('profile.addresses.edit')}
+                        </Button>
+                        {!addr.default && (
+                          <Button size="sm" variant="ghost" onClick={() => handleSetDefault(addr.id)}>
+                            {t('profile.addresses.setDefault')}
+                          </Button>
+                        )}
+                        <Button size="sm" variant="ghost" onClick={() => handleDeleteAddress(addr.id)}>
+                          {t('profile.addresses.delete')}
+                        </Button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+
+            <div className="profile-actions">
+              <Button onClick={openAddForm}>{t('profile.addresses.add')}</Button>
+            </div>
+
+            {/* ─── ADDRESS FORM MODAL ─── */}
+            {showAddrForm && (
+              <div className="profile-modal-overlay" role="dialog" aria-modal="true">
+                <div className="profile-modal">
+                  <h2 className="profile-modal-title">
+                    {editingId ? t('profile.addresses.form.title.edit') : t('profile.addresses.form.title.add')}
+                  </h2>
+                  <form onSubmit={handleSaveAddress}>
+                    <div className="profile-field">
+                      <label htmlFor="addrLabel" className="profile-label">{t('profile.addresses.form.label')}</label>
+                      <input id="addrLabel" className="profile-input" value={addrForm.label} maxLength={100} required
+                        onChange={e => setAddrForm(f => ({ ...f, label: e.target.value }))} />
+                    </div>
+                    <div className="profile-field">
+                      <label htmlFor="addrLine" className="profile-label">{t('profile.addresses.form.line')}</label>
+                      <input id="addrLine" className="profile-input" value={addrForm.addressLine} maxLength={255} required
+                        onChange={e => setAddrForm(f => ({ ...f, addressLine: e.target.value }))} />
+                    </div>
+                    <div className="profile-row">
+                      <div className="profile-field">
+                        <label htmlFor="addrPostal" className="profile-label">{t('profile.addresses.form.postalCode')}</label>
+                        <input id="addrPostal" className="profile-input" value={addrForm.postalCode} maxLength={20} required
+                          onChange={e => setAddrForm(f => ({ ...f, postalCode: e.target.value }))} />
+                      </div>
+                      <div className="profile-field">
+                        <label htmlFor="addrCity" className="profile-label">{t('profile.addresses.form.city')}</label>
+                        <input id="addrCity" className="profile-input" value={addrForm.city} maxLength={100} required
+                          onChange={e => setAddrForm(f => ({ ...f, city: e.target.value }))} />
+                      </div>
+                    </div>
+                    <div className="profile-field">
+                      <label htmlFor="addrCountry" className="profile-label">{t('profile.addresses.form.country')}</label>
+                      <select id="addrCountry" className="profile-input" value={addrForm.countryCode} required
+                        onChange={e => setAddrForm(f => ({ ...f, countryCode: e.target.value }))}>
+                        <option value="">{t('checkout.address.countryPlaceholder')}</option>
+                        {countries.map(c => (
+                          <option key={c.code} value={c.code}>
+                            {locale === 'en' ? c.nameEn : c.nameFr} ({c.code})
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                    <div className="profile-field">
+                      <label className="profile-checkbox-label">
+                        <input type="checkbox" checked={addrForm.makeDefault}
+                          onChange={e => setAddrForm(f => ({ ...f, makeDefault: e.target.checked }))} />
+                        {' '}{t('profile.addresses.form.makeDefault')}
+                      </label>
+                    </div>
+
+                    {addrFormError && <p className="profile-alert-error">{addrFormError}</p>}
+
+                    <div className="profile-actions">
+                      <Button type="button" variant="ghost" onClick={() => setShowAddrForm(false)}>
+                        {t('profile.addresses.form.cancel')}
+                      </Button>
+                      <Button type="submit" disabled={addrSaving}>
+                        {addrSaving ? t('profile.saving') : t('profile.addresses.form.save')}
+                      </Button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* ─── SECURITY TAB ─── */}
         {activeTab === 'security' && (
           <form onSubmit={handleSavePassword} className="profile-form">
             <div className="profile-field">

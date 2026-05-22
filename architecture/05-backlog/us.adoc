@@ -164,14 +164,14 @@ a|
 | *US-PRF-03*
 | En tant qu'acheteur authentifié, je peux gérer un carnet d'adresses de livraison : ajouter une nouvelle adresse, modifier ou supprimer une adresse existante, et en définir une comme adresse par défaut.
 a|
-- [ ] Section « Mes adresses » accessible depuis l'espace compte
-- [ ] Formulaire d'ajout : libellé (ex. « Domicile »), rue, ville, code postal, pays (zone euro uniquement — CS-04)
-- [ ] L'adresse par défaut est présélectionnée automatiquement au passage de commande
-- [ ] Une seule adresse peut être marquée par défaut à la fois
-- [ ] Suppression logique (soft-delete) bloquée si c'est la seule adresse active du carnet
-- [ ] Minimum 1 adresse active, pas de maximum imposé
-- [ ] Tunnel d'achat : sélection parmi le carnet (addressId) au lieu de saisie inline — commande référence delivery_address par FK
-| En cours
+- [x] Section « Mes adresses » accessible depuis l'espace compte
+- [x] Formulaire d'ajout : libellé (ex. « Domicile »), rue, ville, code postal, pays (zone euro uniquement — CS-04)
+- [x] L'adresse par défaut est présélectionnée automatiquement au passage de commande
+- [x] Une seule adresse peut être marquée par défaut à la fois
+- [x] Suppression logique (soft-delete) bloquée si c'est la seule adresse active du carnet
+- [x] Minimum 1 adresse active, pas de maximum imposé
+- [x] Tunnel d'achat : sélection parmi le carnet (addressId) au lieu de saisie inline — commande référence delivery_address par FK
+| Terminée
 
 |===
 
