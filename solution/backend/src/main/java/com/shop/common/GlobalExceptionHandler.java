@@ -1,6 +1,8 @@
 package com.shop.common;
 
 import com.shop.account.exception.AccountNotFoundException;
+import com.shop.account.exception.DeliveryAddressNotFoundException;
+import com.shop.account.exception.LastActiveAddressException;
 import com.shop.claim.exception.ClaimAlreadyOpenException;
 import com.shop.claim.exception.ClaimNotFoundException;
 import com.shop.claim.exception.InvalidClaimStateException;
@@ -51,6 +53,36 @@ public class GlobalExceptionHandler {
      */
     public GlobalExceptionHandler(MessageSource messageSource) {
         this.messageSource = messageSource;
+    }
+
+    /**
+     * Handles delivery address not found or not owned by the buyer — returns HTTP 404 (US-PRF-03).
+     *
+     * @param ex     the exception
+     * @param locale the request locale
+     * @return a 404 response with a localised error body
+     */
+    @ExceptionHandler(DeliveryAddressNotFoundException.class)
+    public ResponseEntity<Map<String, String>> handleDeliveryAddressNotFound(
+            DeliveryAddressNotFoundException ex, Locale locale) {
+        String message = messageSource.getMessage("error.address.not.found", null, locale);
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(Map.of("error", "ADDRESS_NOT_FOUND", "message", message));
+    }
+
+    /**
+     * Handles attempt to delete the last active delivery address — returns HTTP 409 (US-PRF-03).
+     *
+     * @param ex     the exception
+     * @param locale the request locale
+     * @return a 409 response with a localised error body
+     */
+    @ExceptionHandler(LastActiveAddressException.class)
+    public ResponseEntity<Map<String, String>> handleLastActiveAddress(
+            LastActiveAddressException ex, Locale locale) {
+        String message = messageSource.getMessage("error.address.last.active", null, locale);
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(Map.of("error", "LAST_ACTIVE_ADDRESS", "message", message));
     }
 
     /**

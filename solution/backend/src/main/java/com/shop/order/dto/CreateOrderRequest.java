@@ -2,35 +2,16 @@ package com.shop.order.dto;
 
 import com.shop.order.entity.PaymentMethod;
 import io.swagger.v3.oas.annotations.media.Schema;
-import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Pattern;
-import jakarta.validation.constraints.Size;
 
 import java.util.UUID;
 
-/** Request payload to create an order from the buyer's current cart (US-ORD-01, US-ORD-02). */
+/** Request payload to create an order from the buyer's current cart (US-ORD-01, US-ORD-02, US-PRF-03). */
 public class CreateOrderRequest {
 
-    @Schema(description = "Street address of the delivery destination")
-    @NotBlank
-    @Size(max = 255)
-    private String deliveryAddressLine;
-
-    @Schema(description = "City of the delivery destination")
-    @NotBlank
-    @Size(max = 100)
-    private String deliveryCity;
-
-    @Schema(description = "Postal code of the delivery destination")
-    @NotBlank
-    @Size(max = 20)
-    private String deliveryPostalCode;
-
-    @Schema(description = "ISO 3166-1 alpha-2 country code — must be a Eurozone country (CS-04)")
-    @NotBlank
-    @Pattern(regexp = "[A-Z]{2}", message = "{error.country.code.invalid}")
-    private String deliveryCountryCode;
+    @Schema(description = "UUID of the delivery address from the buyer's address book (US-PRF-03)")
+    @NotNull
+    private UUID addressId;
 
     @Schema(description = "UUID of the selected carrier")
     @NotNull
@@ -40,25 +21,10 @@ public class CreateOrderRequest {
     @NotNull
     private PaymentMethod paymentMethod;
 
-    /** @return the delivery street address */
-    public String getDeliveryAddressLine() { return deliveryAddressLine; }
-    /** @param deliveryAddressLine the delivery street address */
-    public void setDeliveryAddressLine(String deliveryAddressLine) { this.deliveryAddressLine = deliveryAddressLine; }
-
-    /** @return the delivery city */
-    public String getDeliveryCity() { return deliveryCity; }
-    /** @param deliveryCity the delivery city */
-    public void setDeliveryCity(String deliveryCity) { this.deliveryCity = deliveryCity; }
-
-    /** @return the delivery postal code */
-    public String getDeliveryPostalCode() { return deliveryPostalCode; }
-    /** @param deliveryPostalCode the delivery postal code */
-    public void setDeliveryPostalCode(String deliveryPostalCode) { this.deliveryPostalCode = deliveryPostalCode; }
-
-    /** @return the ISO alpha-2 country code */
-    public String getDeliveryCountryCode() { return deliveryCountryCode; }
-    /** @param deliveryCountryCode the ISO alpha-2 country code */
-    public void setDeliveryCountryCode(String deliveryCountryCode) { this.deliveryCountryCode = deliveryCountryCode; }
+    /** @return the delivery address UUID */
+    public UUID getAddressId() { return addressId; }
+    /** @param addressId the delivery address UUID */
+    public void setAddressId(UUID addressId) { this.addressId = addressId; }
 
     /** @return the carrier UUID */
     public UUID getCarrierId() { return carrierId; }

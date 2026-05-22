@@ -108,4 +108,16 @@ public interface VendorOrderService {
      * @return the updated order response
      */
     OrderResponse confirmWireRefund(String vendorEmail, UUID orderId, Locale locale);
+
+    /**
+     * Refuses a buyer's post-shipment cancellation request (US-CAN-06).
+     * Valid only when the order status is {@code CANCELLATION_REQUESTED_AFTER_SHIPMENT}.
+     * Transitions back to {@code SHIPPED} and notifies the buyer of the refusal.
+     *
+     * @param vendorEmail the authenticated vendor's email address
+     * @param orderId     the order UUID
+     * @param locale      buyer notification locale
+     * @return the updated order response
+     */
+    OrderResponse refuseCancellationRequest(String vendorEmail, UUID orderId, Locale locale);
 }

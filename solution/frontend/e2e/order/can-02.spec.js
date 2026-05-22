@@ -7,6 +7,7 @@ import {
   createActiveVendorViaApi,
   getVendorToken,
   createProductViaApi,
+  createAddressViaApi,
 } from '../helpers/login.js';
 
 const BUYER_EMAIL = `can02-buyer-${Date.now()}@example.com`;
@@ -19,6 +20,7 @@ test.describe('US-CAN-02 — Vendor sees wire refund in progress after buyer can
   let vendorToken;
   let carrierId;
   let productId;
+  let addressId;
 
   test.beforeAll(async ({ request }) => {
     const p = { request };
@@ -43,6 +45,12 @@ test.describe('US-CAN-02 — Vendor sees wire refund in progress after buyer can
 
     await registerAndActivateBuyerViaApi(p, BUYER_EMAIL, BUYER_PASSWORD);
     buyerToken = await getBuyerToken(p, BUYER_EMAIL, BUYER_PASSWORD);
+
+    const address = await createAddressViaApi(p, buyerToken, {
+      label: 'Home', addressLine: '1 rue Test', city: 'Paris',
+      postalCode: '75001', countryCode: 'FR', makeDefault: true,
+    });
+    addressId = address.id;
   });
 
   test('vendor order shows WIRE_REFUND_IN_PROGRESS with buyerIban after buyer wire cancellation', async ({ request }) => {
@@ -53,14 +61,7 @@ test.describe('US-CAN-02 — Vendor sees wire refund in progress after buyer can
     });
     const initRes = await request.post(`${API_URL}/api/orders`, {
       headers: { Authorization: `Bearer ${buyerToken}`, 'Content-Type': 'application/json' },
-      data: {
-        deliveryAddressLine: '1 rue Test',
-        deliveryCity: 'Paris',
-        deliveryPostalCode: '75001',
-        deliveryCountryCode: 'FR',
-        carrierId,
-        paymentMethod: 'WIRE_TRANSFER',
-      },
+      data: { addressId, carrierId, paymentMethod: 'WIRE_TRANSFER' },
     });
     const init = await initRes.json();
     const orderId = init.orderId;
@@ -95,14 +96,7 @@ test.describe('US-CAN-02 — Vendor sees wire refund in progress after buyer can
     });
     const initRes = await request.post(`${API_URL}/api/orders`, {
       headers: { Authorization: `Bearer ${buyerToken}`, 'Content-Type': 'application/json' },
-      data: {
-        deliveryAddressLine: '1 rue Test',
-        deliveryCity: 'Paris',
-        deliveryPostalCode: '75001',
-        deliveryCountryCode: 'FR',
-        carrierId,
-        paymentMethod: 'CARD',
-      },
+      data: { addressId, carrierId, paymentMethod: 'CARD' },
     });
     const init = await initRes.json();
     await request.post(`${API_URL}/api/orders/${init.orderId}/confirm-payment`, {

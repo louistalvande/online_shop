@@ -119,6 +119,7 @@
   "orders.status.cancelled": "Annulée",
   "orders.status.pendingReturn": "En attente de retour",
   "orders.status.wireRefund": "Remboursement virement en cours",
+  "orders.status.cancellationRequested": "Demande d'annulation en attente",
   "orders.detail.title": "Commande {{number}}",
   "orders.detail.delivery": "Adresse de livraison",
   "orders.detail.carrier": "Transporteur",
@@ -167,5 +168,16 @@
   "orders.wireRefund.amount": "Montant à rembourser",
   "orders.wireRefund.prompt": "Confirmer l'émission du virement de remboursement ?",
   "orders.wireRefund.submit": "Confirmer le virement de remboursement",
-  "orders.wireRefund.error": "Erreur lors de la confirmation du virement."
+  "orders.wireRefund.error": "Erreur lors de la confirmation du virement.",
+  "orders.buyerCancelRequest.title": "Demande d'annulation de l'acheteur",
+  "orders.buyerCancelRequest.description": "L'acheteur a demandé l'annulation de cette commande après expédition. Vous pouvez accepter (avec ou sans retour) ou refuser.",
+  "orders.buyerCancelRequest.reason": "Motif indiqué",
+  "orders.buyerCancelRequest.buyerIban": "IBAN acheteur",
+  "orders.buyerCancelRequest.acceptReturnPrompt": "Exiger le retour du colis avant remboursement ? L'acheteur sera notifié.",
+  "orders.buyerCancelRequest.waiveReturnPrompt": "Accepter l'annulation sans retour ? Le remboursement sera déclenché immédiatement.",
+  "orders.buyerCancelRequest.refusePrompt": "Refuser la demande d'annulation ? L'acheteur sera notifié et la commande repassera en Expédiée.",
+  "orders.buyerCancelRequest.refuse": "Refuser la demande",
+  "orders.buyerCancelRequest.refuseError": "Erreur lors du refus de la demande d'annulation.",
+  "maintenance.title": "Plateforme en maintenance",
+  "maintenance.message": "Notre plateforme est temporairement indisponible pour maintenance. Nous vous invitons à réessayer dans quelques instants."
 }

@@ -7,6 +7,7 @@ import {
   createActiveVendorViaApi,
   getVendorToken,
   createProductViaApi,
+  createAddressViaApi,
 } from '../helpers/login.js';
 
 const BUYER_EMAIL = `rpt01-buyer-${Date.now()}@example.com`;
@@ -19,6 +20,7 @@ test.describe('US-RPT-01 — Vendor sales report', () => {
   let vendorToken;
   let carrierId;
   let productId;
+  let addressId;
   const period = new Date().toISOString().slice(0, 7); // current YYYY-MM
 
   test.beforeAll(async ({ request }) => {
@@ -45,6 +47,12 @@ test.describe('US-RPT-01 — Vendor sales report', () => {
     await registerAndActivateBuyerViaApi(p, BUYER_EMAIL, BUYER_PASSWORD);
     buyerToken = await getBuyerToken(p, BUYER_EMAIL, BUYER_PASSWORD);
 
+    const address = await createAddressViaApi(p, buyerToken, {
+      label: 'Home', addressLine: '1 rue Test', city: 'Paris',
+      postalCode: '75001', countryCode: 'FR', makeDefault: true,
+    });
+    addressId = address.id;
+
     // Place and confirm one order so we have sales data for the current period
     await request.post(`${API_URL}/api/cart/items`, {
       headers: { Authorization: `Bearer ${buyerToken}`, 'Content-Type': 'application/json' },
@@ -52,14 +60,7 @@ test.describe('US-RPT-01 — Vendor sales report', () => {
     });
     const initRes = await request.post(`${API_URL}/api/orders`, {
       headers: { Authorization: `Bearer ${buyerToken}`, 'Content-Type': 'application/json' },
-      data: {
-        deliveryAddressLine: '1 rue Test',
-        deliveryCity: 'Paris',
-        deliveryPostalCode: '75001',
-        deliveryCountryCode: 'FR',
-        carrierId,
-        paymentMethod: 'CARD',
-      },
+      data: { addressId, carrierId, paymentMethod: 'CARD' },
     });
     const init = await initRes.json();
     await request.post(`${API_URL}/api/orders/${init.orderId}/confirm-payment`, {

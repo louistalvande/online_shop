@@ -7,6 +7,7 @@ import {
   createActiveVendorViaApi,
   getVendorToken,
   createProductViaApi,
+  createAddressViaApi,
 } from '../helpers/login.js';
 
 const BUYER_EMAIL = `exp02-buyer-${Date.now()}@example.com`;
@@ -20,6 +21,7 @@ test.describe('US-EXP-02 — Buyer tracks shipment from order detail', () => {
   let carrierId;
   let productId;
   let orderId;
+  let addressId;
 
   test.beforeAll(async ({ request }) => {
     const p = { request };
@@ -43,6 +45,12 @@ test.describe('US-EXP-02 — Buyer tracks shipment from order detail', () => {
     await registerAndActivateBuyerViaApi(p, BUYER_EMAIL, BUYER_PASSWORD);
     buyerToken = await getBuyerToken(p, BUYER_EMAIL, BUYER_PASSWORD);
 
+    const address = await createAddressViaApi(p, buyerToken, {
+      label: 'Home', addressLine: '1 rue de la Paix', city: 'Paris',
+      postalCode: '75001', countryCode: 'FR', makeDefault: true,
+    });
+    addressId = address.id;
+
     // Place order and confirm wire payment
     await request.post(`${API_URL}/api/cart/items`, {
       headers: { Authorization: `Bearer ${buyerToken}` },
@@ -50,14 +58,7 @@ test.describe('US-EXP-02 — Buyer tracks shipment from order detail', () => {
     });
     const initRes = await request.post(`${API_URL}/api/orders`, {
       headers: { Authorization: `Bearer ${buyerToken}` },
-      data: {
-        deliveryAddressLine: '1 rue de la Paix',
-        deliveryCity: 'Paris',
-        deliveryPostalCode: '75001',
-        deliveryCountryCode: 'FR',
-        carrierId,
-        paymentMethod: 'WIRE_TRANSFER',
-      },
+      data: { addressId, carrierId, paymentMethod: 'WIRE_TRANSFER' },
     });
     const body = await initRes.json();
     orderId = body.orderId;

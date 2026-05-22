@@ -110,5 +110,16 @@
   "snackbar.accountDeleted": "Compte supprimé.",
   "snackbar.accountSuspended": "Compte suspendu.",
   "snackbar.accountReactivated": "Compte réactivé.",
-  "snackbar.error": "Une erreur est survenue. Veuillez réessayer."
+  "snackbar.error": "Une erreur est survenue. Veuillez réessayer.",
+  "maintenance.section.title": "Maintenance",
+  "maintenance.title": "Mode maintenance",
+  "maintenance.description.active": "La plateforme est actuellement hors ligne pour les acheteurs et les vendeurs.",
+  "maintenance.description.inactive": "La plateforme est accessible normalement à tous les utilisateurs.",
+  "maintenance.action.enable": "Activer la maintenance",
+  "maintenance.action.disable": "Désactiver la maintenance",
+  "maintenance.status.label": "État actuel",
+  "maintenance.status.active": "En maintenance",
+  "maintenance.status.inactive": "Opérationnel",
+  "maintenance.snackbar.enabled": "Mode maintenance activé.",
+  "maintenance.snackbar.disabled": "Mode maintenance désactivé."
 }

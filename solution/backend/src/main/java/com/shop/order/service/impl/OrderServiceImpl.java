@@ -1,7 +1,10 @@
 package com.shop.order.service.impl;
 
+import com.shop.account.entity.DeliveryAddress;
 import com.shop.account.exception.AccountNotFoundException;
+import com.shop.account.exception.DeliveryAddressNotFoundException;
 import com.shop.account.repository.AccountRepository;
+import com.shop.account.repository.DeliveryAddressRepository;
 import com.shop.cart.entity.Cart;
 import com.shop.cart.entity.CartItem;
 import com.shop.cart.repository.CartRepository;
@@ -53,6 +56,7 @@ public class OrderServiceImpl implements com.shop.order.service.OrderService {
     private final CarrierRepository carrierRepository;
     private final CountryRepository countryRepository;
     private final AccountRepository accountRepository;
+    private final DeliveryAddressRepository deliveryAddressRepository;
     private final ProductRepository productRepository;
     private final PaymentGateway paymentGateway;
     private final NotificationService notificationService;
@@ -62,16 +66,17 @@ public class OrderServiceImpl implements com.shop.order.service.OrderService {
     /**
      * Constructs the service with all required dependencies.
      *
-     * @param orderRepository     JPA repository for orders
-     * @param cartRepository      JPA repository for carts
-     * @param carrierRepository   JPA repository for carriers
-     * @param countryRepository   JPA repository for Eurozone country codes
-     * @param accountRepository   JPA repository for accounts (buyer/vendor lookup)
-     * @param productRepository   JPA repository for products (stock restoration on cancellation)
-     * @param paymentGateway      card payment abstraction (Stripe or stub)
-     * @param notificationService email notification service
-     * @param bankIban            vendor bank IBAN injected from configuration
-     * @param bankBic             vendor bank BIC injected from configuration
+     * @param orderRepository           JPA repository for orders
+     * @param cartRepository            JPA repository for carts
+     * @param carrierRepository         JPA repository for carriers
+     * @param countryRepository         JPA repository for Eurozone country codes
+     * @param accountRepository         JPA repository for accounts (buyer/vendor lookup)
+     * @param deliveryAddressRepository JPA repository for buyer delivery addresses (US-PRF-03)
+     * @param productRepository         JPA repository for products (stock restoration on cancellation)
+     * @param paymentGateway            card payment abstraction (Stripe or stub)
+     * @param notificationService       email notification service
+     * @param bankIban                  vendor bank IBAN injected from configuration
+     * @param bankBic                   vendor bank BIC injected from configuration
      */
     public OrderServiceImpl(
             OrderRepository orderRepository,
@@ -79,6 +84,7 @@ public class OrderServiceImpl implements com.shop.order.service.OrderService {
             CarrierRepository carrierRepository,
             CountryRepository countryRepository,
             AccountRepository accountRepository,
+            DeliveryAddressRepository deliveryAddressRepository,
             ProductRepository productRepository,
             PaymentGateway paymentGateway,
             NotificationService notificationService,
@@ -89,6 +95,7 @@ public class OrderServiceImpl implements com.shop.order.service.OrderService {
         this.carrierRepository = carrierRepository;
         this.countryRepository = countryRepository;
         this.accountRepository = accountRepository;
+        this.deliveryAddressRepository = deliveryAddressRepository;
         this.productRepository = productRepository;
         this.paymentGateway = paymentGateway;
         this.notificationService = notificationService;
@@ -104,7 +111,11 @@ public class OrderServiceImpl implements com.shop.order.service.OrderService {
                 .filter(c -> !c.getItems().isEmpty())
                 .orElseThrow(EmptyCartException::new);
 
-        String countryCode = request.getDeliveryCountryCode();
+        DeliveryAddress address = deliveryAddressRepository
+                .findByIdAndAccountIdAndDeletedFalse(request.getAddressId(), buyerId)
+                .orElseThrow(() -> new DeliveryAddressNotFoundException(request.getAddressId()));
+
+        String countryCode = address.getCountryCode();
         if (!countryRepository.existsByCode(countryCode)) {
             throw new InvalidDeliveryCountryException(countryCode);
         }
@@ -122,10 +133,7 @@ public class OrderServiceImpl implements com.shop.order.service.OrderService {
         order.setCarrierId(carrier.getId());
         order.setCarrierName(carrier.getName());
         order.setCarrierTrackingUrl(carrier.getTrackingUrl());
-        order.setDeliveryAddressLine(request.getDeliveryAddressLine());
-        order.setDeliveryCity(request.getDeliveryCity());
-        order.setDeliveryPostalCode(request.getDeliveryPostalCode());
-        order.setDeliveryCountryCode(countryCode);
+        order.setDeliveryAddress(address);
         order.setPaymentMethod(request.getPaymentMethod());
         order.setVendorEmail(vendorEmail);
         order.setVendorId(vendorId);
@@ -242,6 +250,36 @@ public class OrderServiceImpl implements com.shop.order.service.OrderService {
 
         notificationService.sendBuyerCancellationEmail(buyerEmail, response, locale);
         notificationService.sendVendorCancellationEmail(saved.getVendorEmail(), response, locale);
+
+        return response;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public OrderResponse requestPostShipmentCancellation(String buyerEmail, UUID orderId,
+                                                         String reason, String buyerIban,
+                                                         Locale locale) {
+        UUID buyerId = resolveAccountId(buyerEmail);
+        Order order = orderRepository.findByIdAndBuyerId(orderId, buyerId)
+                .orElseThrow(() -> new OrderNotFoundException(orderId));
+
+        if (order.getStatus() != OrderStatus.SHIPPED) {
+            throw new InvalidOrderStateException(orderId, order.getStatus());
+        }
+
+        if (order.getPaymentMethod() == PaymentMethod.WIRE_TRANSFER) {
+            if (buyerIban == null || buyerIban.isBlank()) {
+                throw new MissingBuyerIbanException(orderId);
+            }
+            order.setBuyerIban(buyerIban);
+        }
+
+        order.setCancellationReason(reason);
+        order.setStatus(OrderStatus.CANCELLATION_REQUESTED_AFTER_SHIPMENT);
+        Order saved = orderRepository.save(order);
+        OrderResponse response = OrderResponse.from(saved);
+
+        notificationService.sendVendorCancellationRequestedEmail(saved.getVendorEmail(), response, locale);
 
         return response;
     }

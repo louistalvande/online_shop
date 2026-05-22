@@ -119,6 +119,7 @@
   "orders.status.cancelled": "Cancelled",
   "orders.status.pendingReturn": "Pending return",
   "orders.status.wireRefund": "Wire refund in progress",
+  "orders.status.cancellationRequested": "Cancellation request pending",
   "orders.detail.title": "Order {{number}}",
   "orders.detail.delivery": "Delivery address",
   "orders.detail.carrier": "Carrier",
@@ -167,5 +168,16 @@
   "orders.wireRefund.amount": "Amount to refund",
   "orders.wireRefund.prompt": "Confirm that the wire refund has been sent?",
   "orders.wireRefund.submit": "Confirm wire refund",
-  "orders.wireRefund.error": "Error confirming wire refund."
+  "orders.wireRefund.error": "Error confirming wire refund.",
+  "orders.buyerCancelRequest.title": "Buyer cancellation request",
+  "orders.buyerCancelRequest.description": "The buyer has requested cancellation of this shipped order. You may accept (with or without return) or refuse.",
+  "orders.buyerCancelRequest.reason": "Stated reason",
+  "orders.buyerCancelRequest.buyerIban": "Buyer IBAN",
+  "orders.buyerCancelRequest.acceptReturnPrompt": "Require parcel return before refund? The buyer will be notified.",
+  "orders.buyerCancelRequest.waiveReturnPrompt": "Accept cancellation without return? Refund will be triggered immediately.",
+  "orders.buyerCancelRequest.refusePrompt": "Refuse the cancellation request? The buyer will be notified and the order reverts to Shipped.",
+  "orders.buyerCancelRequest.refuse": "Refuse request",
+  "orders.buyerCancelRequest.refuseError": "Error refusing the cancellation request.",
+  "maintenance.title": "Platform under maintenance",
+  "maintenance.message": "Our platform is temporarily unavailable for maintenance. Please try again in a few moments."
 }

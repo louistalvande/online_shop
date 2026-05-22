@@ -55,6 +55,24 @@ public interface OrderService {
     OrderResponse getMyOrder(String buyerEmail, UUID orderId);
 
     /**
+     * Records the buyer's post-shipment cancellation request (US-CAN-06).
+     * Valid only when the order status is {@code SHIPPED}.
+     * Transitions the order to {@code CANCELLATION_REQUESTED_AFTER_SHIPMENT},
+     * stores the cancellation reason, and notifies the vendor by email.
+     * For wire transfer orders, {@code buyerIban} must be provided for the eventual refund.
+     *
+     * @param buyerEmail the authenticated buyer's email address
+     * @param orderId    the order UUID
+     * @param reason     the mandatory reason provided by the buyer
+     * @param buyerIban  the buyer's IBAN for wire refund; {@code null} for card orders
+     * @param locale     locale for notification emails
+     * @return the updated order
+     */
+    OrderResponse requestPostShipmentCancellation(String buyerEmail, UUID orderId,
+                                                  String reason, String buyerIban,
+                                                  Locale locale);
+
+    /**
      * Cancels an order placed by the buyer (US-CAN-01).
      * Valid from {@code AWAITING_PROCESSING} or {@code IN_PREPARATION}.
      * <ul>

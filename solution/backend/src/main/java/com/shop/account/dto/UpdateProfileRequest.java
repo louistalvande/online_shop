@@ -20,18 +20,6 @@ public class UpdateProfileRequest {
     @Size(max = 20)
     @Schema(description = "Phone number to set — omit to leave unchanged") private String phone;
 
-    @Size(max = 255)
-    @Schema(description = "Street address line to set — omit to leave unchanged") private String addressLine;
-
-    @Size(max = 100)
-    @Schema(description = "City to set — omit to leave unchanged") private String city;
-
-    @Size(max = 20)
-    @Schema(description = "Postal code to set — omit to leave unchanged") private String postalCode;
-
-    @Size(min = 2, max = 2)
-    @Schema(description = "ISO 3166-1 alpha-2 country code (euro zone) — omit to leave unchanged") private String countryCode;
-
     @Schema(description = "Preferred notification language to set — omit to leave unchanged") private AccountLanguage language;
 
     @Schema(description = "Current password — required when changing password") private String currentPassword;
@@ -58,30 +46,6 @@ public class UpdateProfileRequest {
 
     /** @param phone the phone number to set */
     public void setPhone(String phone) { this.phone = phone; }
-
-    /** @return the street address line, or {@code null} if unchanged */
-    public String getAddressLine() { return addressLine; }
-
-    /** @param addressLine the street address line to set */
-    public void setAddressLine(String addressLine) { this.addressLine = addressLine; }
-
-    /** @return the city, or {@code null} if unchanged */
-    public String getCity() { return city; }
-
-    /** @param city the city to set */
-    public void setCity(String city) { this.city = city; }
-
-    /** @return the postal code, or {@code null} if unchanged */
-    public String getPostalCode() { return postalCode; }
-
-    /** @param postalCode the postal code to set */
-    public void setPostalCode(String postalCode) { this.postalCode = postalCode; }
-
-    /** @return the country code, or {@code null} if unchanged */
-    public String getCountryCode() { return countryCode; }
-
-    /** @param countryCode the country code to set */
-    public void setCountryCode(String countryCode) { this.countryCode = countryCode; }
 
     /** @return the preferred notification language, or {@code null} if unchanged */
     public AccountLanguage getLanguage() { return language; }

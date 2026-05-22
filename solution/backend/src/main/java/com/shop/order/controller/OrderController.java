@@ -4,6 +4,7 @@ import com.shop.order.dto.CancelOrderRequest;
 import com.shop.order.dto.CheckoutInitResponse;
 import com.shop.order.dto.CreateOrderRequest;
 import com.shop.order.dto.OrderResponse;
+import com.shop.order.dto.RequestPostShipmentCancellationRequest;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -114,6 +115,32 @@ public interface OrderController {
     ResponseEntity<OrderResponse> cancelOrder(
             @PathVariable UUID orderId,
             @RequestBody(required = false) CancelOrderRequest request,
+            Principal principal,
+            Locale locale);
+
+    /**
+     * Records the buyer's post-shipment cancellation request (US-CAN-06).
+     * Valid when the order status is {@code SHIPPED}.
+     * Wire transfer orders require a buyerIban in the request body.
+     *
+     * @param orderId   the order UUID
+     * @param request   cancellation reason and optional IBAN
+     * @param principal authenticated buyer
+     * @param locale    buyer locale
+     * @return 200 with the updated order
+     */
+    @Operation(summary = "Request post-shipment cancellation (US-CAN-06)")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Cancellation request recorded, vendor notified"),
+            @ApiResponse(responseCode = "400", description = "Reason missing or request invalid"),
+            @ApiResponse(responseCode = "404", description = "Order not found"),
+            @ApiResponse(responseCode = "409", description = "Order not in SHIPPED status"),
+            @ApiResponse(responseCode = "422", description = "Buyer IBAN missing for wire transfer order")
+    })
+    @PostMapping("/{orderId}/request-post-shipment-cancellation")
+    ResponseEntity<OrderResponse> requestPostShipmentCancellation(
+            @PathVariable UUID orderId,
+            @Valid @RequestBody RequestPostShipmentCancellationRequest request,
             Principal principal,
             Locale locale);
 }

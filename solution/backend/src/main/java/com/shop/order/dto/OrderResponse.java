@@ -19,6 +19,7 @@ public class OrderResponse {
     @Schema(description = "Carrier UUID") private UUID carrierId;
     @Schema(description = "Carrier name snapshot") private String carrierName;
     @Schema(description = "Carrier tracking URL snapshot") private String carrierTrackingUrl;
+    @Schema(description = "Delivery address UUID") private UUID deliveryAddressId;
     @Schema(description = "Delivery street address") private String deliveryAddressLine;
     @Schema(description = "Delivery city") private String deliveryCity;
     @Schema(description = "Delivery postal code") private String deliveryPostalCode;
@@ -28,6 +29,7 @@ public class OrderResponse {
     @Schema(description = "Grand total including VAT") private BigDecimal totalAmountTtc;
     @Schema(description = "Shipment tracking number, null until shipped") private String trackingNumber;
     @Schema(description = "Buyer IBAN for wire refund, populated when provided") private String buyerIban;
+    @Schema(description = "Reason given by the buyer when requesting post-shipment cancellation (US-CAN-06)") private String cancellationReason;
     @Schema(description = "Order line items") private List<OrderLineResponse> lines;
     @Schema(description = "Order creation timestamp") private LocalDateTime createdAt;
     @Schema(description = "Last status-change timestamp") private LocalDateTime updatedAt;
@@ -48,15 +50,19 @@ public class OrderResponse {
         r.carrierId = order.getCarrierId();
         r.carrierName = order.getCarrierName();
         r.carrierTrackingUrl = order.getCarrierTrackingUrl();
-        r.deliveryAddressLine = order.getDeliveryAddressLine();
-        r.deliveryCity = order.getDeliveryCity();
-        r.deliveryPostalCode = order.getDeliveryPostalCode();
-        r.deliveryCountryCode = order.getDeliveryCountryCode();
+        if (order.getDeliveryAddress() != null) {
+            r.deliveryAddressId = order.getDeliveryAddress().getId();
+            r.deliveryAddressLine = order.getDeliveryAddress().getAddressLine();
+            r.deliveryCity = order.getDeliveryAddress().getCity();
+            r.deliveryPostalCode = order.getDeliveryAddress().getPostalCode();
+            r.deliveryCountryCode = order.getDeliveryAddress().getCountryCode();
+        }
         r.paymentMethod = order.getPaymentMethod();
         r.status = order.getStatus();
         r.totalAmountTtc = order.getTotalAmountTtc();
         r.trackingNumber = order.getTrackingNumber();
         r.buyerIban = order.getBuyerIban();
+        r.cancellationReason = order.getCancellationReason();
         r.lines = order.getLines().stream().map(OrderLineResponse::from).toList();
         r.createdAt = order.getCreatedAt();
         r.updatedAt = order.getUpdatedAt();
@@ -75,6 +81,8 @@ public class OrderResponse {
     public String getCarrierName() { return carrierName; }
     /** @return the carrier tracking URL */
     public String getCarrierTrackingUrl() { return carrierTrackingUrl; }
+    /** @return the delivery address UUID */
+    public UUID getDeliveryAddressId() { return deliveryAddressId; }
     /** @return the delivery address */
     public String getDeliveryAddressLine() { return deliveryAddressLine; }
     /** @return the delivery city */
@@ -93,6 +101,8 @@ public class OrderResponse {
     public String getTrackingNumber() { return trackingNumber; }
     /** @return the buyer IBAN for wire refund, or null */
     public String getBuyerIban() { return buyerIban; }
+    /** @return the buyer's cancellation reason, or null */
+    public String getCancellationReason() { return cancellationReason; }
     /** @return the order lines */
     public List<OrderLineResponse> getLines() { return lines; }
     /** @return the creation timestamp */

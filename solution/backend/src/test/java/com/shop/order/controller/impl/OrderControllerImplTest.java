@@ -175,6 +175,61 @@ class OrderControllerImplTest {
                 .andExpect(jsonPath("$.error").value("INVALID_ORDER_STATE"));
     }
 
+    // ─── requestPostShipmentCancellation ─────────────────────────────────────
+
+    @Test
+    void requestPostShipmentCancellation_returns200() throws Exception {
+        OrderResponse response = buildOrderResponse(OrderStatus.CANCELLATION_REQUESTED_AFTER_SHIPMENT);
+        given(orderService.requestPostShipmentCancellation(eq(BUYER_EMAIL), eq(ORDER_ID), any(), any(), any()))
+                .willReturn(response);
+
+        mvc.perform(post("/api/orders/" + ORDER_ID + "/request-post-shipment-cancellation")
+                        .principal(buyerPrincipal)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"reason\":\"Product damaged\"}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value("CANCELLATION_REQUESTED_AFTER_SHIPMENT"));
+    }
+
+    @Test
+    void requestPostShipmentCancellation_missingReason_returns400() throws Exception {
+        mvc.perform(post("/api/orders/" + ORDER_ID + "/request-post-shipment-cancellation")
+                        .principal(buyerPrincipal)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"reason\":\"\"}"))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void requestPostShipmentCancellation_invalidState_returns409() throws Exception {
+        given(orderService.requestPostShipmentCancellation(eq(BUYER_EMAIL), eq(ORDER_ID), any(), any(), any()))
+                .willThrow(new InvalidOrderStateException(ORDER_ID, OrderStatus.AWAITING_PROCESSING));
+        given(messageSource.getMessage(eq("error.order.invalid.state"), any(), any(Locale.class)))
+                .willReturn("Invalid state");
+
+        mvc.perform(post("/api/orders/" + ORDER_ID + "/request-post-shipment-cancellation")
+                        .principal(buyerPrincipal)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"reason\":\"Reason\"}"))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.error").value("INVALID_ORDER_STATE"));
+    }
+
+    @Test
+    void requestPostShipmentCancellation_missingIban_returns422() throws Exception {
+        given(orderService.requestPostShipmentCancellation(eq(BUYER_EMAIL), eq(ORDER_ID), any(), any(), any()))
+                .willThrow(new MissingBuyerIbanException(ORDER_ID));
+        given(messageSource.getMessage(eq("error.order.missing.buyer.iban"), any(), any(Locale.class)))
+                .willReturn("IBAN required");
+
+        mvc.perform(post("/api/orders/" + ORDER_ID + "/request-post-shipment-cancellation")
+                        .principal(buyerPrincipal)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"reason\":\"Reason\"}"))
+                .andExpect(status().isUnprocessableEntity())
+                .andExpect(jsonPath("$.error").value("MISSING_BUYER_IBAN"));
+    }
+
     // ─── Helpers ─────────────────────────────────────────────────────────────
 
     private String checkoutBody(String paymentMethod) {

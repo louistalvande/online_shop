@@ -7,6 +7,7 @@ import {
   createActiveVendorViaApi,
   getVendorToken,
   createProductViaApi,
+  createAddressViaApi,
 } from '../helpers/login.js';
 
 const BUYER_PASSWORD = 'sHp-E2e!Byr-X9pZ';
@@ -38,12 +39,17 @@ test.describe('US-VND-02 — Vendor wire transfer confirmation and rejection', (
     productId = product.id;
   });
 
-  /** Places a wire order and returns its ID. */
+  /** Places a wire order for a fresh buyer and returns its ID. */
   async function placeWireOrder(request) {
     const buyerEmail = `vnd02-buyer-${Date.now()}@example.com`;
     const p = { request };
     await registerAndActivateBuyerViaApi(p, buyerEmail, BUYER_PASSWORD);
     const buyerToken = await getBuyerToken(p, buyerEmail, BUYER_PASSWORD);
+
+    const address = await createAddressViaApi(p, buyerToken, {
+      label: 'Home', addressLine: '1 rue Test', city: 'Lyon',
+      postalCode: '69001', countryCode: 'FR', makeDefault: true,
+    });
 
     await request.post(`${API_URL}/api/cart/items`, {
       headers: { Authorization: `Bearer ${buyerToken}` },
@@ -51,14 +57,7 @@ test.describe('US-VND-02 — Vendor wire transfer confirmation and rejection', (
     });
     const initRes = await request.post(`${API_URL}/api/orders`, {
       headers: { Authorization: `Bearer ${buyerToken}` },
-      data: {
-        deliveryAddressLine: '1 rue Test',
-        deliveryCity: 'Lyon',
-        deliveryPostalCode: '69001',
-        deliveryCountryCode: 'FR',
-        carrierId,
-        paymentMethod: 'WIRE_TRANSFER',
-      },
+      data: { addressId: address.id, carrierId, paymentMethod: 'WIRE_TRANSFER' },
     });
     expect(initRes.status()).toBe(201);
     const body = await initRes.json();
@@ -102,11 +101,16 @@ test.describe('US-VND-02 — Vendor wire transfer confirmation and rejection', (
   });
 
   test('reject-wire on a CARD order returns 409', async ({ request }) => {
-    // Place a CARD order
+    // Place a CARD order for a fresh buyer
     const buyerEmail = `vnd02-card-${Date.now()}@example.com`;
     const p = { request };
     await registerAndActivateBuyerViaApi(p, buyerEmail, BUYER_PASSWORD);
     const buyerToken = await getBuyerToken(p, buyerEmail, BUYER_PASSWORD);
+
+    const address = await createAddressViaApi(p, buyerToken, {
+      label: 'Home', addressLine: '2 rue Test', city: 'Paris',
+      postalCode: '75001', countryCode: 'FR', makeDefault: true,
+    });
 
     await request.post(`${API_URL}/api/cart/items`, {
       headers: { Authorization: `Bearer ${buyerToken}` },
@@ -114,14 +118,7 @@ test.describe('US-VND-02 — Vendor wire transfer confirmation and rejection', (
     });
     const initRes = await request.post(`${API_URL}/api/orders`, {
       headers: { Authorization: `Bearer ${buyerToken}` },
-      data: {
-        deliveryAddressLine: '2 rue Test',
-        deliveryCity: 'Paris',
-        deliveryPostalCode: '75001',
-        deliveryCountryCode: 'FR',
-        carrierId,
-        paymentMethod: 'CARD',
-      },
+      data: { addressId: address.id, carrierId, paymentMethod: 'CARD' },
     });
     const body = await initRes.json();
     const cardOrderId = body.orderId;

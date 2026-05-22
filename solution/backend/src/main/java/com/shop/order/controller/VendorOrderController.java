@@ -159,4 +159,22 @@ public interface VendorOrderController {
     @PostMapping("/{orderId}/confirm-wire-refund")
     ResponseEntity<OrderResponse> confirmWireRefund(@PathVariable UUID orderId,
                                                     Principal principal, Locale locale);
+
+    /**
+     * Refuses the buyer's post-shipment cancellation request (US-CAN-06).
+     * Transitions the order from {@code CANCELLATION_REQUESTED_AFTER_SHIPMENT} back to {@code SHIPPED}
+     * and notifies the buyer of the refusal.
+     *
+     * @param orderId   the order UUID
+     * @param principal the authenticated vendor principal
+     * @param locale    locale for buyer notification
+     * @return 200 with the updated order
+     */
+    @Operation(summary = "Refuse buyer's post-shipment cancellation request (US-CAN-06)")
+    @ApiResponse(responseCode = "200", description = "Cancellation refused, order back to SHIPPED")
+    @ApiResponse(responseCode = "404", description = "Order not found")
+    @ApiResponse(responseCode = "409", description = "Order not in CANCELLATION_REQUESTED_AFTER_SHIPMENT state")
+    @PostMapping("/{orderId}/refuse-cancellation")
+    ResponseEntity<OrderResponse> refuseCancellation(@PathVariable UUID orderId,
+                                                     Principal principal, Locale locale);
 }

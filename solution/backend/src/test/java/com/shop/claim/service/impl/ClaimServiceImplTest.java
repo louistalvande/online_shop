@@ -1,6 +1,7 @@
 package com.shop.claim.service.impl;
 
 import com.shop.account.entity.Account;
+import com.shop.account.entity.DeliveryAddress;
 import com.shop.account.repository.AccountRepository;
 import com.shop.claim.dto.ClaimResponse;
 import com.shop.claim.dto.CreateClaimRequest;
@@ -137,10 +138,7 @@ class ClaimServiceImplTest {
         o.setCarrierId(UUID.randomUUID());
         o.setCarrierName("Test Carrier");
         o.setCarrierTrackingUrl("https://track.example.com");
-        o.setDeliveryAddressLine("1 rue Test");
-        o.setDeliveryCity("Paris");
-        o.setDeliveryPostalCode("75001");
-        o.setDeliveryCountryCode("FR");
+        o.setDeliveryAddress(buildDeliveryAddress());
         o.setPaymentMethod(PaymentMethod.CARD);
         o.setStatus(status);
         o.setTotalAmountTtc(new BigDecimal("24.00"));
@@ -167,6 +165,20 @@ class ClaimServiceImplTest {
         r.setReason(ClaimReason.NON_RECEIPT);
         r.setMessage("My order never arrived.");
         return r;
+    }
+
+    private DeliveryAddress buildDeliveryAddress() {
+        Account owner = new Account();
+        setField(owner, "id", BUYER_ID);
+        DeliveryAddress a = new DeliveryAddress();
+        setField(a, "id", UUID.randomUUID());
+        a.setAccount(owner);
+        a.setLabel("Home");
+        a.setAddressLine("1 rue Test");
+        a.setCity("Paris");
+        a.setPostalCode("75001");
+        a.setCountryCode("FR");
+        return a;
     }
 
     private static void setField(Object target, String name, Object value) {

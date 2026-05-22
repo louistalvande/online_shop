@@ -215,3 +215,18 @@ export async function createProductViaApi(page, token, payload) {
   });
   return res.json();
 }
+
+/**
+ * Creates a delivery address for the given buyer via the REST API.
+ *
+ * @param {object} page        Playwright Page
+ * @param {string} buyerToken  buyer JWT
+ * @param {object} payload     address fields (label, addressLine, city, postalCode, countryCode, makeDefault)
+ */
+export async function createAddressViaApi(page, buyerToken, payload) {
+  const res = await page.request.post(`${API_URL}/api/profile/addresses`, {
+    headers: { Authorization: `Bearer ${buyerToken}` },
+    data: payload,
+  });
+  return res.json();
+}

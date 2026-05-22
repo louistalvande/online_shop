@@ -652,13 +652,24 @@ package "Entités métier (SA)" #F0F8FF {
 
   class AdresseLivraison {
     + id : UUID
+    + compte : CompteUtilisateur
     + libellé : String
     + rue : String
     + ville : String
     + codePostal : String
     + paysZoneEuro : CodeISO
     + estParDefaut : Boolean
+    + supprimé : Boolean
   }
+  note right of AdresseLivraison
+    FS-B11 / US-PRF-03
+    `compte` est une référence directe à CompteUtilisateur
+    (clé étrangère account_id en base).
+    Suppression logique (supprimé = true) préservant
+    l'intégrité référentielle des commandes passées.
+    Une seule adresse par compte peut avoir estParDefaut = true.
+    Minimum 1 adresse active par compte (contrainte service).
+  end note
 
   class Produit {
     + id : UUID
@@ -684,10 +695,10 @@ package "Entités métier (SA)" #F0F8FF {
 
   class Commande {
     + id : UUID
-    + adresseLivraison : Adresse
+    + adresseLivraisonId : UUID
     + modeLivraison : String
     + montantTotal : Decimal
-    + statut : Enum {paiement_en_attente_virement,\nen_attente, en_préparation,\nexpédiée, en_attente_retour,\nremboursement_virement_en_cours,\nlivrée, annulée}
+    + statut : Enum {paiement_en_attente_virement,\nen_attente, en_préparation,\nexpédiée, annulation_demandée_après_expédition,\nen_attente_retour,\nremboursement_virement_en_cours,\nlivrée, annulée}
     + dateCommande : DateTime
   }
 
@@ -758,9 +769,10 @@ package "Entités techniques (LA)" #FFF8E8 {
 }
 
 CompteUtilisateur "1" --> "0..*" TokenActivation : génère
-CompteUtilisateur "1" --> "1..*" AdresseLivraison : carnet
+CompteUtilisateur "1" --> "0..*" AdresseLivraison : carnet
 CompteUtilisateur "1" --> "0..1" Panier : possède
 CompteUtilisateur "1" --> "0..*" Commande : passe
+Commande "0..*" --> "1" AdresseLivraison : livrée à
 Panier "1" *-- "0..*" LignePanier : contient
 LignePanier "0..*" --> "1" Produit : référence
 Commande "1" *-- "1..*" LigneCommande : contient

@@ -1,0 +1,20 @@
+@startsalt
+' Composant PA : front-acheteur (Portail Acheteur)
+' Fonctions allouées : Service Compte — FS-B11 (US-PRF-03)
+' Endpoints : GET /api/profile/addresses, DELETE /api/profile/addresses/{id},
+'             PATCH /api/profile/addresses/{id}/set-default
+title Portail Acheteur — Mon compte (onglet Mes adresses)
+
+{+
+  {/ Mes commandes | Mon profil | <b>Mes adresses | Sécurité }
+  ==
+  == Mes adresses de livraison
+  {#
+    .           | Libellé      | Adresse                        | Ville   | Pays   | Par défaut | Actions
+    (X)         | Domicile     | 12 rue des Lilas               | Paris   | France | <b>★       | [Modifier] [Supprimer]
+    ( )         | Bureau       | 5 avenue de la République      | Lyon    | France | ☆          | [Modifier] [Supprimer] [Définir par défaut]
+  }
+  --
+  [+ Ajouter une adresse]
+}
+@endsalt

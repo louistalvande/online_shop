@@ -94,12 +94,12 @@ a|
 | *US-ADM-10*
 | En tant qu'administrateur, je peux activer ou désactiver le mode maintenance de la boutique.
 a|
-- [ ] Bascule « Mode maintenance » disponible dans la console d'administration (UCSA-14 / FS-A05)
-- [ ] En mode maintenance : toute navigation sur le portail acheteur et le back-office vendeur affiche une page « Site en maintenance »
-- [ ] Les administrateurs authentifiés conservent l'accès à la console sans interruption
-- [ ] L'état du mode maintenance est persisté en base (`platform_settings`) et survit au redémarrage
-- [ ] Le changement d'état prend effet immédiatement sans redémarrage
-| À faire
+- [x] Bascule « Mode maintenance » disponible dans la console d'administration (UCSA-14 / FS-A05)
+- [x] En mode maintenance : toute navigation sur le portail acheteur et le back-office vendeur affiche une page « Site en maintenance »
+- [x] Les administrateurs authentifiés conservent l'accès à la console sans interruption
+- [x] L'état du mode maintenance est persisté en base (`platform_settings`) et survit au redémarrage
+- [x] Le changement d'état prend effet immédiatement sans redémarrage
+| Terminée
 
 |===
 
@@ -168,9 +168,10 @@ a|
 - [ ] Formulaire d'ajout : libellé (ex. « Domicile »), rue, ville, code postal, pays (zone euro uniquement — CS-04)
 - [ ] L'adresse par défaut est présélectionnée automatiquement au passage de commande
 - [ ] Une seule adresse peut être marquée par défaut à la fois
-- [ ] Suppression bloquée si c'est la seule adresse du carnet
-- [ ] Minimum 1 adresse, pas de maximum imposé
-| À faire
+- [ ] Suppression logique (soft-delete) bloquée si c'est la seule adresse active du carnet
+- [ ] Minimum 1 adresse active, pas de maximum imposé
+- [ ] Tunnel d'achat : sélection parmi le carnet (addressId) au lieu de saisie inline — commande référence delivery_address par FK
+| En cours
 
 |===
 
@@ -453,11 +454,11 @@ a|
 | *US-CAN-06*
 | En tant qu'acheteur, je peux demander l'annulation d'une commande déjà expédiée et je suis informé de la décision du vendeur.
 a|
-- [ ] Bouton « Demander l'annulation » disponible sur les commandes au statut `expédiée` (FS-B09 / UCSA-06)
-- [ ] Formulaire avec champ motif obligatoire ; si paiement par virement, saisie obligatoire de l'IBAN de remboursement
-- [ ] Commande passe en statut `annulation_demandée_après_expédition` ; vendeur notifié (FS-V08)
-- [ ] L'acheteur est notifié par email de la décision du vendeur : acceptation (avec ou sans condition de renvoi — US-CAN-03/04) ou refus
-| À faire
+- [x] Bouton « Demander l'annulation » disponible sur les commandes au statut `expédiée` (FS-B09 / UCSA-06)
+- [x] Formulaire avec champ motif obligatoire ; si paiement par virement, saisie obligatoire de l'IBAN de remboursement
+- [x] Commande passe en statut `annulation_demandée_après_expédition` ; vendeur notifié (FS-V08)
+- [x] L'acheteur est notifié par email de la décision du vendeur : acceptation (avec ou sans condition de renvoi — US-CAN-03/04) ou refus
+| Terminée
 
 |===
 

@@ -110,5 +110,16 @@
   "snackbar.accountDeleted": "Account deleted.",
   "snackbar.accountSuspended": "Account suspended.",
   "snackbar.accountReactivated": "Account reactivated.",
-  "snackbar.error": "An error occurred. Please try again."
+  "snackbar.error": "An error occurred. Please try again.",
+  "maintenance.section.title": "Maintenance",
+  "maintenance.title": "Maintenance mode",
+  "maintenance.description.active": "The platform is currently offline for buyers and vendors.",
+  "maintenance.description.inactive": "The platform is accessible normally to all users.",
+  "maintenance.action.enable": "Enable maintenance",
+  "maintenance.action.disable": "Disable maintenance",
+  "maintenance.status.label": "Current status",
+  "maintenance.status.active": "Under maintenance",
+  "maintenance.status.inactive": "Operational",
+  "maintenance.snackbar.enabled": "Maintenance mode enabled.",
+  "maintenance.snackbar.disabled": "Maintenance mode disabled."
 }

@@ -1,7 +1,9 @@
 package com.shop.order.service.impl;
 
 import com.shop.account.entity.Account;
+import com.shop.account.entity.DeliveryAddress;
 import com.shop.account.repository.AccountRepository;
+import com.shop.account.repository.DeliveryAddressRepository;
 import com.shop.cart.entity.Cart;
 import com.shop.cart.entity.CartItem;
 import com.shop.cart.repository.CartRepository;
@@ -56,6 +58,7 @@ class OrderServiceImplTest {
     @Mock CarrierRepository carrierRepository;
     @Mock CountryRepository countryRepository;
     @Mock AccountRepository accountRepository;
+    @Mock DeliveryAddressRepository deliveryAddressRepository;
     @Mock ProductRepository productRepository;
     @Mock PaymentGateway paymentGateway;
     @Mock NotificationService notificationService;
@@ -66,6 +69,7 @@ class OrderServiceImplTest {
     private static final String BUYER_EMAIL = "buyer@test.com";
     private static final UUID CARRIER_ID = UUID.randomUUID();
     private static final UUID ORDER_ID = UUID.randomUUID();
+    private static final UUID ADDRESS_ID = UUID.randomUUID();
     private static final String IBAN = "FR7630006000011234567890189";
     private static final String BIC = "BNPAFRPPXXX";
 
@@ -73,8 +77,8 @@ class OrderServiceImplTest {
     void setUp() {
         service = new OrderServiceImpl(
                 orderRepository, cartRepository, carrierRepository,
-                countryRepository, accountRepository, productRepository,
-                paymentGateway, notificationService, IBAN, BIC);
+                countryRepository, accountRepository, deliveryAddressRepository,
+                productRepository, paymentGateway, notificationService, IBAN, BIC);
 
         Account buyerAccount = new Account();
         setField(buyerAccount, "id", BUYER_ID);
@@ -88,6 +92,8 @@ class OrderServiceImplTest {
     void initCheckout_card_createsOrderAndReturnsClientSecret() {
         Cart cart = buildCart();
         given(cartRepository.findByBuyerId(BUYER_ID)).willReturn(Optional.of(cart));
+        given(deliveryAddressRepository.findByIdAndAccountIdAndDeletedFalse(ADDRESS_ID, BUYER_ID))
+                .willReturn(Optional.of(buildDeliveryAddress("FR")));
         given(countryRepository.existsByCode("FR")).willReturn(true);
         given(carrierRepository.findById(CARRIER_ID)).willReturn(Optional.of(buildCarrier("FR")));
         given(accountRepository.findById(any())).willReturn(Optional.of(buildAccount("vendor@example.com")));
@@ -107,6 +113,8 @@ class OrderServiceImplTest {
     void initCheckout_wire_setsStatusAndSendsEmails() {
         Cart cart = buildCart();
         given(cartRepository.findByBuyerId(BUYER_ID)).willReturn(Optional.of(cart));
+        given(deliveryAddressRepository.findByIdAndAccountIdAndDeletedFalse(ADDRESS_ID, BUYER_ID))
+                .willReturn(Optional.of(buildDeliveryAddress("FR")));
         given(countryRepository.existsByCode("FR")).willReturn(true);
         given(carrierRepository.findById(CARRIER_ID)).willReturn(Optional.of(buildCarrier("FR")));
         given(accountRepository.findById(any())).willReturn(Optional.of(buildAccount("vendor@example.com")));
@@ -132,18 +140,19 @@ class OrderServiceImplTest {
     @Test
     void initCheckout_invalidCountry_throws() {
         given(cartRepository.findByBuyerId(BUYER_ID)).willReturn(Optional.of(buildCart()));
+        given(deliveryAddressRepository.findByIdAndAccountIdAndDeletedFalse(ADDRESS_ID, BUYER_ID))
+                .willReturn(Optional.of(buildDeliveryAddress("US")));
         given(countryRepository.existsByCode("US")).willReturn(false);
 
-        CreateOrderRequest req = cardRequest();
-        req.setDeliveryCountryCode("US");
-
-        assertThatThrownBy(() -> service.initCheckout(BUYER_EMAIL, req, Locale.FRENCH))
+        assertThatThrownBy(() -> service.initCheckout(BUYER_EMAIL, cardRequest(), Locale.FRENCH))
                 .isInstanceOf(InvalidDeliveryCountryException.class);
     }
 
     @Test
     void initCheckout_carrierNotAvailableForCountry_throws() {
         given(cartRepository.findByBuyerId(BUYER_ID)).willReturn(Optional.of(buildCart()));
+        given(deliveryAddressRepository.findByIdAndAccountIdAndDeletedFalse(ADDRESS_ID, BUYER_ID))
+                .willReturn(Optional.of(buildDeliveryAddress("FR")));
         given(countryRepository.existsByCode("FR")).willReturn(true);
         given(carrierRepository.findById(CARRIER_ID)).willReturn(Optional.of(buildCarrier("DE")));
 
@@ -255,6 +264,53 @@ class OrderServiceImplTest {
                 .isInstanceOf(InvalidOrderStateException.class);
     }
 
+    // ─── requestPostShipmentCancellation ────────────────────────────────────
+
+    @Test
+    void requestPostShipmentCancellation_card_transitionsToCancellationRequested() {
+        Order order = buildSavedOrder(OrderStatus.SHIPPED);
+        given(orderRepository.findByIdAndBuyerId(ORDER_ID, BUYER_ID)).willReturn(Optional.of(order));
+        given(orderRepository.save(any())).willReturn(order);
+
+        service.requestPostShipmentCancellation(BUYER_EMAIL, ORDER_ID, "Product defective", null, Locale.FRENCH);
+
+        assertThat(order.getStatus()).isEqualTo(OrderStatus.CANCELLATION_REQUESTED_AFTER_SHIPMENT);
+        assertThat(order.getCancellationReason()).isEqualTo("Product defective");
+        then(notificationService).should().sendVendorCancellationRequestedEmail(any(), any(), any());
+    }
+
+    @Test
+    void requestPostShipmentCancellation_wire_storesIban() {
+        Order order = buildSavedOrder(OrderStatus.SHIPPED);
+        order.setPaymentMethod(PaymentMethod.WIRE_TRANSFER);
+        given(orderRepository.findByIdAndBuyerId(ORDER_ID, BUYER_ID)).willReturn(Optional.of(order));
+        given(orderRepository.save(any())).willReturn(order);
+
+        service.requestPostShipmentCancellation(BUYER_EMAIL, ORDER_ID, "Changed mind", "FR7630006000011234567890189", Locale.FRENCH);
+
+        assertThat(order.getStatus()).isEqualTo(OrderStatus.CANCELLATION_REQUESTED_AFTER_SHIPMENT);
+        assertThat(order.getBuyerIban()).isEqualTo("FR7630006000011234567890189");
+    }
+
+    @Test
+    void requestPostShipmentCancellation_wire_missingIban_throwsMissingBuyerIbanException() {
+        Order order = buildSavedOrder(OrderStatus.SHIPPED);
+        order.setPaymentMethod(PaymentMethod.WIRE_TRANSFER);
+        given(orderRepository.findByIdAndBuyerId(ORDER_ID, BUYER_ID)).willReturn(Optional.of(order));
+
+        assertThatThrownBy(() -> service.requestPostShipmentCancellation(BUYER_EMAIL, ORDER_ID, "reason", null, Locale.FRENCH))
+                .isInstanceOf(MissingBuyerIbanException.class);
+    }
+
+    @Test
+    void requestPostShipmentCancellation_wrongState_throwsInvalidOrderStateException() {
+        Order order = buildSavedOrder(OrderStatus.AWAITING_PROCESSING);
+        given(orderRepository.findByIdAndBuyerId(ORDER_ID, BUYER_ID)).willReturn(Optional.of(order));
+
+        assertThatThrownBy(() -> service.requestPostShipmentCancellation(BUYER_EMAIL, ORDER_ID, "reason", null, Locale.FRENCH))
+                .isInstanceOf(InvalidOrderStateException.class);
+    }
+
     // ─── getMyOrders / getMyOrder ────────────────────────────────────────────
 
     @Test
@@ -320,6 +376,21 @@ class OrderServiceImplTest {
         return a;
     }
 
+    private DeliveryAddress buildDeliveryAddress(String countryCode) {
+        Account owner = new Account();
+        setField(owner, "id", BUYER_ID);
+        DeliveryAddress a = new DeliveryAddress();
+        setField(a, "id", ADDRESS_ID);
+        a.setAccount(owner);
+        a.setLabel("Home");
+        a.setAddressLine("1 rue Test");
+        a.setCity("Paris");
+        a.setPostalCode("75001");
+        a.setCountryCode(countryCode);
+        a.setDefault(true);
+        return a;
+    }
+
     private Order buildSavedOrder(OrderStatus status) {
         Order o = new Order();
         setField(o, "id", ORDER_ID);
@@ -329,10 +400,7 @@ class OrderServiceImplTest {
         o.setCarrierId(CARRIER_ID);
         o.setCarrierName("Test Carrier");
         o.setCarrierTrackingUrl("https://track.example.com");
-        o.setDeliveryAddressLine("1 rue Test");
-        o.setDeliveryCity("Paris");
-        o.setDeliveryPostalCode("75001");
-        o.setDeliveryCountryCode("FR");
+        o.setDeliveryAddress(buildDeliveryAddress("FR"));
         o.setPaymentMethod(PaymentMethod.CARD);
         o.setStatus(status);
         o.setTotalAmountTtc(new BigDecimal("24.00"));
@@ -343,10 +411,7 @@ class OrderServiceImplTest {
 
     private CreateOrderRequest cardRequest() {
         CreateOrderRequest r = new CreateOrderRequest();
-        r.setDeliveryAddressLine("1 rue Test");
-        r.setDeliveryCity("Paris");
-        r.setDeliveryPostalCode("75001");
-        r.setDeliveryCountryCode("FR");
+        r.setAddressId(ADDRESS_ID);
         r.setCarrierId(CARRIER_ID);
         r.setPaymentMethod(PaymentMethod.CARD);
         return r;

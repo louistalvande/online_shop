@@ -1,0 +1,20 @@
+@startsalt
+' Composant PA : front-acheteur (Portail Acheteur)
+' Fonctions allouées : Service Compte — FS-B11 (US-PRF-03)
+' Endpoints : POST /api/profile/addresses, PUT /api/profile/addresses/{id}
+' CS-04 : pays restreint à la zone euro
+title Portail Acheteur — Ajouter / Modifier une adresse
+
+{+
+  == Nouvelle adresse
+  Libellé (ex. Domicile)   | "                    "
+  Adresse                  | "                    "
+  Ville                    | "                    "
+  Code postal              | "                    "
+  Pays (zone euro)         | ^France              ^
+  --
+  [ ] Définir comme adresse par défaut
+  --
+  [Annuler]   [Enregistrer]
+}
+@endsalt

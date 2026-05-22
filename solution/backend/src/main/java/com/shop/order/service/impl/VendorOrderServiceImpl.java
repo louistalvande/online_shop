@@ -149,15 +149,19 @@ public class VendorOrderServiceImpl implements VendorOrderService {
         Order order = orderRepository.findByIdAndVendorId(orderId, vendorId)
                 .orElseThrow(() -> new OrderNotFoundException(orderId));
 
-        if (order.getStatus() != OrderStatus.SHIPPED) {
+        if (order.getStatus() != OrderStatus.SHIPPED
+                && order.getStatus() != OrderStatus.CANCELLATION_REQUESTED_AFTER_SHIPMENT) {
             throw new InvalidOrderStateException(orderId, order.getStatus());
         }
 
         if (order.getPaymentMethod() == PaymentMethod.WIRE_TRANSFER) {
             if (buyerIban == null || buyerIban.isBlank()) {
-                throw new MissingBuyerIbanException(orderId);
+                if (order.getBuyerIban() == null || order.getBuyerIban().isBlank()) {
+                    throw new MissingBuyerIbanException(orderId);
+                }
+            } else {
+                order.setBuyerIban(buyerIban);
             }
-            order.setBuyerIban(buyerIban);
         }
 
         order.setStatus(OrderStatus.PENDING_RETURN);
@@ -210,15 +214,19 @@ public class VendorOrderServiceImpl implements VendorOrderService {
         Order order = orderRepository.findByIdAndVendorId(orderId, vendorId)
                 .orElseThrow(() -> new OrderNotFoundException(orderId));
 
-        if (order.getStatus() != OrderStatus.SHIPPED) {
+        if (order.getStatus() != OrderStatus.SHIPPED
+                && order.getStatus() != OrderStatus.CANCELLATION_REQUESTED_AFTER_SHIPMENT) {
             throw new InvalidOrderStateException(orderId, order.getStatus());
         }
 
         if (order.getPaymentMethod() == PaymentMethod.WIRE_TRANSFER) {
             if (buyerIban == null || buyerIban.isBlank()) {
-                throw new MissingBuyerIbanException(orderId);
+                if (order.getBuyerIban() == null || order.getBuyerIban().isBlank()) {
+                    throw new MissingBuyerIbanException(orderId);
+                }
+            } else {
+                order.setBuyerIban(buyerIban);
             }
-            order.setBuyerIban(buyerIban);
             order.setStatus(OrderStatus.WIRE_REFUND_IN_PROGRESS);
         } else {
             if (order.getStripePaymentIntentId() != null) {
@@ -255,6 +263,28 @@ public class VendorOrderServiceImpl implements VendorOrderService {
         String buyerEmail = accountRepository.findById(saved.getBuyerId())
                 .map(a -> a.getEmail()).orElse("");
         notificationService.sendWireRefundConfirmedEmail(buyerEmail, response, locale);
+
+        return response;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public OrderResponse refuseCancellationRequest(String vendorEmail, UUID orderId, Locale locale) {
+        UUID vendorId = resolveAccountId(vendorEmail);
+        Order order = orderRepository.findByIdAndVendorId(orderId, vendorId)
+                .orElseThrow(() -> new OrderNotFoundException(orderId));
+
+        if (order.getStatus() != OrderStatus.CANCELLATION_REQUESTED_AFTER_SHIPMENT) {
+            throw new InvalidOrderStateException(orderId, order.getStatus());
+        }
+
+        order.setStatus(OrderStatus.SHIPPED);
+        Order saved = orderRepository.save(order);
+        OrderResponse response = OrderResponse.from(saved);
+
+        String buyerEmail = accountRepository.findById(saved.getBuyerId())
+                .map(a -> a.getEmail()).orElse("");
+        notificationService.sendCancellationRefusedEmail(buyerEmail, response, locale);
 
         return response;
     }
