@@ -1,5 +1,6 @@
 package com.shop.order.entity;
 
+import com.shop.account.entity.DeliveryAddress;
 import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -37,21 +38,10 @@ public class Order {
     @Column(name = "carrier_tracking_url", nullable = false, length = 500)
     private String carrierTrackingUrl;
 
-    /** Street address of the delivery destination. */
-    @Column(name = "delivery_address_line", nullable = false, length = 255)
-    private String deliveryAddressLine;
-
-    /** City of the delivery destination. */
-    @Column(name = "delivery_city", nullable = false, length = 100)
-    private String deliveryCity;
-
-    /** Postal code of the delivery destination. */
-    @Column(name = "delivery_postal_code", nullable = false, length = 20)
-    private String deliveryPostalCode;
-
-    /** ISO 3166-1 alpha-2 country code, restricted to Eurozone (CS-04). */
-    @Column(name = "delivery_country_code", nullable = false, length = 2)
-    private String deliveryCountryCode;
+    /** Delivery address selected by the buyer at checkout (US-PRF-03). */
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "delivery_address_id", nullable = false)
+    private DeliveryAddress deliveryAddress;
 
     /** Payment method chosen at checkout. */
     @Enumerated(EnumType.STRING)
@@ -150,29 +140,11 @@ public class Order {
     /** @param carrierTrackingUrl the carrier tracking URL snapshot */
     public void setCarrierTrackingUrl(String carrierTrackingUrl) { this.carrierTrackingUrl = carrierTrackingUrl; }
 
-    /** @return the delivery street address */
-    public String getDeliveryAddressLine() { return deliveryAddressLine; }
+    /** @return the delivery address entity selected at checkout */
+    public DeliveryAddress getDeliveryAddress() { return deliveryAddress; }
 
-    /** @param deliveryAddressLine the delivery street address */
-    public void setDeliveryAddressLine(String deliveryAddressLine) { this.deliveryAddressLine = deliveryAddressLine; }
-
-    /** @return the delivery city */
-    public String getDeliveryCity() { return deliveryCity; }
-
-    /** @param deliveryCity the delivery city */
-    public void setDeliveryCity(String deliveryCity) { this.deliveryCity = deliveryCity; }
-
-    /** @return the delivery postal code */
-    public String getDeliveryPostalCode() { return deliveryPostalCode; }
-
-    /** @param deliveryPostalCode the delivery postal code */
-    public void setDeliveryPostalCode(String deliveryPostalCode) { this.deliveryPostalCode = deliveryPostalCode; }
-
-    /** @return the ISO alpha-2 delivery country code */
-    public String getDeliveryCountryCode() { return deliveryCountryCode; }
-
-    /** @param deliveryCountryCode the ISO alpha-2 delivery country code */
-    public void setDeliveryCountryCode(String deliveryCountryCode) { this.deliveryCountryCode = deliveryCountryCode; }
+    /** @param deliveryAddress the delivery address selected at checkout */
+    public void setDeliveryAddress(DeliveryAddress deliveryAddress) { this.deliveryAddress = deliveryAddress; }
 
     /** @return the chosen payment method */
     public PaymentMethod getPaymentMethod() { return paymentMethod; }

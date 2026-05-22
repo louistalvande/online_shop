@@ -202,13 +202,11 @@ class AccountServiceImplTest {
         UpdateProfileRequest req = new UpdateProfileRequest();
         req.setFirstName("Bob");
         req.setPhone("0601020304");
-        req.setCity("Paris");
 
         ProfileResponse result = service.updateProfile(EMAIL, req);
 
         assertThat(result.getFirstName()).isEqualTo("Bob");
         assertThat(result.getPhone()).isEqualTo("0601020304");
-        assertThat(result.getCity()).isEqualTo("Paris");
         assertThat(result.getLastName()).isEqualTo("Smith"); // unchanged
     }
 
@@ -266,28 +264,23 @@ class AccountServiceImplTest {
         then(accountRepository).should(never()).save(any());
     }
 
-    /** getProfile for an admin must return a response without address fields. */
+    /** getProfile for an admin must return a response without phone. */
     @Test
-    void getProfile_adminAccount_omitsAddressFields() {
+    void getProfile_adminAccount_omitsPhone() {
         Account admin = activeAccount();
         admin.setRole(AccountRole.ADMIN);
         admin.setPhone("0601020304");
-        admin.setAddressLine("1 rue de la Paix");
         given(accountRepository.findByEmail(EMAIL)).willReturn(Optional.of(admin));
 
         ProfileResponse profile = service.getProfile(EMAIL);
 
         assertThat(profile.getRole()).isEqualTo(AccountRole.ADMIN);
         assertThat(profile.getPhone()).isNull();
-        assertThat(profile.getAddressLine()).isNull();
-        assertThat(profile.getCity()).isNull();
-        assertThat(profile.getPostalCode()).isNull();
-        assertThat(profile.getCountryCode()).isNull();
     }
 
-    /** updateProfile for an admin must ignore address field updates. */
+    /** updateProfile for an admin must ignore phone update. */
     @Test
-    void updateProfile_adminAccount_ignoresAddressFields() {
+    void updateProfile_adminAccount_ignoresPhone() {
         Account admin = activeAccount();
         admin.setRole(AccountRole.ADMIN);
         given(accountRepository.findByEmail(EMAIL)).willReturn(Optional.of(admin));
@@ -296,14 +289,11 @@ class AccountServiceImplTest {
         UpdateProfileRequest req = new UpdateProfileRequest();
         req.setFirstName("Bob");
         req.setPhone("0601020304");
-        req.setCity("Paris");
 
         ProfileResponse result = service.updateProfile(EMAIL, req);
 
         assertThat(result.getFirstName()).isEqualTo("Bob");
         assertThat(result.getPhone()).isNull();
-        assertThat(result.getCity()).isNull();
         assertThat(admin.getPhone()).isNull();
-        assertThat(admin.getCity()).isNull();
     }
 }

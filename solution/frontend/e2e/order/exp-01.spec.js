@@ -7,6 +7,7 @@ import {
   createActiveVendorViaApi,
   getVendorToken,
   createProductViaApi,
+  createAddressViaApi,
 } from '../helpers/login.js';
 
 const BUYER_PASSWORD = 'sHp-E2e!Byr-X9pZ';
@@ -44,20 +45,18 @@ test.describe('US-EXP-01 — Vendor declares shipment with tracking number', () 
     await registerAndActivateBuyerViaApi(p, buyerEmail, BUYER_PASSWORD);
     const buyerToken = await getBuyerToken(p, buyerEmail, BUYER_PASSWORD);
 
+    const address = await createAddressViaApi(p, buyerToken, {
+      label: 'Home', addressLine: '1 rue Test', city: 'Paris',
+      postalCode: '75001', countryCode: 'FR', makeDefault: true,
+    });
+
     await request.post(`${API_URL}/api/cart/items`, {
       headers: { Authorization: `Bearer ${buyerToken}` },
       data: { productId, quantity: 1 },
     });
     const initRes = await request.post(`${API_URL}/api/orders`, {
       headers: { Authorization: `Bearer ${buyerToken}` },
-      data: {
-        deliveryAddressLine: '1 rue Test',
-        deliveryCity: 'Paris',
-        deliveryPostalCode: '75001',
-        deliveryCountryCode: 'FR',
-        carrierId,
-        paymentMethod: 'WIRE_TRANSFER',
-      },
+      data: { addressId: address.id, carrierId, paymentMethod: 'WIRE_TRANSFER' },
     });
     const body = await initRes.json();
     const orderId = body.orderId;

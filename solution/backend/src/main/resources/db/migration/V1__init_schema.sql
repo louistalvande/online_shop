@@ -12,10 +12,6 @@ CREATE TABLE accounts (
     must_change_password BOOLEAN      NOT NULL DEFAULT FALSE,
     created_at           TIMESTAMP    NOT NULL DEFAULT NOW(),
     phone                VARCHAR(20),
-    address_line         VARCHAR(255),
-    city                 VARCHAR(100),
-    postal_code          VARCHAR(20),
-    country_code         VARCHAR(2),
     -- SEC-PWD-003/004 (CPA-17): NULL = no expiry (BUYER), set for ADMIN
     password_expires_at  TIMESTAMPTZ,
     -- SEC-PWD-005 (CPA-17): flag for immediate revocation
@@ -194,20 +190,39 @@ CREATE TABLE cart_item (
 CREATE INDEX idx_cart_item_cart_id ON cart_item (cart_id);
 
 
--- Order domain (US-ORD-01..05)
--- Snapshot of carrier and product data at order creation time — independent of later changes.
+-- Buyer delivery address book (US-PRF-03).
+-- Soft-deleted rows (deleted = true) are hidden from the buyer but kept to preserve
+-- referential integrity with orders that were placed using that address.
+
+CREATE TABLE delivery_address (
+    id           UUID         PRIMARY KEY DEFAULT gen_random_uuid(),
+    account_id   UUID         NOT NULL REFERENCES accounts(id),
+    label        VARCHAR(100) NOT NULL,
+    address_line VARCHAR(255) NOT NULL,
+    city         VARCHAR(100) NOT NULL,
+    postal_code  VARCHAR(20)  NOT NULL,
+    country_code VARCHAR(2)   NOT NULL REFERENCES countries(code),
+    is_default   BOOLEAN      NOT NULL DEFAULT FALSE,
+    deleted      BOOLEAN      NOT NULL DEFAULT FALSE,
+    created_at   TIMESTAMP    NOT NULL DEFAULT NOW(),
+    updated_at   TIMESTAMP    NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX idx_delivery_address_account_id ON delivery_address (account_id);
+
+
+-- Order domain (US-ORD-01..05).
+-- Carrier data is snapshotted at order creation to remain independent of later carrier edits.
+-- Delivery address is referenced by FK (not copied) — soft-delete on delivery_address preserves integrity.
 
 CREATE TABLE orders (
     id                       UUID          PRIMARY KEY DEFAULT gen_random_uuid(),
     order_number             VARCHAR(50)   NOT NULL UNIQUE,
     buyer_id                 UUID          NOT NULL REFERENCES accounts(id),
+    delivery_address_id      UUID          NOT NULL REFERENCES delivery_address(id),
     carrier_id               UUID          NOT NULL REFERENCES carriers(id),
     carrier_name             VARCHAR(100)  NOT NULL,
     carrier_tracking_url     VARCHAR(500)  NOT NULL,
-    delivery_address_line    VARCHAR(255)  NOT NULL,
-    delivery_city            VARCHAR(100)  NOT NULL,
-    delivery_postal_code     VARCHAR(20)   NOT NULL,
-    delivery_country_code    VARCHAR(2)    NOT NULL REFERENCES countries(code),
     payment_method           VARCHAR(20)   NOT NULL,
     status                   VARCHAR(50)   NOT NULL,
     total_amount_ttc         NUMERIC(10,2) NOT NULL,

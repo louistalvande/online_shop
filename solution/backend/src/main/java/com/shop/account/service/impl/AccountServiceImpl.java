@@ -178,12 +178,8 @@ public class AccountServiceImpl implements AccountService {
         if (request.getLastName()  != null) account.setLastName(request.getLastName());
         if (request.getLanguage()  != null) account.setLanguage(request.getLanguage());
 
-        if (!isAdmin) {
-            if (request.getPhone()       != null) account.setPhone(request.getPhone());
-            if (request.getAddressLine() != null) account.setAddressLine(request.getAddressLine());
-            if (request.getCity()        != null) account.setCity(request.getCity());
-            if (request.getPostalCode()  != null) account.setPostalCode(request.getPostalCode());
-            if (request.getCountryCode() != null) account.setCountryCode(request.getCountryCode());
+        if (!isAdmin && request.getPhone() != null) {
+            account.setPhone(request.getPhone());
         }
 
         if (request.getCurrentPassword() != null && request.getNewPassword() != null) {

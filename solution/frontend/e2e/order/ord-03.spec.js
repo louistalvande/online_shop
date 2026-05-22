@@ -8,6 +8,7 @@ import {
   createActiveVendorViaApi,
   getVendorToken,
   createProductViaApi,
+  createAddressViaApi,
 } from '../helpers/login.js';
 
 const BUYER_EMAIL = `ord03-buyer-${Date.now()}@example.com`;
@@ -19,6 +20,7 @@ test.describe('US-ORD-03 — Card payment', () => {
   let buyerToken;
   let carrierId;
   let productId;
+  let addressId;
 
   test.beforeAll(async ({ request }) => {
     const p = { request };
@@ -41,6 +43,12 @@ test.describe('US-ORD-03 — Card payment', () => {
 
     await registerAndActivateBuyerViaApi(p, BUYER_EMAIL, BUYER_PASSWORD);
     buyerToken = await getBuyerToken(p, BUYER_EMAIL, BUYER_PASSWORD);
+
+    const address = await createAddressViaApi(p, buyerToken, {
+      label: 'Home', addressLine: '1 rue de la Paix', city: 'Paris',
+      postalCode: '75001', countryCode: 'FR', makeDefault: true,
+    });
+    addressId = address.id;
   });
 
   test('card checkout creates order in PAYMENT_PENDING_CARD and returns clientSecret', async ({ request }) => {
@@ -52,14 +60,7 @@ test.describe('US-ORD-03 — Card payment', () => {
 
     const res = await request.post(`${API_URL}/api/orders`, {
       headers: { Authorization: `Bearer ${buyerToken}` },
-      data: {
-        deliveryAddressLine: '1 rue de la Paix',
-        deliveryCity: 'Paris',
-        deliveryPostalCode: '75001',
-        deliveryCountryCode: 'FR',
-        carrierId,
-        paymentMethod: 'CARD',
-      },
+      data: { addressId, carrierId, paymentMethod: 'CARD' },
     });
 
     expect(res.status()).toBe(201);
@@ -79,14 +80,7 @@ test.describe('US-ORD-03 — Card payment', () => {
 
     const initRes = await request.post(`${API_URL}/api/orders`, {
       headers: { Authorization: `Bearer ${buyerToken}` },
-      data: {
-        deliveryAddressLine: '1 rue de la Paix',
-        deliveryCity: 'Paris',
-        deliveryPostalCode: '75001',
-        deliveryCountryCode: 'FR',
-        carrierId,
-        paymentMethod: 'CARD',
-      },
+      data: { addressId, carrierId, paymentMethod: 'CARD' },
     });
     expect(initRes.status()).toBe(201);
     const init = await initRes.json();
@@ -102,14 +96,7 @@ test.describe('US-ORD-03 — Card payment', () => {
 
   test('unauthenticated checkout returns 401', async ({ request }) => {
     const res = await request.post(`${API_URL}/api/orders`, {
-      data: {
-        deliveryAddressLine: '1 rue Test',
-        deliveryCity: 'Paris',
-        deliveryPostalCode: '75001',
-        deliveryCountryCode: 'FR',
-        carrierId,
-        paymentMethod: 'CARD',
-      },
+      data: { addressId, carrierId, paymentMethod: 'CARD' },
     });
     expect(res.status()).toBe(401);
   });

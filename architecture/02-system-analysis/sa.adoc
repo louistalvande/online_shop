@@ -697,8 +697,8 @@ a|
 | *Scénario nominal*
 a|
 . L'utilisateur accède au formulaire de mise à jour de son profil.
-. Il modifie les champs souhaités (nom, prénom, adresse postale, mot de passe, langue de notification). L'adresse email n'est pas modifiable.
-. Le système valide les données saisies (format du mot de passe, cohérence de l'adresse).
+. Il modifie les champs souhaités (nom, prénom, mot de passe, langue de notification). L'adresse email n'est pas modifiable.
+. Le système valide les données saisies (format du mot de passe).
 . Le système enregistre les modifications et confirme la mise à jour.
 
 | *Scénarios alternatifs*
@@ -1483,7 +1483,6 @@ class LigneCommande {
 
 class Commande {
   + id : UUID
-  + adresseLivraison : Adresse
   + modeLivraison : String
   + montantTotal : Decimal
   + statut : Enum {paiement_en_attente_virement,\nen_attente, en_préparation,\nexpédiée, en_attente_retour,\nlivrée, annulée}
@@ -1522,13 +1521,6 @@ class Réclamation {
   + dateOuverture : DateTime
 }
 
-class Adresse {
-  + rue : String
-  + ville : String
-  + codePostal : String
-  + paysZoneEuro : CodeISO
-}
-
 class AdresseLivraison {
   + id : UUID
   + libellé : String
@@ -1549,11 +1541,11 @@ LigneCommande "0..*" --> "1" Produit : référence
 Commande "1" *-- "1" Paiement : réglée par
 Commande "1" *-- "0..1" Expédition : donne lieu à
 Commande "1" --> "0..*" Réclamation : fait l'objet de
-Commande "1" --> "1" Adresse : livrée à
+Commande "1" --> "1" AdresseLivraison : livrée à
 Expédition "0..*" --> "1" Transporteur : acheminée par
 
 note bottom of Commande
-  CS-04 : adresse.paysZoneEuro
+  CS-04 : AdresseLivraison.paysZoneEuro
   doit être dans la zone euro
 end note
 

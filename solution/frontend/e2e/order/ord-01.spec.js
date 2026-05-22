@@ -8,6 +8,7 @@ import {
   createActiveVendorViaApi,
   getVendorToken,
   createProductViaApi,
+  createAddressViaApi,
 } from '../helpers/login.js';
 
 const BUYER_EMAIL = `ord01-buyer-${Date.now()}@example.com`;
@@ -18,6 +19,7 @@ const VENDOR_PASSWORD = 'Vendor123456!';
 test.describe('US-ORD-01 — Delivery address validation', () => {
   let buyerToken;
   let carrierId;
+  let addressId;
 
   test.beforeAll(async ({ request }) => {
     // Create carrier covering FR
@@ -42,9 +44,28 @@ test.describe('US-ORD-01 — Delivery address validation', () => {
     // Create buyer and get token
     await registerAndActivateBuyerViaApi(carrierPage, BUYER_EMAIL, BUYER_PASSWORD);
     buyerToken = await getBuyerToken(carrierPage, BUYER_EMAIL, BUYER_PASSWORD);
+
+    // Create a saved FR delivery address
+    const address = await createAddressViaApi(carrierPage, buyerToken, {
+      label: 'Home', addressLine: '1 rue de la Paix', city: 'Paris',
+      postalCode: '75001', countryCode: 'FR', makeDefault: true,
+    });
+    addressId = address.id;
   });
 
-  test('rejects non-Eurozone country code via API', async ({ request }) => {
+  test('rejects non-Eurozone country code via address API', async ({ request }) => {
+    // US is not in the countries table (Eurozone only) — saving such an address must fail
+    const res = await request.post(`${API_URL}/api/profile/addresses`, {
+      headers: { Authorization: `Bearer ${buyerToken}` },
+      data: {
+        label: 'Test', addressLine: '1 Main St', city: 'New York',
+        postalCode: '10001', countryCode: 'US', makeDefault: false,
+      },
+    });
+    expect(res.ok()).toBe(false);
+  });
+
+  test('accepts valid Eurozone country code', async ({ request }) => {
     // Add a product to cart first
     const products = await (await request.get(`${API_URL}/api/products`)).json();
     const product = products.content?.[0] ?? products[0];
@@ -57,32 +78,7 @@ test.describe('US-ORD-01 — Delivery address validation', () => {
 
     const res = await request.post(`${API_URL}/api/orders`, {
       headers: { Authorization: `Bearer ${buyerToken}` },
-      data: {
-        deliveryAddressLine: '1 Main St',
-        deliveryCity: 'New York',
-        deliveryPostalCode: '10001',
-        deliveryCountryCode: 'US',
-        carrierId,
-        paymentMethod: 'CARD',
-      },
-    });
-
-    expect(res.status()).toBe(422);
-    const body = await res.json();
-    expect(body.error).toBe('INVALID_DELIVERY_COUNTRY');
-  });
-
-  test('accepts valid Eurozone country code', async ({ request }) => {
-    const res = await request.post(`${API_URL}/api/orders`, {
-      headers: { Authorization: `Bearer ${buyerToken}` },
-      data: {
-        deliveryAddressLine: '1 rue de la Paix',
-        deliveryCity: 'Paris',
-        deliveryPostalCode: '75001',
-        deliveryCountryCode: 'FR',
-        carrierId,
-        paymentMethod: 'CARD',
-      },
+      data: { addressId, carrierId, paymentMethod: 'CARD' },
     });
 
     // 201 = success, 400 = empty cart (either is acceptable here)

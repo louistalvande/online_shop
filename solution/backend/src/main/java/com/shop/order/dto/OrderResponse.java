@@ -19,6 +19,7 @@ public class OrderResponse {
     @Schema(description = "Carrier UUID") private UUID carrierId;
     @Schema(description = "Carrier name snapshot") private String carrierName;
     @Schema(description = "Carrier tracking URL snapshot") private String carrierTrackingUrl;
+    @Schema(description = "Delivery address UUID") private UUID deliveryAddressId;
     @Schema(description = "Delivery street address") private String deliveryAddressLine;
     @Schema(description = "Delivery city") private String deliveryCity;
     @Schema(description = "Delivery postal code") private String deliveryPostalCode;
@@ -49,10 +50,13 @@ public class OrderResponse {
         r.carrierId = order.getCarrierId();
         r.carrierName = order.getCarrierName();
         r.carrierTrackingUrl = order.getCarrierTrackingUrl();
-        r.deliveryAddressLine = order.getDeliveryAddressLine();
-        r.deliveryCity = order.getDeliveryCity();
-        r.deliveryPostalCode = order.getDeliveryPostalCode();
-        r.deliveryCountryCode = order.getDeliveryCountryCode();
+        if (order.getDeliveryAddress() != null) {
+            r.deliveryAddressId = order.getDeliveryAddress().getId();
+            r.deliveryAddressLine = order.getDeliveryAddress().getAddressLine();
+            r.deliveryCity = order.getDeliveryAddress().getCity();
+            r.deliveryPostalCode = order.getDeliveryAddress().getPostalCode();
+            r.deliveryCountryCode = order.getDeliveryAddress().getCountryCode();
+        }
         r.paymentMethod = order.getPaymentMethod();
         r.status = order.getStatus();
         r.totalAmountTtc = order.getTotalAmountTtc();
@@ -77,6 +81,8 @@ public class OrderResponse {
     public String getCarrierName() { return carrierName; }
     /** @return the carrier tracking URL */
     public String getCarrierTrackingUrl() { return carrierTrackingUrl; }
+    /** @return the delivery address UUID */
+    public UUID getDeliveryAddressId() { return deliveryAddressId; }
     /** @return the delivery address */
     public String getDeliveryAddressLine() { return deliveryAddressLine; }
     /** @return the delivery city */
