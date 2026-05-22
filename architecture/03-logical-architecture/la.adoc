@@ -40,13 +40,13 @@ Le système est structuré en cinq couches logiques : *Présentation*, *Applicat
 
 | *Back-office Vendeur*
 | Présentation
-| Interface web desktop — gestion catalogue, stocks, commandes, expéditions, rapports
-| FS-V01..V09
+| Interface web desktop — gestion catalogue, stocks, commandes, expéditions, annonces défilantes, rapports
+| FS-V01..V14
 
 | *Console Administrateur*
 | Présentation
-| Interface web desktop — gestion des comptes, des transporteurs
-| FS-A01..A03
+| Interface web desktop — gestion des comptes, des transporteurs, mode maintenance, langue de notification
+| FS-A01..A06
 
 | *Service Compte*
 | Application
@@ -87,6 +87,11 @@ Le système est structuré en cinq couches logiques : *Présentation*, *Applicat
 | Application
 | Agrégation des données de ventes, génération des rapports et statistiques
 | FS-V07
+
+| *Service Annonce*
+| Application
+| CRUD des annonces défilantes (texte, image, lien optionnel, ordre d'affichage) ; exposition des annonces actives sur la page d'accueil
+| FS-V11
 
 | *Adaptateur Paiement*
 | Intégration externe
@@ -148,6 +153,12 @@ package "Couche Application" {
   [Service Expédition] as SvcShipping
   [Service Notification] as SvcNotif
   [Service Rapport] as SvcReport
+  [Service Annonce] as SvcAnnounce
+}
+
+package "Couche Sécurité & Journalisation (transverse)" {
+  [Service Sécurité\n(FS-S01..S12)] as SvcSec
+  [Service Journalisation\n(FS-S07, S13)] as SvcLog
 }
 
 package "Couche Intégrations externes" {
@@ -179,8 +190,12 @@ UI_Vendor --> SvcCatalog : IFL-06
 UI_Vendor --> SvcOrder : IFL-04
 UI_Vendor --> SvcShipping : IFL-05
 UI_Vendor --> SvcReport : IFL-07
+UI_Vendor --> SvcAnnounce : IFL-15
+
+UI_Buyer --> SvcAnnounce : IFL-16
 
 UI_Admin --> SvcAccount : IFL-01
+UI_Admin --> SvcAccount : IFL-14 (maintenance)
 
 SvcOrder --> SvcPayment : IFL-08
 SvcOrder --> SvcCatalog : IFL-06
@@ -204,6 +219,10 @@ SvcOrder --> DB : IFL-13
 SvcPayment --> DB : IFL-13
 SvcShipping --> DB : IFL-13
 SvcReport --> DB : IFL-13
+SvcAnnounce --> DB : IFL-13
+SvcLog --> DB : IFL-13
+
+note "Service Sécurité (FS-S01..S12) et Service Journalisation (FS-S07,S13)\ns'appliquent de façon transverse à tous les services applicatifs" as NoteSecLog
 ----
 
 == Interfaces logiques (IFL)
@@ -285,6 +304,24 @@ Les interfaces logiques définissent les contrats d'échange entre composants, i
 | Référentiel de données
 | CRUD sur toutes les entités du modèle de données logique (SA §5)
 | Support de toutes les FS
+
+| *IFL-14*
+| Console Administrateur
+| Service Compte
+| Activer / désactiver le mode maintenance de la boutique ; lire l'état courant du mode maintenance
+| FS-A05
+
+| *IFL-15*
+| Back-office Vendeur
+| Service Annonce
+| Créer, modifier, réordonner et supprimer les annonces défilantes
+| FS-V11
+
+| *IFL-16*
+| Portail Acheteur
+| Service Annonce
+| Lire la liste des annonces actives (lecture seule) pour affichage dans le carrousel de la page d'accueil
+| FS-V11
 |===
 
 == Diagramme de séquence logique — Inscription et activation de compte
@@ -781,4 +818,21 @@ end note
 | FS-P02 | Confirmer / refuser la transaction (CS-06) | Service Paiement, Référentiel | IFL-08, IFL-09, IFL-13
 | FS-P03 | Déclencher un remboursement | Service Paiement, Adaptateur Paiement | IFL-08, IFL-10
 | FS-C01 | Afficher le numéro de suivi et l'URL du site transporteur à l'acheteur | Service Expédition | IFL-05, IFL-13
+| FS-A04 | Permettre à l'administrateur de modifier son mot de passe | Service Compte | IFL-01, IFL-13
+| FS-A05 | Basculer en mode maintenance de la plateforme | Service Compte | IFL-14, IFL-13
+| FS-V10 | Confirmer l'émission d'un virement inverse de remboursement | Service Paiement | IFL-08, IFL-13
+| FS-V11 | Gérer les annonces défilantes de la page d'accueil | Service Annonce | IFL-15, IFL-16, IFL-13
+| FS-S01 | Enforcer la politique de mots de passe | Service Sécurité | transverse
+| FS-S02 | Détecter les tentatives d'auth répétées (force brute) | Service Sécurité | transverse
+| FS-S03 | Invalider la session à la déconnexion et après inactivité | Service Sécurité | transverse
+| FS-S04 | Valider et assainir les entrées utilisateur | Service Sécurité | transverse
+| FS-S05 | Protéger les requêtes d'état contre le CSRF | Service Sécurité | transverse
+| FS-S06 | Appliquer les en-têtes de sécurité HTTP (CSP, HSTS, X-Frame-Options) | Service Sécurité | transverse
+| FS-S07 | Journaliser les événements de sécurité | Service Journalisation | IFL-13
+| FS-S08 | Proposer et enforcer le MFA pour Vendeur et Administrateur | Service Sécurité | transverse
+| FS-S09 | Rejeter les mots de passe compromis (HIBP) | Service Sécurité | transverse
+| FS-S10 | Gérer l'expiration des mots de passe selon le rôle | Service Sécurité | transverse
+| FS-S11 | Révoquer les mots de passe compromis et désactiver les comptes non renouvelés | Service Sécurité | transverse
+| FS-S12 | Émettre un lien de réinitialisation à usage unique | Service Sécurité | transverse
+| FS-S13 | Détecter les comportements d'auth anormaux | Service Journalisation | IFL-13
 |===

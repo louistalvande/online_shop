@@ -151,6 +151,18 @@ Les contraintes physiques complètent les contraintes système (CS) en ajoutant 
 | Service Rapport
 | Module Spring Boot (Java)
 | Requêtes JPQL agrégées, génération de statistiques de ventes
+
+| Service Annonce
+| Module Spring Boot (Java)
+| CRUD des annonces défilantes — entité `Announcement` (contenu, image, lien, ordre, actif) ; endpoint `GET /annonces` public pour le portail acheteur ; endpoints CRUD protégés VENDOR pour le back-office
+
+| Service Sécurité
+| Module transverse Spring Security (Java)
+| Spring Security filter chain — BCrypt (coût 12), JJWT, validation `@Valid` des DTOs, filtre CSRF / SameSite, en-têtes HTTP de sécurité (CPA-09..CPA-16) ; MFA TOTP via bibliothèque `dev.samstevens.totp` ; vérification HIBP k-anonymat
+
+| Service Journalisation
+| Module Spring AOP (Java) + PostgreSQL
+| Aspect `@Around` Spring AOP intercept les opérations d'authentification, administration et paiement ; persiste les événements dans la table `audit_log` (CPA-13) ; accès restreint aux endpoints `GET /admin/audit` (rôle ADMIN uniquement)
 |===
 
 === Intégrations externes
@@ -231,6 +243,11 @@ package "Conteneur : API Spring Boot" {
     [module-expedition] as MExpedition
     [module-notification] as MNotif
     [module-rapport] as MRapport
+    [module-annonce] as MAnnounce
+  }
+  package "Modules transverses" {
+    [module-securite\n(Spring Security)] as MSec
+    [module-journalisation\n(Spring AOP)] as MLog
   }
   package "Adaptateurs externes" {
     [adaptateur-stripe\n(SDK Stripe)] as AStripe
@@ -254,7 +271,13 @@ FrontV --> MCatalogue
 FrontV --> MCommande
 FrontV --> MExpedition
 FrontV --> MRapport
+FrontV --> MAnnounce
+FrontB --> MAnnounce
 FrontA --> MCompte
+
+MAnnounce --> PgDB
+MLog --> PgDB : audit_log (CPA-13)
+note "MSec et MLog s'appliquent\nde façon transverse à tous\nles modules métier" as NoteSecLog
 
 MCompte --> MNotif : envoi token activation
 MCommande --> MCatalogue : réservation stock (IFL-06)
@@ -781,6 +804,39 @@ include::diagrams/ihm/ihm-admin-form-compte.puml[]
 include::diagrams/ihm/ihm-admin-detail-compte.puml[]
 ----
 
+==== Mode maintenance
+
+Bascule du mode maintenance (FS-A05 / UCSA-14). L'interrupteur est accessible uniquement aux administrateurs authentifiés. En mode maintenance actif, toutes les requêtes non-admin sur le portail acheteur et le back-office vendeur retournent la page « Site en maintenance ». La console admin reste accessible sans interruption. L'état est persisté en base (table `platform_settings`) et survit au redémarrage.
+
+.Maquette filaire : Console Admin — Mode maintenance
+[plantuml, ihm-admin-maintenance, svg]
+----
+@startsalt
+' Composant PA-PHY-003 — Console Administrateur
+' Illustre la fonction allouée : FS-A05 (basculer en mode maintenance)
+title Console Admin — Mode maintenance (FS-A05)
+
+{+
+  == Administration de la plateforme
+  --
+  Mode maintenance | (X) Activé  ( ) Désactivé
+  --
+  {#
+    État actuel     | <b>MAINTENANCE ACTIVE
+    Depuis          | 2026-05-22 14:37 UTC
+    Acteurs bloqués | Acheteurs, Vendeurs
+  }
+  --
+  Message affiché aux visiteurs :
+  {SI
+    "Site temporairement indisponible. Merci de réessayer ultérieurement."
+  }
+  --
+  [Annuler]  [Enregistrer les modifications]
+}
+@endsalt
+----
+
 ==== Gestion des transporteurs
 
 Configuration des transporteurs disponibles sur la plateforme (FS-A03). La désactivation masque le transporteur lors de la déclaration d'expédition sans supprimer les expéditions existantes. La suppression est bloquée si des expéditions actives référencent ce transporteur.
@@ -876,4 +932,19 @@ include::diagrams/ihm/ihm-admin-form-transporteur.puml[]
 | boutique_db
 | Conteneur PostgreSQL 16
 | PostgreSQL 16 / Flyway
+
+| Service Annonce
+| module-annonce
+| Conteneur API Spring Boot
+| Spring Boot / Spring Data JPA — entité `Announcement`, endpoints REST `/annonces`
+
+| Service Sécurité
+| module-securite
+| Conteneur API Spring Boot (transverse)
+| Spring Security / JJWT / BCrypt / TOTP (`dev.samstevens.totp`) / Redis (compteurs force brute)
+
+| Service Journalisation
+| module-journalisation
+| Conteneur API Spring Boot (transverse) + PostgreSQL
+| Spring AOP — table `audit_log` PostgreSQL (partitionnée mensuelle, purge 13 mois — CPA-13)
 |===

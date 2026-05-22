@@ -91,6 +91,16 @@ a|
 - [x] Confirmation obligatoire avant suppression effective
 | Terminée
 
+| *US-ADM-10*
+| En tant qu'administrateur, je peux activer ou désactiver le mode maintenance de la boutique.
+a|
+- [ ] Bascule « Mode maintenance » disponible dans la console d'administration (UCSA-14 / FS-A05)
+- [ ] En mode maintenance : toute navigation sur le portail acheteur et le back-office vendeur affiche une page « Site en maintenance »
+- [ ] Les administrateurs authentifiés conservent l'accès à la console sans interruption
+- [ ] L'état du mode maintenance est persisté en base (`platform_settings`) et survit au redémarrage
+- [ ] Le changement d'état prend effet immédiatement sans redémarrage
+| À faire
+
 |===
 
 == Inscription et activation de compte
@@ -440,6 +450,15 @@ a|
 - [x] IBAN de l'acheteur et montant rappelés sur l'écran de confirmation
 | Terminée
 
+| *US-CAN-06*
+| En tant qu'acheteur, je peux demander l'annulation d'une commande déjà expédiée et je suis informé de la décision du vendeur.
+a|
+- [ ] Bouton « Demander l'annulation » disponible sur les commandes au statut `expédiée` (FS-B09 / UCSA-06)
+- [ ] Formulaire avec champ motif obligatoire ; si paiement par virement, saisie obligatoire de l'IBAN de remboursement
+- [ ] Commande passe en statut `annulation_demandée_après_expédition` ; vendeur notifié (FS-V08)
+- [ ] L'acheteur est notifié par email de la décision du vendeur : acceptation (avec ou sans condition de renvoi — US-CAN-03/04) ou refus
+| À faire
+
 |===
 
 == Litiges et réclamations
@@ -486,6 +505,103 @@ a|
 
 |===
 
+== Annonces défilantes
+
+_Fonctions ARCADIA : FS-V11 — UCSA-15 — LA : Service Annonce / Back-office Vendeur / Portail Acheteur_
+
+[cols="1,3,4,1", options="header"]
+|===
+| ID | User story | Critères d'acceptation | Statut
+
+| *US-ANN-01*
+| En tant que vendeur, je peux créer, modifier, réordonner et supprimer des annonces défilantes affichées sur la page d'accueil de la boutique.
+a|
+- [ ] Formulaire de création : type de contenu (texte / image / les deux), champ texte (max 500 caractères), upload d'image optionnel, lien de redirection optionnel, ordre d'affichage (FS-V11)
+- [ ] Les champs obligatoires varient selon le type : texte seul → champ texte requis ; image seule → image requise ; mixte → les deux requis
+- [ ] Les annonces actives sont affichées dans le carrousel de la page d'accueil par ordre croissant
+- [ ] Un clic sur une annonce avec lien redirige l'internaute vers ce lien
+- [ ] Le vendeur peut modifier une annonce existante depuis la liste du back-office
+- [ ] Le vendeur peut réordonner les annonces (boutons ↑ / ↓)
+- [ ] La suppression est immédiate et retire l'annonce du carrousel
+- [ ] Si aucune annonce n'est définie, le carrousel est masqué sur la page d'accueil
+| À faire
+
+|===
+
+== Sécurité (ANSSI)
+
+_Fonctions ARCADIA : FS-S01..S13 — Contraintes SA : CS-11..CS-21 — Contraintes PA : CPA-09..CPA-17 — LA : Service Sécurité / Service Journalisation_
+
+[cols="1,3,4,1", options="header"]
+|===
+| ID | User story | Critères d'acceptation | Statut
+
+| *US-SEC-01*
+| En tant qu'utilisateur, ma session expire après 30 minutes d'inactivité et ma déconnexion révoque mon jeton côté serveur.
+a|
+- [ ] Le jeton JWT est stocké dans un cookie `HttpOnly; Secure; SameSite=Strict` (plus de `localStorage`) (FS-S03 / CS-13)
+- [ ] La durée de vie du jeton est de 30 minutes glissants ; chaque requête active réinitialise le compteur
+- [ ] Une déconnexion explicite (bouton « Se déconnecter ») inscrit le jeton dans la liste noire Redis et retourne une réponse `401` à toute requête ultérieure avec ce jeton
+- [ ] Un jeton expiré ou révoqué retourne `401 Unauthorized` sur tous les endpoints protégés
+| À faire
+
+| *US-SEC-02*
+| En tant que développeur, les requêtes d'état sont protégées contre les attaques CSRF et les cookies de session portent les attributs de sécurité requis.
+a|
+- [ ] La configuration Nginx (`nginx.conf` production) applique `SameSite=Strict` sur les `Set-Cookie` (FS-S05 / CS-14 / CPA-12)
+- [ ] Les cookies de session portent les attributs `Secure`, `HttpOnly` et `SameSite=Strict`
+- [ ] Tout appel cross-origin non autorisé sur un endpoint d'état est rejeté avec `403 Forbidden`
+| À faire
+
+| *US-SEC-03*
+| En tant qu'ops, toutes les communications avec la plateforme sont chiffrées en TLS 1.2 minimum avec redirection automatique HTTP → HTTPS.
+a|
+- [ ] Nginx (`nginx.conf` production) configuré en HTTPS sur le port 443, redirection 301 HTTP → HTTPS (FS-S06 / CS-13 / CPA-09)
+- [ ] Protocoles autorisés : TLS 1.2 et TLS 1.3 uniquement (`ssl_protocols TLSv1.2 TLSv1.3`)
+- [ ] SSLv3, TLS 1.0 et TLS 1.1 explicitement désactivés (`ssl_protocols` sans ces versions)
+- [ ] Certificat TLS émis par une CA reconnue (ex. Let's Encrypt), valide et renouvelé automatiquement (Certbot ou équivalent)
+- [ ] En-tête `Strict-Transport-Security` présent sur toutes les réponses (HSTS, max-age ≥ 1 an)
+| À faire
+
+| *US-SEC-04*
+| En tant qu'administrateur, je peux révoquer les mots de passe d'un groupe d'utilisateurs suspects et les comptes non renouvelés dans les 24 h sont désactivés automatiquement.
+a|
+- [ ] Endpoint d'administration `POST /admin/accounts/revoke-passwords` permettant de marquer un ensemble de comptes (par rôle ou liste d'emails) avec `password_revoked = true` (FS-S11 / CS-18 / CPA-17)
+- [ ] Les utilisateurs concernés reçoivent un email les invitant à réinitialiser leur mot de passe immédiatement
+- [ ] Un job planifié (ex. `@Scheduled`, toutes les heures) désactive automatiquement les comptes dont le mot de passe n'a pas été renouvelé 24 h après la révocation (`statut = suspendu`)
+- [ ] L'administrateur dispose d'une vue listant les comptes en état « révoqué en attente de renouvellement » avec leur ancienneté
+| À faire
+
+| *US-SEC-05*
+| En tant qu'administrateur, je peux consulter et filtrer les journaux d'audit de sécurité depuis la console d'administration.
+a|
+- [ ] Section « Journaux d'audit » accessible depuis la console admin uniquement (rôle ADMIN — FS-S07 / CS-15 / CPA-13)
+- [ ] Affichage paginé : horodatage UTC, type d'événement, identifiant utilisateur, adresse IP, détails
+- [ ] Filtres par type d'événement (connexion, échec auth, action admin, transaction…), période, utilisateur, IP
+- [ ] Export CSV des journaux filtrés téléchargeable depuis le navigateur
+- [ ] Tout accès depuis un compte non-ADMIN retourne `403 Forbidden`
+| À faire
+
+| *US-SEC-06*
+| En tant qu'ops, les journaux de sécurité sont conservés au minimum 12 mois et protégés contre toute suppression ou modification non autorisée.
+a|
+- [ ] La table `audit_log` est partitionnée mensuellement (PostgreSQL partition by range) ; purge automatique après 13 mois (FS-S07 / CS-15 / CPA-13)
+- [ ] Le compte applicatif utilisé par l'API dispose uniquement du droit `INSERT` sur `audit_log` (pas de `UPDATE` ni `DELETE`)
+- [ ] Un rôle PostgreSQL dédié dispose seul des droits de maintenance (purge, archivage)
+- [ ] L'intégrité des partitions archivées est vérifiable par checksum
+| À faire
+
+| *US-SEC-07*
+| En tant que développeur, les données sensibles stockées en base (secrets TOTP) sont chiffrées au niveau colonne.
+a|
+- [ ] La colonne `totp_secret` de la table `account` est chiffrée via `pgcrypto` (AES-256-GCM) ou un `AttributeConverter` JPA utilisant une clé AES externe (FS-S08 / CS-16 / CPA-14..CPA-15)
+- [ ] La clé de chiffrement est injectée par variable d'environnement (jamais en dur dans le code)
+- [ ] Les empreintes de mots de passe (`password_hash` BCrypt) ne nécessitent pas de chiffrement supplémentaire
+- [ ] Aucune clé de chiffrement ne figure dans les logs, les réponses API ou les migrations Flyway
+| À faire
+
+|===
+
 == Matrice de traçabilité FS → User Stories
 
 [cols="1,2,2", options="header"]
@@ -522,4 +638,14 @@ a|
 | FS-P01 | Demander une autorisation de paiement | US-ORD-03
 | FS-P02 | Confirmer / refuser la transaction | US-ORD-03, US-ORD-05
 | FS-P03 | Déclencher un remboursement | US-CAN-02, US-CAN-03, US-CAN-04, US-CLM-02
+| FS-A05 | Basculer en mode maintenance | US-ADM-10
+| FS-V11 | Gérer les annonces défilantes | US-ANN-01
+| FS-B09 (acheteur post-expédition) | Demander annulation après expédition | US-CAN-06
+| FS-S01 | Politique de mots de passe | US-SEC-01 (partiellement)
+| FS-S03 | Gestion des sessions et révocation | US-SEC-01
+| FS-S05 | Protection CSRF / SameSite | US-SEC-02
+| FS-S06 | En-têtes de sécurité HTTP / TLS | US-SEC-03
+| FS-S07 | Journalisation des événements sécurité | US-SEC-05, US-SEC-06
+| FS-S11 | Révocation en masse des mots de passe | US-SEC-04
+| FS-S08 | MFA Vendeur/Admin (chiffrement secret TOTP) | US-SEC-07
 |===
