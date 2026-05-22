@@ -79,6 +79,10 @@ public class Order {
     @Column(name = "tracking_number", length = 100)
     private String trackingNumber;
 
+    /** Reason provided by the buyer when requesting post-shipment cancellation (US-CAN-06). */
+    @Column(name = "cancellation_reason", length = 500)
+    private String cancellationReason;
+
     /** Vendor email snapshot taken at order creation for async notifications. */
     @Column(name = "vendor_email", nullable = false, length = 255)
     private String vendorEmail = "";
@@ -205,6 +209,12 @@ public class Order {
 
     /** @param trackingNumber the shipment tracking number */
     public void setTrackingNumber(String trackingNumber) { this.trackingNumber = trackingNumber; }
+
+    /** @return the buyer's cancellation reason, or {@code null} if not yet requested */
+    public String getCancellationReason() { return cancellationReason; }
+
+    /** @param cancellationReason the reason provided by the buyer for the post-shipment cancellation request */
+    public void setCancellationReason(String cancellationReason) { this.cancellationReason = cancellationReason; }
 
     /** @return the vendor email snapshot stored at order creation */
     public String getVendorEmail() { return vendorEmail; }

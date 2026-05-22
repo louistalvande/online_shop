@@ -4,6 +4,7 @@ import com.shop.order.controller.OrderController;
 import com.shop.order.dto.CancelOrderRequest;
 import com.shop.order.dto.CheckoutInitResponse;
 import com.shop.order.dto.OrderResponse;
+import com.shop.order.dto.RequestPostShipmentCancellationRequest;
 import com.shop.order.service.OrderService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -69,5 +70,18 @@ public class OrderControllerImpl implements OrderController {
             Locale locale) {
         String buyerIban = request != null ? request.getBuyerIban() : null;
         return ResponseEntity.ok(orderService.cancelOrder(principal.getName(), orderId, buyerIban, locale));
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public ResponseEntity<OrderResponse> requestPostShipmentCancellation(
+            UUID orderId,
+            RequestPostShipmentCancellationRequest request,
+            Principal principal,
+            Locale locale) {
+        return ResponseEntity.ok(orderService.requestPostShipmentCancellation(
+                principal.getName(), orderId,
+                request.getReason(), request.getBuyerIban(),
+                locale));
     }
 }

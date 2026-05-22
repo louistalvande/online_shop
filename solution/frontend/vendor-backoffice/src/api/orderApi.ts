@@ -10,6 +10,7 @@ export type OrderStatus =
   | 'CANCELLED'
   | 'PENDING_RETURN'
   | 'WIRE_REFUND_IN_PROGRESS'
+  | 'CANCELLATION_REQUESTED_AFTER_SHIPMENT'
 
 export type PaymentMethod = 'CARD' | 'WIRE_TRANSFER'
 
@@ -39,6 +40,7 @@ export interface OrderData {
   totalAmountTtc: number
   trackingNumber: string | null
   buyerIban: string | null
+  cancellationReason: string | null
   lines: OrderLineData[]
   createdAt: string
   updatedAt: string
@@ -144,5 +146,16 @@ export async function confirmWireRefund(orderId: string): Promise<OrderData> {
   })
   if (res.status === 409) throw Object.assign(new Error('Invalid order state'), { code: 'INVALID_STATE' })
   if (!res.ok) throw new Error('Failed to confirm wire refund')
+  return res.json()
+}
+
+/** Refuses the buyer's post-shipment cancellation request (US-CAN-06). */
+export async function refuseCancellationRequest(orderId: string): Promise<OrderData> {
+  const res = await fetch(`/api/vendor/orders/${orderId}/refuse-cancellation`, {
+    method: 'POST',
+    headers: authHeaders(),
+  })
+  if (res.status === 409) throw Object.assign(new Error('Invalid order state'), { code: 'INVALID_STATE' })
+  if (!res.ok) throw new Error('Failed to refuse cancellation request')
   return res.json()
 }

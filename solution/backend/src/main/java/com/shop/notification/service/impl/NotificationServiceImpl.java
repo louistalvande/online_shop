@@ -242,6 +242,37 @@ public class NotificationServiceImpl implements NotificationService {
     /** {@inheritDoc} */
     @Async
     @Override
+    public void sendVendorCancellationRequestedEmail(String toEmail, OrderResponse order, Locale locale) {
+        if (!sendGridConfigured) {
+            log.info("[EMAIL] Post-shipment cancellation request for vendor {} — order #{} reason={}",
+                    toEmail, order.getOrderNumber(), order.getCancellationReason());
+            return;
+        }
+        String subject = messageSource.getMessage("email.cancellation.requested.vendor.subject",
+                new Object[]{order.getOrderNumber()}, locale);
+        String htmlBody = messageSource.getMessage("email.cancellation.requested.vendor.body.html",
+                new Object[]{order.getOrderNumber(), order.getCancellationReason()}, locale);
+        sendEmail(toEmail, subject, htmlBody);
+    }
+
+    /** {@inheritDoc} */
+    @Async
+    @Override
+    public void sendCancellationRefusedEmail(String toEmail, OrderResponse order, Locale locale) {
+        if (!sendGridConfigured) {
+            log.info("[EMAIL] Cancellation refused notification for buyer {} — order #{}", toEmail, order.getOrderNumber());
+            return;
+        }
+        String subject = messageSource.getMessage("email.cancellation.refused.buyer.subject",
+                new Object[]{order.getOrderNumber()}, locale);
+        String htmlBody = messageSource.getMessage("email.cancellation.refused.buyer.body.html",
+                new Object[]{order.getOrderNumber()}, locale);
+        sendEmail(toEmail, subject, htmlBody);
+    }
+
+    /** {@inheritDoc} */
+    @Async
+    @Override
     public void sendClaimOpenedEmail(String toEmail, ClaimResponse claim, Locale locale) {
         if (!sendGridConfigured) {
             log.info("[EMAIL] Claim opened notification for {} — order #{} reason={}", toEmail, claim.getOrderNumber(), claim.getReason());

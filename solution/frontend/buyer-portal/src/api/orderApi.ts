@@ -36,6 +36,7 @@ export type OrderStatus =
   | 'CANCELLED'
   | 'PENDING_RETURN'
   | 'WIRE_REFUND_IN_PROGRESS'
+  | 'CANCELLATION_REQUESTED_AFTER_SHIPMENT'
 
 export interface OrderLineData {
   id: string
@@ -63,6 +64,7 @@ export interface OrderData {
   totalAmountTtc: number
   trackingNumber: string | null
   buyerIban: string | null
+  cancellationReason: string | null
   lines: OrderLineData[]
   createdAt: string
   updatedAt: string
@@ -141,6 +143,24 @@ export async function getMyOrder(orderId: string): Promise<OrderData> {
   const res = await fetch(`${BASE}/${orderId}`, { headers: authHeaders() })
   if (res.status === 404) throw new Error('ORDER_NOT_FOUND')
   if (!res.ok) throw new Error('ORDER_LOAD_ERROR')
+  return res.json()
+}
+
+/** Requests post-shipment cancellation (US-CAN-06). Pass buyerIban for wire transfer orders. */
+export async function requestPostShipmentCancellation(
+  orderId: string,
+  reason: string,
+  buyerIban?: string
+): Promise<OrderData> {
+  const res = await fetch(`${BASE}/${orderId}/request-post-shipment-cancellation`, {
+    method: 'POST',
+    headers: authHeaders(),
+    body: JSON.stringify({ reason, buyerIban: buyerIban ?? null }),
+  })
+  if (res.status === 404) throw new Error('ORDER_NOT_FOUND')
+  if (res.status === 409) throw new Error('INVALID_ORDER_STATE')
+  if (res.status === 422) throw new Error('MISSING_BUYER_IBAN')
+  if (!res.ok) throw new Error('CANCELLATION_REQUEST_ERROR')
   return res.json()
 }
 

@@ -19,5 +19,7 @@ public enum OrderStatus {
     /** Cancelled after shipment; waiting for the buyer to return the parcel (US-CAN-03). */
     PENDING_RETURN,
     /** Wire refund emitted by vendor, awaiting settlement (US-CAN-02, US-CAN-04, US-CLM-02). */
-    WIRE_REFUND_IN_PROGRESS
+    WIRE_REFUND_IN_PROGRESS,
+    /** Buyer has requested post-shipment cancellation; awaiting vendor's decision (US-CAN-06). */
+    CANCELLATION_REQUESTED_AFTER_SHIPMENT
 }

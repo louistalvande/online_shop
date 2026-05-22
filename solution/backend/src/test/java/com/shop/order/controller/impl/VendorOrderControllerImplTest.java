@@ -181,6 +181,28 @@ class VendorOrderControllerImplTest {
                 .andExpect(jsonPath("$.status").value("CANCELLED"));
     }
 
+    @Test
+    void refuseCancellation_returns200WithShippedOrder() throws Exception {
+        given(vendorOrderService.refuseCancellationRequest(eq(VENDOR_EMAIL), eq(ORDER_ID), any()))
+                .willReturn(buildOrderResponse(OrderStatus.SHIPPED));
+
+        mvc.perform(post("/api/vendor/orders/" + ORDER_ID + "/refuse-cancellation").principal(vendorPrincipal))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value("SHIPPED"));
+    }
+
+    @Test
+    void refuseCancellation_invalidState_returns409() throws Exception {
+        given(vendorOrderService.refuseCancellationRequest(eq(VENDOR_EMAIL), eq(ORDER_ID), any()))
+                .willThrow(new InvalidOrderStateException(ORDER_ID, OrderStatus.SHIPPED));
+        given(messageSource.getMessage(eq("error.order.invalid.state"), any(), any(Locale.class)))
+                .willReturn("Invalid state");
+
+        mvc.perform(post("/api/vendor/orders/" + ORDER_ID + "/refuse-cancellation").principal(vendorPrincipal))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.error").value("INVALID_ORDER_STATE"));
+    }
+
     // ─── Helpers ─────────────────────────────────────────────────────────────
 
     private OrderResponse buildOrderResponse(OrderStatus status) {

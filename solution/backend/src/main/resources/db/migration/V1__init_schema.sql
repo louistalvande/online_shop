@@ -214,6 +214,7 @@ CREATE TABLE orders (
     stripe_payment_intent_id VARCHAR(100),
     buyer_iban               VARCHAR(34),
     tracking_number          VARCHAR(100),
+    cancellation_reason      VARCHAR(500),
     vendor_email             VARCHAR(255)  NOT NULL DEFAULT '',
     vendor_id                UUID          REFERENCES accounts(id),
     created_at               TIMESTAMP     NOT NULL DEFAULT NOW(),

@@ -246,6 +246,36 @@ public class OrderServiceImpl implements com.shop.order.service.OrderService {
         return response;
     }
 
+    /** {@inheritDoc} */
+    @Override
+    public OrderResponse requestPostShipmentCancellation(String buyerEmail, UUID orderId,
+                                                         String reason, String buyerIban,
+                                                         Locale locale) {
+        UUID buyerId = resolveAccountId(buyerEmail);
+        Order order = orderRepository.findByIdAndBuyerId(orderId, buyerId)
+                .orElseThrow(() -> new OrderNotFoundException(orderId));
+
+        if (order.getStatus() != OrderStatus.SHIPPED) {
+            throw new InvalidOrderStateException(orderId, order.getStatus());
+        }
+
+        if (order.getPaymentMethod() == PaymentMethod.WIRE_TRANSFER) {
+            if (buyerIban == null || buyerIban.isBlank()) {
+                throw new MissingBuyerIbanException(orderId);
+            }
+            order.setBuyerIban(buyerIban);
+        }
+
+        order.setCancellationReason(reason);
+        order.setStatus(OrderStatus.CANCELLATION_REQUESTED_AFTER_SHIPMENT);
+        Order saved = orderRepository.save(order);
+        OrderResponse response = OrderResponse.from(saved);
+
+        notificationService.sendVendorCancellationRequestedEmail(saved.getVendorEmail(), response, locale);
+
+        return response;
+    }
+
     /**
      * Builds order line snapshots from the cart items and associates them with the given order.
      *

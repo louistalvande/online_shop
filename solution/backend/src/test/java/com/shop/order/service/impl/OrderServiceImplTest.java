@@ -255,6 +255,53 @@ class OrderServiceImplTest {
                 .isInstanceOf(InvalidOrderStateException.class);
     }
 
+    // ─── requestPostShipmentCancellation ────────────────────────────────────
+
+    @Test
+    void requestPostShipmentCancellation_card_transitionsToCancellationRequested() {
+        Order order = buildSavedOrder(OrderStatus.SHIPPED);
+        given(orderRepository.findByIdAndBuyerId(ORDER_ID, BUYER_ID)).willReturn(Optional.of(order));
+        given(orderRepository.save(any())).willReturn(order);
+
+        service.requestPostShipmentCancellation(BUYER_EMAIL, ORDER_ID, "Product defective", null, Locale.FRENCH);
+
+        assertThat(order.getStatus()).isEqualTo(OrderStatus.CANCELLATION_REQUESTED_AFTER_SHIPMENT);
+        assertThat(order.getCancellationReason()).isEqualTo("Product defective");
+        then(notificationService).should().sendVendorCancellationRequestedEmail(any(), any(), any());
+    }
+
+    @Test
+    void requestPostShipmentCancellation_wire_storesIban() {
+        Order order = buildSavedOrder(OrderStatus.SHIPPED);
+        order.setPaymentMethod(PaymentMethod.WIRE_TRANSFER);
+        given(orderRepository.findByIdAndBuyerId(ORDER_ID, BUYER_ID)).willReturn(Optional.of(order));
+        given(orderRepository.save(any())).willReturn(order);
+
+        service.requestPostShipmentCancellation(BUYER_EMAIL, ORDER_ID, "Changed mind", "FR7630006000011234567890189", Locale.FRENCH);
+
+        assertThat(order.getStatus()).isEqualTo(OrderStatus.CANCELLATION_REQUESTED_AFTER_SHIPMENT);
+        assertThat(order.getBuyerIban()).isEqualTo("FR7630006000011234567890189");
+    }
+
+    @Test
+    void requestPostShipmentCancellation_wire_missingIban_throwsMissingBuyerIbanException() {
+        Order order = buildSavedOrder(OrderStatus.SHIPPED);
+        order.setPaymentMethod(PaymentMethod.WIRE_TRANSFER);
+        given(orderRepository.findByIdAndBuyerId(ORDER_ID, BUYER_ID)).willReturn(Optional.of(order));
+
+        assertThatThrownBy(() -> service.requestPostShipmentCancellation(BUYER_EMAIL, ORDER_ID, "reason", null, Locale.FRENCH))
+                .isInstanceOf(MissingBuyerIbanException.class);
+    }
+
+    @Test
+    void requestPostShipmentCancellation_wrongState_throwsInvalidOrderStateException() {
+        Order order = buildSavedOrder(OrderStatus.AWAITING_PROCESSING);
+        given(orderRepository.findByIdAndBuyerId(ORDER_ID, BUYER_ID)).willReturn(Optional.of(order));
+
+        assertThatThrownBy(() -> service.requestPostShipmentCancellation(BUYER_EMAIL, ORDER_ID, "reason", null, Locale.FRENCH))
+                .isInstanceOf(InvalidOrderStateException.class);
+    }
+
     // ─── getMyOrders / getMyOrder ────────────────────────────────────────────
 
     @Test

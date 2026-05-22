@@ -264,6 +264,65 @@ class VendorOrderServiceImplTest {
                 .isInstanceOf(InvalidOrderStateException.class);
     }
 
+    // ─── acceptReturn / waiveReturn from CANCELLATION_REQUESTED ─────────────
+
+    @Test
+    void acceptReturn_fromCancellationRequested_transitionsToPendingReturn() {
+        Order order = buildOrder(OrderStatus.CANCELLATION_REQUESTED_AFTER_SHIPMENT);
+        order.setBuyerIban("FR7630006000011234567890189");
+        given(orderRepository.findByIdAndVendorId(ORDER_ID, VENDOR_ID)).willReturn(Optional.of(order));
+        given(orderRepository.save(any())).willAnswer(inv -> inv.getArgument(0));
+        Account buyer = new Account();
+        buyer.setEmail("buyer@example.com");
+        given(accountRepository.findById(BUYER_ID)).willReturn(Optional.of(buyer));
+
+        OrderResponse result = service.acceptReturn(VENDOR_EMAIL, ORDER_ID, null, Locale.FRENCH);
+
+        assertThat(result.getStatus()).isEqualTo(OrderStatus.PENDING_RETURN);
+        then(notificationService).should().sendReturnRequestedEmail(any(), any(), any());
+    }
+
+    @Test
+    void waiveReturn_fromCancellationRequested_usesStoredIban() {
+        Order order = buildOrder(OrderStatus.CANCELLATION_REQUESTED_AFTER_SHIPMENT);
+        order.setBuyerIban("FR7630006000011234567890189");
+        given(orderRepository.findByIdAndVendorId(ORDER_ID, VENDOR_ID)).willReturn(Optional.of(order));
+        given(orderRepository.save(any())).willAnswer(inv -> inv.getArgument(0));
+        Account buyer = new Account();
+        buyer.setEmail("buyer@example.com");
+        given(accountRepository.findById(BUYER_ID)).willReturn(Optional.of(buyer));
+
+        OrderResponse result = service.waiveReturn(VENDOR_EMAIL, ORDER_ID, null, Locale.FRENCH);
+
+        assertThat(result.getStatus()).isEqualTo(OrderStatus.WIRE_REFUND_IN_PROGRESS);
+    }
+
+    // ─── refuseCancellationRequest ───────────────────────────────────────────
+
+    @Test
+    void refuseCancellationRequest_transitionsBackToShipped() {
+        Order order = buildOrder(OrderStatus.CANCELLATION_REQUESTED_AFTER_SHIPMENT);
+        given(orderRepository.findByIdAndVendorId(ORDER_ID, VENDOR_ID)).willReturn(Optional.of(order));
+        given(orderRepository.save(any())).willAnswer(inv -> inv.getArgument(0));
+        Account buyer = new Account();
+        buyer.setEmail("buyer@example.com");
+        given(accountRepository.findById(BUYER_ID)).willReturn(Optional.of(buyer));
+
+        OrderResponse result = service.refuseCancellationRequest(VENDOR_EMAIL, ORDER_ID, Locale.FRENCH);
+
+        assertThat(result.getStatus()).isEqualTo(OrderStatus.SHIPPED);
+        then(notificationService).should().sendCancellationRefusedEmail(any(), any(), any());
+    }
+
+    @Test
+    void refuseCancellationRequest_wrongState_throwsInvalidOrderStateException() {
+        Order order = buildOrder(OrderStatus.SHIPPED);
+        given(orderRepository.findByIdAndVendorId(ORDER_ID, VENDOR_ID)).willReturn(Optional.of(order));
+
+        assertThatThrownBy(() -> service.refuseCancellationRequest(VENDOR_EMAIL, ORDER_ID, Locale.FRENCH))
+                .isInstanceOf(InvalidOrderStateException.class);
+    }
+
     // ─── Helpers ─────────────────────────────────────────────────────────────
 
     private Order buildOrder(OrderStatus status) {

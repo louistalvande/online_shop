@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import Header from './Header'
-import { getVendorOrder, confirmWirePayment, rejectWirePayment, shipOrder, acceptReturn, confirmReturn, waiveReturn, confirmWireRefund, type OrderData } from './api/orderApi'
+import { getVendorOrder, confirmWirePayment, rejectWirePayment, shipOrder, acceptReturn, confirmReturn, waiveReturn, confirmWireRefund, refuseCancellationRequest, type OrderData } from './api/orderApi'
 import { getSession } from './api/authApi'
 
 const STATUS_LABELS: Record<string, string> = {
@@ -14,6 +14,7 @@ const STATUS_LABELS: Record<string, string> = {
   CANCELLED: 'orders.status.cancelled',
   PENDING_RETURN: 'orders.status.pendingReturn',
   WIRE_REFUND_IN_PROGRESS: 'orders.status.wireRefund',
+  CANCELLATION_REQUESTED_AFTER_SHIPMENT: 'orders.status.cancellationRequested',
 }
 
 interface Props {
@@ -192,7 +193,7 @@ export default function OrderDetailPage({ orderId }: Props) {
               </section>
             )}
 
-            {/* Post-shipment cancellation — US-CAN-03 / US-CAN-04 */}
+            {/* Post-shipment cancellation — US-CAN-03 / US-CAN-04 (vendor initiated for SHIPPED orders) */}
             {order.status === 'SHIPPED' && (
               <section style={{ background: '#fff3e0', padding: '1rem', borderRadius: '4px', marginBottom: '1rem' }}>
                 <h2>{t('orders.postShipCancel.title')}</h2>
@@ -240,6 +241,82 @@ export default function OrderDetailPage({ orderId }: Props) {
                     disabled={actionLoading || (order.paymentMethod === 'WIRE_TRANSFER' && !returnIban.trim())}
                     style={{ padding: '0.5rem 1.2rem', background: '#c62828', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>
                     {t('orders.postShipCancel.waiveReturn')}
+                  </button>
+                </div>
+              </section>
+            )}
+
+            {/* Buyer's post-shipment cancellation request — US-CAN-06 */}
+            {order.status === 'CANCELLATION_REQUESTED_AFTER_SHIPMENT' && (
+              <section style={{ background: '#fbe9e7', padding: '1rem', borderRadius: '4px', marginBottom: '1rem' }}>
+                <h2>{t('orders.buyerCancelRequest.title')}</h2>
+                <p>{t('orders.buyerCancelRequest.description')}</p>
+                {order.cancellationReason && (
+                  <p><strong>{t('orders.buyerCancelRequest.reason')}:</strong> <em>{order.cancellationReason}</em></p>
+                )}
+                {order.buyerIban && (
+                  <p><strong>{t('orders.buyerCancelRequest.buyerIban')}:</strong> <code>{order.buyerIban}</code></p>
+                )}
+                {order.paymentMethod === 'WIRE_TRANSFER' && !order.buyerIban && (
+                  <div style={{ marginBottom: '0.75rem' }}>
+                    <label style={{ display: 'block', marginBottom: '0.25rem' }}>{t('orders.postShipCancel.ibanLabel')} *</label>
+                    <input
+                      type="text"
+                      value={returnIban}
+                      onChange={e => setReturnIban(e.target.value)}
+                      placeholder={t('orders.postShipCancel.ibanPlaceholder')}
+                      style={{ padding: '0.4rem 0.8rem', border: '1px solid #ccc', borderRadius: '4px', width: '100%', maxWidth: '400px' }}
+                    />
+                  </div>
+                )}
+                {actionError && <p style={{ color: 'red' }}>{actionError}</p>}
+                <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
+                  <button
+                    onClick={async () => {
+                      if (!window.confirm(t('orders.buyerCancelRequest.acceptReturnPrompt'))) return
+                      setActionLoading(true); setActionError(null)
+                      try {
+                        const iban = order.buyerIban ?? (order.paymentMethod === 'WIRE_TRANSFER' ? returnIban : undefined)
+                        const updated = await acceptReturn(orderId, iban)
+                        setOrder(updated)
+                      } catch {
+                        setActionError(t('orders.postShipCancel.error'))
+                      } finally { setActionLoading(false) }
+                    }}
+                    disabled={actionLoading || (order.paymentMethod === 'WIRE_TRANSFER' && !order.buyerIban && !returnIban.trim())}
+                    style={{ padding: '0.5rem 1.2rem', background: '#e65100', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>
+                    {t('orders.postShipCancel.acceptReturn')}
+                  </button>
+                  <button
+                    onClick={async () => {
+                      if (!window.confirm(t('orders.buyerCancelRequest.waiveReturnPrompt'))) return
+                      setActionLoading(true); setActionError(null)
+                      try {
+                        const iban = order.buyerIban ?? (order.paymentMethod === 'WIRE_TRANSFER' ? returnIban : undefined)
+                        const updated = await waiveReturn(orderId, iban)
+                        setOrder(updated)
+                      } catch {
+                        setActionError(t('orders.postShipCancel.error'))
+                      } finally { setActionLoading(false) }
+                    }}
+                    disabled={actionLoading || (order.paymentMethod === 'WIRE_TRANSFER' && !order.buyerIban && !returnIban.trim())}
+                    style={{ padding: '0.5rem 1.2rem', background: '#c62828', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>
+                    {t('orders.postShipCancel.waiveReturn')}
+                  </button>
+                  <button
+                    onClick={async () => {
+                      if (!window.confirm(t('orders.buyerCancelRequest.refusePrompt'))) return
+                      setActionLoading(true); setActionError(null)
+                      try {
+                        const updated = await refuseCancellationRequest(orderId)
+                        setOrder(updated)
+                      } catch {
+                        setActionError(t('orders.buyerCancelRequest.refuseError'))
+                      } finally { setActionLoading(false) }
+                    }}
+                    disabled={actionLoading}
+                    style={{ padding: '0.5rem 1.2rem', background: '#546e7a', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>
+                    {t('orders.buyerCancelRequest.refuse')}
                   </button>
                 </div>
               </section>

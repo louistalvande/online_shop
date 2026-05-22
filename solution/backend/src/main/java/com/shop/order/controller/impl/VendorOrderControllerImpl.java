@@ -81,4 +81,10 @@ public class VendorOrderControllerImpl implements VendorOrderController {
     public ResponseEntity<OrderResponse> confirmWireRefund(UUID orderId, Principal principal, Locale locale) {
         return ResponseEntity.ok(vendorOrderService.confirmWireRefund(principal.getName(), orderId, locale));
     }
+
+    /** {@inheritDoc} */
+    @Override
+    public ResponseEntity<OrderResponse> refuseCancellation(UUID orderId, Principal principal, Locale locale) {
+        return ResponseEntity.ok(vendorOrderService.refuseCancellationRequest(principal.getName(), orderId, locale));
+    }
 }

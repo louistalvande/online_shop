@@ -126,6 +126,24 @@ public interface NotificationService {
     void sendClaimOpenedEmail(String toEmail, ClaimResponse claim, Locale locale);
 
     /**
+     * Notifies the vendor that a buyer has requested post-shipment cancellation (US-CAN-06).
+     *
+     * @param toEmail the vendor's email address
+     * @param order   the order now in CANCELLATION_REQUESTED_AFTER_SHIPMENT status
+     * @param locale  the locale used to select the email language
+     */
+    void sendVendorCancellationRequestedEmail(String toEmail, OrderResponse order, Locale locale);
+
+    /**
+     * Notifies the buyer that the vendor has refused their post-shipment cancellation request (US-CAN-06).
+     *
+     * @param toEmail the buyer's email address
+     * @param order   the order back in SHIPPED status
+     * @param locale  the locale used to select the email language
+     */
+    void sendCancellationRefusedEmail(String toEmail, OrderResponse order, Locale locale);
+
+    /**
      * Notifies the buyer that the vendor has granted a refund for their claim (US-CLM-02).
      *
      * @param toEmail the buyer's email address

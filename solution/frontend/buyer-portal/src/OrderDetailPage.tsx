@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import Header from './Header'
-import { getMyOrder, cancelOrder, type OrderData } from './api/orderApi'
+import { getMyOrder, cancelOrder, requestPostShipmentCancellation, type OrderData } from './api/orderApi'
 import { getSession } from './api/authApi'
 
 const STATUS_LABELS: Record<string, string> = {
@@ -14,6 +14,7 @@ const STATUS_LABELS: Record<string, string> = {
   CANCELLED: 'orders.status.cancelled',
   PENDING_RETURN: 'orders.status.pendingReturn',
   WIRE_REFUND_IN_PROGRESS: 'orders.status.wireRefund',
+  CANCELLATION_REQUESTED_AFTER_SHIPMENT: 'orders.status.cancellationRequested',
 }
 
 interface Props {
@@ -30,6 +31,10 @@ export default function OrderDetailPage({ orderId }: Props) {
   const [cancelLoading, setCancelLoading] = useState(false)
   const [cancelError, setCancelError] = useState<string | null>(null)
   const [buyerIban, setBuyerIban] = useState('')
+  const [pscReason, setPscReason] = useState('')
+  const [pscIban, setPscIban] = useState('')
+  const [pscLoading, setPscLoading] = useState(false)
+  const [pscError, setPscError] = useState<string | null>(null)
 
   useEffect(() => {
     if (!session) return
@@ -75,7 +80,8 @@ export default function OrderDetailPage({ orderId }: Props) {
             </section>
 
             {/* Tracking section — US-EXP-02 */}
-            {(order.status === 'SHIPPED' || order.status === 'DELIVERED') && (
+            {(order.status === 'SHIPPED' || order.status === 'DELIVERED'
+              || order.status === 'CANCELLATION_REQUESTED_AFTER_SHIPMENT') && (
               <section className="order-detail-tracking">
                 <h2>{t('orders.tracking.title')}</h2>
                 {order.trackingNumber ? (
@@ -94,6 +100,73 @@ export default function OrderDetailPage({ orderId }: Props) {
             {order.status === 'IN_PREPARATION' && (
               <section className="order-detail-in-prep">
                 <p>{t('orders.tracking.inPreparation')}</p>
+              </section>
+            )}
+
+            {/* Post-shipment cancellation request — US-CAN-06 */}
+            {order.status === 'SHIPPED' && (
+              <section className="order-detail-cancel">
+                <h2>{t('orders.psc.title')}</h2>
+                <p>{t('orders.psc.description')}</p>
+                <div style={{ marginBottom: '0.75rem' }}>
+                  <label style={{ display: 'block', marginBottom: '0.25rem' }}>{t('orders.psc.reasonLabel')} *</label>
+                  <textarea
+                    value={pscReason}
+                    onChange={e => setPscReason(e.target.value)}
+                    placeholder={t('orders.psc.reasonPlaceholder')}
+                    maxLength={500}
+                    rows={3}
+                    style={{ padding: '0.4rem 0.8rem', border: '1px solid #ccc', borderRadius: '4px', width: '100%', maxWidth: '500px' }}
+                  />
+                </div>
+                {order.paymentMethod === 'WIRE_TRANSFER' && (
+                  <div style={{ marginBottom: '0.75rem' }}>
+                    <label style={{ display: 'block', marginBottom: '0.25rem' }}>{t('orders.psc.ibanLabel')} *</label>
+                    <input
+                      type="text"
+                      value={pscIban}
+                      onChange={e => setPscIban(e.target.value)}
+                      placeholder={t('orders.psc.ibanPlaceholder')}
+                      style={{ padding: '0.4rem 0.8rem', border: '1px solid #ccc', borderRadius: '4px', width: '100%', maxWidth: '400px' }}
+                    />
+                  </div>
+                )}
+                {pscError && <p className="order-detail-cancel-error">{pscError}</p>}
+                <button
+                  className="order-detail-cancel-btn"
+                  onClick={async () => {
+                    if (!window.confirm(t('orders.psc.confirmPrompt'))) return
+                    setPscLoading(true)
+                    setPscError(null)
+                    try {
+                      const updated = await requestPostShipmentCancellation(
+                        orderId, pscReason,
+                        order.paymentMethod === 'WIRE_TRANSFER' ? pscIban : undefined
+                      )
+                      setOrder(updated)
+                    } catch (err: unknown) {
+                      const code = (err as Error).message
+                      if (code === 'MISSING_BUYER_IBAN') setPscError(t('orders.psc.ibanRequired'))
+                      else if (code === 'INVALID_ORDER_STATE') setPscError(t('orders.psc.invalidState'))
+                      else setPscError(t('orders.psc.error'))
+                    } finally {
+                      setPscLoading(false)
+                    }
+                  }}
+                  disabled={pscLoading || !pscReason.trim() || (order.paymentMethod === 'WIRE_TRANSFER' && !pscIban.trim())}
+                >
+                  {pscLoading ? t('orders.psc.submitting') : t('orders.psc.submit')}
+                </button>
+              </section>
+            )}
+
+            {/* Cancellation request pending vendor decision — US-CAN-06 */}
+            {order.status === 'CANCELLATION_REQUESTED_AFTER_SHIPMENT' && (
+              <section className="order-detail-wire-refund">
+                <p><strong>{t('orders.psc.pendingVendorDecision')}</strong></p>
+                {order.cancellationReason && (
+                  <p>{t('orders.psc.reasonLabel')}: <em>{order.cancellationReason}</em></p>
+                )}
               </section>
             )}
 
