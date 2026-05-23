@@ -266,16 +266,16 @@ _Fonctions ARCADIA : FS-B03 — UCSA-03 — LA : Service Catalogue_
 | *US-SHP-01*
 | En tant que visiteur (connecté ou non), je peux parcourir les produits publiés du catalogue.
 a|
-- [ ] Liste paginée des produits avec nom, prix HT/TTC, disponibilité
-- [ ] Accès sans authentification
-| À faire
+- [x] Liste paginée des produits avec nom, prix HT/TTC, disponibilité
+- [x] Accès sans authentification
+| Terminée
 
 | *US-SHP-02*
 | En tant qu'acheteur, je peux filtrer les produits par catégorie, prix maximum et disponibilité, et effectuer une recherche textuelle.
 a|
-- [ ] Filtres cumulables, résultats mis à jour dynamiquement
-- [ ] Message « aucun résultat » avec option de réinitialisation des filtres
-| À faire
+- [x] Filtres cumulables, résultats mis à jour dynamiquement
+- [x] Message « aucun résultat » avec option de réinitialisation des filtres
+| Terminée
 
 |===
 
