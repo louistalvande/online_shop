@@ -1,5 +1,7 @@
 package com.shop.catalog.service;
 
+import com.shop.catalog.dto.BulkStockUpdateRequest;
+import com.shop.catalog.dto.BulkStockUpdateResponse;
 import com.shop.catalog.dto.BuyerProductResponse;
 import com.shop.catalog.dto.CreateProductRequest;
 import com.shop.catalog.dto.CsvImportResponse;
@@ -123,6 +125,17 @@ public interface ProductService {
      *         or is not published
      */
     BuyerProductResponse getPublishedProduct(UUID productId);
+
+    /**
+     * Updates stock quantity and alert threshold for multiple products in a single operation (US-CAT-08).
+     * Each product is processed independently; failures for individual products do not prevent
+     * successful updates for others (partial success).
+     *
+     * @param vendorEmail the email of the authenticated vendor
+     * @param request     the bulk stock update payload
+     * @return per-product results with success and error counts
+     */
+    BulkStockUpdateResponse bulkUpdateStock(String vendorEmail, BulkStockUpdateRequest request);
 
     /**
      * Exports all the vendor's products (published and archived) as a UTF-8 CSV string (US-CAT-07).

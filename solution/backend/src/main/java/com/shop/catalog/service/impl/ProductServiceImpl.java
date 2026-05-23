@@ -3,6 +3,8 @@ package com.shop.catalog.service.impl;
 import com.shop.account.entity.Account;
 import com.shop.account.exception.AccountNotFoundException;
 import com.shop.account.repository.AccountRepository;
+import com.shop.catalog.dto.BulkStockUpdateRequest;
+import com.shop.catalog.dto.BulkStockUpdateResponse;
 import com.shop.catalog.dto.BuyerProductResponse;
 import com.shop.catalog.dto.CreateProductRequest;
 import com.shop.catalog.dto.CsvImportResponse;
@@ -148,6 +150,35 @@ public class ProductServiceImpl implements ProductService {
         Product saved = productRepository.save(product);
         raiseAlertIfNeeded(saved);
         return ProductResponse.from(saved);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public BulkStockUpdateResponse bulkUpdateStock(String vendorEmail, BulkStockUpdateRequest request) {
+        UUID vendorId = resolveVendorId(vendorEmail);
+        List<BulkStockUpdateResponse.StockUpdateResult> results = new ArrayList<>();
+        int totalUpdated = 0;
+        int totalErrors = 0;
+
+        for (BulkStockUpdateRequest.StockUpdateItem item : request.getUpdates()) {
+            try {
+                Product product = productRepository.findByIdAndVendorId(item.getProductId(), vendorId)
+                        .orElseThrow(() -> new ProductNotFoundException(item.getProductId()));
+                product.setQuantity(item.getQuantity());
+                product.setStockAlertThreshold(item.getStockAlertThreshold());
+                Product saved = productRepository.save(product);
+                raiseAlertIfNeeded(saved);
+                results.add(BulkStockUpdateResponse.StockUpdateResult.updated(
+                        item.getProductId(), ProductResponse.from(saved)));
+                totalUpdated++;
+            } catch (Exception e) {
+                results.add(BulkStockUpdateResponse.StockUpdateResult.error(
+                        item.getProductId(), e.getMessage()));
+                totalErrors++;
+            }
+        }
+
+        return new BulkStockUpdateResponse(results, totalUpdated, totalErrors);
     }
 
     /** {@inheritDoc} */

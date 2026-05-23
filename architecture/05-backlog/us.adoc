@@ -223,13 +223,13 @@ a|
 | *US-CAT-08*
 | En tant que vendeur, je peux mettre à jour les niveaux de stock de plusieurs produits simultanément depuis la vue liste du catalogue.
 a|
-- [ ] La vue liste affiche une colonne « Stock » éditable en ligne pour chaque produit
-- [ ] Le vendeur peut modifier les quantités de plusieurs produits sans quitter la liste
-- [ ] Un bouton « Enregistrer les modifications » soumet toutes les mises à jour en une seule requête (`PATCH /produits/stocks`)
-- [ ] Seules les lignes modifiées sont envoyées au serveur
-- [ ] Les alertes de rupture sont réévaluées après enregistrement (FS-V03)
-- [ ] En cas d'erreur partielle, les lignes en succès sont appliquées et les erreurs sont signalées
-| À faire
+- [x] La vue liste affiche une colonne « Stock » éditable en ligne pour chaque produit
+- [x] Le vendeur peut modifier les quantités de plusieurs produits sans quitter la liste
+- [x] Un bouton « Enregistrer les modifications » soumet toutes les mises à jour en une seule requête (`PATCH /api/vendor/products/stocks`)
+- [x] Seules les lignes modifiées sont envoyées au serveur
+- [x] Les alertes de rupture sont réévaluées après enregistrement (FS-V03)
+- [x] En cas d'erreur partielle, les lignes en succès sont appliquées et les erreurs sont signalées
+| Terminée
 
 | *US-CAT-06*
 | En tant que vendeur, je peux importer de nouveaux produits depuis un fichier CSV afin de créer plusieurs fiches en une seule opération.

@@ -1,6 +1,8 @@
 package com.shop.catalog.controller.impl;
 
 import com.shop.catalog.controller.ProductController;
+import com.shop.catalog.dto.BulkStockUpdateRequest;
+import com.shop.catalog.dto.BulkStockUpdateResponse;
 import com.shop.catalog.dto.CreateProductRequest;
 import com.shop.catalog.dto.CsvImportResponse;
 import com.shop.catalog.dto.ProductResponse;
@@ -94,6 +96,13 @@ public class ProductControllerImpl implements ProductController {
     @Override
     public ResponseEntity<StockAlertResponse> acknowledgeAlert(Principal principal, UUID alertId) {
         return ResponseEntity.ok(productService.acknowledgeAlert(principal.getName(), alertId));
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public ResponseEntity<BulkStockUpdateResponse> bulkUpdateStock(Principal principal,
+                                                                    BulkStockUpdateRequest request) {
+        return ResponseEntity.ok(productService.bulkUpdateStock(principal.getName(), request));
     }
 
     /** {@inheritDoc} */
