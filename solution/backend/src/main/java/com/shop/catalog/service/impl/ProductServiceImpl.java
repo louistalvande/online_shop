@@ -197,6 +197,40 @@ public class ProductServiceImpl implements ProductService {
         return BuyerProductResponse.from(product);
     }
 
+    /** {@inheritDoc} */
+    @Override
+    @Transactional(readOnly = true)
+    public String exportProductsCsv(String vendorEmail) {
+        List<ProductResponse> products = listProducts(vendorEmail);
+        StringBuilder sb = new StringBuilder();
+        sb.append("nom,description,prix,categorie,quantite,seuil_alerte,statut\n");
+        for (ProductResponse p : products) {
+            sb.append(csvField(p.getName())).append(',');
+            sb.append(csvField(p.getDescription())).append(',');
+            sb.append(p.getPriceExclTax().toPlainString()).append(',');
+            sb.append(csvField(p.getCategory())).append(',');
+            sb.append(p.getQuantity()).append(',');
+            sb.append(p.getStockAlertThreshold()).append(',');
+            sb.append(p.getStatus().name()).append('\n');
+        }
+        return sb.toString();
+    }
+
+    /**
+     * Wraps a CSV field value in double quotes when it contains a comma, double-quote, or newline.
+     * Internal double-quotes are escaped as two double-quotes (RFC 4180).
+     *
+     * @param value the raw field value, possibly {@code null}
+     * @return the safe CSV field representation
+     */
+    private static String csvField(String value) {
+        if (value == null) return "";
+        if (value.contains(",") || value.contains("\"") || value.contains("\n")) {
+            return "\"" + value.replace("\"", "\"\"") + "\"";
+        }
+        return value;
+    }
+
     /** Expected CSV header (exact match, case-insensitive). */
     private static final String EXPECTED_HEADER = "nom,description,prix,categorie,quantite,seuil_alerte";
 

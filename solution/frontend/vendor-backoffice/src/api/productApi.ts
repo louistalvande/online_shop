@@ -131,6 +131,25 @@ export async function acknowledgeAlert(alertId: string): Promise<StockAlert> {
   return handleResponse<StockAlert>(res)
 }
 
+/** Exports all vendor products as a UTF-8 CSV file and triggers a browser download (US-CAT-07). */
+export async function exportProductsCsv(): Promise<void> {
+  const session = getSession()
+  const res = await fetch('/api/vendor/products/export', {
+    headers: session ? { Authorization: `Bearer ${session.token}` } : {},
+  })
+  if (!res.ok) throw new Error('EXPORT_ERROR')
+  const blob = await res.blob()
+  const disposition = res.headers.get('Content-Disposition') ?? ''
+  const match = disposition.match(/filename="([^"]+)"/)
+  const filename = match ? match[1] : 'catalogue_export.csv'
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = filename
+  a.click()
+  URL.revokeObjectURL(url)
+}
+
 /** Imports products from a CSV file (US-CAT-06). */
 export async function importProductsCsv(file: File): Promise<CsvImportResponse> {
   const session = getSession()

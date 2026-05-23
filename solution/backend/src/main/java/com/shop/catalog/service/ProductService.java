@@ -125,6 +125,16 @@ public interface ProductService {
     BuyerProductResponse getPublishedProduct(UUID productId);
 
     /**
+     * Exports all the vendor's products (published and archived) as a UTF-8 CSV string (US-CAT-07).
+     * The CSV uses the header: {@code nom,description,prix,categorie,quantite,seuil_alerte,statut}.
+     * Fields containing commas, newlines, or double-quotes are RFC 4180-quoted.
+     *
+     * @param vendorEmail the email of the authenticated vendor
+     * @return the full CSV content as a UTF-8 string (without BOM — the caller adds it if needed)
+     */
+    String exportProductsCsv(String vendorEmail);
+
+    /**
      * Imports products from a UTF-8 CSV string (US-CAT-06).
      * The CSV must have the header: {@code nom,description,prix,categorie,quantite,seuil_alerte}.
      * Valid rows are imported even if other rows fail (partial import).

@@ -36,16 +36,20 @@ test.describe('US-ADM-05 — Change account role', () => {
     await row.locator('button').last().click();
     await page.getByText('Éditer').click();
     await page.getByLabel('Rôle').selectOption('VENDOR');
+    const refreshPromise = page.waitForResponse(res => res.url().includes('/api/admin/accounts') && res.status() === 200);
     await page.getByRole('button', { name: 'Enregistrer' }).click();
-    // Wait for table to reflect the VENDOR change before proceeding
-    await expect(row.getByText('Vendeur')).toBeVisible();
+    await refreshPromise;
+    // Wait for table to reflect the VENDOR change
+    await expect(row.getByText('Vendeur')).toBeVisible({ timeout: 10000 });
 
     // Then back to BUYER
     await row.locator('button').last().click();
     await page.getByText('Éditer').click();
     await page.getByLabel('Rôle').selectOption('BUYER');
+    const refreshPromise2 = page.waitForResponse(res => res.url().includes('/api/admin/accounts') && res.status() === 200);
     await page.getByRole('button', { name: 'Enregistrer' }).click();
+    await refreshPromise2;
 
-    await expect(row.getByText('Acheteur')).toBeVisible();
+    await expect(row.getByText('Acheteur')).toBeVisible({ timeout: 10000 });
   });
 });
