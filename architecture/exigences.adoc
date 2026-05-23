@@ -116,10 +116,6 @@ Un besoin opérationnel exprime **la nécessité d'un acteur** (ce qu'il doit po
 | Le vendeur a besoin de confirmer manuellement dans la boutique la réception effective d'un virement bancaire afin de déclencher la prise en charge de la commande correspondante.
 | Activités vendeur, COp-02, Diagramme de séquence
 
-| BES-VND-007
-| Le vendeur a besoin de traiter les réclamations et litiges des acheteurs (répondre aux demandes de remboursement, gérer les retours produits).
-| UC_V5, Activités vendeur
-
 | BES-VND-008
 | Le vendeur a besoin d'accepter ou de refuser une demande d'annulation soumise par un acheteur après expédition, en choisissant entre deux modalités : avec condition de renvoi du colis ou sans condition de renvoi.
 | UC_V8, Activités vendeur, Diagramme d'activité
@@ -260,7 +256,6 @@ Le tableau ci-dessous relie chaque besoin opérationnel aux activités et cas d'
 | BES-VND-004 | Vendeur | UC_V3 — Traiter les commandes reçues
 | BES-VND-005 | Vendeur | UC_V4 — Expédier vers la zone euro
 | BES-VND-006 | Vendeur | COp-02 — Confirmer réception virement bancaire
-| BES-VND-007 | Vendeur | UC_V5 — Traiter les litiges et réclamations
 | BES-VND-008 | Vendeur | UC_V8 — Traiter un retour après expédition
 | BES-VND-009 | Vendeur | Activité « Émettre un virement inverse de remboursement »
 | BES-VND-010 | Vendeur | UC_V6 — Consulter les rapports de ventes

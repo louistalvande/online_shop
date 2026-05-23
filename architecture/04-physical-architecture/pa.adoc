@@ -610,7 +610,7 @@ include::diagrams/ihm/ihm-pa-virement-en-attente.puml[]
 
 ==== Suivi de commande
 
-Accès au numéro de suivi et au lien vers le site du transporteur (FS-B08 / FS-C01 / CS-05). Le lien est une URL sortante — le suivi de l'acheminement s'effectue directement sur le site du transporteur (IFS-05). L'acheteur peut déclencher une annulation ou une réclamation depuis cet écran.
+Accès au numéro de suivi et au lien vers le site du transporteur (FS-B08 / FS-C01 / CS-05). Le lien est une URL sortante — le suivi de l'acheminement s'effectue directement sur le site du transporteur (IFS-05). A ce stade, l'acheteur peut demander une annulation de commande uniquement par e-mail.
 
 .Maquette filaire : Portail Acheteur — Suivi de commande
 [plantuml, ihm-pa-suivi-commande, svg]
@@ -632,16 +632,6 @@ include::diagrams/ihm/ihm-pa-annulation.puml[]
 [plantuml, ihm-pa-annulation-virement, svg]
 ----
 include::diagrams/ihm/ihm-pa-annulation-virement.puml[]
-----
-
-==== Réclamation
-
-Formulaire de dépôt d'une réclamation post-livraison (FS-V06). Le motif sélectionné oriente le traitement côté vendeur. La réclamation est créée en état `ouverte` ; le vendeur dispose d'un délai pour répondre avant escalade.
-
-.Maquette filaire : Portail Acheteur — Réclamation
-[plantuml, ihm-pa-reclamation, svg]
-----
-include::diagrams/ihm/ihm-pa-reclamation.puml[]
 ----
 
 ==== Mon compte
@@ -774,16 +764,6 @@ Formulaire de création et de modification d'un produit (FS-V02 / FS-V03). Les c
 [plantuml, ihm-bov-produit, svg]
 ----
 include::diagrams/ihm/ihm-bov-produit.puml[]
-----
-
-==== Gestion des réclamations
-
-Vue de traitement des réclamations acheteurs (FS-V06). L'onglet « Ouvertes » liste les réclamations en attente de réponse vendeur avec le détail du message acheteur. Le vendeur peut rembourser via le prestataire de paiement (FS-P03) ou rejeter la demande. La réclamation passe en statut `clôturée` dans les deux cas.
-
-.Maquette filaire : Back-office Vendeur — Gestion des réclamations
-[plantuml, ihm-bov-reclamations, svg]
-----
-include::diagrams/ihm/ihm-bov-reclamations.puml[]
 ----
 
 ==== Annonces défilantes

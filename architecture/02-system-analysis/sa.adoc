@@ -287,7 +287,6 @@ Les fonctions système (FS) sont dérivées des cas d'utilisation opérationnels
 | FS-V14 | Mettre à jour les niveaux de stock de plusieurs produits simultanément depuis une vue liste | UC_V2
 | FS-V04 | Recevoir et traiter les nouvelles commandes (notification, vérification stock) | UC_V3
 | FS-V05 | Permettre au vendeur de déclarer l'expédition d'une commande en saisissant le numéro de suivi récupéré sur le reçu de dépôt physique ; passer la commande en état `expédiée` et notifier l'acheteur avec ce numéro | UC_V4
-| FS-V06 | Traiter les litiges et réclamations (remboursement, retour) | UC_V5
 | FS-V07 | Consulter les rapports de ventes (CA, produits, historique) | UC_V6
 | FS-V08 | Traiter les demandes d'annulation après expédition : accepter ou refuser ; en cas d'acceptation, choisir entre annulation avec condition de renvoi ou annulation directe sans renvoi | UC_V7
 | FS-V09 | Confirmer manuellement la réception d'un virement bancaire et déclencher la prise en charge de la commande correspondante | —
@@ -392,7 +391,6 @@ package "Vendeur" {
   [FS-V03\nStock] as FSV03
   [FS-V04\nCommandes] as FSV04
   [FS-V05\nExpédition] as FSV05
-  [FS-V06\nLitiges] as FSV06
   [FS-V08\nAnnulation post-exp.] as FSV08
   [FS-V09\nConf. virement] as FSV09
   [FS-V10\nRembours. virement] as FSV10
@@ -428,7 +426,6 @@ FSP02 --> FSV04 : confirmation paiement
 FSV04 --> FSV03 : vérif. stock
 FSV05 --> FSC01 : URL transporteur
 FSV05 --> FSB08 : notif. acheteur
-FSV06 --> FSP03 : remboursement litige
 FSV08 --> FSP03 : remboursement carte
 FSV08 --> FSV10 : virement inverse
 FSV09 --> FSV04 : déclenchement
@@ -478,7 +475,6 @@ rectangle "Système — Application e-commerce" {
     usecase (UCSA-02\nGérer son compte) as UC02
     usecase (UCSA-10\nGérer le catalogue\net les stocks) as UC10
     usecase (UCSA-07\nPréparer et expédier\nune commande) as UC07
-    usecase (UCSA-09\nTraiter un litige\nou une réclamation) as UC09
     usecase (UCSA-11\nConsulter les rapports\nde ventes) as UC11
     usecase (UCSA-13\nConfirmer la réception\nd'un virement bancaire) as UC13
     usecase (UCSA-15\nGérer les annonces\ndéfilantes) as UC15
@@ -859,44 +855,6 @@ a|
 
 | *Exigences liées*
 | FS-B08, FS-C01, CS-05
-|===
-
-=== UCSA-09 : Traiter un litige ou une réclamation
-
-[cols="1,3", options="header"]
-|===
-| Champ | Description
-
-| *Identifiant*
-| UCSA-09
-
-| *Acteurs*
-| Acheteur (principal) ; Vendeur (secondaire) ; Prestataire de paiement (secondaire)
-
-| *Préconditions*
-| Commande livrée ou annulée ; réclamation non encore ouverte pour cette commande
-
-| *Déclencheur*
-| L'acheteur soumet une réclamation depuis son espace commandes
-
-| *Scénario nominal*
-a|
-. L'acheteur ouvre une réclamation en précisant le motif (non-réception, article défectueux, etc.).
-. Le système enregistre la réclamation (statut « ouverte ») et notifie le vendeur.
-. Le vendeur examine la réclamation et décide de l'issue (retour accepté, remboursement).
-. Si remboursement accordé : le système déclenche le remboursement via le prestataire (FS-P03 / IFS-04).
-. Le prestataire confirme le remboursement.
-. Le système clôture la réclamation et notifie l'acheteur.
-
-| *Scénarios alternatifs*
-a|
-* *3a.* Le vendeur rejette la réclamation : le système notifie l'acheteur du refus ; la réclamation passe en statut « clôturée ».
-
-| *Postconditions*
-| Réclamation clôturée ; remboursement déclenché si applicable.
-
-| *Exigences liées*
-| FS-V06, FS-P03, IFS-04
 |===
 
 === UCSA-10 : Gérer le catalogue et les stocks
@@ -1514,13 +1472,6 @@ class Transporteur {
   + actif : Boolean
 }
 
-class Réclamation {
-  + id : UUID
-  + motif : String
-  + statut : Enum {ouverte, résolue, clôturée}
-  + dateOuverture : DateTime
-}
-
 class AdresseLivraison {
   + id : UUID
   + libellé : String
@@ -1540,7 +1491,6 @@ Commande "1" *-- "1..*" LigneCommande : contient
 LigneCommande "0..*" --> "1" Produit : référence
 Commande "1" *-- "1" Paiement : réglée par
 Commande "1" *-- "0..1" Expédition : donne lieu à
-Commande "1" --> "0..*" Réclamation : fait l'objet de
 Commande "1" --> "1" AdresseLivraison : livrée à
 Expédition "0..*" --> "1" Transporteur : acheminée par
 
@@ -1620,7 +1570,6 @@ La matrice ci-dessous assure la couverture complète de chaque besoin opération
 | UC_V2 | Gérer les stocks | FS-V03 | UCSA-10
 | UC_V3 | Traiter les commandes reçues | FS-V04 | UCSA-07
 | UC_V4 | Expédier vers la zone euro — dépôt physique + saisie manuelle du numéro de suivi | FS-V05 | UCSA-07
-| UC_V5 | Traiter les litiges et réclamations | FS-V06, FS-P03 | UCSA-09
 | UC_V6 | Consulter les rapports de ventes | FS-V07 | UCSA-11
 | — | Confirmer réception d'un virement bancaire | FS-V09 | UCSA-13
 | — | Annulation après expédition avec/sans condition de renvoi | FS-V08 | UCSA-06

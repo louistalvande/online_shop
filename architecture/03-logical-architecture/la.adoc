@@ -105,7 +105,7 @@ Le système est structuré en cinq couches logiques : *Présentation*, *Applicat
 
 | *Référentiel de données*
 | Infrastructure
-| Persistance de toutes les entités métier (comptes, produits avec stock, paniers, commandes, paiements, expéditions, réclamations)
+| Persistance de toutes les entités métier (comptes, produits avec stock, paniers, commandes, paiements, expéditions)
 | Support de toutes les FS
 
 | *Service Sécurité*
@@ -733,12 +733,6 @@ package "Entités métier (SA)" #F0F8FF {
     + actif : Boolean
   }
 
-  class Réclamation {
-    + id : UUID
-    + motif : String
-    + statut : Enum {ouverte, résolue, clôturée}
-    + dateOuverture : DateTime
-  }
 }
 
 package "Entités techniques (LA)" #FFF8E8 {
@@ -779,7 +773,6 @@ Commande "1" *-- "1..*" LigneCommande : contient
 LigneCommande "0..*" --> "1" Produit : référence
 Commande "1" *-- "1" Paiement : réglée par
 Commande "1" *-- "0..1" Expédition : donne lieu à
-Commande "1" --> "0..*" Réclamation : fait l'objet de
 Expédition "0..*" --> "1" Transporteur : acheminée par
 Paiement "1" *-- "0..*" JournalPaiement : journalisé par
 
@@ -822,7 +815,6 @@ end note
 | FS-V13 | Exporter le catalogue au format CSV | Service Catalogue | IFL-02, IFL-13
 | FS-V04 | Traiter les commandes reçues | Service Commande | IFL-04, IFL-09, IFL-13
 | FS-V05 | Déclarer l'expédition avec saisie du numéro de suivi | Service Expédition | IFL-05, IFL-09, IFL-13
-| FS-V06 | Traiter les litiges et réclamations | Service Commande, Service Paiement | IFL-04, IFL-08
 | FS-V07 | Consulter les rapports de ventes | Service Rapport | IFL-07, IFL-13
 | FS-V08 | Traiter les annulations (avant/après expédition, avec/sans renvoi) | Service Commande | IFL-04, IFL-08
 | FS-V09 | Confirmer la réception d'un virement bancaire | Service Paiement, Service Commande | IFL-08, IFL-13
