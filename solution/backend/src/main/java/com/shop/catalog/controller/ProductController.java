@@ -1,6 +1,7 @@
 package com.shop.catalog.controller;
 
 import com.shop.catalog.dto.CreateProductRequest;
+import com.shop.catalog.dto.CsvImportResponse;
 import com.shop.catalog.dto.ProductResponse;
 import com.shop.catalog.dto.StockAlertResponse;
 import com.shop.catalog.dto.UpdateProductRequest;
@@ -9,8 +10,10 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.security.Principal;
 import java.util.List;
@@ -130,4 +133,20 @@ public interface ProductController {
     @ApiResponse(responseCode = "404", description = "Alert not found")
     @PatchMapping("/alerts/{alertId}/acknowledge")
     ResponseEntity<StockAlertResponse> acknowledgeAlert(Principal principal, @PathVariable UUID alertId);
+
+    /**
+     * Imports products from a UTF-8 CSV file (US-CAT-06).
+     * Valid rows are created even if other rows fail (partial import).
+     * Returns 400 when the file is empty or the CSV header is invalid.
+     *
+     * @param principal the authenticated vendor principal
+     * @param file      the uploaded CSV file
+     * @return per-row import results with totals, HTTP 200
+     */
+    @Operation(summary = "Import products from a CSV file")
+    @ApiResponse(responseCode = "200", description = "Import processed — may contain row-level errors")
+    @ApiResponse(responseCode = "400", description = "Empty file or invalid CSV header")
+    @PostMapping(value = "/products/import", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    ResponseEntity<CsvImportResponse> importProducts(Principal principal,
+                                                     @RequestParam("file") MultipartFile file);
 }

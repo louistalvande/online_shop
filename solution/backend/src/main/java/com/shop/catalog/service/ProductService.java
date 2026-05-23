@@ -2,6 +2,7 @@ package com.shop.catalog.service;
 
 import com.shop.catalog.dto.BuyerProductResponse;
 import com.shop.catalog.dto.CreateProductRequest;
+import com.shop.catalog.dto.CsvImportResponse;
 import com.shop.catalog.dto.ProductResponse;
 import com.shop.catalog.dto.StockAlertResponse;
 import com.shop.catalog.dto.UpdateProductRequest;
@@ -122,4 +123,17 @@ public interface ProductService {
      *         or is not published
      */
     BuyerProductResponse getPublishedProduct(UUID productId);
+
+    /**
+     * Imports products from a UTF-8 CSV string (US-CAT-06).
+     * The CSV must have the header: {@code nom,description,prix,categorie,quantite,seuil_alerte}.
+     * Valid rows are imported even if other rows fail (partial import).
+     *
+     * @param vendorEmail the email of the authenticated vendor
+     * @param csvContent  the full CSV content decoded as UTF-8
+     * @return per-row import results with totals
+     * @throws com.shop.catalog.exception.CsvHeaderInvalidException if the header is missing or does
+     *         not match the expected format
+     */
+    CsvImportResponse importProductsCsv(String vendorEmail, String csvContent);
 }

@@ -42,6 +42,19 @@ export interface UpdateStockPayload {
   stockAlertThreshold: number
 }
 
+export interface CsvImportRowResult {
+  lineNumber: number
+  status: 'CREATED' | 'ERROR'
+  message: string | null
+  product: Product | null
+}
+
+export interface CsvImportResponse {
+  rows: CsvImportRowResult[]
+  totalCreated: number
+  totalErrors: number
+}
+
 function authHeaders(): Record<string, string> {
   const session = getSession()
   return {
@@ -116,4 +129,18 @@ export async function acknowledgeAlert(alertId: string): Promise<StockAlert> {
     headers: authHeaders(),
   })
   return handleResponse<StockAlert>(res)
+}
+
+/** Imports products from a CSV file (US-CAT-06). */
+export async function importProductsCsv(file: File): Promise<CsvImportResponse> {
+  const session = getSession()
+  const formData = new FormData()
+  formData.append('file', file)
+  const res = await fetch('/api/vendor/products/import', {
+    method: 'POST',
+    headers: session ? { Authorization: `Bearer ${session.token}` } : {},
+    body: formData,
+  })
+  if (res.status === 400) throw Object.assign(new Error('CSV_HEADER_INVALID'), { code: 'CSV_HEADER_INVALID' })
+  return handleResponse<CsvImportResponse>(res)
 }

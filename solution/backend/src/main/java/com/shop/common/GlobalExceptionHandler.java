@@ -21,6 +21,7 @@ import com.shop.auth.exception.TooManyLoginAttemptsException;
 import com.shop.cart.exception.CartItemNotFoundException;
 import com.shop.cart.exception.ProductOutOfStockException;
 import com.shop.carrier.exception.CarrierNotFoundException;
+import com.shop.catalog.exception.CsvHeaderInvalidException;
 import com.shop.catalog.exception.ProductArchivedConflictException;
 import com.shop.catalog.exception.ProductNotFoundException;
 import com.shop.order.exception.CarrierNotAvailableException;
@@ -257,6 +258,21 @@ public class GlobalExceptionHandler {
         String message = messageSource.getMessage("error.product.archive.conflict", null, locale);
         return ResponseEntity.status(HttpStatus.CONFLICT)
                 .body(Map.of("error", "PRODUCT_ARCHIVE_CONFLICT", "message", message));
+    }
+
+    /**
+     * Handles an invalid or missing CSV header on product import — returns HTTP 400 (US-CAT-06).
+     *
+     * @param ex     the exception
+     * @param locale the request locale
+     * @return a 400 response with a localised error body
+     */
+    @ExceptionHandler(CsvHeaderInvalidException.class)
+    public ResponseEntity<Map<String, String>> handleCsvHeaderInvalid(
+            CsvHeaderInvalidException ex, Locale locale) {
+        String message = messageSource.getMessage("error.csv.header.invalid", null, locale);
+        return ResponseEntity.badRequest()
+                .body(Map.of("error", "CSV_HEADER_INVALID", "message", message));
     }
 
     /**

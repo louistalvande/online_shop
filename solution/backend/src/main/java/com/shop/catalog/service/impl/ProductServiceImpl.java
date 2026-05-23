@@ -5,6 +5,8 @@ import com.shop.account.exception.AccountNotFoundException;
 import com.shop.account.repository.AccountRepository;
 import com.shop.catalog.dto.BuyerProductResponse;
 import com.shop.catalog.dto.CreateProductRequest;
+import com.shop.catalog.dto.CsvImportResponse;
+import com.shop.catalog.dto.CsvImportRowResult;
 import com.shop.catalog.dto.ProductResponse;
 import com.shop.catalog.dto.StockAlertResponse;
 import com.shop.catalog.dto.UpdateProductRequest;
@@ -13,6 +15,7 @@ import com.shop.catalog.entity.Product;
 import com.shop.catalog.entity.ProductPhoto;
 import com.shop.catalog.entity.ProductStatus;
 import com.shop.catalog.entity.StockAlert;
+import com.shop.catalog.exception.CsvHeaderInvalidException;
 import com.shop.catalog.exception.ProductNotFoundException;
 import com.shop.catalog.repository.ProductRepository;
 import com.shop.catalog.repository.ProductSpecifications;
@@ -26,6 +29,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -193,6 +197,129 @@ public class ProductServiceImpl implements ProductService {
         return BuyerProductResponse.from(product);
     }
 
+    /** Expected CSV header (exact match, case-insensitive). */
+    private static final String EXPECTED_HEADER = "nom,description,prix,categorie,quantite,seuil_alerte";
+
+    /** {@inheritDoc} */
+    @Override
+    public CsvImportResponse importProductsCsv(String vendorEmail, String csvContent) {
+        UUID vendorId = resolveVendorId(vendorEmail);
+
+        String[] lines = csvContent.lines().toArray(String[]::new);
+
+        // Locate and validate the header (first non-blank line)
+        int dataStartIndex = -1;
+        String headerLine = null;
+        for (int i = 0; i < lines.length; i++) {
+            if (!lines[i].isBlank()) {
+                headerLine = lines[i].strip();
+                dataStartIndex = i + 1;
+                break;
+            }
+        }
+        if (headerLine == null || !EXPECTED_HEADER.equalsIgnoreCase(headerLine)) {
+            throw new CsvHeaderInvalidException();
+        }
+
+        List<CsvImportRowResult> results = new ArrayList<>();
+        int totalCreated = 0;
+        int totalErrors = 0;
+
+        for (int i = dataStartIndex; i < lines.length; i++) {
+            String line = lines[i];
+            if (line.isBlank()) continue;
+            int lineNumber = i + 1; // 1-based, header = line 1
+
+            try {
+                List<String> fields = parseCsvLine(line);
+                String nom        = fields.size() > 0 ? fields.get(0) : "";
+                String description = fields.size() > 1 ? fields.get(1) : "";
+                String prixStr    = fields.size() > 2 ? fields.get(2) : "";
+                String categorie  = fields.size() > 3 ? fields.get(3) : "";
+                String quantiteStr = fields.size() > 4 ? fields.get(4) : "";
+                String seuilStr   = fields.size() > 5 ? fields.get(5) : "";
+
+                if (nom.isBlank()) {
+                    results.add(CsvImportRowResult.error(lineNumber, "Le nom est obligatoire"));
+                    totalErrors++;
+                    continue;
+                }
+
+                if (prixStr.isBlank()) {
+                    results.add(CsvImportRowResult.error(lineNumber, "Le prix est obligatoire"));
+                    totalErrors++;
+                    continue;
+                }
+                BigDecimal prix;
+                try {
+                    prix = new BigDecimal(prixStr.replace(',', '.'));
+                } catch (NumberFormatException e) {
+                    results.add(CsvImportRowResult.error(lineNumber, "Prix invalide : " + prixStr));
+                    totalErrors++;
+                    continue;
+                }
+                if (prix.compareTo(BigDecimal.ZERO) <= 0) {
+                    results.add(CsvImportRowResult.error(lineNumber, "Le prix doit être supérieur à 0"));
+                    totalErrors++;
+                    continue;
+                }
+
+                int quantite = 0;
+                if (!quantiteStr.isBlank()) {
+                    try {
+                        quantite = Integer.parseInt(quantiteStr);
+                    } catch (NumberFormatException e) {
+                        results.add(CsvImportRowResult.error(lineNumber, "Quantité invalide : " + quantiteStr));
+                        totalErrors++;
+                        continue;
+                    }
+                    if (quantite < 0) {
+                        results.add(CsvImportRowResult.error(lineNumber, "La quantité ne peut pas être négative"));
+                        totalErrors++;
+                        continue;
+                    }
+                }
+
+                int seuil = 0;
+                if (!seuilStr.isBlank()) {
+                    try {
+                        seuil = Integer.parseInt(seuilStr);
+                    } catch (NumberFormatException e) {
+                        results.add(CsvImportRowResult.error(lineNumber, "Seuil d'alerte invalide : " + seuilStr));
+                        totalErrors++;
+                        continue;
+                    }
+                    if (seuil < 0) {
+                        results.add(CsvImportRowResult.error(lineNumber, "Le seuil d'alerte ne peut pas être négatif"));
+                        totalErrors++;
+                        continue;
+                    }
+                }
+
+                Product product = new Product();
+                product.setVendorId(vendorId);
+                product.setName(nom);
+                product.setDescription(description.isBlank() ? null : description);
+                product.setPriceExclTax(prix);
+                product.setCategory(categorie.isBlank() ? null : categorie);
+                product.setQuantity(quantite);
+                product.setStockAlertThreshold(seuil);
+                product.setStatus(ProductStatus.PUBLISHED);
+
+                Product saved = productRepository.save(product);
+                raiseAlertIfNeeded(saved);
+                results.add(CsvImportRowResult.created(lineNumber, ProductResponse.from(saved)));
+                totalCreated++;
+
+            } catch (Exception e) {
+                results.add(CsvImportRowResult.error(lineNumber, "Erreur inattendue : " + e.getMessage()));
+                totalErrors++;
+            }
+        }
+
+        return new CsvImportResponse(results, totalCreated, totalErrors);
+    }
+
     // -------------------------------------------------------------------------
     // Helpers
     // -------------------------------------------------------------------------
@@ -211,6 +338,38 @@ public class ProductServiceImpl implements ProductService {
             photo.setSortOrder(i);
             product.getPhotos().add(photo);
         }
+    }
+
+    /**
+     * Parses a single CSV line into fields, handling RFC 4180 quoted fields.
+     * Surrounding whitespace on each field is stripped.
+     *
+     * @param line a single CSV data line
+     * @return the ordered list of field values
+     */
+    private static List<String> parseCsvLine(String line) {
+        List<String> fields = new ArrayList<>();
+        boolean inQuotes = false;
+        StringBuilder current = new StringBuilder();
+        for (int i = 0; i < line.length(); i++) {
+            char c = line.charAt(i);
+            if (c == '"') {
+                if (inQuotes && i + 1 < line.length() && line.charAt(i + 1) == '"') {
+                    // escaped double-quote inside a quoted field
+                    current.append('"');
+                    i++;
+                } else {
+                    inQuotes = !inQuotes;
+                }
+            } else if (c == ',' && !inQuotes) {
+                fields.add(current.toString().strip());
+                current = new StringBuilder();
+            } else {
+                current.append(c);
+            }
+        }
+        fields.add(current.toString().strip());
+        return fields;
     }
 
     /**

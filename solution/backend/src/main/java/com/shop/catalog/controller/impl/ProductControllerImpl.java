@@ -2,16 +2,21 @@ package com.shop.catalog.controller.impl;
 
 import com.shop.catalog.controller.ProductController;
 import com.shop.catalog.dto.CreateProductRequest;
+import com.shop.catalog.dto.CsvImportResponse;
 import com.shop.catalog.dto.ProductResponse;
 import com.shop.catalog.dto.StockAlertResponse;
 import com.shop.catalog.dto.UpdateProductRequest;
 import com.shop.catalog.dto.UpdateStockRequest;
+import com.shop.catalog.exception.CsvHeaderInvalidException;
 import com.shop.catalog.service.ProductService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
+import java.io.IOException;
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
 import java.security.Principal;
 import java.util.List;
 import java.util.UUID;
@@ -87,5 +92,19 @@ public class ProductControllerImpl implements ProductController {
     @Override
     public ResponseEntity<StockAlertResponse> acknowledgeAlert(Principal principal, UUID alertId) {
         return ResponseEntity.ok(productService.acknowledgeAlert(principal.getName(), alertId));
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public ResponseEntity<CsvImportResponse> importProducts(Principal principal, MultipartFile file) {
+        if (file == null || file.isEmpty()) {
+            throw new CsvHeaderInvalidException();
+        }
+        try {
+            String csvContent = new String(file.getBytes(), StandardCharsets.UTF_8);
+            return ResponseEntity.ok(productService.importProductsCsv(principal.getName(), csvContent));
+        } catch (IOException e) {
+            throw new CsvHeaderInvalidException();
+        }
     }
 }
