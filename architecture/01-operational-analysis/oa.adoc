@@ -209,6 +209,7 @@ rectangle "Application e-commerce" {
   package "Catalogue et stocks" {
     usecase (Gérer le catalogue\nproduits) as UC_V1
     usecase (Gérer les stocks) as UC_V2
+    usecase (Mettre à jour les stocks\nen masse — vue liste) as UC_V10
   }
   package "Commandes et expéditions" {
     usecase (Traiter les commandes\nreçues) as UC_V3
@@ -228,6 +229,7 @@ Vendor --> UC_V_AUTH
 Vendor --> UC_V0
 Vendor --> UC_V1
 Vendor --> UC_V2
+Vendor --> UC_V10
 Vendor --> UC_V3
 Vendor --> UC_V4
 Vendor --> UC_V5
@@ -243,6 +245,8 @@ UC_V5 ..> UC_V_AUTH : <<include>>
 UC_V6 ..> UC_V_AUTH : <<include>>
 UC_V8 ..> UC_V_AUTH : <<include>>
 UC_V9 ..> UC_V_AUTH : <<include>>
+UC_V10 ..> UC_V_AUTH : <<include>>
+UC_V10 ..> UC_V2 : <<extend>>
 UC_V4 --> Carrier
 ----
 
@@ -521,7 +525,11 @@ NOTE: Le diagramme de séquence détaillant les échanges entre acteurs et syst�
 
 | UC_V2
 | Gérer les stocks
-| Suivre les niveaux de stock, anticiper les ruptures, effectuer les réapprovisionnements ; mettre à jour les stocks de plusieurs produits simultanément depuis la vue liste
+| Suivre les niveaux de stock, anticiper les ruptures et effectuer les réapprovisionnements
+
+| UC_V10
+| Mettre à jour les stocks en masse — vue liste
+| Modifier les quantités en stock et les seuils d'alerte de plusieurs produits simultanément depuis la vue liste du catalogue, sans ouvrir chaque fiche individuellement ; soumettre toutes les modifications en une seule opération ; recevoir un compte-rendu par produit en cas d'erreur partielle
 
 | UC_V3
 | Traiter les commandes
