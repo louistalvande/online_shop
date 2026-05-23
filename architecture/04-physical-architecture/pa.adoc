@@ -752,6 +752,16 @@ Liste paginée des produits avec indicateurs de stock en ligne (FS-V02 / FS-V03)
 include::diagrams/ihm/ihm-bov-catalogue.puml[]
 ----
 
+==== Import CSV de produits
+
+Modale d'import en masse de produits depuis un fichier CSV (FS-V12 / US-CAT-06). Le vendeur sélectionne un fichier `.csv` structuré selon l'en-tête `nom,description,prix,categorie,quantite,seuil_alerte`. L'import est partiel : les lignes valides sont créées même si d'autres sont en erreur. Un rapport ligne par ligne (statut `Créé` / `Erreur` + message) est affiché après traitement. L'endpoint backend est `POST /api/vendor/products/import` (`multipart/form-data`) ; il retourne HTTP 400 si l'en-tête CSV est invalide ou le fichier vide.
+
+.Maquette filaire : Back-office Vendeur — Import CSV produits
+[plantuml, ihm-bov-csv-import, svg]
+----
+include::diagrams/ihm/ihm-bov-csv-import.puml[]
+----
+
 ==== Édition d'un produit
 
 Formulaire de création et de modification d'un produit (FS-V02 / FS-V03). Les champs `Quantité disponible` et `Seuil d'alerte` sont intégrés directement dans le formulaire produit, conformément à la fusion Produit/Stock opérée en LA. Le statut `Archivé` retire le produit du catalogue acheteur sans le supprimer.
@@ -922,7 +932,7 @@ include::diagrams/ihm/ihm-admin-form-transporteur.puml[]
 | Service Catalogue
 | module-catalogue
 | Conteneur API Spring Boot
-| Spring Boot / Spring Data JPA / Hibernate — import : `POST /produits/import` (`multipart/form-data`, OpenCSV) créations uniquement, rapport ligne par ligne (créé / erreur) ; export : `GET /produits/export` (`text/csv`, UTF-8 BOM, `Content-Disposition: attachment`)
+| Spring Boot / Spring Data JPA / Hibernate — import : `POST /api/vendor/products/import` (`multipart/form-data`, parser RFC 4180 natif) créations uniquement, rapport ligne par ligne (créé / erreur) ; export : `GET /api/vendor/products/export` (`text/csv`, UTF-8 BOM, `Content-Disposition: attachment`)
 
 | Service Panier
 | module-panier

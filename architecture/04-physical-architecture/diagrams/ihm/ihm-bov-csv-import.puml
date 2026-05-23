@@ -1,0 +1,29 @@
+@startsalt
+' Composant PA-PHY-004 — Back-office Vendeur (React SPA)
+' Illustre la fonction allouée : FS-V12 (Import CSV produits) — US-CAT-06
+title PA-PHY-004 — Import CSV produits
+
+{+
+  == Importer des produits via CSV
+  Format attendu : nom,description,prix,categorie,quantite,seuil_alerte
+  Colonnes obligatoires : nom et prix.
+  --
+  {
+    [Sélectionner un fichier CSV]  |  catalogue_produits.csv
+  }
+  --
+  == Résultat de l'import
+  3 produit(s) créé(s), 1 erreur(s).
+  --
+  {#
+    Ligne  | Statut   | Détail
+    2      | Créé     | Aquarelle forêt d'automne
+    3      | Créé     | Huile sur toile — paysage
+    4      | Erreur   | Le prix est obligatoire
+    5      | Créé     | Pastel sur papier
+  }
+  --
+  [Fermer]
+}
+
+@endsalt

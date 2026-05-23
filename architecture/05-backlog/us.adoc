@@ -234,14 +234,14 @@ a|
 | *US-CAT-06*
 | En tant que vendeur, je peux importer de nouveaux produits depuis un fichier CSV afin de créer plusieurs fiches en une seule opération.
 a|
-- [ ] Un bouton « Importer CSV » est disponible dans la section gestion du catalogue du back-office vendeur
-- [ ] Le fichier CSV respecte un en-tête défini : `nom,description,prix,categorie,quantite,seuil_alerte` ; les colonnes obligatoires sont : `nom` et `prix`
-- [ ] Chaque ligne du CSV crée un nouveau produit ; aucune mise à jour de produit existant n'est effectuée
-- [ ] Le système valide le format de l'en-tête avant traitement ; en cas d'en-tête invalide, l'import est rejeté en totalité
-- [ ] Un rapport ligne par ligne est affiché après traitement : créé / erreur avec message explicite
-- [ ] Les lignes valides sont importées même si d'autres lignes sont en erreur (import partiel)
-- [ ] L'import est accessible uniquement aux comptes vendeur authentifiés (FS-V02 / CS-01)
-| À faire
+- [x] Un bouton « Importer CSV » est disponible dans la section gestion du catalogue du back-office vendeur
+- [x] Le fichier CSV respecte un en-tête défini : `nom,description,prix,categorie,quantite,seuil_alerte` ; les colonnes obligatoires sont : `nom` et `prix`
+- [x] Chaque ligne du CSV crée un nouveau produit ; aucune mise à jour de produit existant n'est effectuée
+- [x] Le système valide le format de l'en-tête avant traitement ; en cas d'en-tête invalide, l'import est rejeté en totalité
+- [x] Un rapport ligne par ligne est affiché après traitement : créé / erreur avec message explicite
+- [x] Les lignes valides sont importées même si d'autres lignes sont en erreur (import partiel)
+- [x] L'import est accessible uniquement aux comptes vendeur authentifiés (FS-V02 / CS-01)
+| Terminée
 
 | *US-CAT-07*
 | En tant que vendeur, je peux exporter mon catalogue produits au format CSV afin de le consulter ou le réimporter ultérieurement.

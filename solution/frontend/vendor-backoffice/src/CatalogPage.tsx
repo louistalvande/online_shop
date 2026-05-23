@@ -1,9 +1,10 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Button, Card } from '@workspace/theme'
 import {
   listProducts, archiveProduct, listPendingAlerts, acknowledgeAlert,
-  type Product, type StockAlert,
+  importProductsCsv,
+  type Product, type StockAlert, type CsvImportResponse,
 } from './api/productApi'
 import ProductFormModal from './ProductFormModal'
 
@@ -31,7 +32,7 @@ function StockBadge({ product }: { product: Product }) {
   )
 }
 
-/** Vendor catalog management page (US-CAT-01 to US-CAT-05). */
+/** Vendor catalog management page (US-CAT-01 to US-CAT-06). */
 export default function CatalogPage() {
   const { t } = useTranslation()
   const [products, setProducts] = useState<Product[]>([])
@@ -41,6 +42,13 @@ export default function CatalogPage() {
   const [modalProduct, setModalProduct] = useState<Product | null | undefined>(undefined)
   const [archivingId, setArchivingId] = useState<string | null>(null)
   const [showArchived, setShowArchived] = useState(false)
+
+  // CSV import state (US-CAT-06)
+  const fileInputRef = useRef<HTMLInputElement>(null)
+  const [csvImporting, setCsvImporting] = useState(false)
+  const [csvResult, setCsvResult] = useState<CsvImportResponse | null>(null)
+  const [csvError, setCsvError] = useState<string | null>(null)
+  const [showCsvModal, setShowCsvModal] = useState(false)
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -89,6 +97,38 @@ export default function CatalogPage() {
     load()
   }
 
+  function openCsvModal() {
+    setCsvResult(null)
+    setCsvError(null)
+    setShowCsvModal(true)
+  }
+
+  function closeCsvModal() {
+    setShowCsvModal(false)
+    if (csvResult && csvResult.totalCreated > 0) load()
+  }
+
+  async function handleCsvFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setCsvImporting(true)
+    setCsvError(null)
+    setCsvResult(null)
+    try {
+      const result = await importProductsCsv(file)
+      setCsvResult(result)
+    } catch (err: any) {
+      if (err.code === 'CSV_HEADER_INVALID') {
+        setCsvError(t('catalog.csv.error.invalidHeader'))
+      } else {
+        setCsvError(t('catalog.csv.error.generic'))
+      }
+    } finally {
+      setCsvImporting(false)
+      if (fileInputRef.current) fileInputRef.current.value = ''
+    }
+  }
+
   const visibleProducts = showArchived ? products : products.filter(p => p.status === 'PUBLISHED')
 
   const tableHeaders = [
@@ -103,9 +143,14 @@ export default function CatalogPage() {
         <h1 style={{ fontFamily: 'var(--font-serif)', fontSize: 28, fontWeight: 700 }}>
           {t('catalog.title')}
         </h1>
-        <Button variant="primary" onClick={() => setModalProduct(null)}>
-          {t('catalog.addProduct')}
-        </Button>
+        <div style={{ display: 'flex', gap: 12 }}>
+          <Button variant="secondary" onClick={openCsvModal}>
+            {t('catalog.csv.importButton')}
+          </Button>
+          <Button variant="primary" onClick={() => setModalProduct(null)}>
+            {t('catalog.addProduct')}
+          </Button>
+        </div>
       </div>
 
       {/* Stock alerts panel (US-CAT-05) */}
@@ -209,6 +254,105 @@ export default function CatalogPage() {
           onSave={handleSaved}
           onClose={() => setModalProduct(undefined)}
         />
+      )}
+
+      {/* CSV import modal (US-CAT-06) */}
+      {showCsvModal && (
+        <div style={{
+          position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.45)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 200,
+        }}>
+          <div style={{
+            background: '#fff', borderRadius: 12, padding: '32px 36px',
+            minWidth: 500, maxWidth: 680, width: '90%', maxHeight: '80vh',
+            overflowY: 'auto', boxShadow: '0 8px 32px rgba(0,0,0,0.18)',
+          }}>
+            <h2 style={{ fontFamily: 'var(--font-serif)', fontSize: 20, fontWeight: 700, marginBottom: 8 }}>
+              {t('catalog.csv.modalTitle')}
+            </h2>
+            <p style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 20 }}>
+              {t('catalog.csv.instructions')}
+            </p>
+
+            {!csvResult && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept=".csv,text/csv"
+                  disabled={csvImporting}
+                  onChange={handleCsvFileChange}
+                  style={{ display: 'none' }}
+                  id="csv-file-input"
+                />
+                <label htmlFor="csv-file-input">
+                  <Button
+                    variant="secondary"
+                    disabled={csvImporting}
+                    onClick={() => fileInputRef.current?.click()}
+                  >
+                    {csvImporting ? t('catalog.csv.importing') : t('catalog.csv.selectFile')}
+                  </Button>
+                </label>
+              </div>
+            )}
+
+            {csvError && (
+              <p style={{ color: '#c0392b', fontSize: 14, marginBottom: 16 }}>{csvError}</p>
+            )}
+
+            {csvResult && (
+              <div>
+                <p style={{ fontWeight: 600, marginBottom: 12 }}>
+                  {t('catalog.csv.resultTitle')}
+                </p>
+                <p style={{
+                  fontSize: 14, marginBottom: 16,
+                  color: csvResult.totalErrors > 0 ? '#b8431a' : '#1a7a2e',
+                }}>
+                  {t('catalog.csv.summary', {
+                    created: csvResult.totalCreated,
+                    errors: csvResult.totalErrors,
+                  })}
+                </p>
+                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
+                  <thead>
+                    <tr style={{ borderBottom: '1px solid var(--border)' }}>
+                      <th style={{ padding: '6px 10px', textAlign: 'left', fontWeight: 600, color: 'var(--text-muted)' }}>Ligne</th>
+                      <th style={{ padding: '6px 10px', textAlign: 'left', fontWeight: 600, color: 'var(--text-muted)' }}>Statut</th>
+                      <th style={{ padding: '6px 10px', textAlign: 'left', fontWeight: 600, color: 'var(--text-muted)' }}>Détail</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {csvResult.rows.map((row, i) => (
+                      <tr key={i} style={{ borderBottom: '1px solid var(--border)' }}>
+                        <td style={{ padding: '6px 10px', color: 'var(--text-muted)' }}>{row.lineNumber}</td>
+                        <td style={{ padding: '6px 10px' }}>
+                          <span style={{
+                            fontSize: 11, fontWeight: 700, padding: '2px 8px', borderRadius: 10,
+                            background: row.status === 'CREATED' ? '#e8f5e9' : '#fde8e8',
+                            color: row.status === 'CREATED' ? '#1a7a2e' : '#c0392b',
+                          }}>
+                            {row.status === 'CREATED' ? t('catalog.csv.row.created') : t('catalog.csv.row.error')}
+                          </span>
+                        </td>
+                        <td style={{ padding: '6px 10px', color: row.status === 'ERROR' ? '#c0392b' : undefined }}>
+                          {row.status === 'CREATED' ? (row.product?.name ?? '') : row.message}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+
+            <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 24 }}>
+              <Button variant="ghost" onClick={closeCsvModal}>
+                {csvResult ? t('catalog.csv.close') : t('catalog.csv.cancel')}
+              </Button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   )
