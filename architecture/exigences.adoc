@@ -84,6 +84,8 @@ Un besoin opérationnel exprime **la nécessité d'un acteur** (ce qu'il doit po
 | UC_A3, Activités administrateur
 |===
 
+NOTE: L'administrateur n'a pas accès aux données personnelles des comptes (nom, email, adresse). Cette limitation est intentionnelle et découle du principe de minimisation des données (RGPD Art. 5) et de la protection de la vie privée dès la conception (RGPD Art. 25). Chaque utilisateur gère ses propres données depuis son espace personnel.
+
 ---
 
 == Besoins du Vendeur
@@ -474,4 +476,101 @@ _Référence : ANSSI — Recommandations de sécurité pour l'administration des
 | Les accès aux journaux doivent être restreints aux seuls administrateurs de la plateforme.
 | ANSSI Admin §4.3
 | Administrateur
+|===
+
+---
+
+== Exigences RGPD
+
+Les exigences suivantes découlent du Règlement Général sur la Protection des Données (RGPD — Règlement UE 2016/679). Elles s'appliquent à toutes les données à caractère personnel traitées par la plateforme.
+
+=== Minimisation et finalité (Art. 5)
+
+[cols="1,4,1", options="header"]
+|===
+| Identifiant | Exigence | Article RGPD
+
+| RGPD-MIN-001
+| Seules les données strictement nécessaires à l'exécution du service doivent être collectées : identité (nom, prénom), email, adresse de livraison dans la zone euro, préférence de langue, historique de commandes. Aucune donnée non justifiée par une finalité explicite ne doit être stockée.
+| Art. 5 §1c
+
+| RGPD-MIN-002
+| Les données bancaires de l'acheteur (numéro de carte, IBAN) ne sont jamais stockées en clair sur la plateforme. Le numéro de carte est délégué intégralement à Stripe (PCI-DSS Level 1). L'IBAN fourni lors d'une demande de remboursement par virement est stocké chiffré (`pgcrypto`) et purgé dès clôture du remboursement.
+| Art. 5 §1c, Art. 25
+
+| RGPD-MIN-003
+| L'administrateur n'a pas accès aux données personnelles des comptes (nom, email, adresse). Son périmètre se limite à la gestion des accès (création, suspension, suppression, rôles) et à la langue de notification. Cette restriction est intentionnelle (privacy by design).
+| Art. 5 §1c, Art. 25
+|===
+
+=== Droits des personnes concernées (Art. 15–20)
+
+[cols="1,4,1", options="header"]
+|===
+| Identifiant | Exigence | Article RGPD
+
+| RGPD-DRT-001
+| Chaque utilisateur (acheteur, vendeur) doit pouvoir consulter et modifier ses données personnelles depuis son espace compte (nom, adresse, mot de passe, langue de notification).
+| Art. 16 — Rectification
+
+| RGPD-DRT-002
+| L'acheteur doit pouvoir demander la suppression de son compte. La suppression déclenche l'anonymisation des données personnelles identifiantes (nom, prénom, email remplacés par des valeurs neutres). L'historique des commandes est conservé sous forme anonymisée pour satisfaire les obligations légales et comptables (durée légale de conservation des documents commerciaux : 10 ans).
+| Art. 17 — Effacement
+
+| RGPD-DRT-003
+| L'acheteur doit pouvoir exporter ses données personnelles dans un format structuré et lisible (JSON ou CSV) : informations de compte, carnet d'adresses de livraison, historique des commandes.
+| Art. 20 — Portabilité
+|===
+
+=== Durées de conservation (Art. 5e)
+
+[cols="1,4,1", options="header"]
+|===
+| Identifiant | Exigence | Article RGPD
+
+| RGPD-RET-001
+| Les données personnelles des comptes actifs sont conservées tant que le compte est actif. Après suppression du compte, les données identifiantes sont anonymisées dans un délai de 30 jours.
+| Art. 5 §1e
+
+| RGPD-RET-002
+| Les données de commandes (lignes, montants, statuts) sont conservées sous forme anonymisée pendant 10 ans à compter de la date de la commande, afin de respecter les obligations légales comptables et fiscales.
+| Art. 5 §1e, Art. 17 §3b
+
+| RGPD-RET-003
+| Les journaux de sécurité et d'audit sont conservés 12 mois minimum et 13 mois maximum, puis purgés automatiquement. Les enregistrements relatifs à un compte supprimé sont anonymisés (identifiant utilisateur remplacé) dans le même délai de 30 jours que les données du compte.
+| Art. 5 §1e
+|===
+
+=== Sous-traitants (Art. 28)
+
+[cols="1,4,1", options="header"]
+|===
+| Identifiant | Exigence | Article RGPD
+
+| RGPD-SUB-001
+| Stripe (prestataire de paiement) est sous-traitant au sens du RGPD. Un accord de traitement des données (DPA) doit être en vigueur avant toute mise en production. Stripe est certifié PCI-DSS Level 1 et traite les données de carte bancaire en lieu et place de la plateforme.
+| Art. 28
+
+| RGPD-SUB-002
+| SendGrid (service de messagerie transactionnelle) est sous-traitant au sens du RGPD. Un DPA doit être en vigueur. Les emails transactionnels transmis à SendGrid contiennent uniquement les données nécessaires à leur acheminement (adresse email destinataire, contenu de notification).
+| Art. 28
+
+| RGPD-SUB-003
+| Aucun sous-traitant ne doit être ajouté ou substitué sans vérification préalable de sa conformité RGPD et signature d'un DPA.
+| Art. 28 §2
+|===
+
+=== Protection dès la conception (Art. 25)
+
+[cols="1,4,1", options="header"]
+|===
+| Identifiant | Exigence | Article RGPD
+
+| RGPD-PBD-001
+| L'architecture applique le principe de privacy by design : cloisonnement des rôles (acheteur, vendeur, administrateur), chiffrement des colonnes sensibles en base (pgcrypto), suppression logique avec anonymisation planifiée, accès administrateur limité aux métadonnées de gestion.
+| Art. 25 §1
+
+| RGPD-PBD-002
+| Par défaut, aucune donnée personnelle n'est partagée avec des tiers à des fins de profilage ou de marketing. Les emails envoyés sont exclusivement transactionnels (activation de compte, confirmation de commande, notification d'expédition, remboursement). Toute extension à des emails marketing nécessite un consentement explicite et une exigence dédiée.
+| Art. 25 §2, Art. 6 §1a
 |===
