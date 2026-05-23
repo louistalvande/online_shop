@@ -36,7 +36,7 @@ test.describe('US-ADM-08 — Deactivate / activate carrier', () => {
 
     const row = page.locator('tr').filter({ hasText: carrier.name });
     await row.locator('button').last().click();
-    await page.getByText('Activer').click();
+    await page.getByText('Activer', { exact: true }).click();
 
     await expect(page.getByText('Transporteur activé.')).toBeVisible();
     await expect(row.getByText('Actif')).toBeVisible();

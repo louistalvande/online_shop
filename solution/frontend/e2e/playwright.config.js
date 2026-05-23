@@ -4,9 +4,13 @@ export default defineConfig({
   testDir: '.',
   fullyParallel: false,
   retries: 0,
+  timeout: 120000,
+  expect: { timeout: 15000 },
   use: {
     screenshot: 'only-on-failure',
     video: 'retain-on-failure',
+    actionTimeout: 15000,
+    navigationTimeout: 30000,
   },
   projects: [
     {

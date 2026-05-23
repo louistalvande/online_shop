@@ -82,8 +82,9 @@ test.describe('US-CAT-06 — Import CSV products', () => {
 
     await expect(page.getByText('1 produit(s) créé(s), 1 erreur(s).')).toBeVisible();
 
-    // Row 2: created
-    const rows = page.locator('table tbody tr');
+    // Row 2: created (second table on the page is the CSV result table)
+    const resultTable = page.locator('table').last();
+    const rows = resultTable.locator('tbody tr');
     await expect(rows.nth(0).getByText('Créé')).toBeVisible();
     // Row 3: error
     await expect(rows.nth(1).getByText('Erreur')).toBeVisible();

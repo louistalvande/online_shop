@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { Button, Card } from '@workspace/theme'
 import {
   listProducts, archiveProduct, listPendingAlerts, acknowledgeAlert,
-  importProductsCsv,
+  exportProductsCsv, importProductsCsv,
   type Product, type StockAlert, type CsvImportResponse,
 } from './api/productApi'
 import ProductFormModal from './ProductFormModal'
@@ -42,6 +42,9 @@ export default function CatalogPage() {
   const [modalProduct, setModalProduct] = useState<Product | null | undefined>(undefined)
   const [archivingId, setArchivingId] = useState<string | null>(null)
   const [showArchived, setShowArchived] = useState(false)
+
+  // CSV export state (US-CAT-07)
+  const [exporting, setExporting] = useState(false)
 
   // CSV import state (US-CAT-06)
   const fileInputRef = useRef<HTMLInputElement>(null)
@@ -97,6 +100,17 @@ export default function CatalogPage() {
     load()
   }
 
+  async function handleExport() {
+    setExporting(true)
+    try {
+      await exportProductsCsv()
+    } catch {
+      alert(t('catalog.csv.exportError'))
+    } finally {
+      setExporting(false)
+    }
+  }
+
   function openCsvModal() {
     setCsvResult(null)
     setCsvError(null)
@@ -144,6 +158,9 @@ export default function CatalogPage() {
           {t('catalog.title')}
         </h1>
         <div style={{ display: 'flex', gap: 12 }}>
+          <Button variant="secondary" disabled={exporting} onClick={handleExport}>
+            {exporting ? '…' : t('catalog.csv.exportButton')}
+          </Button>
           <Button variant="secondary" onClick={openCsvModal}>
             {t('catalog.csv.importButton')}
           </Button>
@@ -315,7 +332,7 @@ export default function CatalogPage() {
                     errors: csvResult.totalErrors,
                   })}
                 </p>
-                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
+                <table data-testid="csv-result-table" style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
                   <thead>
                     <tr style={{ borderBottom: '1px solid var(--border)' }}>
                       <th style={{ padding: '6px 10px', textAlign: 'left', fontWeight: 600, color: 'var(--text-muted)' }}>Ligne</th>

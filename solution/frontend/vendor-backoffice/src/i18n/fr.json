@@ -100,6 +100,8 @@
   "catalog.error.quantityInvalid": "La quantité doit être un entier positif ou nul.",
   "catalog.error.generic": "Une erreur est survenue. Veuillez réessayer.",
   "catalog.error.load": "Impossible de charger le catalogue.",
+  "catalog.csv.exportButton": "Exporter CSV",
+  "catalog.csv.exportError": "Une erreur est survenue lors de l'export.",
   "catalog.csv.importButton": "Importer CSV",
   "catalog.csv.modalTitle": "Importer des produits via CSV",
   "catalog.csv.instructions": "Format attendu : nom,description,prix,categorie,quantite,seuil_alerte. Colonnes obligatoires : nom et prix.",

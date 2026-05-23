@@ -752,6 +752,10 @@ Liste paginée des produits avec indicateurs de stock en ligne (FS-V02 / FS-V03)
 include::diagrams/ihm/ihm-bov-catalogue.puml[]
 ----
 
+==== Export CSV du catalogue
+
+Déclenchement d'un téléchargement navigateur du catalogue complet (FS-V13 / US-CAT-07). Un clic sur le bouton « Exporter CSV » appelle `GET /api/vendor/products/export` avec le JWT en en-tête `Authorization`. Le backend retourne un fichier `text/csv; charset=UTF-8` avec BOM UTF-8 (compatibilité tableur) et l'en-tête `Content-Disposition: attachment; filename="catalogue_export_YYYYMMDD.csv"`. Le frontend reçoit le blob, crée une URL objet et déclenche le téléchargement sans navigation. L'export inclut toutes les fiches (publiées et archivées) ; colonnes : `nom,description,prix,categorie,quantite,seuil_alerte,statut`.
+
 ==== Import CSV de produits
 
 Modale d'import en masse de produits depuis un fichier CSV (FS-V12 / US-CAT-06). Le vendeur sélectionne un fichier `.csv` structuré selon l'en-tête `nom,description,prix,categorie,quantite,seuil_alerte`. L'import est partiel : les lignes valides sont créées même si d'autres sont en erreur. Un rapport ligne par ligne (statut `Créé` / `Erreur` + message) est affiché après traitement. L'endpoint backend est `POST /api/vendor/products/import` (`multipart/form-data`) ; il retourne HTTP 400 si l'en-tête CSV est invalide ou le fichier vide.

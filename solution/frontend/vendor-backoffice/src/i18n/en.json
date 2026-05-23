@@ -100,6 +100,8 @@
   "catalog.error.quantityInvalid": "Quantity must be a non-negative integer.",
   "catalog.error.generic": "An error occurred. Please try again.",
   "catalog.error.load": "Unable to load the catalogue.",
+  "catalog.csv.exportButton": "Export CSV",
+  "catalog.csv.exportError": "An error occurred during export.",
   "catalog.csv.importButton": "Import CSV",
   "catalog.csv.modalTitle": "Import products via CSV",
   "catalog.csv.instructions": "Expected format: nom,description,prix,categorie,quantite,seuil_alerte. Required columns: nom and prix.",

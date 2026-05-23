@@ -246,12 +246,12 @@ a|
 | *US-CAT-07*
 | En tant que vendeur, je peux exporter mon catalogue produits au format CSV afin de le consulter ou le réimporter ultérieurement.
 a|
-- [ ] Un bouton « Exporter CSV » est disponible dans la section gestion du catalogue du back-office vendeur
-- [ ] Le fichier généré contient toutes les fiches produits (publiées et archivées) avec les colonnes : `nom,description,prix,categorie,quantite,seuil_alerte,statut`
-- [ ] Le fichier est téléchargé directement par le navigateur avec le nom `catalogue_export_YYYYMMDD.csv`
-- [ ] L'encodage du fichier est UTF-8 avec BOM pour compatibilité tableur
-- [ ] L'export est accessible uniquement aux comptes vendeur authentifiés (FS-V02 / CS-01)
-| À faire
+- [x] Un bouton « Exporter CSV » est disponible dans la section gestion du catalogue du back-office vendeur
+- [x] Le fichier généré contient toutes les fiches produits (publiées et archivées) avec les colonnes : `nom,description,prix,categorie,quantite,seuil_alerte,statut`
+- [x] Le fichier est téléchargé directement par le navigateur avec le nom `catalogue_export_YYYYMMDD.csv`
+- [x] L'encodage du fichier est UTF-8 avec BOM pour compatibilité tableur
+- [x] L'export est accessible uniquement aux comptes vendeur authentifiés (FS-V02 / CS-01)
+| Terminée
 
 |===
 

@@ -86,6 +86,9 @@ public class Account {
     /** @return the account UUID */
     public UUID getId() { return id; }
 
+    /** @param id the account UUID (used in tests and deserialization) */
+    public void setId(UUID id) { this.id = id; }
+
     /** @return the email address */
     public String getEmail() { return email; }
 

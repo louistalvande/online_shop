@@ -334,6 +334,9 @@ docker compose up --build
 
 # Run DB migrations only
 ./mvnw flyway:migrate
+
+# Repair Flyway metadata (fix checksum mismatches after a migration file was edited)
+./mvnw flyway:repair
 ```
 
 ---

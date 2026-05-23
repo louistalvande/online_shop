@@ -135,6 +135,19 @@ public interface ProductController {
     ResponseEntity<StockAlertResponse> acknowledgeAlert(Principal principal, @PathVariable UUID alertId);
 
     /**
+     * Exports all the vendor's products as a UTF-8 CSV file with BOM (US-CAT-07).
+     * The response includes a {@code Content-Disposition: attachment} header with a
+     * date-stamped filename ({@code catalogue_export_YYYYMMDD.csv}).
+     *
+     * @param principal the authenticated vendor principal
+     * @return the CSV file bytes with HTTP 200
+     */
+    @Operation(summary = "Export all vendor products as a CSV file")
+    @ApiResponse(responseCode = "200", description = "CSV file returned")
+    @GetMapping(value = "/products/export", produces = "text/csv;charset=UTF-8")
+    ResponseEntity<byte[]> exportProducts(Principal principal);
+
+    /**
      * Imports products from a UTF-8 CSV file (US-CAT-06).
      * Valid rows are created even if other rows fail (partial import).
      * Returns 400 when the file is empty or the CSV header is invalid.

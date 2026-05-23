@@ -18,6 +18,8 @@ import java.io.IOException;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.security.Principal;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.UUID;
 
@@ -92,6 +94,25 @@ public class ProductControllerImpl implements ProductController {
     @Override
     public ResponseEntity<StockAlertResponse> acknowledgeAlert(Principal principal, UUID alertId) {
         return ResponseEntity.ok(productService.acknowledgeAlert(principal.getName(), alertId));
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public ResponseEntity<byte[]> exportProducts(Principal principal) {
+        String csv = productService.exportProductsCsv(principal.getName());
+        byte[] bom = new byte[]{(byte) 0xEF, (byte) 0xBB, (byte) 0xBF};
+        byte[] csvBytes = csv.getBytes(StandardCharsets.UTF_8);
+        byte[] body = new byte[bom.length + csvBytes.length];
+        System.arraycopy(bom, 0, body, 0, bom.length);
+        System.arraycopy(csvBytes, 0, body, bom.length, csvBytes.length);
+
+        String filename = "catalogue_export_"
+                + LocalDate.now().format(DateTimeFormatter.BASIC_ISO_DATE)
+                + ".csv";
+        return ResponseEntity.ok()
+                .header("Content-Disposition", "attachment; filename=\"" + filename + "\"")
+                .header("Content-Type", "text/csv; charset=UTF-8")
+                .body(body);
     }
 
     /** {@inheritDoc} */
