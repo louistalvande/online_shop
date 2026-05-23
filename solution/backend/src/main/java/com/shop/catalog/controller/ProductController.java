@@ -1,5 +1,7 @@
 package com.shop.catalog.controller;
 
+import com.shop.catalog.dto.BulkStockUpdateRequest;
+import com.shop.catalog.dto.BulkStockUpdateResponse;
 import com.shop.catalog.dto.CreateProductRequest;
 import com.shop.catalog.dto.CsvImportResponse;
 import com.shop.catalog.dto.ProductResponse;
@@ -133,6 +135,21 @@ public interface ProductController {
     @ApiResponse(responseCode = "404", description = "Alert not found")
     @PatchMapping("/alerts/{alertId}/acknowledge")
     ResponseEntity<StockAlertResponse> acknowledgeAlert(Principal principal, @PathVariable UUID alertId);
+
+    /**
+     * Updates stock quantity and alert threshold for multiple products in one request (US-CAT-08).
+     * Each product is processed independently; partial failures are reported per-product.
+     *
+     * @param principal the authenticated vendor principal
+     * @param request   the bulk stock update payload
+     * @return per-product results with totals, HTTP 200
+     */
+    @Operation(summary = "Bulk update stock for multiple products")
+    @ApiResponse(responseCode = "200", description = "Bulk update processed — may contain per-product errors")
+    @ApiResponse(responseCode = "400", description = "Invalid input")
+    @PatchMapping("/products/stocks")
+    ResponseEntity<BulkStockUpdateResponse> bulkUpdateStock(Principal principal,
+                                                             @Valid @RequestBody BulkStockUpdateRequest request);
 
     /**
      * Exports all the vendor's products as a UTF-8 CSV file with BOM (US-CAT-07).

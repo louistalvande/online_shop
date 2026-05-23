@@ -42,6 +42,29 @@ export interface UpdateStockPayload {
   stockAlertThreshold: number
 }
 
+export interface BulkStockUpdateItem {
+  productId: string
+  quantity: number
+  stockAlertThreshold: number
+}
+
+export interface BulkStockUpdatePayload {
+  updates: BulkStockUpdateItem[]
+}
+
+export interface BulkStockUpdateResult {
+  productId: string
+  status: 'UPDATED' | 'ERROR'
+  message: string | null
+  product: Product | null
+}
+
+export interface BulkStockUpdateResponse {
+  totalUpdated: number
+  totalErrors: number
+  results: BulkStockUpdateResult[]
+}
+
 export interface CsvImportRowResult {
   lineNumber: number
   status: 'CREATED' | 'ERROR'
@@ -129,6 +152,16 @@ export async function acknowledgeAlert(alertId: string): Promise<StockAlert> {
     headers: authHeaders(),
   })
   return handleResponse<StockAlert>(res)
+}
+
+/** Bulk-updates stock quantity and alert threshold for multiple products (US-CAT-08). */
+export async function bulkUpdateStocks(payload: BulkStockUpdatePayload): Promise<BulkStockUpdateResponse> {
+  const res = await fetch('/api/vendor/products/stocks', {
+    method: 'PATCH',
+    headers: authHeaders(),
+    body: JSON.stringify(payload),
+  })
+  return handleResponse<BulkStockUpdateResponse>(res)
 }
 
 /** Exports all vendor products as a UTF-8 CSV file and triggers a browser download (US-CAT-07). */

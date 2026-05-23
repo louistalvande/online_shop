@@ -117,6 +117,14 @@
   "catalog.csv.row.created": "Created",
   "catalog.csv.row.error": "Error",
 
+  "catalog.stock.pendingChanges": "{{count}} pending change(s)",
+  "catalog.stock.saveChanges": "Save changes",
+  "catalog.stock.discardChanges": "Discard changes",
+  "catalog.stock.saving": "Saving…",
+  "catalog.stock.saveSuccess": "{{updated}} stock(s) updated.",
+  "catalog.stock.savePartial": "{{updated}} updated, {{errors}} error(s).",
+  "catalog.stock.saveError": "Error updating stocks.",
+
   "orders.list.title": "My orders",
   "orders.list.empty": "No orders yet.",
   "orders.paymentMethod": "Payment method",

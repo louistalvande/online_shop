@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { Button, Card } from '@workspace/theme'
 import {
   listProducts, archiveProduct, listPendingAlerts, acknowledgeAlert,
-  exportProductsCsv, importProductsCsv,
+  exportProductsCsv, importProductsCsv, bulkUpdateStocks,
   type Product, type StockAlert, type CsvImportResponse,
 } from './api/productApi'
 import ProductFormModal from './ProductFormModal'
@@ -46,6 +46,11 @@ export default function CatalogPage() {
   // CSV export state (US-CAT-07)
   const [exporting, setExporting] = useState(false)
 
+  // Bulk stock edit state (US-CAT-08)
+  const [stockEdits, setStockEdits] = useState<Record<string, { quantity: number; stockAlertThreshold: number }>>({})
+  const [bulkSaving, setBulkSaving] = useState(false)
+  const [bulkResult, setBulkResult] = useState<{ updated: number; errors: number } | null>(null)
+
   // CSV import state (US-CAT-06)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [csvImporting, setCsvImporting] = useState(false)
@@ -68,6 +73,41 @@ export default function CatalogPage() {
   }, [t])
 
   useEffect(() => { load() }, [load])
+
+  function handleStockEdit(productId: string, field: 'quantity' | 'stockAlertThreshold', raw: string) {
+    const parsed = parseInt(raw, 10)
+    if (isNaN(parsed) || parsed < 0) return
+    const product = products.find(p => p.id === productId)
+    if (!product) return
+    const current = stockEdits[productId] ?? { quantity: product.quantity, stockAlertThreshold: product.stockAlertThreshold }
+    const updated = { ...current, [field]: parsed }
+    if (updated.quantity === product.quantity && updated.stockAlertThreshold === product.stockAlertThreshold) {
+      setStockEdits(prev => { const n = { ...prev }; delete n[productId]; return n })
+    } else {
+      setStockEdits(prev => ({ ...prev, [productId]: updated }))
+    }
+  }
+
+  async function handleBulkSave() {
+    const updates = Object.entries(stockEdits).map(([productId, vals]) => ({
+      productId,
+      quantity: vals.quantity,
+      stockAlertThreshold: vals.stockAlertThreshold,
+    }))
+    if (updates.length === 0) return
+    setBulkSaving(true)
+    setBulkResult(null)
+    try {
+      const res = await bulkUpdateStocks({ updates })
+      setStockEdits({})
+      setBulkResult({ updated: res.totalUpdated, errors: res.totalErrors })
+      await load()
+    } catch {
+      alert(t('catalog.stock.saveError'))
+    } finally {
+      setBulkSaving(false)
+    }
+  }
 
   async function handleArchive(product: Product) {
     if (!window.confirm(t('catalog.archiveConfirm', { name: product.name }))) return
@@ -199,6 +239,45 @@ export default function CatalogPage() {
         </label>
       </div>
 
+      {/* Bulk stock save banner (US-CAT-08) */}
+      {Object.keys(stockEdits).length > 0 && (
+        <div style={{
+          background: '#fff8e1', border: '1px solid #f0a500', borderRadius: 8,
+          padding: '12px 20px', display: 'flex', alignItems: 'center',
+          justifyContent: 'space-between', marginBottom: 16,
+        }}>
+          <span style={{ fontSize: 14, color: '#b8431a', fontWeight: 600 }}>
+            {t('catalog.stock.pendingChanges', { count: Object.keys(stockEdits).length })}
+          </span>
+          <div style={{ display: 'flex', gap: 12 }}>
+            <Button variant="ghost" size="sm" onClick={() => setStockEdits({})}>
+              {t('catalog.stock.discardChanges')}
+            </Button>
+            <Button variant="primary" size="sm" disabled={bulkSaving} onClick={handleBulkSave}>
+              {bulkSaving ? t('catalog.stock.saving') : t('catalog.stock.saveChanges')}
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {/* Bulk save result feedback */}
+      {bulkResult && (
+        <div style={{
+          background: bulkResult.errors > 0 ? '#fef3e2' : '#e8f5e9',
+          border: `1px solid ${bulkResult.errors > 0 ? '#f0a500' : '#2e7d32'}`,
+          borderRadius: 8, padding: '10px 20px', marginBottom: 16, fontSize: 14,
+          color: bulkResult.errors > 0 ? '#b8431a' : '#1a7a2e', fontWeight: 600,
+          display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+        }}>
+          <span>
+            {bulkResult.errors > 0
+              ? t('catalog.stock.savePartial', { updated: bulkResult.updated, errors: bulkResult.errors })
+              : t('catalog.stock.saveSuccess', { updated: bulkResult.updated })}
+          </span>
+          <Button variant="ghost" size="sm" onClick={() => setBulkResult(null)}>✕</Button>
+        </div>
+      )}
+
       {loading && <p style={{ color: 'var(--text-muted)' }}>{t('catalog.loading')}</p>}
       {error && (
         <div>
@@ -232,8 +311,36 @@ export default function CatalogPage() {
                   <td style={{ padding: '14px 16px', fontWeight: 600 }}>{p.name}</td>
                   <td style={{ padding: '14px 16px', color: 'var(--text-muted)' }}>{p.category ?? '—'}</td>
                   <td style={{ padding: '14px 16px', fontWeight: 600 }}>{p.priceExclTax.toFixed(2)} €</td>
-                  <td style={{ padding: '14px 16px' }}>{p.quantity}</td>
-                  <td style={{ padding: '14px 16px', color: 'var(--text-muted)' }}>{p.stockAlertThreshold}</td>
+                  <td style={{ padding: '8px 16px' }}>
+                    <input
+                      type="number"
+                      min={0}
+                      value={stockEdits[p.id]?.quantity ?? p.quantity}
+                      aria-label={t('catalog.col.quantity')}
+                      onChange={e => handleStockEdit(p.id, 'quantity', e.target.value)}
+                      style={{
+                        width: 64, padding: '4px 8px', fontSize: 14,
+                        border: `1px solid ${stockEdits[p.id]?.quantity !== undefined ? '#f0a500' : 'var(--border)'}`,
+                        borderRadius: 6,
+                        background: stockEdits[p.id]?.quantity !== undefined ? '#fff8e1' : undefined,
+                      }}
+                    />
+                  </td>
+                  <td style={{ padding: '8px 16px' }}>
+                    <input
+                      type="number"
+                      min={0}
+                      value={stockEdits[p.id]?.stockAlertThreshold ?? p.stockAlertThreshold}
+                      aria-label={t('catalog.col.threshold')}
+                      onChange={e => handleStockEdit(p.id, 'stockAlertThreshold', e.target.value)}
+                      style={{
+                        width: 64, padding: '4px 8px', fontSize: 14,
+                        border: `1px solid ${stockEdits[p.id]?.stockAlertThreshold !== undefined ? '#f0a500' : 'var(--border)'}`,
+                        borderRadius: 6,
+                        background: stockEdits[p.id]?.stockAlertThreshold !== undefined ? '#fff8e1' : undefined,
+                      }}
+                    />
+                  </td>
                   <td style={{ padding: '14px 16px' }}><StockBadge product={p} /></td>
                   <td style={{ padding: '14px 16px' }}>
                     <span style={{
