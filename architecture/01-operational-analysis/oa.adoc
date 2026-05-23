@@ -290,7 +290,7 @@ rectangle "Application e-commerce" {
   }
   package "Livraison et retour" {
     usecase (Suivre la livraison) as UC_B5
-    usecase "Demander un retour\naprès expédition\n(email au vendeur)" as UC_B7
+    usecase (Demander une annulation\naprès expédition) as UC_B7
   }
 }
 
@@ -613,7 +613,7 @@ NOTE: Le diagramme de séquence détaillant les échanges entre acteurs et syst�
 
 | UC_B7
 | Demander une annulation après expédition
-| Contacter le vendeur pour demander l'annulation d'une commande déjà expédiée ; le vendeur décide d'accepter ou de refuser. En cas d'acceptation avec condition de renvoi : renvoyer le colis au vendeur avant d'obtenir le remboursement. En cas d'acceptation sans condition de renvoi : recevoir le remboursement directement sans obligation de renvoyer le colis.
+| Depuis son espace commandes, basculer une commande en état « expédiée » vers « demande d'annulation » en saisissant un message expliquant la situation au vendeur. Le vendeur peut alors accepter sans condition de renvoi (remboursement immédiat), accepter avec condition de renvoi (le colis doit être retourné avant remboursement), ou refuser la demande.
 |===
 
 === Transporteur (système externe)

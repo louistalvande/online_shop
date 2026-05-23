@@ -610,12 +610,22 @@ include::diagrams/ihm/ihm-pa-virement-en-attente.puml[]
 
 ==== Suivi de commande
 
-Accès au numéro de suivi et au lien vers le site du transporteur (FS-B08 / FS-C01 / CS-05). Le lien est une URL sortante — le suivi de l'acheminement s'effectue directement sur le site du transporteur (IFS-05). A ce stade, l'acheteur peut demander une annulation de commande uniquement par e-mail.
+Accès au numéro de suivi et au lien vers le site du transporteur (FS-B08 / FS-C01 / CS-05). Le lien est une URL sortante — le suivi de l'acheminement s'effectue directement sur le site du transporteur (IFS-05). Un bouton « Demander une annulation » est affiché tant que la commande est en état `expédiée` ; il ouvre le formulaire de demande d'annulation après expédition (FS-B12).
 
 .Maquette filaire : Portail Acheteur — Suivi de commande
 [plantuml, ihm-pa-suivi-commande, svg]
 ----
 include::diagrams/ihm/ihm-pa-suivi-commande.puml[]
+----
+
+==== Demande d'annulation après expédition
+
+Formulaire affiché lorsque l'acheteur clique sur « Demander une annulation » depuis l'écran de suivi d'une commande `expédiée` (FS-B12). Un champ texte obligatoire permet de saisir un message expliquant la situation au vendeur. La soumission fait passer la commande en état `demande_annulation` et notifie le vendeur.
+
+.Maquette filaire : Portail Acheteur — Demande d'annulation après expédition
+[plantuml, ihm-pa-annulation-post-expedition, svg]
+----
+include::diagrams/ihm/ihm-pa-annulation-post-expedition.puml[]
 ----
 
 ==== Annulation d'une commande
@@ -714,7 +724,7 @@ include::diagrams/ihm/ihm-bov-expedition.puml[]
 
 ==== Annulation après expédition
 
-Écran de traitement d'une demande d'annulation reçue après expédition (FS-V08). Le vendeur choisit entre trois options : accepter avec condition de renvoi (commande → `en_attente_retour`), accepter sans condition de renvoi (remboursement immédiat), ou refuser. Les conséquences de chaque choix sont explicitées inline pour éviter les erreurs.
+Écran de traitement d'une demande d'annulation reçue après expédition (FS-V08). Affiché pour les commandes en état `demande_annulation`. Le message saisi par l'acheteur lors de sa demande (FS-B12) est affiché en lecture seule. Le vendeur choisit entre trois options : accepter sans condition de renvoi (remboursement immédiat, commande → `annulée`), accepter avec condition de renvoi (commande → `en_attente_retour`), ou refuser (commande → `expédiée`). Les conséquences de chaque choix sont explicitées inline pour éviter les erreurs.
 
 .Maquette filaire : Back-office Vendeur — Annulation après expédition
 [plantuml, ihm-bov-annulation-post-expedition, svg]

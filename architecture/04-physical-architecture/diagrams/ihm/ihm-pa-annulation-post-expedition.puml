@@ -1,0 +1,21 @@
+@startsalt
+' Composant PA : Portail Acheteur
+' Fonction allouée : FS-B12 — Demande d'annulation après expédition
+' Couvre : saisie du message acheteur, transition commande → demande_annulation
+title Portail Acheteur — Demande d'annulation après expédition
+
+{+
+  == Demande d'annulation — Commande #CMD-2025-0039
+  Statut : Expédiée le 12/01/2025
+  ==
+  Veuillez expliquer la situation au vendeur :
+  {SI
+  "                                        "
+  "                                        "
+  "                                        "
+  }
+  <i>Ce message sera transmis au vendeur avec votre demande.</i>
+  --
+  [Annuler]   [Envoyer la demande]
+}
+@endsalt

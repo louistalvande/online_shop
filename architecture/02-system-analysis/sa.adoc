@@ -313,6 +313,7 @@ Les fonctions système (FS) sont dérivées des cas d'utilisation opérationnels
 | FS-B08 | Afficher le numéro de suivi et le lien vers le site du transporteur dans l'espace commandes | UC_B5
 | FS-B09 | Permettre l'annulation d'une commande avant expédition | UC_B6
 | FS-B11 | Gérer le carnet d'adresses de livraison de l'acheteur : ajouter, modifier, supprimer des adresses et définir une adresse par défaut | UC_B_ACC
+| FS-B12 | Permettre à l'acheteur de soumettre une demande d'annulation depuis son espace commandes pour une commande en état `expédiée`, en saisissant un message expliquant la situation au vendeur ; la commande passe en état `demande_annulation` et le vendeur est notifié | UC_B7
 |===
 
 === Interfaces externes
@@ -383,7 +384,8 @@ package "Acheteur" {
   [FS-B06\nTunnel d'achat] as FSB06
   [FS-B07\nPaiement] as FSB07
   [FS-B08\nSuivi commande] as FSB08
-  [FS-B09\nAnnulation] as FSB09
+  [FS-B09\nAnnulation\navant expéd.] as FSB09
+  [FS-B12\nDemande annul.\naprès expéd.] as FSB12
 }
 
 package "Vendeur" {
@@ -422,6 +424,7 @@ FSB06 --> FSV04 : création commande
 FSB07 --> FSP01 : autorisation
 FSB08 --> FSC01 : affichage suivi
 FSB09 --> FSP03 : remboursement
+FSB12 --> FSV08 : demande annulation post-expéd.
 FSP02 --> FSV04 : confirmation paiement
 FSV04 --> FSV03 : vérif. stock
 FSV05 --> FSC01 : URL transporteur
@@ -629,10 +632,10 @@ a|
 | Acheteur (principal) ; Vendeur (secondaire — post-expédition uniquement) ; Prestataire de paiement (secondaire)
 
 | *Préconditions*
-| Commande existante dans l'état `en_attente` ou `en_préparation` (avant expédition), ou dans l'état `expédiée` (après expédition)
+| Commande existante dans l'état `en_attente` ou `en_préparation` (avant expédition), ou dans l'état `expédiée` (après expédition — demande via FS-B12)
 
 | *Déclencheur*
-| L'acheteur soumet une demande d'annulation depuis son espace commandes
+| L'acheteur soumet une demande d'annulation depuis son espace commandes. Pour une commande `expédiée`, il saisit obligatoirement un message expliquant la situation au vendeur (FS-B12) ; la commande passe en état `demande_annulation`.
 
 | *Scénario nominal — annulation avant expédition, paiement par carte*
 a|
@@ -651,25 +654,25 @@ a|
 
 | *Scénario alternatif — annulation après expédition, avec condition de renvoi*
 a|
-* *2b.* Le colis est déjà expédié. Le vendeur accepte l'annulation **avec condition de renvoi** : le système passe la commande en état `en_attente_retour` et notifie l'acheteur qu'il doit renvoyer le colis.
+* *2b.* La commande est en état `demande_annulation`. Le vendeur accepte **avec condition de renvoi** : le système passe la commande en état `en_attente_retour` et notifie l'acheteur qu'il doit renvoyer le colis.
 * *3b.* L'acheteur renvoie le colis ; le vendeur confirme la réception dans le système.
 * *4b-carte.* Si paiement par carte : le système déclenche le remboursement via le prestataire (FS-P03) ; la commande passe en état `annulée`.
 * *4b-virement.* Si paiement par virement : le système passe en état `remboursement_virement_en_cours` et notifie le vendeur d'émettre un virement inverse (IBAN + montant fournis). Le vendeur confirme l'émission (FS-V10) ; la commande passe en état `annulée`.
 
 | *Scénario alternatif — annulation après expédition, sans condition de renvoi*
 a|
-* *2c-carte.* Le colis est déjà expédié. Le vendeur accepte **sans condition de renvoi**, paiement par carte : le système déclenche immédiatement le remboursement (FS-P03) ; la commande passe en état `annulée`.
+* *2c-carte.* La commande est en état `demande_annulation`. Le vendeur accepte **sans condition de renvoi**, paiement par carte : le système déclenche immédiatement le remboursement (FS-P03) ; la commande passe en état `annulée`.
 * *2c-virement.* Le vendeur accepte **sans condition de renvoi**, paiement par virement : le système passe en état `remboursement_virement_en_cours` et notifie le vendeur d'émettre un virement inverse. Le vendeur confirme l'émission (FS-V10) ; la commande passe en état `annulée`.
 
 | *Scénarios d'erreur*
 a|
-* *3d.* Le vendeur refuse la demande d'annulation après expédition : le système notifie l'acheteur du refus ; la commande reste dans son état courant.
+* *3d.* Le vendeur refuse la demande d'annulation après expédition : le système notifie l'acheteur du refus ; la commande repasse en état `expédiée`.
 
 | *Postconditions*
 | Commande en état `en_attente_retour` (attente du retour), `remboursement_virement_en_cours` (virement inverse en attente de confirmation vendeur) ou `annulée` (remboursement confirmé) ; stock libéré si applicable.
 
 | *Exigences liées*
-| FS-B09, FS-V08, FS-P03, FS-V10
+| FS-B09, FS-B12, FS-V08, FS-P03, FS-V10
 |===
 
 === UCSA-02 : Gérer son compte
@@ -1443,7 +1446,7 @@ class Commande {
   + id : UUID
   + modeLivraison : String
   + montantTotal : Decimal
-  + statut : Enum {paiement_en_attente_virement,\nen_attente, en_préparation,\nexpédiée, en_attente_retour,\nlivrée, annulée}
+  + statut : Enum {paiement_en_attente_virement,\nen_attente, en_préparation,\nexpédiée, demande_annulation,\nen_attente_retour, livrée, annulée}
   + dateCommande : DateTime
 }
 
@@ -1563,7 +1566,8 @@ La matrice ci-dessous assure la couverture complète de chaque besoin opération
 | UC_B3 / UC_B4B | Passer une commande / choisir la livraison | FS-B06 | UCSA-05
 | UC_B4 | Effectuer un paiement | FS-B07, FS-P01, FS-P02 | UCSA-05
 | UC_B5 | Suivre la livraison (numéro de suivi + lien site transporteur) | FS-B08, FS-C01 | UCSA-08
-| UC_B6 / UC_V7 | Annuler une commande | FS-B09, FS-V08, FS-P03 | UCSA-06
+| UC_B6 | Annuler une commande avant expédition | FS-B09, FS-P03 | UCSA-06
+| UC_B7 | Demander une annulation après expédition | FS-B12, FS-V08 | UCSA-06
 | UC_V0 | Mettre à jour son compte (vendeur), dont la langue de notification (CS-10) | FS-V01 | UCSA-02
 | UC_V9 | Gérer les annonces défilantes | FS-V11 | UCSA-15
 | UC_V1 | Gérer le catalogue produits | FS-V02 | UCSA-10

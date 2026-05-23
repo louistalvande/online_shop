@@ -200,8 +200,8 @@ NOTE: L'administrateur n'a pas accès aux données personnelles des comptes (nom
 | UC_B6, Activités acheteur, Diagramme d'activité
 
 | BES-ACH-012
-| L'acheteur a besoin de contacter le vendeur pour demander l'annulation ou le retour d'une commande déjà expédiée, et d'être informé de l'acceptation ou du refus de sa demande.
-| UC_B7, Activités acheteur, Diagramme de séquence
+| L'acheteur a besoin de demander l'annulation d'une commande déjà expédiée depuis son espace commandes, en saisissant un message expliquant la situation au vendeur. La commande passe en état « demande d'annulation ». L'acheteur doit être notifié de la décision du vendeur (acceptation sans renvoi, acceptation avec renvoi du colis, ou refus).
+| UC_B7, Activités acheteur
 
 | BES-ACH-013
 | L'acheteur a besoin de gérer un carnet d'adresses de livraison : ajouter plusieurs adresses, les modifier, les supprimer et en désigner une par défaut, afin de sélectionner rapidement une adresse existante lors du passage d'une commande.
