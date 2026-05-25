@@ -573,6 +573,10 @@ Les exigences suivantes découlent du Règlement Général sur la Protection des
 | RGPD-PBD-002
 | Par défaut, aucune donnée personnelle n'est partagée avec des tiers à des fins de profilage ou de marketing. Les emails envoyés sont exclusivement transactionnels (activation de compte, confirmation de commande, notification d'expédition, remboursement). Toute extension à des emails marketing nécessite un consentement explicite et une exigence dédiée.
 | Art. 25 §2, Art. 6 §1a
+
+| RGPD-PBD-003
+| *Conditionnel — à implémenter uniquement si des cookies non essentiels sont introduits (analytics, tracking, pub, chat).* Tant que la plateforme n'utilise que des cookies strictement nécessaires (session, authentification JWT, panier), aucun bandeau de consentement n'est requis. Si un cookie non essentiel est ajouté, la plateforme doit : (1) afficher un bandeau de consentement conforme CNIL avant tout dépôt de cookie non essentiel, (2) publier une politique de confidentialité listant les cookies, leurs finalités et durées de conservation, (3) permettre le retrait du consentement aussi facilement qu'il a été donné.
+| ePrivacy (dir. 2002/58/CE), Art. 6 §1a, Art. 7
 |===
 
 === Consentement marketing (Art. 6 §1a, Art. 7)
