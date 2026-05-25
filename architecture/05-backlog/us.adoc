@@ -516,11 +516,11 @@ _Fonctions ARCADIA : FS-V07 — UCSA-11 — LA : Service Rapport_
 | *US-RPT-01*
 | En tant que vendeur, je peux consulter les indicateurs de ventes sur une période donnée et exporter les données.
 a|
-- [ ] Indicateurs : chiffre d'affaires, nombre de commandes, panier moyen, taux d'annulation
-- [ ] Classement des produits les plus vendus (dérivé des `LigneCommande`)
-- [ ] Filtres par période et par catégorie
-- [ ] Export CSV téléchargeable côté client
-| À faire
+- [x] Indicateurs : chiffre d'affaires, nombre de commandes, panier moyen, taux d'annulation
+- [x] Classement des produits les plus vendus (dérivé des `LigneCommande`)
+- [x] Filtres par période et par catégorie
+- [x] Export CSV téléchargeable côté client
+| Terminée
 
 |===
 
