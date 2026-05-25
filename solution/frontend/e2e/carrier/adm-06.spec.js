@@ -6,7 +6,7 @@ import { loginAsAdmin } from '../helpers/login.js';
 test.describe('US-ADM-06 — Add carrier', () => {
   test.beforeEach(async ({ page }) => {
     await loginAsAdmin(page);
-    await page.goto('/#carriers');
+    await page.goto('/admin/#carriers');
   });
 
   test('nominal — creates a carrier with active status', async ({ page }) => {

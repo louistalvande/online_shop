@@ -14,7 +14,7 @@ test.describe('US-ADM-05 — Change account role', () => {
       role: 'BUYER',
     });
     await loginAsAdmin(page);
-    await page.goto('/#users');
+    await page.goto('/admin/#users');
   });
 
   test('nominal — changes role from BUYER to VENDOR, takes effect immediately', async ({ page }) => {
@@ -24,7 +24,9 @@ test.describe('US-ADM-05 — Change account role', () => {
 
     await expect(page.getByText('Modifier le compte')).toBeVisible();
     await page.getByLabel('Rôle').selectOption('VENDOR');
+    const refreshPromise = page.waitForResponse(res => res.url().includes('/api/admin/accounts') && res.status() === 200);
     await page.getByRole('button', { name: 'Enregistrer' }).click();
+    await refreshPromise;
 
     await expect(page.getByText('Compte mis à jour.')).toBeVisible();
     await expect(row.getByText('Vendeur')).toBeVisible();

@@ -12,7 +12,7 @@ test.describe('US-ADM-02 — Suspend account', () => {
       role: 'BUYER',
     });
     await loginAsAdmin(page);
-    await page.goto('/#users');
+    await page.goto('/admin/#users');
 
     const row = page.locator('tr').filter({ hasText: account.email });
     await row.locator('button').last().click();
@@ -33,7 +33,7 @@ test.describe('US-ADM-02 — Suspend account', () => {
       role: 'BUYER',
     });
     await loginAsAdmin(page);
-    await page.goto('/#users');
+    await page.goto('/admin/#users');
 
     const row = page.locator('tr').filter({ hasText: account.email });
     await row.locator('button').last().click();

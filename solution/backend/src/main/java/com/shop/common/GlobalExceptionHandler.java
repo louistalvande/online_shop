@@ -2,6 +2,8 @@ package com.shop.common;
 
 import com.shop.account.exception.AccountNotFoundException;
 import com.shop.account.exception.DeliveryAddressNotFoundException;
+import com.shop.announcement.exception.AnnouncementNotFoundException;
+import com.shop.announcement.exception.UnsupportedImageTypeException;
 import com.shop.account.exception.LastActiveAddressException;
 import com.shop.report.exception.InvalidPeriodException;
 import com.shop.account.exception.EmailAlreadyUsedException;
@@ -405,6 +407,36 @@ public class GlobalExceptionHandler {
         String message = messageSource.getMessage("error.order.missing.buyer.iban", null, locale);
         return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY)
                 .body(Map.of("error", "MISSING_BUYER_IBAN", "message", message));
+    }
+
+    /**
+     * Handles announcement not found or not owned by the authenticated vendor — returns HTTP 404 (US-ANN-01).
+     *
+     * @param ex     the exception
+     * @param locale the request locale
+     * @return a 404 response with a localised error body
+     */
+    @ExceptionHandler(AnnouncementNotFoundException.class)
+    public ResponseEntity<Map<String, String>> handleAnnouncementNotFound(
+            AnnouncementNotFoundException ex, Locale locale) {
+        String message = messageSource.getMessage("error.announcement.not.found", null, locale);
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(Map.of("error", "ANNOUNCEMENT_NOT_FOUND", "message", message));
+    }
+
+    /**
+     * Handles upload of an unsupported image type — returns HTTP 400 (US-ANN-01).
+     *
+     * @param ex     the exception
+     * @param locale the request locale
+     * @return a 400 response with a localised error body
+     */
+    @ExceptionHandler(UnsupportedImageTypeException.class)
+    public ResponseEntity<Map<String, String>> handleUnsupportedImageType(
+            UnsupportedImageTypeException ex, Locale locale) {
+        String message = messageSource.getMessage("error.announcement.image.type", null, locale);
+        return ResponseEntity.badRequest()
+                .body(Map.of("error", "UNSUPPORTED_IMAGE_TYPE", "message", message));
     }
 
     /**

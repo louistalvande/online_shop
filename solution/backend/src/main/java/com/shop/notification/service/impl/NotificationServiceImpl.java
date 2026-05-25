@@ -7,7 +7,6 @@ import com.sendgrid.SendGrid;
 import com.sendgrid.helpers.mail.Mail;
 import com.sendgrid.helpers.mail.objects.Content;
 import com.sendgrid.helpers.mail.objects.Email;
-import com.shop.claim.dto.ClaimResponse;
 import com.shop.notification.service.NotificationService;
 import com.shop.order.dto.OrderResponse;
 import org.slf4j.Logger;
@@ -267,45 +266,6 @@ public class NotificationServiceImpl implements NotificationService {
                 new Object[]{order.getOrderNumber()}, locale);
         String htmlBody = messageSource.getMessage("email.cancellation.refused.buyer.body.html",
                 new Object[]{order.getOrderNumber()}, locale);
-        sendEmail(toEmail, subject, htmlBody);
-    }
-
-    /** {@inheritDoc} */
-    @Async
-    @Override
-    public void sendClaimOpenedEmail(String toEmail, ClaimResponse claim, Locale locale) {
-        if (!sendGridConfigured) {
-            log.info("[EMAIL] Claim opened notification for {} — order #{} reason={}", toEmail, claim.getOrderNumber(), claim.getReason());
-            return;
-        }
-        String subject = messageSource.getMessage("email.claim.opened.subject", new Object[]{claim.getOrderNumber()}, locale);
-        String htmlBody = messageSource.getMessage("email.claim.opened.body.html", new Object[]{claim.getOrderNumber(), claim.getReason(), claim.getMessage()}, locale);
-        sendEmail(toEmail, subject, htmlBody);
-    }
-
-    /** {@inheritDoc} */
-    @Async
-    @Override
-    public void sendClaimGrantedEmail(String toEmail, ClaimResponse claim, Locale locale) {
-        if (!sendGridConfigured) {
-            log.info("[EMAIL] Claim granted notification for {} — order #{}", toEmail, claim.getOrderNumber());
-            return;
-        }
-        String subject = messageSource.getMessage("email.claim.granted.subject", new Object[]{claim.getOrderNumber()}, locale);
-        String htmlBody = messageSource.getMessage("email.claim.granted.body.html", new Object[]{claim.getOrderNumber()}, locale);
-        sendEmail(toEmail, subject, htmlBody);
-    }
-
-    /** {@inheritDoc} */
-    @Async
-    @Override
-    public void sendClaimRefusedEmail(String toEmail, ClaimResponse claim, Locale locale) {
-        if (!sendGridConfigured) {
-            log.info("[EMAIL] Claim refused notification for {} — order #{}", toEmail, claim.getOrderNumber());
-            return;
-        }
-        String subject = messageSource.getMessage("email.claim.refused.subject", new Object[]{claim.getOrderNumber()}, locale);
-        String htmlBody = messageSource.getMessage("email.claim.refused.body.html", new Object[]{claim.getOrderNumber()}, locale);
         sendEmail(toEmail, subject, htmlBody);
     }
 

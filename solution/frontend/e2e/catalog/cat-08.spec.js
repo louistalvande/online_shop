@@ -73,7 +73,7 @@ test.describe('US-CAT-08 — Bulk stock update', () => {
     await expect(page.getByText('1 stock(s) mis à jour.')).toBeVisible();
     // Alert panel should appear for Produit Stock A
     await expect(page.getByText('Alertes stock')).toBeVisible();
-    await expect(page.getByText('Produit Stock A')).toBeVisible();
+    await expect(page.locator('strong').filter({ hasText: 'Produit Stock A' })).toBeVisible();
   });
 
   test('cancel — discard changes resets inputs to original values', async ({ page }) => {

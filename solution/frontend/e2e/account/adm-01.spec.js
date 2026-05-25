@@ -6,7 +6,7 @@ import { loginAsAdmin } from '../helpers/login.js';
 test.describe('US-ADM-01 — Create account', () => {
   test.beforeEach(async ({ page }) => {
     await loginAsAdmin(page);
-    await page.goto('/#users');
+    await page.goto('/admin/#users');
   });
 
   test('nominal — creates a buyer account and shows it in the list', async ({ page }) => {

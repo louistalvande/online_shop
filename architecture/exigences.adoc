@@ -131,7 +131,7 @@ NOTE: L'administrateur n'a pas accès aux données personnelles des comptes (nom
 | UC_V6, Activités vendeur
 
 | BES-VND-011
-| Le vendeur a besoin de créer, modifier et supprimer des annonces défilantes affichées sur la page d'accueil de la boutique.
+| Le vendeur a besoin de créer, modifier, réordonner et supprimer des annonces défilantes affichées sur la page d'accueil de la boutique. Il doit pouvoir associer à chaque annonce une image en orientation portrait ou paysage : la boutique détecte automatiquement l'orientation à partir des dimensions de l'image et la catégorise sans intervention manuelle.
 | UC_V9, Activités vendeur
 
 | BES-VND-012
@@ -206,6 +206,10 @@ NOTE: L'administrateur n'a pas accès aux données personnelles des comptes (nom
 | BES-ACH-013
 | L'acheteur a besoin de gérer un carnet d'adresses de livraison : ajouter plusieurs adresses, les modifier, les supprimer et en désigner une par défaut, afin de sélectionner rapidement une adresse existante lors du passage d'une commande.
 | UC_B_ACC, Activités acheteur
+
+| BES-ACH-014
+| L'acheteur a besoin que les annonces défilantes affichées sur la page d'accueil respectent l'orientation naturelle de chaque image (portrait affiché en format réduit centré, paysage affiché en pleine largeur), afin de garantir une expérience visuelle optimale sans distorsion.
+| UC_V9, Activités acheteur
 |===
 
 ---
@@ -278,6 +282,7 @@ Le tableau ci-dessous relie chaque besoin opérationnel aux activités et cas d'
 | BES-ACH-011 | Acheteur | UC_B6 — Annuler une commande (avant expédition)
 | BES-ACH-012 | Acheteur | UC_B7 — Demander une annulation après expédition
 | BES-ACH-013 | Acheteur | UC_B_ACC — Gérer le carnet d'adresses de livraison
+| BES-ACH-014 | Acheteur | UC_V9 — Affichage des annonces adapté à l'orientation des images
 |===
 
 ---

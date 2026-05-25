@@ -54,6 +54,8 @@ app:
   security:
     max-login-attempts: 5
     lockout-duration-seconds: 900
+  upload-dir: ${APP_UPLOAD_DIR:uploads/announcements}
+  upload-base-url: ${APP_UPLOAD_BASE_URL:/uploads/announcements}
 
 sendgrid:
   api-key: ${SENDGRID_API_KEY:}

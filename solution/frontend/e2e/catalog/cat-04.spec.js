@@ -30,8 +30,9 @@ test.describe('US-CAT-04 — Stock management', () => {
     // Stock and threshold columns visible
     await expect(page.getByRole('columnheader', { name: 'Qté' })).toBeVisible();
     await expect(page.getByRole('columnheader', { name: 'Seuil' })).toBeVisible();
-    await expect(page.getByText('8')).toBeVisible();
-    await expect(page.getByText('OK')).toBeVisible();
+    const productRow = page.locator('tr').filter({ hasText: 'Encre de chine' });
+    await expect(productRow.getByText('8')).toBeVisible();
+    await expect(productRow.getByText('OK')).toBeVisible();
   });
 
   test('product with quantity=0 shows "Rupture" badge', async ({ page }) => {

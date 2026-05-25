@@ -270,5 +270,10 @@
   "orders.psc.submitting": "Submitting…",
   "orders.psc.pendingVendorDecision": "Your cancellation request is awaiting the vendor's decision.",
   "maintenance.title": "Platform under maintenance",
-  "maintenance.message": "Our platform is temporarily unavailable for maintenance. Please try again in a few moments."
+  "maintenance.message": "Our platform is temporarily unavailable for maintenance. Please try again in a few moments.",
+
+  "carousel.label": "Scrolling announcements",
+  "carousel.prev": "Previous",
+  "carousel.next": "Next",
+  "carousel.goTo": "Go to announcement"
 }
