@@ -264,27 +264,3 @@ CREATE TABLE platform_settings (
 INSERT INTO platform_settings (key, value) VALUES ('maintenance_mode', 'false');
 
 
--- Claims domain (US-CLM-01, US-CLM-02)
--- One claim per order per buyer; multiple claims allowed after the previous one is closed.
-
-CREATE TABLE claims (
-    id           UUID         PRIMARY KEY DEFAULT gen_random_uuid(),
-    order_id     UUID         NOT NULL REFERENCES orders(id),
-    order_number VARCHAR(50)  NOT NULL,
-    buyer_id     UUID         NOT NULL REFERENCES accounts(id),
-    buyer_email  VARCHAR(255) NOT NULL,
-    vendor_id    UUID         NOT NULL REFERENCES accounts(id),
-    vendor_email VARCHAR(255) NOT NULL,
-    reason       VARCHAR(30)  NOT NULL,
-    message      TEXT         NOT NULL,
-    status       VARCHAR(20)  NOT NULL DEFAULT 'OPEN',
-    decision     VARCHAR(20),
-    created_at   TIMESTAMP    NOT NULL DEFAULT NOW(),
-    updated_at   TIMESTAMP    NOT NULL DEFAULT NOW()
-);
-
-CREATE INDEX idx_claims_buyer_id  ON claims (buyer_id);
-CREATE INDEX idx_claims_vendor_id ON claims (vendor_id);
-CREATE INDEX idx_claims_order_id  ON claims (order_id);
-CREATE INDEX idx_claims_status    ON claims (status);
-

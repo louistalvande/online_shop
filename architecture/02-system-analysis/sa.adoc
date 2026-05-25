@@ -251,7 +251,7 @@ wbsDiagram {
 ***_ FS-V05, FS-C01, FS-B08 <<funcs>>
 
 ** CAPS-006 — Service client <<caps>>
-***_ FS-B09, FS-V06, FS-V08 <<funcs>>
+***_ FS-B09, FS-V08 <<funcs>>
 
 ** CAPS-007 — Reporting & vitrine <<caps>>
 ***_ FS-V07, FS-V11 <<funcs>>

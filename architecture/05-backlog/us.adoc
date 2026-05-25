@@ -480,31 +480,6 @@ a|
 
 |===
 
-== Litiges et réclamations
-
-_Fonctions ARCADIA : FS-V06, FS-P03 — UCSA-09 — LA : Service Commande / Service Paiement_
-
-[cols="1,3,4,1", options="header"]
-|===
-| ID | User story | Critères d'acceptation | Statut
-
-| *US-CLM-01*
-| En tant qu'acheteur, je peux ouvrir une réclamation depuis mon espace commandes en précisant le motif.
-a|
-- [ ] Formulaire avec sélection du motif (non-réception, article défectueux, etc.) et champ libre
-- [ ] Réclamation créée en statut `ouverte` ; vendeur notifié
-| À faire
-
-| *US-CLM-02*
-| En tant que vendeur, je peux consulter les réclamations ouvertes et décider d'accorder ou de refuser un remboursement.
-a|
-- [ ] Liste des réclamations `ouvertes` avec le message acheteur dans le back-office
-- [ ] Remboursement accordé → déclenché via Stripe ; réclamation passe en `clôturée` ; acheteur notifié
-- [ ] Refus → réclamation passe en `clôturée` ; acheteur notifié du refus
-| À faire
-
-|===
-
 == Rapports de ventes
 
 _Fonctions ARCADIA : FS-V07 — UCSA-11 — LA : Service Rapport_
@@ -651,14 +626,13 @@ a|
 | FS-V14 | Mise à jour en masse des stocks | US-CAT-08
 | FS-V04 | Traiter les commandes reçues | US-VND-01
 | FS-V05 | Déclarer l'expédition avec numéro de suivi | US-EXP-01
-| FS-V06 | Traiter les litiges et réclamations | US-CLM-01, US-CLM-02
 | FS-V07 | Consulter les rapports de ventes | US-RPT-01
 | FS-V08 | Traiter les annulations (avant/après expédition) | US-CAN-02, US-CAN-03, US-CAN-04
 | FS-V09 | Confirmer la réception d'un virement bancaire | US-VND-02
 | FS-C01 | Afficher le n° de suivi et l'URL transporteur | US-EXP-02
 | FS-P01 | Demander une autorisation de paiement | US-ORD-03
 | FS-P02 | Confirmer / refuser la transaction | US-ORD-03, US-ORD-05
-| FS-P03 | Déclencher un remboursement | US-CAN-02, US-CAN-03, US-CAN-04, US-CLM-02
+| FS-P03 | Déclencher un remboursement | US-CAN-02, US-CAN-03, US-CAN-04
 | FS-A05 | Basculer en mode maintenance | US-ADM-10
 | FS-V11 | Gérer les annonces défilantes | US-ANN-01
 | FS-B09 (acheteur post-expédition) | Demander annulation après expédition | US-CAN-06
