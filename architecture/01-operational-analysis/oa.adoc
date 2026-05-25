@@ -26,7 +26,7 @@ La boutique repose sur trois acteurs distincts. L'**administrateur** est l'uniqu
 
 | *Vendeur*
 | Propriétaire et exploitant de la boutique
-| Mettre à jour ses données de compte, gérer le catalogue produits, administrer les stocks, traiter les commandes reçues, gérer les expéditions vers les pays de la zone euro (déposer le colis auprès du transporteur, récupérer le numéro de suivi sur le reçu et le saisir dans la boutique), confirmer manuellement la réception des virements bancaires, consulter les rapports de ventes, traiter les litiges et réclamations, traiter les annulations après expédition en choisissant entre annulation avec condition de renvoi du colis ou annulation directe sans renvoi
+| Mettre à jour ses données de compte, gérer le catalogue produits, administrer les stocks, traiter les commandes reçues, gérer les expéditions vers les pays de la zone euro (déposer le colis auprès du transporteur, récupérer le numéro de suivi sur le reçu et le saisir dans la boutique), confirmer manuellement la réception des virements bancaires, consulter les rapports de ventes, traiter les demandes d'annulation après expédition reçues par email de l'acheteur en choisissant entre annulation avec condition de renvoi du colis ou annulation directe sans renvoi
 
 | *Acheteur*
 | Client de la boutique (résidant dans la zone euro)
@@ -76,6 +76,10 @@ Les contraintes suivantes sont issues du contexte d'usage réel des acteurs et s
 | COp-06
 | Sécurité des communications et des transactions financières
 | Toutes les communications entre les acteurs et la plateforme doivent être protégées contre l'interception et la falsification. Les données bancaires des acheteurs ne transitent jamais en clair et ne sont pas stockées sur la plateforme. _(SEC-TLS-001..003)_
+
+| COp-07
+| Consentement explicite pour les communications marketing
+| L'acheteur doit donner un consentement libre, éclairé et non pré-coché pour recevoir des emails à finalité commerciale (campagnes, promotions). Ce consentement est indépendant de l'inscription et peut être retiré à tout moment sans impact sur l'accès à la boutique. _(RGPD Art. 6 §1a, Art. 7 — RGPD-CONS-001..004)_
 |===
 
 === Capacités opérationnelles
@@ -113,7 +117,7 @@ Les capacités expriment ce que la boutique doit être en mesure d'accomplir pou
 
 | CAP-006
 | Service client
-| Annuler des commandes, traiter les litiges et réclamations, gérer les retours après expédition
+| Annuler une commande avant expédition (acheteur en autonomie) ; demander une annulation après expédition par email au vendeur ; traiter et répondre à ces demandes
 | Acheteur, Vendeur
 
 | CAP-007
@@ -135,6 +139,8 @@ Les cas d'utilisation opérationnels sont répartis en trois vues focalisées, u
 
 [plantuml, oa-uc-admin, svg]
 ----
+scale 0.6
+skinparam padding 15
 skinparam actorStyle awesome
 skinparam usecase {
   BackgroundColor #FEFEFE
@@ -145,8 +151,6 @@ skinparam actor {
   BackgroundColor #E8F4FD
   BorderColor #2E75B6
 }
-
-left to right direction
 
 actor "Administrateur" as Admin
 rectangle "Transporteur\n(système externe)" as Carrier <<system>>
@@ -185,6 +189,8 @@ UC_A2b --> Carrier
 
 [plantuml, oa-uc-vendor, svg]
 ----
+scale 0.6
+skinparam padding 15
 skinparam actorStyle awesome
 skinparam usecase {
   BackgroundColor #FEFEFE
@@ -195,8 +201,6 @@ skinparam actor {
   BackgroundColor #E8F4FD
   BorderColor #2E75B6
 }
-
-left to right direction
 
 actor "Vendeur" as Vendor
 rectangle "Transporteur\n(système externe)" as Carrier <<system>>
@@ -209,15 +213,15 @@ rectangle "Application e-commerce" {
   package "Catalogue et stocks" {
     usecase (Gérer le catalogue\nproduits) as UC_V1
     usecase (Gérer les stocks) as UC_V2
+    usecase (Mettre à jour les stocks\nen masse — vue liste) as UC_V10
   }
   package "Commandes et expéditions" {
     usecase (Traiter les commandes\nreçues) as UC_V3
     usecase (Expédier vers\nla zone euro) as UC_V4
   }
   package "Service client et reporting" {
-    usecase (Traiter les litiges\net réclamations) as UC_V5
     usecase (Consulter les rapports\nde ventes) as UC_V6
-    usecase (Traiter un retour\naprès expédition) as UC_V8
+    usecase (Traiter une annulation\naprès expédition) as UC_V8
   }
   package "Vitrine" {
     usecase (Gérer les annonces\ndéfilantes) as UC_V9
@@ -228,9 +232,9 @@ Vendor --> UC_V_AUTH
 Vendor --> UC_V0
 Vendor --> UC_V1
 Vendor --> UC_V2
+Vendor --> UC_V10
 Vendor --> UC_V3
 Vendor --> UC_V4
-Vendor --> UC_V5
 Vendor --> UC_V6
 Vendor --> UC_V8
 Vendor --> UC_V9
@@ -239,10 +243,11 @@ UC_V1 ..> UC_V_AUTH : <<include>>
 UC_V2 ..> UC_V_AUTH : <<include>>
 UC_V3 ..> UC_V_AUTH : <<include>>
 UC_V4 ..> UC_V_AUTH : <<include>>
-UC_V5 ..> UC_V_AUTH : <<include>>
 UC_V6 ..> UC_V_AUTH : <<include>>
 UC_V8 ..> UC_V_AUTH : <<include>>
 UC_V9 ..> UC_V_AUTH : <<include>>
+UC_V10 ..> UC_V_AUTH : <<include>>
+UC_V10 ..> UC_V2 : <<extend>>
 UC_V4 --> Carrier
 ----
 
@@ -250,6 +255,8 @@ UC_V4 --> Carrier
 
 [plantuml, oa-uc-buyer, svg]
 ----
+scale 0.6
+skinparam padding 15
 skinparam actorStyle awesome
 skinparam usecase {
   BackgroundColor #FEFEFE
@@ -260,8 +267,6 @@ skinparam actor {
   BackgroundColor #E8F4FD
   BorderColor #2E75B6
 }
-
-left to right direction
 
 actor "Acheteur" as Buyer
 rectangle "Service de\nmessagerie" as Mail <<system>>
@@ -289,7 +294,7 @@ rectangle "Application e-commerce" {
   }
   package "Livraison et retour" {
     usecase (Suivre la livraison) as UC_B5
-    usecase "Demander un retour\naprès expédition\n(email au vendeur)" as UC_B7
+    usecase (Demander une annulation\naprès expédition) as UC_B7
   }
 }
 
@@ -521,7 +526,11 @@ NOTE: Le diagramme de séquence détaillant les échanges entre acteurs et syst�
 
 | UC_V2
 | Gérer les stocks
-| Suivre les niveaux de stock, anticiper les ruptures, effectuer les réapprovisionnements ; mettre à jour les stocks de plusieurs produits simultanément depuis la vue liste
+| Suivre les niveaux de stock, anticiper les ruptures et effectuer les réapprovisionnements
+
+| UC_V10
+| Mettre à jour les stocks en masse — vue liste
+| Modifier les quantités en stock et les seuils d'alerte de plusieurs produits simultanément depuis la vue liste du catalogue, sans ouvrir chaque fiche individuellement ; soumettre toutes les modifications en une seule opération ; recevoir un compte-rendu par produit en cas d'erreur partielle
 
 | UC_V3
 | Traiter les commandes
@@ -530,10 +539,6 @@ NOTE: Le diagramme de séquence détaillant les échanges entre acteurs et syst�
 | UC_V4
 | Gérer les expéditions vers la zone euro
 | Préparer le colis, le déposer auprès d'un transporteur (ex. La Poste), récupérer le numéro de suivi sur le reçu, puis saisir ce numéro dans la boutique pour marquer la commande comme expédiée et notifier l'acheteur
-
-| UC_V5
-| Traiter les litiges et réclamations
-| Répondre aux demandes de remboursement, gérer les retours produits
 
 | UC_V8
 | Traiter une annulation après expédition
@@ -612,7 +617,11 @@ NOTE: Le diagramme de séquence détaillant les échanges entre acteurs et syst�
 
 | UC_B7
 | Demander une annulation après expédition
-| Contacter le vendeur pour demander l'annulation d'une commande déjà expédiée ; le vendeur décide d'accepter ou de refuser. En cas d'acceptation avec condition de renvoi : renvoyer le colis au vendeur avant d'obtenir le remboursement. En cas d'acceptation sans condition de renvoi : recevoir le remboursement directement sans obligation de renvoyer le colis.
+| Depuis son espace commandes, basculer une commande en état « expédiée » vers « demande d'annulation » en saisissant un message expliquant la situation au vendeur. Le vendeur peut alors accepter sans condition de renvoi (remboursement immédiat), accepter avec condition de renvoi (le colis doit être retourné avant remboursement), ou refuser la demande.
+
+| UC_B_MKTG
+| Gérer son consentement marketing
+| Cocher ou décocher l'opt-in marketing à l'inscription ou depuis son espace compte ; retirer son consentement à tout moment (COp-07)
 |===
 
 === Transporteur (système externe)

@@ -153,6 +153,10 @@ Un compte suspendu ou supprimé ne peut pas s'authentifier. Les messages d'erreu
 | CS-21
 | Détection des comportements d'authentification anormaux (SEC-LOG-002)
 | Les journaux d'authentification doivent permettre la détection de comportements anormaux (tentatives répétées, connexions depuis des adresses ou localisations inhabituelles) et faciliter les investigations en cas d'incident.
+
+| CS-22
+| Consentement marketing explicite (COp-07 / RGPD-CONS-001..004)
+| Le système doit collecter, stocker et respecter le consentement marketing de chaque acheteur : case à cocher non pré-cochée à l'inscription, modifiable depuis l'espace compte, horodatée. Seuls les acheteurs consentants (`consentement_marketing = true`) peuvent être inclus dans un export à des fins de campagne.
 |===
 
 == Capacités système
@@ -191,7 +195,7 @@ Les capacités système raffinent les capacités opérationnelles (CAP-xxx) de l
 | CAPS-006
 | Assurer le service client et les remboursements
 | CAP-006
-| FS-B09, FS-V06, FS-V08
+| FS-B09, FS-V08
 
 | CAPS-007
 | Fournir le reporting et la gestion de la vitrine
@@ -287,7 +291,6 @@ Les fonctions système (FS) sont dérivées des cas d'utilisation opérationnels
 | FS-V14 | Mettre à jour les niveaux de stock de plusieurs produits simultanément depuis une vue liste | UC_V2
 | FS-V04 | Recevoir et traiter les nouvelles commandes (notification, vérification stock) | UC_V3
 | FS-V05 | Permettre au vendeur de déclarer l'expédition d'une commande en saisissant le numéro de suivi récupéré sur le reçu de dépôt physique ; passer la commande en état `expédiée` et notifier l'acheteur avec ce numéro | UC_V4
-| FS-V06 | Traiter les litiges et réclamations (remboursement, retour) | UC_V5
 | FS-V07 | Consulter les rapports de ventes (CA, produits, historique) | UC_V6
 | FS-V08 | Traiter les demandes d'annulation après expédition : accepter ou refuser ; en cas d'acceptation, choisir entre annulation avec condition de renvoi ou annulation directe sans renvoi | UC_V7
 | FS-V09 | Confirmer manuellement la réception d'un virement bancaire et déclencher la prise en charge de la commande correspondante | —
@@ -295,6 +298,7 @@ Les fonctions système (FS) sont dérivées des cas d'utilisation opérationnels
 | FS-V11 | Créer, modifier, réordonner et supprimer les annonces défilantes affichées sur la page d'accueil ; chaque annonce comporte un contenu texte, une image ou les deux, et un lien de redirection optionnel au clic | UC_V9
 | FS-V12 | Importer en masse de nouveaux produits depuis un fichier CSV : validation du format, création des fiches produits, rapport d'erreurs ligne par ligne | UC_V1
 | FS-V13 | Exporter le catalogue produits au format CSV (toutes les fiches actives et archivées) | UC_V1
+| FS-V15 | Exporter la liste des acheteurs ayant donné leur consentement marketing (`consentement_marketing = true`) au format CSV (email, prénom, nom), destiné à l'import dans un outil de mailing externe (CS-22 / RGPD-CONS-003) | UC_B_MKTG
 |===
 
 === Expérience d'achat (Acheteur)
@@ -314,6 +318,8 @@ Les fonctions système (FS) sont dérivées des cas d'utilisation opérationnels
 | FS-B08 | Afficher le numéro de suivi et le lien vers le site du transporteur dans l'espace commandes | UC_B5
 | FS-B09 | Permettre l'annulation d'une commande avant expédition | UC_B6
 | FS-B11 | Gérer le carnet d'adresses de livraison de l'acheteur : ajouter, modifier, supprimer des adresses et définir une adresse par défaut | UC_B_ACC
+| FS-B12 | Permettre à l'acheteur de soumettre une demande d'annulation depuis son espace commandes pour une commande en état `expédiée`, en saisissant un message expliquant la situation au vendeur ; la commande passe en état `demande_annulation` et le vendeur est notifié | UC_B7
+| FS-B13 | Collecter le consentement marketing de l'acheteur à l'inscription (case opt-in non pré-cochée) et permettre sa modification depuis l'espace compte ; horodater chaque changement de statut | UC_B_MKTG
 |===
 
 === Interfaces externes
@@ -357,84 +363,7 @@ Les fonctions de sécurité transverse *FS-S01 à FS-S13* (validation des entré
 .Dépendances fonctionnelles entre fonctions système (SA)
 [plantuml, sa-fs-relations, svg]
 ----
-skinparam componentStyle rectangle
-skinparam defaultFontSize 9
-skinparam shadowing false
-skinparam ArrowColor #444444
-skinparam componentBackgroundColor #FEFEFE
-skinparam componentBorderColor #2E75B6
-skinparam packageBackgroundColor #EEF4FB
-skinparam packageBorderColor #2E75B6
-skinparam noteBackgroundColor #FFFBE6
-skinparam noteBorderColor #F0A500
-
-left to right direction
-
-package "Administrateur" {
-  [FS-A01\nCréer compte] as FSA01
-}
-
-package "Acheteur" {
-  [FS-B01\nInscription] as FSB01
-  [FS-B10\nActivation compte] as FSB10
-  [FS-B03\nCatalogue] as FSB03
-  [FS-B04\nPanier] as FSB04
-  [FS-B05\nPersistance panier] as FSB05
-  [FS-B11\nAdresses] as FSB11
-  [FS-B06\nTunnel d'achat] as FSB06
-  [FS-B07\nPaiement] as FSB07
-  [FS-B08\nSuivi commande] as FSB08
-  [FS-B09\nAnnulation] as FSB09
-}
-
-package "Vendeur" {
-  [FS-V02\nCatalogue CRUD] as FSV02
-  [FS-V03\nStock] as FSV03
-  [FS-V04\nCommandes] as FSV04
-  [FS-V05\nExpédition] as FSV05
-  [FS-V06\nLitiges] as FSV06
-  [FS-V08\nAnnulation post-exp.] as FSV08
-  [FS-V09\nConf. virement] as FSV09
-  [FS-V10\nRembours. virement] as FSV10
-  [FS-V12\nImport CSV] as FSV12
-  [FS-V13\nExport CSV] as FSV13
-  [FS-V14\nStock multiple] as FSV14
-}
-
-package "Paiement" {
-  [FS-P01\nAutorisation] as FSP01
-  [FS-P02\nConfirmation] as FSP02
-  [FS-P03\nRemboursement] as FSP03
-}
-
-package "Transporteur" {
-  [FS-C01\nSuivi transporteur] as FSC01
-}
-
-note "FS-S01–S07 : sécurité transverse\n(s'appliquent à toutes les FS)" as NoteS
-
-FSA01 --> FSB10 : activation
-FSB01 --> FSB10 : activation
-FSB03 --> FSV02 : lecture
-FSB05 --> FSB04 : restauration
-FSB06 --> FSB04 : contenu panier
-FSB06 --> FSB11 : adresse livraison
-FSB06 --> FSB07 : paiement
-FSB06 --> FSV04 : création commande
-FSB07 --> FSP01 : autorisation
-FSB08 --> FSC01 : affichage suivi
-FSB09 --> FSP03 : remboursement
-FSP02 --> FSV04 : confirmation paiement
-FSV04 --> FSV03 : vérif. stock
-FSV05 --> FSC01 : URL transporteur
-FSV05 --> FSB08 : notif. acheteur
-FSV06 --> FSP03 : remboursement litige
-FSV08 --> FSP03 : remboursement carte
-FSV08 --> FSV10 : virement inverse
-FSV09 --> FSV04 : déclenchement
-FSV12 --> FSV02 : import
-FSV13 --> FSV02 : export
-FSV14 --> FSV03 : maj stock
+include::diagrams/sa-fs-relations.puml[]
 ----
 
 == Diagramme de cas d'utilisation système
@@ -478,7 +407,6 @@ rectangle "Système — Application e-commerce" {
     usecase (UCSA-02\nGérer son compte) as UC02
     usecase (UCSA-10\nGérer le catalogue\net les stocks) as UC10
     usecase (UCSA-07\nPréparer et expédier\nune commande) as UC07
-    usecase (UCSA-09\nTraiter un litige\nou une réclamation) as UC09
     usecase (UCSA-11\nConsulter les rapports\nde ventes) as UC11
     usecase (UCSA-13\nConfirmer la réception\nd'un virement bancaire) as UC13
     usecase (UCSA-15\nGérer les annonces\ndéfilantes) as UC15
@@ -633,10 +561,10 @@ a|
 | Acheteur (principal) ; Vendeur (secondaire — post-expédition uniquement) ; Prestataire de paiement (secondaire)
 
 | *Préconditions*
-| Commande existante dans l'état `en_attente` ou `en_préparation` (avant expédition), ou dans l'état `expédiée` (après expédition)
+| Commande existante dans l'état `en_attente` ou `en_préparation` (avant expédition), ou dans l'état `expédiée` (après expédition — demande via FS-B12)
 
 | *Déclencheur*
-| L'acheteur soumet une demande d'annulation depuis son espace commandes
+| L'acheteur soumet une demande d'annulation depuis son espace commandes. Pour une commande `expédiée`, il saisit obligatoirement un message expliquant la situation au vendeur (FS-B12) ; la commande passe en état `demande_annulation`.
 
 | *Scénario nominal — annulation avant expédition, paiement par carte*
 a|
@@ -655,25 +583,25 @@ a|
 
 | *Scénario alternatif — annulation après expédition, avec condition de renvoi*
 a|
-* *2b.* Le colis est déjà expédié. Le vendeur accepte l'annulation **avec condition de renvoi** : le système passe la commande en état `en_attente_retour` et notifie l'acheteur qu'il doit renvoyer le colis.
+* *2b.* La commande est en état `demande_annulation`. Le vendeur accepte **avec condition de renvoi** : le système passe la commande en état `en_attente_retour` et notifie l'acheteur qu'il doit renvoyer le colis.
 * *3b.* L'acheteur renvoie le colis ; le vendeur confirme la réception dans le système.
 * *4b-carte.* Si paiement par carte : le système déclenche le remboursement via le prestataire (FS-P03) ; la commande passe en état `annulée`.
 * *4b-virement.* Si paiement par virement : le système passe en état `remboursement_virement_en_cours` et notifie le vendeur d'émettre un virement inverse (IBAN + montant fournis). Le vendeur confirme l'émission (FS-V10) ; la commande passe en état `annulée`.
 
 | *Scénario alternatif — annulation après expédition, sans condition de renvoi*
 a|
-* *2c-carte.* Le colis est déjà expédié. Le vendeur accepte **sans condition de renvoi**, paiement par carte : le système déclenche immédiatement le remboursement (FS-P03) ; la commande passe en état `annulée`.
+* *2c-carte.* La commande est en état `demande_annulation`. Le vendeur accepte **sans condition de renvoi**, paiement par carte : le système déclenche immédiatement le remboursement (FS-P03) ; la commande passe en état `annulée`.
 * *2c-virement.* Le vendeur accepte **sans condition de renvoi**, paiement par virement : le système passe en état `remboursement_virement_en_cours` et notifie le vendeur d'émettre un virement inverse. Le vendeur confirme l'émission (FS-V10) ; la commande passe en état `annulée`.
 
 | *Scénarios d'erreur*
 a|
-* *3d.* Le vendeur refuse la demande d'annulation après expédition : le système notifie l'acheteur du refus ; la commande reste dans son état courant.
+* *3d.* Le vendeur refuse la demande d'annulation après expédition : le système notifie l'acheteur du refus ; la commande repasse en état `expédiée`.
 
 | *Postconditions*
 | Commande en état `en_attente_retour` (attente du retour), `remboursement_virement_en_cours` (virement inverse en attente de confirmation vendeur) ou `annulée` (remboursement confirmé) ; stock libéré si applicable.
 
 | *Exigences liées*
-| FS-B09, FS-V08, FS-P03, FS-V10
+| FS-B09, FS-B12, FS-V08, FS-P03, FS-V10
 |===
 
 === UCSA-02 : Gérer son compte
@@ -859,44 +787,6 @@ a|
 
 | *Exigences liées*
 | FS-B08, FS-C01, CS-05
-|===
-
-=== UCSA-09 : Traiter un litige ou une réclamation
-
-[cols="1,3", options="header"]
-|===
-| Champ | Description
-
-| *Identifiant*
-| UCSA-09
-
-| *Acteurs*
-| Acheteur (principal) ; Vendeur (secondaire) ; Prestataire de paiement (secondaire)
-
-| *Préconditions*
-| Commande livrée ou annulée ; réclamation non encore ouverte pour cette commande
-
-| *Déclencheur*
-| L'acheteur soumet une réclamation depuis son espace commandes
-
-| *Scénario nominal*
-a|
-. L'acheteur ouvre une réclamation en précisant le motif (non-réception, article défectueux, etc.).
-. Le système enregistre la réclamation (statut « ouverte ») et notifie le vendeur.
-. Le vendeur examine la réclamation et décide de l'issue (retour accepté, remboursement).
-. Si remboursement accordé : le système déclenche le remboursement via le prestataire (FS-P03 / IFS-04).
-. Le prestataire confirme le remboursement.
-. Le système clôture la réclamation et notifie l'acheteur.
-
-| *Scénarios alternatifs*
-a|
-* *3a.* Le vendeur rejette la réclamation : le système notifie l'acheteur du refus ; la réclamation passe en statut « clôturée ».
-
-| *Postconditions*
-| Réclamation clôturée ; remboursement déclenché si applicable.
-
-| *Exigences liées*
-| FS-V06, FS-P03, IFS-04
 |===
 
 === UCSA-10 : Gérer le catalogue et les stocks
@@ -1485,7 +1375,7 @@ class Commande {
   + id : UUID
   + modeLivraison : String
   + montantTotal : Decimal
-  + statut : Enum {paiement_en_attente_virement,\nen_attente, en_préparation,\nexpédiée, en_attente_retour,\nlivrée, annulée}
+  + statut : Enum {paiement_en_attente_virement,\nen_attente, en_préparation,\nexpédiée, demande_annulation,\nen_attente_retour, livrée, annulée}
   + dateCommande : DateTime
 }
 
@@ -1514,13 +1404,6 @@ class Transporteur {
   + actif : Boolean
 }
 
-class Réclamation {
-  + id : UUID
-  + motif : String
-  + statut : Enum {ouverte, résolue, clôturée}
-  + dateOuverture : DateTime
-}
-
 class AdresseLivraison {
   + id : UUID
   + libellé : String
@@ -1540,7 +1423,6 @@ Commande "1" *-- "1..*" LigneCommande : contient
 LigneCommande "0..*" --> "1" Produit : référence
 Commande "1" *-- "1" Paiement : réglée par
 Commande "1" *-- "0..1" Expédition : donne lieu à
-Commande "1" --> "0..*" Réclamation : fait l'objet de
 Commande "1" --> "1" AdresseLivraison : livrée à
 Expédition "0..*" --> "1" Transporteur : acheminée par
 
@@ -1613,14 +1495,14 @@ La matrice ci-dessous assure la couverture complète de chaque besoin opération
 | UC_B3 / UC_B4B | Passer une commande / choisir la livraison | FS-B06 | UCSA-05
 | UC_B4 | Effectuer un paiement | FS-B07, FS-P01, FS-P02 | UCSA-05
 | UC_B5 | Suivre la livraison (numéro de suivi + lien site transporteur) | FS-B08, FS-C01 | UCSA-08
-| UC_B6 / UC_V7 | Annuler une commande | FS-B09, FS-V08, FS-P03 | UCSA-06
+| UC_B6 | Annuler une commande avant expédition | FS-B09, FS-P03 | UCSA-06
+| UC_B7 | Demander une annulation après expédition | FS-B12, FS-V08 | UCSA-06
 | UC_V0 | Mettre à jour son compte (vendeur), dont la langue de notification (CS-10) | FS-V01 | UCSA-02
 | UC_V9 | Gérer les annonces défilantes | FS-V11 | UCSA-15
 | UC_V1 | Gérer le catalogue produits | FS-V02 | UCSA-10
 | UC_V2 | Gérer les stocks | FS-V03 | UCSA-10
 | UC_V3 | Traiter les commandes reçues | FS-V04 | UCSA-07
 | UC_V4 | Expédier vers la zone euro — dépôt physique + saisie manuelle du numéro de suivi | FS-V05 | UCSA-07
-| UC_V5 | Traiter les litiges et réclamations | FS-V06, FS-P03 | UCSA-09
 | UC_V6 | Consulter les rapports de ventes | FS-V07 | UCSA-11
 | — | Confirmer réception d'un virement bancaire | FS-V09 | UCSA-13
 | — | Annulation après expédition avec/sans condition de renvoi | FS-V08 | UCSA-06

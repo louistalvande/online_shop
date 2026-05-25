@@ -1,0 +1,75 @@
+@startuml
+skinparam componentStyle rectangle
+skinparam defaultFontSize 9
+skinparam shadowing false
+skinparam ArrowColor #444444
+skinparam noteBackgroundColor #FFFBE6
+skinparam noteBorderColor #F0A500
+
+skinparam component {
+  BackgroundColor #FEFEFE
+  BorderColor #2E75B6
+}
+
+' Administrateur
+[FS-A01 Creer compte] as FSA01 #EEF4FB
+
+' Acheteur
+[FS-B01 Inscription] as FSB01 #EEF4FB
+[FS-B10 Activation compte] as FSB10 #EEF4FB
+[FS-B03 Catalogue] as FSB03 #EEF4FB
+[FS-B04 Panier] as FSB04 #EEF4FB
+[FS-B05 Persistance panier] as FSB05 #EEF4FB
+[FS-B11 Adresses] as FSB11 #EEF4FB
+[FS-B06 Tunnel achat] as FSB06 #EEF4FB
+[FS-B07 Paiement] as FSB07 #EEF4FB
+[FS-B08 Suivi commande] as FSB08 #EEF4FB
+[FS-B09 Annulation avant exped.] as FSB09 #EEF4FB
+[FS-B12 Demande annul. apres exped.] as FSB12 #EEF4FB
+
+' Vendeur
+[FS-V02 Catalogue CRUD] as FSV02 #E8F5E9
+[FS-V03 Stock] as FSV03 #E8F5E9
+[FS-V04 Commandes] as FSV04 #E8F5E9
+[FS-V05 Expedition] as FSV05 #E8F5E9
+[FS-V08 Annulation post-exp.] as FSV08 #E8F5E9
+[FS-V09 Conf. virement] as FSV09 #E8F5E9
+[FS-V10 Rembours. virement] as FSV10 #E8F5E9
+[FS-V12 Import CSV] as FSV12 #E8F5E9
+[FS-V13 Export CSV] as FSV13 #E8F5E9
+[FS-V14 Stock multiple] as FSV14 #E8F5E9
+
+' Paiement
+[FS-P01 Autorisation] as FSP01 #FFF3E0
+[FS-P02 Confirmation] as FSP02 #FFF3E0
+[FS-P03 Remboursement] as FSP03 #FFF3E0
+
+' Transporteur
+[FS-C01 Suivi transporteur] as FSC01 #F3E5F5
+
+note "FS-S01 a S13 : securite transverse\n(s'appliquent a toutes les FS)" as NoteS
+
+FSA01 --> FSB10 : activation
+FSB01 --> FSB10 : activation
+FSB03 --> FSV02 : lecture
+FSB05 --> FSB04 : restauration
+FSB06 --> FSB04 : contenu panier
+FSB06 --> FSB11 : adresse livraison
+FSB06 --> FSB07 : paiement
+FSB06 --> FSV04 : creation commande
+FSB07 --> FSP01 : autorisation
+FSB08 --> FSC01 : affichage suivi
+FSB09 --> FSP03 : remboursement
+FSB12 --> FSV08 : demande annulation post-exped.
+FSP02 --> FSV04 : confirmation paiement
+FSV04 --> FSV03 : verif. stock
+FSV05 --> FSC01 : URL transporteur
+FSV05 --> FSB08 : notif. acheteur
+FSV08 --> FSP03 : remboursement carte
+FSV08 --> FSV10 : virement inverse
+FSV09 --> FSV04 : declenchement
+FSV12 --> FSV02 : import
+FSV13 --> FSV02 : export
+FSV14 --> FSV03 : maj stock
+
+@enduml

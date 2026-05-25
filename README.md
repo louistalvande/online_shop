@@ -77,8 +77,8 @@ On modélise ici les acteurs (opérateurs, systèmes externes), leurs activités
 
 #### 1.2. Analyse du Besoin Système (SA — System Need Analysis)
 
-Que doit faire le système pour satisfaire ce besoin ?
-On définit les fonctions du système vues de l'extérieur (ce qu'il doit accomplir), les interfaces avec les acteurs, et les scénarios d'usage. On reste volontairement agnostique sur l'architecture interne. Les exigences sont déduites de cette analyse fonctionnelle, et non l'inverse.
+Que doit faire le système pour satisfaire ce besoin ? Cette analyse fonctionnelle est déduite des exigences, et non l'inverse.
+On définit les fonctions du système vues de l'extérieur (ce qu'il doit accomplir), les interfaces avec les acteurs, et les scénarios d'usage. On reste volontairement agnostique sur l'architecture interne.
 
 **Exemple simplifié de diagramme SA — Contexte système :**
 
@@ -188,7 +188,7 @@ This phase models the actors (operators, external systems), their operational ac
 #### 1.2. System Need Analysis (SA)
 
 What must the system do to satisfy this need?
-This phase defines the system's functions as seen from the outside (what it must accomplish), its interfaces with actors, and the usage scenarios. The internal architecture is deliberately left unspecified at this stage. Requirements are derived from this functional analysis — not the other way around.
+This phase defines the system's functions as seen from the outside (what it must accomplish), its interfaces with actors, and the usage scenarios. The internal architecture is deliberately left unspecified at this stage. This functional analysis is derived from requirements — not the other way around.
 
 **Simplified SA Diagram Example — System Context:**
 

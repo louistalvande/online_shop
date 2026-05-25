@@ -12,6 +12,8 @@
 
 L'Architecture Logique (LA) définit la *décomposition interne du système* en composants logiques cohérents, leurs responsabilités, leurs interfaces et leurs interactions. Elle répond à la question : *comment le système est-il structuré pour remplir les fonctions identifiées en SA ?*
 
+C'est à ce niveau que l'on travaille la *logique interne du système* : enchaînements de traitements, règles métier, gestion des états et coordination entre composants — indépendamment de toute technologie d'implémentation.
+
 La LA ne choisit pas encore de technologies d'implémentation (langages, frameworks, bases de données) — c'est le rôle de la PA (Physical Architecture). Elle pose les *frontières architecturales stables* sur lesquelles la PA s'appuiera.
 
 NOTE: Chaque composant logique de la LA est tracé vers une ou plusieurs fonctions système (FS) de la SA. Les interfaces logiques (IFL) précisent les contrats d'échange entre composants, indépendamment du protocole de transport retenu en PA.
@@ -23,7 +25,7 @@ NOTE: Chaque composant logique de la LA est tracé vers une ou plusieurs fonctio
 * *Traçabilité SA → LA* — toute fonction système (FS) est allouée à exactement un composant logique.
 * *Isolation des systèmes externes* — les intégrations tierces (paiement, transporteur, messagerie) sont encapsulées dans des composants dédiés de type *adaptateur*.
 
-== Décomposition en composants logiques
+== Allocation des fonctions système aux composants logiques
 
 Le système est structuré en cinq couches logiques : *Présentation*, *Application*, *Domaine*, *Infrastructure* et *Intégrations externes*.
 
@@ -60,7 +62,7 @@ Le système est structuré en cinq couches logiques : *Présentation*, *Applicat
 
 | *Service Commande*
 | Application
-| Orchestration du tunnel d'achat, création et cycle de vie des commandes (états : `paiement_en_attente_virement`, `en_attente`, `en_préparation`, `expédiée`, `en_attente_retour`, `livrée`, `annulée`), gestion des annulations avant et après expédition (avec ou sans condition de renvoi)
+| Orchestration du tunnel d'achat, création et cycle de vie des commandes (états : `paiement_en_attente_virement`, `en_attente`, `en_préparation`, `expédiée`, `demande_annulation`, `en_attente_retour`, `remboursement_virement_en_cours`, `livrée`, `annulée`), gestion des annulations avant et après expédition (avec ou sans condition de renvoi)
 | FS-B06, FS-B09, FS-V04, FS-V07, FS-V08
 
 | *Service Panier*
@@ -105,7 +107,7 @@ Le système est structuré en cinq couches logiques : *Présentation*, *Applicat
 
 | *Référentiel de données*
 | Infrastructure
-| Persistance de toutes les entités métier (comptes, produits avec stock, paniers, commandes, paiements, expéditions, réclamations)
+| Persistance de toutes les entités métier (comptes, produits avec stock, paniers, commandes, paiements, expéditions)
 | Support de toutes les FS
 
 | *Service Sécurité*
@@ -648,6 +650,8 @@ package "Entités métier (SA)" #F0F8FF {
     + statut : Enum {en_attente, actif, suspendu, supprimé}
     + langue : Enum {fr, en}
     + dateCreation : DateTime
+    + consentementMarketing : Boolean
+    + dateConsentementMarketing : DateTime
   }
 
   class AdresseLivraison {
@@ -698,7 +702,7 @@ package "Entités métier (SA)" #F0F8FF {
     + adresseLivraisonId : UUID
     + modeLivraison : String
     + montantTotal : Decimal
-    + statut : Enum {paiement_en_attente_virement,\nen_attente, en_préparation,\nexpédiée, annulation_demandée_après_expédition,\nen_attente_retour,\nremboursement_virement_en_cours,\nlivrée, annulée}
+    + statut : Enum {paiement_en_attente_virement,\nen_attente, en_préparation,\nexpédiée, demande_annulation,\nen_attente_retour,\nremboursement_virement_en_cours,\nlivrée, annulée}
     + dateCommande : DateTime
   }
 
@@ -733,12 +737,6 @@ package "Entités métier (SA)" #F0F8FF {
     + actif : Boolean
   }
 
-  class Réclamation {
-    + id : UUID
-    + motif : String
-    + statut : Enum {ouverte, résolue, clôturée}
-    + dateOuverture : DateTime
-  }
 }
 
 package "Entités techniques (LA)" #FFF8E8 {
@@ -779,7 +777,6 @@ Commande "1" *-- "1..*" LigneCommande : contient
 LigneCommande "0..*" --> "1" Produit : référence
 Commande "1" *-- "1" Paiement : réglée par
 Commande "1" *-- "0..1" Expédition : donne lieu à
-Commande "1" --> "0..*" Réclamation : fait l'objet de
 Expédition "0..*" --> "1" Transporteur : acheminée par
 Paiement "1" *-- "0..*" JournalPaiement : journalisé par
 
@@ -813,7 +810,8 @@ end note
 | FS-B06 | Orchestrer le tunnel d'achat | Service Commande | IFL-04, IFL-06, IFL-08
 | FS-B07 | Soumettre le paiement (CS-02) | Service Paiement, Adaptateur Paiement | IFL-08, IFL-10
 | FS-B08 | Afficher le suivi de livraison | Service Expédition | IFL-05, IFL-13
-| FS-B09 | Annuler une commande | Service Commande | IFL-04, IFL-08
+| FS-B09 | Annuler une commande avant expédition | Service Commande | IFL-04, IFL-08
+| FS-B12 | Soumettre une demande d'annulation après expédition avec message | Service Commande | IFL-04, IFL-13
 | FS-B10 | Activer le compte via token (CS-07) | Service Compte | IFL-01, IFL-13
 | FS-V02 | Gérer le catalogue produits | Service Catalogue | IFL-02, IFL-13
 | FS-V03 | Gérer les stocks et alertes | Service Catalogue | IFL-06, IFL-09, IFL-13
@@ -822,7 +820,6 @@ end note
 | FS-V13 | Exporter le catalogue au format CSV | Service Catalogue | IFL-02, IFL-13
 | FS-V04 | Traiter les commandes reçues | Service Commande | IFL-04, IFL-09, IFL-13
 | FS-V05 | Déclarer l'expédition avec saisie du numéro de suivi | Service Expédition | IFL-05, IFL-09, IFL-13
-| FS-V06 | Traiter les litiges et réclamations | Service Commande, Service Paiement | IFL-04, IFL-08
 | FS-V07 | Consulter les rapports de ventes | Service Rapport | IFL-07, IFL-13
 | FS-V08 | Traiter les annulations (avant/après expédition, avec/sans renvoi) | Service Commande | IFL-04, IFL-08
 | FS-V09 | Confirmer la réception d'un virement bancaire | Service Paiement, Service Commande | IFL-08, IFL-13

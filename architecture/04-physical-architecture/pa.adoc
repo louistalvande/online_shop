@@ -16,9 +16,9 @@ La PA s'appuie directement sur la LA : les composants logiques identifiés sont 
 
 NOTE: Les choix technologiques retenus ci-dessous sont des recommandations architecturales. Ils peuvent être substitués par des équivalents fonctionnels sans remettre en cause les frontières logiques définies en LA.
 
-== Contraintes physiques (CPA)
+== Contraintes physiques
 
-Les contraintes physiques complètent les contraintes système (CS) en ajoutant les exigences d'infrastructure et de déploiement.
+=== Contraintes physiques d'infrastructure
 
 [cols="1,1,3", options="header"]
 |===
@@ -59,6 +59,13 @@ Les contraintes physiques complètent les contraintes système (CS) en ajoutant 
 | CPA-09
 | TLS et en-têtes de sécurité HTTP (CS-13 / SEC-TLS-001..003)
 | Nginx termine TLS 1.3 (TLS 1.2 minimum autorisé ; SSLv3, TLS 1.0, TLS 1.1 interdits) avec des certificats valides. Les en-têtes `Strict-Transport-Security`, `Content-Security-Policy`, `X-Frame-Options: DENY` et `X-Content-Type-Options: nosniff` sont appliqués sur toutes les réponses. Les cookies de session portent les attributs `Secure; HttpOnly; SameSite=Strict`.
+|===
+
+=== Mise en œuvre des exigences de sécurité
+
+[cols="1,1,3", options="header"]
+|===
+| Identifiant | Contrainte physique | Description
 
 | CPA-10
 | Politique de mots de passe et hachage (CS-11, CS-18, CS-20 / SEC-AUTH-001..002, SEC-PWD-001, SEC-STORE-002)
@@ -122,7 +129,7 @@ Les contraintes physiques complètent les contraintes système (CS) en ajoutant 
 
 | Service Compte
 | Module Spring Boot (Java)
-| Authentification JWT — Spring Security + JJWT (CS-08 / CPA-08), hachage BCrypt, gestion des tokens d'activation (CS-07) ; CRUD carnet d'adresses de livraison — entité `delivery_address` (FK vers `account`, suppression logique) ; endpoints REST `/api/profile/addresses` (FS-B11)
+| Authentification JWT — Spring Security + JJWT (CS-08 / CPA-08), hachage BCrypt, gestion des tokens d'activation (CS-07) ; CRUD carnet d'adresses de livraison — entité `delivery_address` (FK vers `account`, suppression logique) ; endpoints REST `/api/profile/addresses` (FS-B11) ; gestion du consentement marketing — colonnes `marketing_consent BOOLEAN DEFAULT FALSE` et `marketing_consent_date TIMESTAMPTZ` sur la table `account` ; endpoint `PUT /api/profile/marketing-consent` (FS-B13)
 
 | Service Catalogue
 | Module Spring Boot (Java)
@@ -150,7 +157,7 @@ Les contraintes physiques complètent les contraintes système (CS) en ajoutant 
 
 | Service Rapport
 | Module Spring Boot (Java)
-| Requêtes JPQL agrégées, génération de statistiques de ventes
+| Requêtes JPQL agrégées, génération de statistiques de ventes ; export CSV des acheteurs consentants — requête `SELECT email, prenom, nom FROM account WHERE marketing_consent = TRUE`, endpoint protégé VENDOR `GET /api/vendeur/export-mailing` (FS-V15 / CS-22)
 
 | Service Annonce
 | Module Spring Boot (Java)
@@ -214,7 +221,7 @@ include::diagrams/pa-deployment.puml[]
 
 == Diagramme de composants physiques
 
-Ce diagramme représente les modules de code et leurs dépendances, regroupés par conteneur de déploiement.
+Ce diagramme représente les composants et leurs dépendances, regroupés par conteneur de déploiement.
 
 [plantuml, pa-components, svg]
 ----
@@ -234,20 +241,20 @@ package "Conteneur : Nginx" {
 }
 
 package "Conteneur : API Spring Boot" {
-  package "Modules métier" {
-    [module-compte] as MCompte
-    [module-catalogue] as MCatalogue
-    [module-panier] as MPanier
-    [module-commande] as MCommande
-    [module-paiement] as MPaiement
-    [module-expedition] as MExpedition
-    [module-notification] as MNotif
-    [module-rapport] as MRapport
-    [module-annonce] as MAnnounce
+  package "Composants métier" {
+    [composant-compte] as MCompte
+    [composant-catalogue] as MCatalogue
+    [composant-panier] as MPanier
+    [composant-commande] as MCommande
+    [composant-paiement] as MPaiement
+    [composant-expedition] as MExpedition
+    [composant-notification] as MNotif
+    [composant-rapport] as MRapport
+    [composant-annonce] as MAnnounce
   }
-  package "Modules transverses" {
-    [module-securite\n(Spring Security)] as MSec
-    [module-journalisation\n(Spring AOP)] as MLog
+  package "Composants transverses" {
+    [composant-securite\n(Spring Security)] as MSec
+    [composant-journalisation\n(Spring AOP)] as MLog
   }
   package "Adaptateurs externes" {
     [adaptateur-stripe\n(SDK Stripe)] as AStripe
@@ -277,7 +284,7 @@ FrontA --> MCompte
 
 MAnnounce --> PgDB
 MLog --> PgDB : audit_log (CPA-13)
-note "MSec et MLog s'appliquent\nde façon transverse à tous\nles modules métier" as NoteSecLog
+note "MSec et MLog s'appliquent\nde façon transverse à tous\nles composants métier" as NoteSecLog
 
 MCompte --> MNotif : envoi token activation
 MCommande --> MCatalogue : réservation stock (IFL-06)
@@ -312,10 +319,10 @@ skinparam noteBackgroundColor #FFFBE6
 skinparam defaultFontSize 10
 
 participant "SPA React\n(Nginx)" as SPA
-participant "API Spring Boot\n(module-commande)" as API
-participant "module-paiement\n(Stripe Java SDK)" as PayMod
-participant "module-catalogue\n(+ stock)" as CatalogMod
-participant "module-notification\n(SendGrid Java SDK)" as NotifMod
+participant "API Spring Boot\n(composant-commande)" as API
+participant "composant-paiement\n(Stripe Java SDK)" as PayMod
+participant "composant-catalogue\n(+ stock)" as CatalogMod
+participant "composant-notification\n(SendGrid Java SDK)" as NotifMod
 participant "PostgreSQL" as PG
 participant "Redis" as Redis
 participant "Stripe API\n(IFS-04)" as Stripe
@@ -433,8 +440,8 @@ skinparam noteBackgroundColor #FFFBE6
 skinparam defaultFontSize 10
 
 participant "SPA React\n(vendor back-office)" as SPA
-participant "API Spring Boot\n(module-expedition)" as API
-participant "module-notification\n(SendGrid Java SDK)" as NotifMod
+participant "API Spring Boot\n(composant-expedition)" as API
+participant "composant-notification\n(SendGrid Java SDK)" as NotifMod
 participant "PostgreSQL" as PG
 participant "SendGrid\n(IFS-06)" as Mail
 
@@ -610,12 +617,22 @@ include::diagrams/ihm/ihm-pa-virement-en-attente.puml[]
 
 ==== Suivi de commande
 
-Accès au numéro de suivi et au lien vers le site du transporteur (FS-B08 / FS-C01 / CS-05). Le lien est une URL sortante — le suivi de l'acheminement s'effectue directement sur le site du transporteur (IFS-05). L'acheteur peut déclencher une annulation ou une réclamation depuis cet écran.
+Accès au numéro de suivi et au lien vers le site du transporteur (FS-B08 / FS-C01 / CS-05). Le lien est une URL sortante — le suivi de l'acheminement s'effectue directement sur le site du transporteur (IFS-05). Un bouton « Demander une annulation » est affiché tant que la commande est en état `expédiée` ; il ouvre le formulaire de demande d'annulation après expédition (FS-B12).
 
 .Maquette filaire : Portail Acheteur — Suivi de commande
 [plantuml, ihm-pa-suivi-commande, svg]
 ----
 include::diagrams/ihm/ihm-pa-suivi-commande.puml[]
+----
+
+==== Demande d'annulation après expédition
+
+Formulaire affiché lorsque l'acheteur clique sur « Demander une annulation » depuis l'écran de suivi d'une commande `expédiée` (FS-B12). Un champ texte obligatoire permet de saisir un message expliquant la situation au vendeur. La soumission fait passer la commande en état `demande_annulation` et notifie le vendeur.
+
+.Maquette filaire : Portail Acheteur — Demande d'annulation après expédition
+[plantuml, ihm-pa-annulation-post-expedition, svg]
+----
+include::diagrams/ihm/ihm-pa-annulation-post-expedition.puml[]
 ----
 
 ==== Annulation d'une commande
@@ -634,21 +651,11 @@ include::diagrams/ihm/ihm-pa-annulation.puml[]
 include::diagrams/ihm/ihm-pa-annulation-virement.puml[]
 ----
 
-==== Réclamation
-
-Formulaire de dépôt d'une réclamation post-livraison (FS-V06). Le motif sélectionné oriente le traitement côté vendeur. La réclamation est créée en état `ouverte` ; le vendeur dispose d'un délai pour répondre avant escalade.
-
-.Maquette filaire : Portail Acheteur — Réclamation
-[plantuml, ihm-pa-reclamation, svg]
-----
-include::diagrams/ihm/ihm-pa-reclamation.puml[]
-----
-
 ==== Mon compte
 
-Gestion du profil acheteur (FS-B02 / FS-B11). Réunit sur quatre onglets : informations personnelles, carnet d'adresses, sécurité, et accès aux commandes. La mise à jour de l'email est soumise à validation d'unicité côté Service Compte. L'onglet « Informations personnelles » inclut un champ `Langue` (liste déroulante `Français` / `English`) permettant à l'acheteur de configurer la langue de ses emails de notification (CS-10).
+Gestion du profil acheteur (FS-B02 / FS-B11). Réunit sur quatre onglets : informations personnelles, carnet d'adresses de livraison, sécurité, et accès aux commandes. La mise à jour de l'email est soumise à validation d'unicité côté Service Compte. L'onglet « Informations personnelles » inclut un champ `Langue` (liste déroulante `Français` / `English`) permettant à l'acheteur de configurer la langue de ses emails de notification (CS-10).
 
-L'onglet « Mes adresses » (FS-B11 / US-PRF-03) expose le CRUD complet du carnet d'adresses via les endpoints `/api/profile/addresses`. L'adresse par défaut est présélectionnée automatiquement à l'étape 1 du tunnel d'achat. La suppression est logique (`supprimé = true`) pour préserver l'intégrité référentielle des commandes passées ; elle est bloquée si l'adresse est la dernière active du compte.
+L'onglet « Mes adresses » (FS-B11 / US-PRF-03) expose le CRUD complet du carnet d'adresses de livraison via les endpoints `/api/profile/addresses`. L'adresse par défaut est présélectionnée automatiquement à l'étape 1 du tunnel d'achat. La suppression est logique (`supprimé = true`) pour préserver l'intégrité référentielle des commandes passées ; elle est bloquée si l'adresse est la dernière active du compte.
 
 Endpoints REST exposés (Service Compte — FS-B11) :
 
@@ -724,7 +731,7 @@ include::diagrams/ihm/ihm-bov-expedition.puml[]
 
 ==== Annulation après expédition
 
-Écran de traitement d'une demande d'annulation reçue après expédition (FS-V08). Le vendeur choisit entre trois options : accepter avec condition de renvoi (commande → `en_attente_retour`), accepter sans condition de renvoi (remboursement immédiat), ou refuser. Les conséquences de chaque choix sont explicitées inline pour éviter les erreurs.
+Écran de traitement d'une demande d'annulation reçue après expédition (FS-V08). Affiché pour les commandes en état `demande_annulation`. Le message saisi par l'acheteur lors de sa demande (FS-B12) est affiché en lecture seule. Le vendeur choisit entre trois options : accepter sans condition de renvoi (remboursement immédiat, commande → `annulée`), accepter avec condition de renvoi (commande → `en_attente_retour`), ou refuser (commande → `expédiée`). Les conséquences de chaque choix sont explicitées inline pour éviter les erreurs.
 
 .Maquette filaire : Back-office Vendeur — Annulation après expédition
 [plantuml, ihm-bov-annulation-post-expedition, svg]
@@ -774,16 +781,6 @@ Formulaire de création et de modification d'un produit (FS-V02 / FS-V03). Les c
 [plantuml, ihm-bov-produit, svg]
 ----
 include::diagrams/ihm/ihm-bov-produit.puml[]
-----
-
-==== Gestion des réclamations
-
-Vue de traitement des réclamations acheteurs (FS-V06). L'onglet « Ouvertes » liste les réclamations en attente de réponse vendeur avec le détail du message acheteur. Le vendeur peut rembourser via le prestataire de paiement (FS-P03) ou rejeter la demande. La réclamation passe en statut `clôturée` dans les deux cas.
-
-.Maquette filaire : Back-office Vendeur — Gestion des réclamations
-[plantuml, ihm-bov-reclamations, svg]
-----
-include::diagrams/ihm/ihm-bov-reclamations.puml[]
 ----
 
 ==== Annonces défilantes
@@ -929,52 +926,52 @@ include::diagrams/ihm/ihm-admin-form-transporteur.puml[]
 | React 18 / TypeScript / Vite
 
 | Service Compte
-| module-compte
+| composant-compte
 | Conteneur API Spring Boot
 | Spring Boot / Spring Security / JWT
 
 | Service Catalogue
-| module-catalogue
+| composant-catalogue
 | Conteneur API Spring Boot
 | Spring Boot / Spring Data JPA / Hibernate — import : `POST /api/vendor/products/import` (`multipart/form-data`, parser RFC 4180 natif) créations uniquement, rapport ligne par ligne (créé / erreur) ; export : `GET /api/vendor/products/export` (`text/csv`, UTF-8 BOM, `Content-Disposition: attachment`)
 
 | Service Panier
-| module-panier
+| composant-panier
 | Conteneur API Spring Boot + Redis
 | Spring Boot / Spring Data Redis
 
 | Service Commande
-| module-commande
+| composant-commande
 | Conteneur API Spring Boot
 | Spring Boot / Spring Data JPA / Hibernate
 
 | Service Paiement
-| module-paiement
+| composant-paiement
 | Conteneur API Spring Boot
 | Spring Boot / Stripe Java SDK
 
 | Service Expédition
-| module-expedition
+| composant-expedition
 | Conteneur API Spring Boot
 | Spring Boot / Spring Data JPA / Hibernate
 
 | Service Notification
-| module-notification
+| composant-notification
 | Conteneur API Spring Boot
 | Spring Boot / SendGrid Java SDK
 
 | Service Rapport
-| module-rapport
+| composant-rapport
 | Conteneur API Spring Boot
 | Spring Boot / Spring Data JPA / JPQL
 
 | Adaptateur Paiement
-| module-paiement (couche adaptateur)
+| composant-paiement (couche adaptateur)
 | Conteneur API Spring Boot
 | Stripe Java SDK
 
 | Adaptateur Messagerie
-| module-notification (couche adaptateur)
+| composant-notification (couche adaptateur)
 | Conteneur API Spring Boot
 | SendGrid Java SDK
 
@@ -984,17 +981,17 @@ include::diagrams/ihm/ihm-admin-form-transporteur.puml[]
 | PostgreSQL 16 / Flyway
 
 | Service Annonce
-| module-annonce
+| composant-annonce
 | Conteneur API Spring Boot
 | Spring Boot / Spring Data JPA — entité `Announcement`, endpoints REST `/annonces`
 
 | Service Sécurité
-| module-securite
+| composant-securite
 | Conteneur API Spring Boot (transverse)
 | Spring Security / JJWT / BCrypt / TOTP (`dev.samstevens.totp`) / Redis (compteurs force brute)
 
 | Service Journalisation
-| module-journalisation
+| composant-journalisation
 | Conteneur API Spring Boot (transverse) + PostgreSQL
 | Spring AOP — table `audit_log` PostgreSQL (partitionnée mensuelle, purge 13 mois — CPA-13)
 |===

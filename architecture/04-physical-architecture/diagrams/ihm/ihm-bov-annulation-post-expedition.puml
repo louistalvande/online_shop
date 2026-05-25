@@ -7,7 +7,7 @@ title Back-office Vendeur — Annulation après expédition
 {+
   == Demande d'annulation — Commande #CMD-2025-0039
   Acheteur : Bernard Claire — Expédiée le 12/01/2025
-  Motif déclaré : Article non conforme à la description
+  Message de l'acheteur : « Article non conforme à la description »
   ==
   Choisissez le traitement de cette demande :
   --
@@ -21,7 +21,7 @@ title Back-office Vendeur — Annulation après expédition
       La commande passe directement en état « Annulée ».
   --
   ( ) Refuser la demande
-      La commande reste dans son état actuel.
+      La commande repasse en état « Expédiée ».
       L'acheteur sera notifié du refus.
   --
   [Annuler]   [Valider la décision]
