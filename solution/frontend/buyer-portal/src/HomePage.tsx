@@ -5,6 +5,7 @@ import { fetchProducts, type BuyerProduct } from './api/catalogApi'
 import { addToCart } from './api/cartApi'
 import { getSession, type BuyerSession } from './api/authApi'
 import LoginModal from './LoginModal'
+import AnnouncementCarousel from './AnnouncementCarousel'
 
 /** Hero banner + featured catalog for the buyer portal home page. */
 export default function HomePage() {
@@ -45,6 +46,8 @@ export default function HomePage() {
           onLogin={() => { setSession(getSession()); setShowLogin(false) }}
         />
       )}
+
+      <AnnouncementCarousel />
 
       <section className="home-hero">
         <h1 className="home-hero-title">{t('home.title')}</h1>

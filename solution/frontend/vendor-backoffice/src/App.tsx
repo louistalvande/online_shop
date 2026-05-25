@@ -8,6 +8,7 @@ import Header, { type Page } from './Header'
 import DashboardPage from './DashboardPage'
 import CatalogPage from './CatalogPage'
 import ReportsPage from './ReportsPage'
+import AnnouncementsPage from './AnnouncementsPage'
 import MaintenancePage from './MaintenancePage'
 
 export default function App() {
@@ -53,6 +54,7 @@ export default function App() {
       {page === 'dashboard' && <DashboardPage />}
       {page === 'catalog' && <CatalogPage />}
       {page === 'reports' && <ReportsPage />}
+      {page === 'announcements' && <AnnouncementsPage />}
     </Header>
   )
 }

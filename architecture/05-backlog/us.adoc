@@ -510,8 +510,11 @@ _Fonctions ARCADIA : FS-V11 — UCSA-15 — LA : Service Annonce / Back-office V
 | *US-ANN-01*
 | En tant que vendeur, je peux créer, modifier, réordonner et supprimer des annonces défilantes affichées sur la page d'accueil de la boutique.
 a|
-- [ ] Formulaire de création : type de contenu (texte / image / les deux), champ texte (max 500 caractères), upload d'image optionnel, lien de redirection optionnel, ordre d'affichage (FS-V11)
+- [ ] Formulaire de création : type de contenu (texte / image / les deux), champ texte (max 500 caractères), URL d'image optionnelle, lien de redirection optionnel, ordre d'affichage (FS-V11)
 - [ ] Les champs obligatoires varient selon le type : texte seul → champ texte requis ; image seule → image requise ; mixte → les deux requis
+- [ ] Lorsqu'une URL d'image est saisie, l'application détecte automatiquement l'orientation de l'image (portrait si hauteur ≥ largeur, paysage si largeur > hauteur) et l'affiche sous forme de badge avant enregistrement
+- [ ] L'orientation détectée est transmise au serveur et stockée avec l'annonce ; le vendeur voit l'orientation dans la liste du back-office
+- [ ] Le carrousel de la page d'accueil adapte la mise en page selon l'orientation : images paysage en pleine largeur, images portrait en format réduit centré
 - [ ] Les annonces actives sont affichées dans le carrousel de la page d'accueil par ordre croissant
 - [ ] Un clic sur une annonce avec lien redirige l'internaute vers ce lien
 - [ ] Le vendeur peut modifier une annonce existante depuis la liste du back-office

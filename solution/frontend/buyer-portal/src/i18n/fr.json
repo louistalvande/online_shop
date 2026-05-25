@@ -270,5 +270,10 @@
   "orders.psc.submitting": "Envoi…",
   "orders.psc.pendingVendorDecision": "Votre demande d'annulation est en attente de décision du vendeur.",
   "maintenance.title": "Plateforme en maintenance",
-  "maintenance.message": "Notre plateforme est temporairement indisponible pour maintenance. Nous vous invitons à réessayer dans quelques instants."
+  "maintenance.message": "Notre plateforme est temporairement indisponible pour maintenance. Nous vous invitons à réessayer dans quelques instants.",
+
+  "carousel.label": "Annonces défilantes",
+  "carousel.prev": "Précédent",
+  "carousel.next": "Suivant",
+  "carousel.goTo": "Aller à l'annonce"
 }

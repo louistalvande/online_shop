@@ -264,3 +264,24 @@ CREATE TABLE platform_settings (
 INSERT INTO platform_settings (key, value) VALUES ('maintenance_mode', 'false');
 
 
+-- Scrolling announcements (US-ANN-01 — FS-V11)
+-- image_orientation is auto-detected from image dimensions: LANDSCAPE if width > height, else PORTRAIT.
+
+CREATE TABLE announcements (
+    id                UUID         PRIMARY KEY DEFAULT gen_random_uuid(),
+    vendor_id         UUID         NOT NULL REFERENCES accounts(id),
+    content_type      VARCHAR(20)  NOT NULL,
+    text_content      VARCHAR(500),
+    image_url         VARCHAR(500),
+    image_orientation VARCHAR(20),
+    redirect_url      VARCHAR(500),
+    sort_order        INTEGER      NOT NULL DEFAULT 0,
+    active            BOOLEAN      NOT NULL DEFAULT TRUE,
+    created_at        TIMESTAMP    NOT NULL DEFAULT NOW(),
+    updated_at        TIMESTAMP    NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX idx_announcements_vendor_id  ON announcements (vendor_id);
+CREATE INDEX idx_announcements_active     ON announcements (active);
+
+
