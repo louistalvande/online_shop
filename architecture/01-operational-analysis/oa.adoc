@@ -139,6 +139,8 @@ Les cas d'utilisation opérationnels sont répartis en trois vues focalisées, u
 
 [plantuml, oa-uc-admin, svg]
 ----
+scale 0.6
+skinparam padding 15
 skinparam actorStyle awesome
 skinparam usecase {
   BackgroundColor #FEFEFE
@@ -149,8 +151,6 @@ skinparam actor {
   BackgroundColor #E8F4FD
   BorderColor #2E75B6
 }
-
-left to right direction
 
 actor "Administrateur" as Admin
 rectangle "Transporteur\n(système externe)" as Carrier <<system>>
@@ -189,6 +189,8 @@ UC_A2b --> Carrier
 
 [plantuml, oa-uc-vendor, svg]
 ----
+scale 0.6
+skinparam padding 15
 skinparam actorStyle awesome
 skinparam usecase {
   BackgroundColor #FEFEFE
@@ -253,6 +255,8 @@ UC_V4 --> Carrier
 
 [plantuml, oa-uc-buyer, svg]
 ----
+scale 0.6
+skinparam padding 15
 skinparam actorStyle awesome
 skinparam usecase {
   BackgroundColor #FEFEFE
@@ -263,8 +267,6 @@ skinparam actor {
   BackgroundColor #E8F4FD
   BorderColor #2E75B6
 }
-
-left to right direction
 
 actor "Acheteur" as Buyer
 rectangle "Service de\nmessagerie" as Mail <<system>>
