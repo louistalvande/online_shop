@@ -203,5 +203,27 @@
   "orders.buyerCancelRequest.refuse": "Refuse request",
   "orders.buyerCancelRequest.refuseError": "Error refusing the cancellation request.",
   "maintenance.title": "Platform under maintenance",
-  "maintenance.message": "Our platform is temporarily unavailable for maintenance. Please try again in a few moments."
+  "maintenance.message": "Our platform is temporarily unavailable for maintenance. Please try again in a few moments.",
+
+  "nav.reports": "Reports",
+  "reports.title": "Sales Reports",
+  "reports.period": "Period",
+  "reports.category": "Category",
+  "reports.categoryPlaceholder": "All",
+  "reports.apply": "Apply",
+  "reports.loading": "Loading…",
+  "reports.exportCsv": "Export as CSV",
+  "reports.exporting": "Exporting…",
+  "reports.error.load": "Unable to load the report.",
+  "reports.error.export": "Error exporting CSV.",
+  "reports.kpi.revenue": "Revenue",
+  "reports.kpi.orderCount": "Orders",
+  "reports.kpi.avgCart": "Average cart",
+  "reports.kpi.cancellationRate": "Cancellation rate",
+  "reports.topProducts.title": "Top-selling products",
+  "reports.topProducts.empty": "No data for this period.",
+  "reports.topProducts.rank": "Rank",
+  "reports.topProducts.product": "Product",
+  "reports.topProducts.qtySold": "Qty sold",
+  "reports.topProducts.revenue": "Revenue"
 }

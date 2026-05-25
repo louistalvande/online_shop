@@ -203,5 +203,27 @@
   "orders.buyerCancelRequest.refuse": "Refuser la demande",
   "orders.buyerCancelRequest.refuseError": "Erreur lors du refus de la demande d'annulation.",
   "maintenance.title": "Plateforme en maintenance",
-  "maintenance.message": "Notre plateforme est temporairement indisponible pour maintenance. Nous vous invitons à réessayer dans quelques instants."
+  "maintenance.message": "Notre plateforme est temporairement indisponible pour maintenance. Nous vous invitons à réessayer dans quelques instants.",
+
+  "nav.reports": "Rapports",
+  "reports.title": "Rapports de ventes",
+  "reports.period": "Période",
+  "reports.category": "Catégorie",
+  "reports.categoryPlaceholder": "Toutes",
+  "reports.apply": "Appliquer",
+  "reports.loading": "Chargement…",
+  "reports.exportCsv": "Exporter en CSV",
+  "reports.exporting": "Export en cours…",
+  "reports.error.load": "Impossible de charger le rapport.",
+  "reports.error.export": "Erreur lors de l'export CSV.",
+  "reports.kpi.revenue": "Chiffre d'affaires",
+  "reports.kpi.orderCount": "Commandes",
+  "reports.kpi.avgCart": "Panier moyen",
+  "reports.kpi.cancellationRate": "Taux d'annulation",
+  "reports.topProducts.title": "Produits les plus vendus",
+  "reports.topProducts.empty": "Aucune donnée pour cette période.",
+  "reports.topProducts.rank": "Rang",
+  "reports.topProducts.product": "Produit",
+  "reports.topProducts.qtySold": "Qté vendue",
+  "reports.topProducts.revenue": "CA généré"
 }
