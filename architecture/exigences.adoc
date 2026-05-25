@@ -574,3 +574,26 @@ Les exigences suivantes découlent du Règlement Général sur la Protection des
 | Par défaut, aucune donnée personnelle n'est partagée avec des tiers à des fins de profilage ou de marketing. Les emails envoyés sont exclusivement transactionnels (activation de compte, confirmation de commande, notification d'expédition, remboursement). Toute extension à des emails marketing nécessite un consentement explicite et une exigence dédiée.
 | Art. 25 §2, Art. 6 §1a
 |===
+
+=== Consentement marketing (Art. 6 §1a, Art. 7)
+
+[cols="1,4,1", options="header"]
+|===
+| Identifiant | Exigence | Article RGPD
+
+| RGPD-CONS-001
+| La plateforme ne peut transmettre l'adresse email d'un acheteur à un outil de mailing externe à des fins de campagne commerciale qu'après obtention d'un consentement explicite, libre, éclairé et non pré-coché (opt-in) de l'acheteur. Ce consentement est distinct du consentement aux conditions générales de vente.
+| Art. 6 §1a, Art. 7 §2
+
+| RGPD-CONS-002
+| L'acheteur doit pouvoir donner ou retirer son consentement marketing à tout moment : à l'inscription (case à cocher non pré-cochée) et depuis son espace compte. Le retrait de consentement prend effet immédiatement et ne conditionne pas l'accès aux fonctionnalités de la boutique.
+| Art. 7 §3
+
+| RGPD-CONS-003
+| Le consentement est horodaté à l'obtention et au retrait éventuel. Seuls les acheteurs ayant donné leur consentement peuvent être inclus dans un export à des fins de campagne.
+| Art. 5 §2
+
+| RGPD-CONS-004
+| L'outil de mailing externe (Brevo, Mailchimp, SendGrid Marketing…) utilisé pour les campagnes est sous-traitant au sens du RGPD. Un DPA doit être en vigueur avant tout export de liste. La liste transmise ne contient que les adresses des acheteurs consentants.
+| Art. 28
+|===

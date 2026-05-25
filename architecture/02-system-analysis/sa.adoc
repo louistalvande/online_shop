@@ -153,6 +153,10 @@ Un compte suspendu ou supprimé ne peut pas s'authentifier. Les messages d'erreu
 | CS-21
 | Détection des comportements d'authentification anormaux (SEC-LOG-002)
 | Les journaux d'authentification doivent permettre la détection de comportements anormaux (tentatives répétées, connexions depuis des adresses ou localisations inhabituelles) et faciliter les investigations en cas d'incident.
+
+| CS-22
+| Consentement marketing explicite (COp-07 / RGPD-CONS-001..004)
+| Le système doit collecter, stocker et respecter le consentement marketing de chaque acheteur : case à cocher non pré-cochée à l'inscription, modifiable depuis l'espace compte, horodatée. Seuls les acheteurs consentants (`consentement_marketing = true`) peuvent être inclus dans un export à des fins de campagne.
 |===
 
 == Capacités système
@@ -294,6 +298,7 @@ Les fonctions système (FS) sont dérivées des cas d'utilisation opérationnels
 | FS-V11 | Créer, modifier, réordonner et supprimer les annonces défilantes affichées sur la page d'accueil ; chaque annonce comporte un contenu texte, une image ou les deux, et un lien de redirection optionnel au clic | UC_V9
 | FS-V12 | Importer en masse de nouveaux produits depuis un fichier CSV : validation du format, création des fiches produits, rapport d'erreurs ligne par ligne | UC_V1
 | FS-V13 | Exporter le catalogue produits au format CSV (toutes les fiches actives et archivées) | UC_V1
+| FS-V15 | Exporter la liste des acheteurs ayant donné leur consentement marketing (`consentement_marketing = true`) au format CSV (email, prénom, nom), destiné à l'import dans un outil de mailing externe (CS-22 / RGPD-CONS-003) | UC_B_MKTG
 |===
 
 === Expérience d'achat (Acheteur)
@@ -314,6 +319,7 @@ Les fonctions système (FS) sont dérivées des cas d'utilisation opérationnels
 | FS-B09 | Permettre l'annulation d'une commande avant expédition | UC_B6
 | FS-B11 | Gérer le carnet d'adresses de livraison de l'acheteur : ajouter, modifier, supprimer des adresses et définir une adresse par défaut | UC_B_ACC
 | FS-B12 | Permettre à l'acheteur de soumettre une demande d'annulation depuis son espace commandes pour une commande en état `expédiée`, en saisissant un message expliquant la situation au vendeur ; la commande passe en état `demande_annulation` et le vendeur est notifié | UC_B7
+| FS-B13 | Collecter le consentement marketing de l'acheteur à l'inscription (case opt-in non pré-cochée) et permettre sa modification depuis l'espace compte ; horodater chaque changement de statut | UC_B_MKTG
 |===
 
 === Interfaces externes

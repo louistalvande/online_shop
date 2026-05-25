@@ -650,6 +650,8 @@ package "Entités métier (SA)" #F0F8FF {
     + statut : Enum {en_attente, actif, suspendu, supprimé}
     + langue : Enum {fr, en}
     + dateCreation : DateTime
+    + consentementMarketing : Boolean
+    + dateConsentementMarketing : DateTime
   }
 
   class AdresseLivraison {

@@ -129,7 +129,7 @@ NOTE: Les choix technologiques retenus ci-dessous sont des recommandations archi
 
 | Service Compte
 | Module Spring Boot (Java)
-| Authentification JWT — Spring Security + JJWT (CS-08 / CPA-08), hachage BCrypt, gestion des tokens d'activation (CS-07) ; CRUD carnet d'adresses de livraison — entité `delivery_address` (FK vers `account`, suppression logique) ; endpoints REST `/api/profile/addresses` (FS-B11)
+| Authentification JWT — Spring Security + JJWT (CS-08 / CPA-08), hachage BCrypt, gestion des tokens d'activation (CS-07) ; CRUD carnet d'adresses de livraison — entité `delivery_address` (FK vers `account`, suppression logique) ; endpoints REST `/api/profile/addresses` (FS-B11) ; gestion du consentement marketing — colonnes `marketing_consent BOOLEAN DEFAULT FALSE` et `marketing_consent_date TIMESTAMPTZ` sur la table `account` ; endpoint `PUT /api/profile/marketing-consent` (FS-B13)
 
 | Service Catalogue
 | Module Spring Boot (Java)
@@ -157,7 +157,7 @@ NOTE: Les choix technologiques retenus ci-dessous sont des recommandations archi
 
 | Service Rapport
 | Module Spring Boot (Java)
-| Requêtes JPQL agrégées, génération de statistiques de ventes
+| Requêtes JPQL agrégées, génération de statistiques de ventes ; export CSV des acheteurs consentants — requête `SELECT email, prenom, nom FROM account WHERE marketing_consent = TRUE`, endpoint protégé VENDOR `GET /api/vendeur/export-mailing` (FS-V15 / CS-22)
 
 | Service Annonce
 | Module Spring Boot (Java)
