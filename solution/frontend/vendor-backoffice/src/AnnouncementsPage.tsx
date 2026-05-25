@@ -165,11 +165,8 @@ export default function AnnouncementsPage() {
 
   async function handleMove(id: string, dir: 'up' | 'down') {
     try {
-      const updated = dir === 'up' ? await moveAnnouncementUp(id) : await moveAnnouncementDown(id)
-      setAnnouncements(prev => {
-        const next = prev.map(a => a.id === updated.id ? updated : a)
-        return [...next].sort((a, b) => a.sortOrder - b.sortOrder)
-      })
+      if (dir === 'up') await moveAnnouncementUp(id); else await moveAnnouncementDown(id)
+      setAnnouncements(await listAnnouncements())
     } catch {
       /* ignore reorder error */
     }
@@ -240,8 +237,8 @@ export default function AnnouncementsPage() {
           <div style={{ background: '#fff', borderRadius: 8, padding: 32, width: 520, maxHeight: '90vh', overflowY: 'auto', boxShadow: '0 8px 32px rgba(0,0,0,.2)' }}>
             <h2 style={{ marginTop: 0 }}>{editingId ? t('announcements.form.titleEdit') : t('announcements.form.titleCreate')}</h2>
 
-            <label style={labelStyle}>{t('announcements.form.type')}</label>
-            <select style={inputStyle} value={form.contentType} onChange={e => setForm(f => ({ ...f, contentType: e.target.value as ContentType }))}>
+            <label htmlFor="ann-content-type" style={labelStyle}>{t('announcements.form.type')}</label>
+            <select id="ann-content-type" style={inputStyle} value={form.contentType} onChange={e => setForm(f => ({ ...f, contentType: e.target.value as ContentType }))}>
               <option value="TEXT">{t('announcements.type.text')}</option>
               <option value="IMAGE">{t('announcements.type.image')}</option>
               <option value="BOTH">{t('announcements.type.both')}</option>

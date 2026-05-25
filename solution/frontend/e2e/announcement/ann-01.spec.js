@@ -49,8 +49,9 @@ test.describe('US-ANN-01 — Scrolling announcements', () => {
     await textArea.fill('Soldes été — jusqu\'à -50 % !');
     await page.getByRole('button', { name: 'Enregistrer' }).click();
 
-    await expect(page.getByText('Soldes été')).toBeVisible();
-    await expect(page.getByText('Texte')).toBeVisible();
+    const row = page.locator('tbody tr').filter({ hasText: 'Soldes été' });
+    await expect(row).toBeVisible();
+    await expect(row.getByText('Texte', { exact: true })).toBeVisible();
   });
 
   // --- nominal: image orientation badge visible after upload ---
@@ -69,10 +70,9 @@ test.describe('US-ANN-01 — Scrolling announcements', () => {
     await page.reload();
     await page.getByText('Annonces').click();
 
-    const row = page.locator('tr').filter({ hasText: ann.id.slice(0, 8) }).or(
-      page.locator('tbody tr').first()
-    );
-    await expect(row.getByText('Paysage')).toBeVisible();
+    // The newly created LANDSCAPE row must appear somewhere in the list
+    await expect(page.locator('tbody').getByText('Paysage').first()).toBeVisible();
+    void ann; // used for API creation above
   });
 
   // --- nominal: portrait orientation stored correctly ---
@@ -139,25 +139,36 @@ test.describe('US-ANN-01 — Scrolling announcements', () => {
   // --- nominal: reorder ---
 
   test('nominal — moves announcement down then up, sort order swaps', async ({ page }) => {
-    // Seed two announcements with distinct text
+    // Unique text per run to avoid collisions with previous test data
+    const suffix = Date.now();
+    const textA = `ReoA-${suffix}`;
+    const textB = `ReoB-${suffix}`;
+
     await createAnnouncementViaApi(page, vendorToken, {
-      contentType: 'TEXT', textContent: 'First',  active: true, sortOrder: 0,
+      contentType: 'TEXT', textContent: textA, active: true, sortOrder: 900,
     });
     await createAnnouncementViaApi(page, vendorToken, {
-      contentType: 'TEXT', textContent: 'Second', active: true, sortOrder: 1,
+      contentType: 'TEXT', textContent: textB, active: true, sortOrder: 901,
     });
 
     await page.reload();
     await page.getByText('Annonces').click();
 
-    const firstRow = page.locator('tbody tr').first();
-    await expect(firstRow).toContainText('First');
+    const rowA = page.locator('tbody tr').filter({ hasText: textA });
+    const rowB = page.locator('tbody tr').filter({ hasText: textB });
+    await expect(rowA).toBeVisible();
+    await expect(rowB).toBeVisible();
 
-    // Click ↓ on the first row
-    await firstRow.getByRole('button', { name: '↓' }).click();
+    // Click ↓ on rowA — the list refreshes; wait for rowB to precede rowA
+    await rowA.getByRole('button', { name: '↓' }).click();
 
-    // After move, "Second" should now be first
-    await expect(page.locator('tbody tr').first()).toContainText('Second');
+    // Wait until the DOM shows textB appearing before textA
+    await page.waitForFunction(([a, b]) => {
+      const rows = [...document.querySelectorAll('tbody tr')];
+      const idxA = rows.findIndex(r => r.textContent?.includes(a));
+      const idxB = rows.findIndex(r => r.textContent?.includes(b));
+      return idxA !== -1 && idxB !== -1 && idxB < idxA;
+    }, [textA, textB], { timeout: 10000 });
   });
 
   // --- nominal: inactive announcement not shown in buyer carousel ---

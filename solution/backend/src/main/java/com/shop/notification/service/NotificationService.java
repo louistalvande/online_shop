@@ -1,6 +1,5 @@
 package com.shop.notification.service;
 
-import com.shop.claim.dto.ClaimResponse;
 import com.shop.order.dto.OrderResponse;
 
 import java.math.BigDecimal;
@@ -117,15 +116,6 @@ public interface NotificationService {
     void sendWireRefundConfirmedEmail(String toEmail, OrderResponse order, Locale locale);
 
     /**
-     * Notifies the vendor that a buyer has opened a new claim (US-CLM-01).
-     *
-     * @param toEmail the vendor's email address
-     * @param claim   the newly opened claim
-     * @param locale  the locale used to select the email language
-     */
-    void sendClaimOpenedEmail(String toEmail, ClaimResponse claim, Locale locale);
-
-    /**
      * Notifies the vendor that a buyer has requested post-shipment cancellation (US-CAN-06).
      *
      * @param toEmail the vendor's email address
@@ -143,21 +133,4 @@ public interface NotificationService {
      */
     void sendCancellationRefusedEmail(String toEmail, OrderResponse order, Locale locale);
 
-    /**
-     * Notifies the buyer that the vendor has granted a refund for their claim (US-CLM-02).
-     *
-     * @param toEmail the buyer's email address
-     * @param claim   the closed claim with decision GRANTED
-     * @param locale  the locale used to select the email language
-     */
-    void sendClaimGrantedEmail(String toEmail, ClaimResponse claim, Locale locale);
-
-    /**
-     * Notifies the buyer that the vendor has refused their claim (US-CLM-02).
-     *
-     * @param toEmail the buyer's email address
-     * @param claim   the closed claim with decision REFUSED
-     * @param locale  the locale used to select the email language
-     */
-    void sendClaimRefusedEmail(String toEmail, ClaimResponse claim, Locale locale);
 }
