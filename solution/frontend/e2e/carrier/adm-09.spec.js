@@ -13,7 +13,7 @@ test.describe('US-ADM-09 — Delete carrier', () => {
       supportedCountries: ['FR'],
     });
     await loginAsAdmin(page);
-    await page.goto('/#carriers');
+    await page.goto('/admin/#carriers');
   });
 
   test('nominal — deletes a carrier after confirmation, carrier disappears from list', async ({ page }) => {

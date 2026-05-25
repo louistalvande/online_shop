@@ -14,7 +14,7 @@ test.describe('US-ADM-04 — Delete account', () => {
       role: 'BUYER',
     });
     await loginAsAdmin(page);
-    await page.goto('/#users');
+    await page.goto('/admin/#users');
   });
 
   test('nominal — deletes an account after confirmation, account disappears from list', async ({ page }) => {

@@ -13,7 +13,7 @@ test.describe('US-ADM-08 — Deactivate / activate carrier', () => {
       supportedCountries: ['FR'],
     });
     await loginAsAdmin(page);
-    await page.goto('/#carriers');
+    await page.goto('/admin/#carriers');
   });
 
   test('nominal — deactivates an active carrier, status changes to Inactif', async ({ page }) => {

@@ -13,7 +13,7 @@ test.describe('US-ADM-07 — Edit carrier', () => {
       supportedCountries: ['FR'],
     });
     await loginAsAdmin(page);
-    await page.goto('/#carriers');
+    await page.goto('/admin/#carriers');
   });
 
   test('nominal — edits carrier name, changes are reflected immediately', async ({ page }) => {
