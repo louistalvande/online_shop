@@ -12,6 +12,8 @@
 
 L'Architecture Logique (LA) définit la *décomposition interne du système* en composants logiques cohérents, leurs responsabilités, leurs interfaces et leurs interactions. Elle répond à la question : *comment le système est-il structuré pour remplir les fonctions identifiées en SA ?*
 
+C'est à ce niveau que l'on travaille la *logique interne du système* : enchaînements de traitements, règles métier, gestion des états et coordination entre composants — indépendamment de toute technologie d'implémentation.
+
 La LA ne choisit pas encore de technologies d'implémentation (langages, frameworks, bases de données) — c'est le rôle de la PA (Physical Architecture). Elle pose les *frontières architecturales stables* sur lesquelles la PA s'appuiera.
 
 NOTE: Chaque composant logique de la LA est tracé vers une ou plusieurs fonctions système (FS) de la SA. Les interfaces logiques (IFL) précisent les contrats d'échange entre composants, indépendamment du protocole de transport retenu en PA.
@@ -23,7 +25,7 @@ NOTE: Chaque composant logique de la LA est tracé vers une ou plusieurs fonctio
 * *Traçabilité SA → LA* — toute fonction système (FS) est allouée à exactement un composant logique.
 * *Isolation des systèmes externes* — les intégrations tierces (paiement, transporteur, messagerie) sont encapsulées dans des composants dédiés de type *adaptateur*.
 
-== Décomposition en composants logiques
+== Allocation des fonctions système aux composants logiques
 
 Le système est structuré en cinq couches logiques : *Présentation*, *Application*, *Domaine*, *Infrastructure* et *Intégrations externes*.
 
