@@ -196,8 +196,6 @@ skinparam actor {
   BorderColor #2E75B6
 }
 
-left to right direction
-
 actor "Vendeur" as Vendor
 rectangle "Transporteur\n(système externe)" as Carrier <<system>>
 

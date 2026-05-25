@@ -355,7 +355,10 @@ Le diagramme ci-dessous représente les invocations directes entre fonctions sys
 Les fonctions de sécurité transverse *FS-S01 à FS-S13* (validation des entrées, anti-CSRF, journalisation, MFA, gestion des mots de passe compromis, expiration, révocation, détection d'anomalies, etc.) s'appliquent à l'ensemble des fonctions et sont représentées par une note globale.
 
 .Dépendances fonctionnelles entre fonctions système (SA)
-plantuml::diagrams/sa-fs-relations.puml[]
+[plantuml, sa-fs-relations, svg]
+----
+include::diagrams/sa-fs-relations.puml[]
+----
 
 == Diagramme de cas d'utilisation système
 
