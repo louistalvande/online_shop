@@ -191,7 +191,7 @@ Les capacités système raffinent les capacités opérationnelles (CAP-xxx) de l
 | CAPS-006
 | Assurer le service client et les remboursements
 | CAP-006
-| FS-B09, FS-V06, FS-V08
+| FS-B09, FS-V08
 
 | CAPS-007
 | Fournir le reporting et la gestion de la vitrine
@@ -355,87 +355,7 @@ Le diagramme ci-dessous représente les invocations directes entre fonctions sys
 Les fonctions de sécurité transverse *FS-S01 à FS-S13* (validation des entrées, anti-CSRF, journalisation, MFA, gestion des mots de passe compromis, expiration, révocation, détection d'anomalies, etc.) s'appliquent à l'ensemble des fonctions et sont représentées par une note globale.
 
 .Dépendances fonctionnelles entre fonctions système (SA)
-[plantuml, sa-fs-relations, svg]
-----
-skinparam componentStyle rectangle
-skinparam defaultFontSize 9
-skinparam shadowing false
-skinparam ArrowColor #444444
-skinparam componentBackgroundColor #FEFEFE
-skinparam componentBorderColor #2E75B6
-skinparam packageBackgroundColor #EEF4FB
-skinparam packageBorderColor #2E75B6
-skinparam noteBackgroundColor #FFFBE6
-skinparam noteBorderColor #F0A500
-
-left to right direction
-
-package "Administrateur" {
-  [FS-A01\nCréer compte] as FSA01
-}
-
-package "Acheteur" {
-  [FS-B01\nInscription] as FSB01
-  [FS-B10\nActivation compte] as FSB10
-  [FS-B03\nCatalogue] as FSB03
-  [FS-B04\nPanier] as FSB04
-  [FS-B05\nPersistance panier] as FSB05
-  [FS-B11\nAdresses] as FSB11
-  [FS-B06\nTunnel d'achat] as FSB06
-  [FS-B07\nPaiement] as FSB07
-  [FS-B08\nSuivi commande] as FSB08
-  [FS-B09\nAnnulation\navant expéd.] as FSB09
-  [FS-B12\nDemande annul.\naprès expéd.] as FSB12
-}
-
-package "Vendeur" {
-  [FS-V02\nCatalogue CRUD] as FSV02
-  [FS-V03\nStock] as FSV03
-  [FS-V04\nCommandes] as FSV04
-  [FS-V05\nExpédition] as FSV05
-  [FS-V08\nAnnulation post-exp.] as FSV08
-  [FS-V09\nConf. virement] as FSV09
-  [FS-V10\nRembours. virement] as FSV10
-  [FS-V12\nImport CSV] as FSV12
-  [FS-V13\nExport CSV] as FSV13
-  [FS-V14\nStock multiple] as FSV14
-}
-
-package "Paiement" {
-  [FS-P01\nAutorisation] as FSP01
-  [FS-P02\nConfirmation] as FSP02
-  [FS-P03\nRemboursement] as FSP03
-}
-
-package "Transporteur" {
-  [FS-C01\nSuivi transporteur] as FSC01
-}
-
-note "FS-S01–S07 : sécurité transverse\n(s'appliquent à toutes les FS)" as NoteS
-
-FSA01 --> FSB10 : activation
-FSB01 --> FSB10 : activation
-FSB03 --> FSV02 : lecture
-FSB05 --> FSB04 : restauration
-FSB06 --> FSB04 : contenu panier
-FSB06 --> FSB11 : adresse livraison
-FSB06 --> FSB07 : paiement
-FSB06 --> FSV04 : création commande
-FSB07 --> FSP01 : autorisation
-FSB08 --> FSC01 : affichage suivi
-FSB09 --> FSP03 : remboursement
-FSB12 --> FSV08 : demande annulation post-expéd.
-FSP02 --> FSV04 : confirmation paiement
-FSV04 --> FSV03 : vérif. stock
-FSV05 --> FSC01 : URL transporteur
-FSV05 --> FSB08 : notif. acheteur
-FSV08 --> FSP03 : remboursement carte
-FSV08 --> FSV10 : virement inverse
-FSV09 --> FSV04 : déclenchement
-FSV12 --> FSV02 : import
-FSV13 --> FSV02 : export
-FSV14 --> FSV03 : maj stock
-----
+plantuml::diagrams/sa-fs-relations.puml[]
 
 == Diagramme de cas d'utilisation système
 

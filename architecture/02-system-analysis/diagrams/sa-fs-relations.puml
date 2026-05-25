@@ -1,0 +1,82 @@
+@startuml
+!pragma layout dot
+skinparam componentStyle rectangle
+skinparam defaultFontSize 9
+skinparam shadowing false
+skinparam ArrowColor #444444
+skinparam componentBackgroundColor #FEFEFE
+skinparam componentBorderColor #2E75B6
+skinparam packageBackgroundColor #EEF4FB
+skinparam packageBorderColor #2E75B6
+skinparam noteBackgroundColor #FFFBE6
+skinparam noteBorderColor #F0A500
+
+left to right direction
+
+package "Administrateur" {
+  [FS-A01 Creer compte] as FSA01
+}
+
+package "Acheteur" {
+  [FS-B01 Inscription] as FSB01
+  [FS-B10 Activation compte] as FSB10
+  [FS-B03 Catalogue] as FSB03
+  [FS-B04 Panier] as FSB04
+  [FS-B05 Persistance panier] as FSB05
+  [FS-B11 Adresses] as FSB11
+  [FS-B06 Tunnel achat] as FSB06
+  [FS-B07 Paiement] as FSB07
+  [FS-B08 Suivi commande] as FSB08
+  [FS-B09 Annulation avant exped.] as FSB09
+  [FS-B12 Demande annul. apres exped.] as FSB12
+}
+
+package "Vendeur" {
+  [FS-V02 Catalogue CRUD] as FSV02
+  [FS-V03 Stock] as FSV03
+  [FS-V04 Commandes] as FSV04
+  [FS-V05 Expedition] as FSV05
+  [FS-V08 Annulation post-exp.] as FSV08
+  [FS-V09 Conf. virement] as FSV09
+  [FS-V10 Rembours. virement] as FSV10
+  [FS-V12 Import CSV] as FSV12
+  [FS-V13 Export CSV] as FSV13
+  [FS-V14 Stock multiple] as FSV14
+}
+
+package "Paiement" {
+  [FS-P01 Autorisation] as FSP01
+  [FS-P02 Confirmation] as FSP02
+  [FS-P03 Remboursement] as FSP03
+}
+
+package "Transporteur" {
+  [FS-C01 Suivi transporteur] as FSC01
+}
+
+note "FS-S01 a S07 : securite transverse\n(s'appliquent a toutes les FS)" as NoteS
+
+FSA01 --> FSB10 : activation
+FSB01 --> FSB10 : activation
+FSB03 --> FSV02 : lecture
+FSB05 --> FSB04 : restauration
+FSB06 --> FSB04 : contenu panier
+FSB06 --> FSB11 : adresse livraison
+FSB06 --> FSB07 : paiement
+FSB06 --> FSV04 : creation commande
+FSB07 --> FSP01 : autorisation
+FSB08 --> FSC01 : affichage suivi
+FSB09 --> FSP03 : remboursement
+FSB12 --> FSV08 : demande annulation post-exped.
+FSP02 --> FSV04 : confirmation paiement
+FSV04 --> FSV03 : verif. stock
+FSV05 --> FSC01 : URL transporteur
+FSV05 --> FSB08 : notif. acheteur
+FSV08 --> FSP03 : remboursement carte
+FSV08 --> FSV10 : virement inverse
+FSV09 --> FSV04 : declenchement
+FSV12 --> FSV02 : import
+FSV13 --> FSV02 : export
+FSV14 --> FSV03 : maj stock
+
+@enduml
