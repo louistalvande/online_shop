@@ -240,7 +240,7 @@
 }
 
 .product-image-placeholder {
-  background: #f0ece4;
+  background: #dce8e5;
   height: 200px;
 }
 
@@ -322,7 +322,7 @@
 }
 
 .catalog-product-image { width: 100%; height: 180px; object-fit: cover; }
-.catalog-product-placeholder { background: #f0ece4; height: 180px; }
+.catalog-product-placeholder { background: #dce8e5; height: 180px; }
 .catalog-product-body { padding: 14px 16px 16px; }
 .catalog-product-category {
   font-size: 11px;

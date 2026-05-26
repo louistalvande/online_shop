@@ -1,17 +1,17 @@
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 :root {
-  --bg: #faf7f2;
+  --bg: #f2f6f5;
   --surface: #ffffff;
-  --text: #1c1917;
-  --text-muted: #6b6663;
-  --accent: #b8431a;
-  --accent-hover: #9a3614;
-  --border: #e8e2d9;
+  --text: #1a2120;
+  --text-muted: #607572;
+  --accent: #4e8b82;
+  --accent-hover: #3c706a;
+  --border: #cdd9d5;
   --font-serif: Georgia, 'Times New Roman', serif;
   --font-sans: system-ui, -apple-system, sans-serif;
   --radius: 8px;
-  --shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  --shadow: 0 1px 3px rgba(0, 0, 0, 0.07);
 }
 
 body {
@@ -53,8 +53,8 @@ button { cursor: pointer; font-family: inherit; }
 
 /* ─── AppShell ─── */
 .shell-header {
-  background: var(--surface);
-  border-bottom: 1px solid var(--border);
+  background: var(--accent);
+  border-bottom: none;
   position: sticky;
   top: 0;
   z-index: 10;
@@ -72,15 +72,15 @@ button { cursor: pointer; font-family: inherit; }
   display: flex;
   align-items: center;
   gap: 12px;
-  color: var(--text);
+  color: #fff;
 }
 .shell-brand-name { font-weight: 700; font-size: 16px; letter-spacing: -0.01em; }
-.shell-brand-sub { font-size: 11px; color: var(--text-muted); margin-top: 1px; }
+.shell-brand-sub { font-size: 11px; color: rgba(255, 255, 255, 0.65); margin-top: 1px; }
 .shell-nav { display: flex; align-items: center; gap: 24px; }
-.shell-nav-link { font-size: 14px; font-weight: 500; color: var(--text); }
+.shell-nav-link { font-size: 14px; font-weight: 500; color: #fff; }
 .shell-nav-badge {
   margin-left: 6px;
-  background: #b8431a;
+  background: rgba(255, 255, 255, 0.25);
   color: #fff;
   border-radius: 10px;
   font-size: 11px;
@@ -88,6 +88,15 @@ button { cursor: pointer; font-family: inherit; }
   padding: 1px 6px;
   vertical-align: middle;
 }
+.shell-header .lang-toggle {
+  border-color: rgba(255, 255, 255, 0.4);
+  color: #fff;
+}
+.shell-header .user-menu-trigger {
+  border-color: rgba(255, 255, 255, 0.4);
+  color: #fff;
+}
+.shell-header .icon-btn { color: #fff; }
 .shell-footer {
   border-top: 1px solid var(--border);
   padding: 20px 24px;
