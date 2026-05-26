@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import Header from './Header'
+import { AppShell, LangToggle, Button } from '@workspace/theme'
 import { getVendorOrder, confirmWirePayment, rejectWirePayment, shipOrder, acceptReturn, confirmReturn, waiveReturn, confirmWireRefund, refuseCancellationRequest, type OrderData } from './api/orderApi'
-import { getSession } from './api/authApi'
+import { getSession, logout } from './api/authApi'
 
 const STATUS_LABELS: Record<string, string> = {
   PAYMENT_PENDING_CARD: 'orders.status.pendingCard',
@@ -23,7 +23,7 @@ interface Props {
 
 /** Vendor order detail page — US-VND-01 (view) and US-VND-02 (wire actions). */
 export default function OrderDetailPage({ orderId }: Props) {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   const session = getSession()
   const [order, setOrder] = useState<OrderData | null>(null)
   const [loading, setLoading] = useState(true)
@@ -69,22 +69,29 @@ export default function OrderDetailPage({ orderId }: Props) {
     }
   }
 
+  const shellActions = (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+      <LangToggle lang={i18n.language} onToggle={() => i18n.changeLanguage(i18n.language === 'fr' ? 'en' : 'fr')} />
+      <Button variant="ghost" size="sm" onClick={() => { logout(); window.location.href = import.meta.env.BASE_URL }}>
+        {t('nav.logout')}
+      </Button>
+    </div>
+  )
+
   if (!session) {
     return (
-      <>
-        <Header />
+      <AppShell appName={t('app.name')} navLinks={[{ label: t('nav.dashboard'), href: import.meta.env.BASE_URL }]} actions={shellActions}>
         <main style={{ padding: '2rem' }}>
           <p>{t('orders.error.notAuthenticated')}</p>
         </main>
-      </>
+      </AppShell>
     )
   }
 
   return (
-    <>
-      <Header />
+    <AppShell appName={t('app.name')} navLinks={[{ label: t('nav.dashboard'), href: import.meta.env.BASE_URL }]} actions={shellActions}>
       <main style={{ padding: '2rem', maxWidth: '900px', margin: '0 auto' }}>
-        <p><a href="/orders">← {t('orders.list.title')}</a></p>
+        <p><a href={`${import.meta.env.BASE_URL}orders`}>← {t('orders.list.title')}</a></p>
 
         {loading && <p>{t('catalog.loading')}</p>}
         {error && <p style={{ color: 'red' }}>{error}</p>}
@@ -376,6 +383,6 @@ export default function OrderDetailPage({ orderId }: Props) {
           </>
         )}
       </main>
-    </>
+    </AppShell>
   )
 }
