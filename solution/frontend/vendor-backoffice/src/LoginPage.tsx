@@ -110,7 +110,7 @@ const titleStyle: React.CSSProperties = {
 }
 const subtitleStyle: React.CSSProperties = {
   fontSize: 14,
-  color: 'var(--text-muted)',
+  color: 'var(--accent)',
   marginBottom: 28,
 }
 const formStyle: React.CSSProperties = {
