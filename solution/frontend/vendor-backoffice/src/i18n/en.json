@@ -96,6 +96,7 @@
   "catalog.form.save": "Save",
   "catalog.form.saving": "Saving…",
   "catalog.form.cancel": "Cancel",
+  "catalog.form.saveSuccess": "Product saved.",
   "catalog.error.nameRequired": "Product name is required.",
   "catalog.error.priceInvalid": "Price must be a positive number.",
   "catalog.error.quantityInvalid": "Quantity must be a non-negative integer.",

@@ -96,6 +96,7 @@
   "catalog.form.save": "Enregistrer",
   "catalog.form.saving": "Enregistrement…",
   "catalog.form.cancel": "Annuler",
+  "catalog.form.saveSuccess": "Produit enregistré.",
   "catalog.error.nameRequired": "Le nom du produit est obligatoire.",
   "catalog.error.priceInvalid": "Le prix HT doit être un nombre positif.",
   "catalog.error.quantityInvalid": "La quantité doit être un entier positif ou nul.",

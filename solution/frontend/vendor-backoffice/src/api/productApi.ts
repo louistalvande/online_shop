@@ -93,6 +93,11 @@ export async function listProducts(): Promise<Product[]> {
   return handleResponse<Product[]>(await authedFetch('/api/vendor/products'))
 }
 
+/** Fetches a single product by ID for the authenticated vendor. */
+export async function getProduct(id: string): Promise<Product> {
+  return handleResponse<Product>(await authedFetch(`/api/vendor/products/${id}`))
+}
+
 /** Creates a new product. */
 export async function createProduct(payload: CreateProductPayload): Promise<Product> {
   return handleResponse<Product>(await authedFetch('/api/vendor/products', {

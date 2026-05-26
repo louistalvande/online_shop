@@ -220,20 +220,24 @@ export default function CatalogPage() {
                 <div className="catalog-product-grid">
                   {products.map(p => (
                     <Card key={p.id}>
-                      {p.photoUrls.length > 0 ? (
-                        <img
-                          src={p.photoUrls[0]}
-                          alt={p.name}
-                          className="catalog-product-image"
-                        />
-                      ) : (
-                        <div className="catalog-product-placeholder" />
-                      )}
-                      <div className="catalog-product-body">
-                        {p.category && (
-                          <span className="catalog-product-category">{p.category}</span>
+                      <a href={`/catalog/${p.id}`} style={{ textDecoration: 'none', color: 'inherit', display: 'block' }}>
+                        {p.photoUrls.length > 0 ? (
+                          <img
+                            src={p.photoUrls[0]}
+                            alt={p.name}
+                            className="catalog-product-image"
+                          />
+                        ) : (
+                          <div className="catalog-product-placeholder" />
                         )}
-                        <h3 className="catalog-product-name">{p.name}</h3>
+                        <div className="catalog-product-body" style={{ paddingBottom: 0 }}>
+                          {p.category && (
+                            <span className="catalog-product-category">{p.category}</span>
+                          )}
+                          <h3 className="catalog-product-name">{p.name}</h3>
+                        </div>
+                      </a>
+                      <div className="catalog-product-body" style={{ paddingTop: 0 }}>
                         <div className="catalog-product-footer">
                           <div>
                             <div className="catalog-product-price">{formatPrice(p.priceTTC)}</div>

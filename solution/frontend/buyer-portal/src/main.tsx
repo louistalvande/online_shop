@@ -13,6 +13,7 @@ import OrderListPage from './OrderListPage'
 import OrderDetailPage from './OrderDetailPage'
 import ForgotPasswordPage from './ForgotPasswordPage'
 import ResetPasswordPage from './ResetPasswordPage'
+import ProductDetailPage from './ProductDetailPage'
 
 const path = window.location.pathname
 const params = new URLSearchParams(window.location.search)
@@ -25,6 +26,8 @@ function Root() {
   if (path === '/reset-password') return <ResetPasswordPage token={token} />
   if (path === '/profile') return <ProfilePage />
   if (path === '/catalog') return <CatalogPage />
+  const catalogDetailMatch = path.match(/^\/catalog\/([^/]+)$/)
+  if (catalogDetailMatch) return <ProductDetailPage productId={catalogDetailMatch[1]} />
   if (path === '/cart') return <CartPage />
   if (path === '/checkout') return <CheckoutPage />
   if (path === '/my-orders') return <OrderListPage />
