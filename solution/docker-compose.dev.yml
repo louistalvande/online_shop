@@ -32,6 +32,8 @@ services:
       DB_PASSWORD: dev
       REDIS_HOST: redis
       JWT_SECRET: 0va7bEp3sQZdN7oxr12ibeibvZOyPwnpV2qTCbRYhxg=
+      APP_ACTIVATION_BASE_URL: http://localhost:5073
+      APP_PASSWORD_RESET_BASE_URL: http://localhost:5073
     volumes:
       - ./backend:/workspace
     depends_on:
