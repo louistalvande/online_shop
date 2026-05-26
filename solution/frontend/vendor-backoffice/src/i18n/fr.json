@@ -27,6 +27,7 @@
   "login.submit": "Se connecter",
   "login.loading": "Connexion…",
   "login.error.invalid": "Email ou mot de passe incorrect.",
+  "login.error.unauthorized": "Ce compte n'a pas accès à l'espace vendeur.",
   "login.error.generic": "Une erreur est survenue. Veuillez réessayer.",
   "profile.title": "Mon profil",
   "profile.tab.profile": "Informations",

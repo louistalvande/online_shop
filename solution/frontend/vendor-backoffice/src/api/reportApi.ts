@@ -1,4 +1,4 @@
-import { getSession } from './authApi'
+import { authedFetch } from './authApi'
 
 export interface SalesMetrics {
   revenue: number
@@ -21,20 +21,13 @@ export interface SalesReportResponse {
   topSellingProducts: TopProduct[]
 }
 
-function authHeaders(): HeadersInit {
-  const session = getSession()
-  return session ? { Authorization: `Bearer ${session.token}` } : {}
-}
-
 export async function getSalesReport(
   period: string,
   category?: string,
 ): Promise<SalesReportResponse> {
   const params = new URLSearchParams({ period })
   if (category) params.set('category', category)
-  const res = await fetch(`/api/vendor/reports/sales?${params}`, {
-    headers: authHeaders(),
-  })
+  const res = await authedFetch(`/api/vendor/reports/sales?${params}`)
   if (!res.ok) throw new Error(`${res.status}`)
   return res.json()
 }
@@ -42,9 +35,7 @@ export async function getSalesReport(
 export async function exportSalesCsv(period: string, category?: string): Promise<void> {
   const params = new URLSearchParams({ period })
   if (category) params.set('category', category)
-  const res = await fetch(`/api/vendor/reports/sales/export?${params}`, {
-    headers: authHeaders(),
-  })
+  const res = await authedFetch(`/api/vendor/reports/sales/export?${params}`)
   if (!res.ok) throw new Error(`${res.status}`)
   const blob = await res.blob()
   const url = URL.createObjectURL(blob)

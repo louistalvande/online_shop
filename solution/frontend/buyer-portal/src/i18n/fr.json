@@ -55,6 +55,7 @@
   "login.registerLinkLabel": "S'inscrire",
   "login.error.invalid": "Email ou mot de passe incorrect.",
   "login.error.tooMany": "Trop de tentatives. Veuillez réessayer dans quelques minutes.",
+  "login.error.unauthorized": "Ce compte n'a pas accès au portail acheteur.",
   "login.error.generic": "Une erreur est survenue. Veuillez réessayer.",
   "login.mfa.title": "Vérification en deux étapes",
   "login.mfa.subtitle": "Saisissez le code généré par votre application d'authentification.",

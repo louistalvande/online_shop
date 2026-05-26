@@ -1,4 +1,4 @@
-import { getSession } from './authApi'
+import { authedFetch } from './authApi'
 
 export type OrderStatus =
   | 'PAYMENT_PENDING_CARD'
@@ -46,22 +46,18 @@ export interface OrderData {
   updatedAt: string
 }
 
-function authHeaders(): Record<string, string> {
-  const session = getSession()
-  if (!session) throw new Error('Not authenticated')
-  return { Authorization: `Bearer ${session.token}`, 'Content-Type': 'application/json' }
-}
+const JSON_HEADERS = { 'Content-Type': 'application/json' }
 
 /** Returns all orders for the authenticated vendor. */
 export async function listVendorOrders(): Promise<OrderData[]> {
-  const res = await fetch('/api/vendor/orders', { headers: authHeaders() })
+  const res = await authedFetch('/api/vendor/orders')
   if (!res.ok) throw new Error('Failed to load orders')
   return res.json()
 }
 
 /** Returns a single vendor order by ID. */
 export async function getVendorOrder(orderId: string): Promise<OrderData> {
-  const res = await fetch(`/api/vendor/orders/${orderId}`, { headers: authHeaders() })
+  const res = await authedFetch(`/api/vendor/orders/${orderId}`)
   if (res.status === 404) throw Object.assign(new Error('Order not found'), { code: 'NOT_FOUND' })
   if (!res.ok) throw new Error('Failed to load order')
   return res.json()
@@ -69,10 +65,7 @@ export async function getVendorOrder(orderId: string): Promise<OrderData> {
 
 /** Confirms receipt of a wire transfer payment. */
 export async function confirmWirePayment(orderId: string): Promise<OrderData> {
-  const res = await fetch(`/api/vendor/orders/${orderId}/confirm-wire`, {
-    method: 'POST',
-    headers: authHeaders(),
-  })
+  const res = await authedFetch(`/api/vendor/orders/${orderId}/confirm-wire`, { method: 'POST' })
   if (res.status === 409) throw Object.assign(new Error('Invalid order state'), { code: 'INVALID_STATE' })
   if (!res.ok) throw new Error('Failed to confirm wire payment')
   return res.json()
@@ -80,10 +73,7 @@ export async function confirmWirePayment(orderId: string): Promise<OrderData> {
 
 /** Rejects a wire transfer payment and cancels the order. */
 export async function rejectWirePayment(orderId: string): Promise<OrderData> {
-  const res = await fetch(`/api/vendor/orders/${orderId}/reject-wire`, {
-    method: 'POST',
-    headers: authHeaders(),
-  })
+  const res = await authedFetch(`/api/vendor/orders/${orderId}/reject-wire`, { method: 'POST' })
   if (res.status === 409) throw Object.assign(new Error('Invalid order state'), { code: 'INVALID_STATE' })
   if (!res.ok) throw new Error('Failed to reject wire payment')
   return res.json()
@@ -91,9 +81,9 @@ export async function rejectWirePayment(orderId: string): Promise<OrderData> {
 
 /** Declares order shipment with a carrier tracking number. */
 export async function shipOrder(orderId: string, trackingNumber: string): Promise<OrderData> {
-  const res = await fetch(`/api/vendor/orders/${orderId}/ship`, {
+  const res = await authedFetch(`/api/vendor/orders/${orderId}/ship`, {
     method: 'POST',
-    headers: authHeaders(),
+    headers: JSON_HEADERS,
     body: JSON.stringify({ trackingNumber }),
   })
   if (res.status === 409) throw Object.assign(new Error('Invalid order state'), { code: 'INVALID_STATE' })
@@ -103,9 +93,9 @@ export async function shipOrder(orderId: string, trackingNumber: string): Promis
 
 /** Accepts post-shipment cancellation requiring parcel return (US-CAN-03). */
 export async function acceptReturn(orderId: string, buyerIban?: string): Promise<OrderData> {
-  const res = await fetch(`/api/vendor/orders/${orderId}/accept-return`, {
+  const res = await authedFetch(`/api/vendor/orders/${orderId}/accept-return`, {
     method: 'POST',
-    headers: authHeaders(),
+    headers: JSON_HEADERS,
     body: JSON.stringify({ buyerIban: buyerIban ?? null }),
   })
   if (res.status === 409) throw Object.assign(new Error('Invalid order state'), { code: 'INVALID_STATE' })
@@ -116,10 +106,7 @@ export async function acceptReturn(orderId: string, buyerIban?: string): Promise
 
 /** Confirms receipt of the returned parcel and triggers refund (US-CAN-03). */
 export async function confirmReturn(orderId: string): Promise<OrderData> {
-  const res = await fetch(`/api/vendor/orders/${orderId}/confirm-return`, {
-    method: 'POST',
-    headers: authHeaders(),
-  })
+  const res = await authedFetch(`/api/vendor/orders/${orderId}/confirm-return`, { method: 'POST' })
   if (res.status === 409) throw Object.assign(new Error('Invalid order state'), { code: 'INVALID_STATE' })
   if (!res.ok) throw new Error('Failed to confirm return')
   return res.json()
@@ -127,9 +114,9 @@ export async function confirmReturn(orderId: string): Promise<OrderData> {
 
 /** Accepts post-shipment cancellation without requiring return (US-CAN-04). */
 export async function waiveReturn(orderId: string, buyerIban?: string): Promise<OrderData> {
-  const res = await fetch(`/api/vendor/orders/${orderId}/waive-return`, {
+  const res = await authedFetch(`/api/vendor/orders/${orderId}/waive-return`, {
     method: 'POST',
-    headers: authHeaders(),
+    headers: JSON_HEADERS,
     body: JSON.stringify({ buyerIban: buyerIban ?? null }),
   })
   if (res.status === 409) throw Object.assign(new Error('Invalid order state'), { code: 'INVALID_STATE' })
@@ -140,10 +127,7 @@ export async function waiveReturn(orderId: string, buyerIban?: string): Promise<
 
 /** Confirms that the wire transfer refund has been sent to the buyer (US-CAN-05). */
 export async function confirmWireRefund(orderId: string): Promise<OrderData> {
-  const res = await fetch(`/api/vendor/orders/${orderId}/confirm-wire-refund`, {
-    method: 'POST',
-    headers: authHeaders(),
-  })
+  const res = await authedFetch(`/api/vendor/orders/${orderId}/confirm-wire-refund`, { method: 'POST' })
   if (res.status === 409) throw Object.assign(new Error('Invalid order state'), { code: 'INVALID_STATE' })
   if (!res.ok) throw new Error('Failed to confirm wire refund')
   return res.json()
@@ -151,10 +135,7 @@ export async function confirmWireRefund(orderId: string): Promise<OrderData> {
 
 /** Refuses the buyer's post-shipment cancellation request (US-CAN-06). */
 export async function refuseCancellationRequest(orderId: string): Promise<OrderData> {
-  const res = await fetch(`/api/vendor/orders/${orderId}/refuse-cancellation`, {
-    method: 'POST',
-    headers: authHeaders(),
-  })
+  const res = await authedFetch(`/api/vendor/orders/${orderId}/refuse-cancellation`, { method: 'POST' })
   if (res.status === 409) throw Object.assign(new Error('Invalid order state'), { code: 'INVALID_STATE' })
   if (!res.ok) throw new Error('Failed to refuse cancellation request')
   return res.json()

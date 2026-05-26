@@ -27,6 +27,7 @@
   "login.submit": "Log in",
   "login.loading": "Logging in…",
   "login.error.invalid": "Invalid email or password.",
+  "login.error.unauthorized": "This account does not have access to the vendor space.",
   "login.error.generic": "An error occurred. Please try again.",
   "profile.title": "My profile",
   "profile.tab.profile": "Information",

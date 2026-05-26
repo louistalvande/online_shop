@@ -96,6 +96,7 @@
   "login.submit": "Se connecter",
   "login.loading": "Connexion…",
   "login.error.invalid": "Email ou mot de passe incorrect.",
+  "login.error.unauthorized": "Ce compte n'a pas accès à la console d'administration.",
   "login.error.generic": "Une erreur est survenue. Veuillez réessayer.",
   "setup.title": "Définir votre mot de passe",
   "setup.subtitle": "Première connexion — veuillez choisir un mot de passe pour sécuriser votre compte.",

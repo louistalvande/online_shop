@@ -96,6 +96,7 @@
   "login.submit": "Sign in",
   "login.loading": "Signing in…",
   "login.error.invalid": "Incorrect email or password.",
+  "login.error.unauthorized": "This account does not have access to the admin console.",
   "login.error.generic": "An error occurred. Please try again.",
   "setup.title": "Set your password",
   "setup.subtitle": "First login — please choose a password to secure your account.",

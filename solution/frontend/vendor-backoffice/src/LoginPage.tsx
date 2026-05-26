@@ -23,7 +23,9 @@ export default function LoginPage({ onLogin }: LoginPageProps) {
       onLogin()
     } catch (err: unknown) {
       const code = (err as { code?: string }).code
-      setError(code === 'INVALID_CREDENTIALS' ? t('login.error.invalid') : t('login.error.generic'))
+      if (code === 'INVALID_CREDENTIALS') setError(t('login.error.invalid'))
+      else if (code === 'UNAUTHORIZED') setError(t('login.error.unauthorized'))
+      else setError(t('login.error.generic'))
     } finally {
       setLoading(false)
     }

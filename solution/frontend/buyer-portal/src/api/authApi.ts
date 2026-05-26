@@ -20,6 +20,16 @@ export interface LoginResult {
   requiresPasswordSetup?: boolean
 }
 
+function decodeJwtRole(token: string | null | undefined): string | null {
+  if (!token) return null
+  try {
+    const payload = token.split('.')[1]
+    return JSON.parse(atob(payload.replace(/-/g, '+').replace(/_/g, '/'))).role ?? null
+  } catch {
+    return null
+  }
+}
+
 export async function register(payload: RegisterPayload): Promise<void> {
   const res = await fetch('/api/auth/register', {
     method: 'POST',
@@ -64,9 +74,11 @@ export async function login(email: string, password: string): Promise<LoginResul
   if (!res.ok) throw new Error('Login failed')
 
   const data = await res.json()
-
   if (data.requiresMfa) {
     return { requiresMfa: true, mfaToken: data.mfaToken, email: data.email }
+  }
+  if (decodeJwtRole(data.token) !== 'BUYER') {
+    throw Object.assign(new Error('Access restricted to buyers'), { code: 'UNAUTHORIZED' })
   }
 
   const session: BuyerSession = { email: data.email, token: data.token }

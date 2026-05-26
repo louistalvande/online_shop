@@ -9,6 +9,16 @@ export interface LoginResponse extends AdminSession {
   requiresPasswordSetup: boolean
 }
 
+function decodeJwtRole(token: string | null | undefined): string | null {
+  if (!token) return null
+  try {
+    const payload = token.split('.')[1]
+    return JSON.parse(atob(payload.replace(/-/g, '+').replace(/_/g, '/'))).role ?? null
+  } catch {
+    return null
+  }
+}
+
 export async function login(email: string, password: string): Promise<LoginResponse> {
   const res = await fetch('/api/auth/login', {
     method: 'POST',
@@ -18,6 +28,9 @@ export async function login(email: string, password: string): Promise<LoginRespo
   if (res.status === 401) throw Object.assign(new Error('Invalid credentials'), { code: 'INVALID_CREDENTIALS' })
   if (!res.ok) throw new Error('Login failed')
   const data: LoginResponse = await res.json()
+  if (decodeJwtRole(data.token) !== 'ADMIN') {
+    throw Object.assign(new Error('Access restricted to administrators'), { code: 'UNAUTHORIZED' })
+  }
   localStorage.setItem(SESSION_KEY, JSON.stringify({ email: data.email, token: data.token }))
   return data
 }

@@ -34,6 +34,7 @@ export default function LoginModal({ onClose, onLogin }: Props) {
       const code = err instanceof Error ? (err as { code?: string }).code : undefined
       if (code === 'INVALID_CREDENTIALS') setError(t('login.error.invalid'))
       else if (code === 'TOO_MANY_ATTEMPTS') setError(t('login.error.tooMany'))
+      else if (code === 'UNAUTHORIZED') setError(t('login.error.unauthorized'))
       else setError(t('login.error.generic'))
     } finally {
       setLoading(false)
