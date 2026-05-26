@@ -98,6 +98,25 @@ export function getSession(): BuyerSession | null {
   return raw ? JSON.parse(raw) : null
 }
 
+/** fetch wrapper that injects the Bearer token and redirects to /login on 401. */
+export async function authedFetch(url: string, init: RequestInit = {}): Promise<Response> {
+  const session = getSession()
+  if (!session) {
+    window.location.href = '/login'
+    throw new Error('NOT_AUTHENTICATED')
+  }
+  const res = await fetch(url, {
+    ...init,
+    headers: { Authorization: `Bearer ${session.token}`, ...init.headers },
+  })
+  if (res.status === 401) {
+    logout()
+    window.location.href = '/login'
+    throw new Error('SESSION_EXPIRED')
+  }
+  return res
+}
+
 export async function resendActivation(email: string): Promise<void> {
   const res = await fetch('/api/auth/resend-activation', {
     method: 'POST',

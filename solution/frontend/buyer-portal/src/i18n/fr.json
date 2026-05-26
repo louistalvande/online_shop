@@ -79,6 +79,7 @@
   "resetPassword.error.mismatch": "Les mots de passe ne correspondent pas.",
   "resetPassword.error.generic": "Une erreur est survenue. Veuillez réessayer.",
   "nav.profile": "Mon profil",
+  "nav.orders": "Mes commandes",
   "profile.title": "Mon profil",
   "profile.tab.profile": "Informations",
   "profile.tab.addresses": "Mes adresses",

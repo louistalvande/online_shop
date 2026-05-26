@@ -32,8 +32,10 @@ export default function Header({ session, onShowLogin, onLogout, children }: Pro
               label={t('nav.account')}
               email={session.email}
               settingsLabel={t('nav.profile')}
+              ordersLabel={t('nav.orders')}
               logoutLabel={t('nav.logout')}
               onSettings={() => { window.location.href = '/profile' }}
+              onOrders={() => { window.location.href = '/my-orders' }}
               onLogout={onLogout}
             />
           ) : (

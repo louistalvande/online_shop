@@ -79,6 +79,7 @@
   "resetPassword.error.mismatch": "Passwords do not match.",
   "resetPassword.error.generic": "An error occurred. Please try again.",
   "nav.profile": "My profile",
+  "nav.orders": "My orders",
   "profile.title": "My profile",
   "profile.tab.profile": "Information",
   "profile.tab.addresses": "My addresses",

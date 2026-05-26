@@ -1,4 +1,4 @@
-import { getSession } from './authApi'
+import { authedFetch } from './authApi'
 
 const BASE = '/api/cart'
 
@@ -22,24 +22,18 @@ export interface CartData {
   updatedAt: string
 }
 
-function authHeaders(): Record<string, string> {
-  const session = getSession()
-  if (!session) throw new Error('NOT_AUTHENTICATED')
-  return { 'Content-Type': 'application/json', Authorization: `Bearer ${session.token}` }
-}
-
 /** Fetches the authenticated buyer's cart (creates one if none exists). */
 export async function getCart(): Promise<CartData> {
-  const res = await fetch(BASE, { headers: authHeaders() })
+  const res = await authedFetch(BASE)
   if (!res.ok) throw new Error('CART_LOAD_ERROR')
   return res.json()
 }
 
 /** Adds a product to the cart; increments quantity if already present. */
 export async function addToCart(productId: string, quantity: number): Promise<CartData> {
-  const res = await fetch(`${BASE}/items`, {
+  const res = await authedFetch(`${BASE}/items`, {
     method: 'POST',
-    headers: authHeaders(),
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ productId, quantity }),
   })
   if (res.status === 409) throw new Error('OUT_OF_STOCK')
@@ -50,9 +44,9 @@ export async function addToCart(productId: string, quantity: number): Promise<Ca
 
 /** Updates the quantity of an existing cart item. */
 export async function updateCartItem(itemId: string, quantity: number): Promise<CartData> {
-  const res = await fetch(`${BASE}/items/${itemId}`, {
+  const res = await authedFetch(`${BASE}/items/${itemId}`, {
     method: 'PATCH',
-    headers: authHeaders(),
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ quantity }),
   })
   if (res.status === 409) throw new Error('OUT_OF_STOCK')
@@ -63,10 +57,7 @@ export async function updateCartItem(itemId: string, quantity: number): Promise<
 
 /** Removes an item from the cart. */
 export async function removeCartItem(itemId: string): Promise<CartData> {
-  const res = await fetch(`${BASE}/items/${itemId}`, {
-    method: 'DELETE',
-    headers: authHeaders(),
-  })
+  const res = await authedFetch(`${BASE}/items/${itemId}`, { method: 'DELETE' })
   if (res.status === 404) throw new Error('CART_ITEM_NOT_FOUND')
   if (!res.ok) throw new Error('CART_UPDATE_ERROR')
   return res.json()
