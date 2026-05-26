@@ -164,8 +164,8 @@ const brandNameStyle: React.CSSProperties = {
 }
 const cardStyle: React.CSSProperties = {
   width: '100%',
-  maxWidth: 400,
-  padding: '36px 32px',
+  maxWidth: 480,
+  padding: '36px 40px',
 }
 const titleStyle: React.CSSProperties = {
   fontFamily: 'var(--font-serif)',
