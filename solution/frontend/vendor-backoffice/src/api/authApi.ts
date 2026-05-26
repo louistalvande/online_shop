@@ -26,3 +26,22 @@ export function getSession(): VendorSession | null {
   const raw = localStorage.getItem(SESSION_KEY)
   return raw ? JSON.parse(raw) : null
 }
+
+/** fetch wrapper that injects the Bearer token and redirects to /login on 401. */
+export async function authedFetch(url: string, init: RequestInit = {}): Promise<Response> {
+  const session = getSession()
+  if (!session) {
+    window.location.href = '/login'
+    throw new Error('NOT_AUTHENTICATED')
+  }
+  const res = await fetch(url, {
+    ...init,
+    headers: { Authorization: `Bearer ${session.token}`, ...init.headers },
+  })
+  if (res.status === 401) {
+    logout()
+    window.location.href = '/login'
+    throw new Error('SESSION_EXPIRED')
+  }
+  return res
+}
