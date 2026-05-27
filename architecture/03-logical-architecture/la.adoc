@@ -286,7 +286,7 @@ Les interfaces logiques définissent les contrats d'échange entre composants, i
 | *IFL-09*
 | Services (Commande, Compte, Paiement, Expédition)
 | Service Notification
-| Émettre une notification (type, destinataire, données variables, langue du destinataire issue de `compte.langue` — CS-10)
+| Émettre une notification (type, destinataire(s), données variables, langue du destinataire issue de `compte.langue` — CS-10). Pour les notifications de type `NOUVELLE_COMMANDE` et `VIREMENT_EN_ATTENTE`, le Service Commande appelle `notifierTousVendeurs(...)` : le Service Notification itère sur l'ensemble des comptes au rôle `vendeur` et envoie un email à chacun.
 | Toutes notifications
 
 | *IFL-10*
@@ -437,7 +437,8 @@ alt Paiement par carte
     SvcOrder -> SvcCatalog : IFL-06 — reserverStock(lignes[])
     SvcOrder -> DB : IFL-13 — INSERT commande {statut: en_attente}
     SvcOrder -> SvcNotif : IFL-09 — notifier(COMMANDE_CONFIRMEE, acheteur)
-    SvcOrder -> SvcNotif : IFL-09 — notifier(NOUVELLE_COMMANDE, vendeur)
+    note right : Broadcast : un email envoyé\nà chaque compte vendeur actif
+    SvcOrder -> SvcNotif : IFL-09 — notifierTousVendeurs(NOUVELLE_COMMANDE, order_id)
     SvcOrder --> UI : 201 Created {commande_id}
     UI --> Buyer : Confirmation de commande
 
@@ -457,7 +458,8 @@ else Paiement par virement (FS-V09)
   SvcOrder -> SvcCatalog : IFL-06 — preReserverStock(lignes[])
   SvcOrder -> DB : IFL-13 — INSERT commande {statut: paiement_en_attente_virement}
   SvcOrder -> SvcNotif : IFL-09 — notifier(VIREMENT_EN_ATTENTE, acheteur, {coordonnées_bancaires})
-  SvcOrder -> SvcNotif : IFL-09 — notifier(VIREMENT_EN_ATTENTE, vendeur, {commande_id})
+  note right : Broadcast : un email envoyé\nà chaque compte vendeur actif
+  SvcOrder -> SvcNotif : IFL-09 — notifierTousVendeurs(VIREMENT_EN_ATTENTE, order_id)
   SvcOrder --> UI : 201 Created {commande_id, statut: paiement_en_attente_virement}
   UI --> Buyer : Commande créée — effectuer le virement
 
@@ -474,7 +476,8 @@ else Paiement par virement (FS-V09)
   SvcPayment -> SvcOrder : IFL-08 — virementConfirmé(commande_id)
   SvcOrder -> DB : IFL-13 — UPDATE commande {statut: en_attente}
   SvcOrder -> SvcNotif : IFL-09 — notifier(COMMANDE_CONFIRMEE, acheteur)
-  SvcOrder -> SvcNotif : IFL-09 — notifier(NOUVELLE_COMMANDE, vendeur)
+  note right : Broadcast : un email envoyé\nà chaque compte vendeur actif
+  SvcOrder -> SvcNotif : IFL-09 — notifierTousVendeurs(NOUVELLE_COMMANDE, order_id)
 end
 ----
 

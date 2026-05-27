@@ -1,8 +1,5 @@
 package com.shop.catalog.service.impl;
 
-import com.shop.account.entity.Account;
-import com.shop.account.exception.AccountNotFoundException;
-import com.shop.account.repository.AccountRepository;
 import com.shop.catalog.dto.BulkStockUpdateRequest;
 import com.shop.catalog.dto.BulkStockUpdateResponse;
 import com.shop.catalog.dto.BuyerProductResponse;
@@ -42,30 +39,23 @@ public class ProductServiceImpl implements ProductService {
 
     private final ProductRepository productRepository;
     private final StockAlertRepository stockAlertRepository;
-    private final AccountRepository accountRepository;
 
     /**
      * Constructs the service with its required repositories.
      *
      * @param productRepository    the product JPA repository
      * @param stockAlertRepository the stock alert JPA repository
-     * @param accountRepository    the account JPA repository (used to resolve vendor UUID from email)
      */
     public ProductServiceImpl(ProductRepository productRepository,
-                               StockAlertRepository stockAlertRepository,
-                               AccountRepository accountRepository) {
+                               StockAlertRepository stockAlertRepository) {
         this.productRepository = productRepository;
         this.stockAlertRepository = stockAlertRepository;
-        this.accountRepository = accountRepository;
     }
 
     /** {@inheritDoc} */
     @Override
-    public ProductResponse createProduct(String vendorEmail, CreateProductRequest request) {
-        UUID vendorId = resolveVendorId(vendorEmail);
-
+    public ProductResponse createProduct(CreateProductRequest request) {
         Product product = new Product();
-        product.setVendorId(vendorId);
         product.setName(request.getName());
         product.setDescription(request.getDescription());
         product.setPriceExclTax(request.getPriceExclTax());
@@ -84,9 +74,8 @@ public class ProductServiceImpl implements ProductService {
     /** {@inheritDoc} */
     @Override
     @Transactional(readOnly = true)
-    public List<ProductResponse> listProducts(String vendorEmail) {
-        UUID vendorId = resolveVendorId(vendorEmail);
-        return productRepository.findByVendorIdOrderByCreatedAtDesc(vendorId).stream()
+    public List<ProductResponse> listProducts() {
+        return productRepository.findAllByOrderByCreatedAtDesc().stream()
                 .map(ProductResponse::from)
                 .toList();
     }
@@ -94,18 +83,16 @@ public class ProductServiceImpl implements ProductService {
     /** {@inheritDoc} */
     @Override
     @Transactional(readOnly = true)
-    public ProductResponse getProduct(String vendorEmail, UUID productId) {
-        UUID vendorId = resolveVendorId(vendorEmail);
-        Product product = productRepository.findByIdAndVendorId(productId, vendorId)
+    public ProductResponse getProduct(UUID productId) {
+        Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new ProductNotFoundException(productId));
         return ProductResponse.from(product);
     }
 
     /** {@inheritDoc} */
     @Override
-    public ProductResponse updateProduct(String vendorEmail, UUID productId, UpdateProductRequest request) {
-        UUID vendorId = resolveVendorId(vendorEmail);
-        Product product = productRepository.findByIdAndVendorId(productId, vendorId)
+    public ProductResponse updateProduct(UUID productId, UpdateProductRequest request) {
+        Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new ProductNotFoundException(productId));
 
         product.setName(request.getName());
@@ -125,13 +112,9 @@ public class ProductServiceImpl implements ProductService {
 
     /** {@inheritDoc} */
     @Override
-    public ProductResponse archiveProduct(String vendorEmail, UUID productId) {
-        UUID vendorId = resolveVendorId(vendorEmail);
-        Product product = productRepository.findByIdAndVendorId(productId, vendorId)
+    public ProductResponse archiveProduct(UUID productId) {
+        Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new ProductNotFoundException(productId));
-
-        // TODO(US-ORD): block archiving when active orders reference this product
-        // (orders domain not yet implemented — always proceeds for now)
 
         product.setStatus(ProductStatus.ARCHIVED);
         return ProductResponse.from(productRepository.save(product));
@@ -139,9 +122,8 @@ public class ProductServiceImpl implements ProductService {
 
     /** {@inheritDoc} */
     @Override
-    public ProductResponse updateStock(String vendorEmail, UUID productId, UpdateStockRequest request) {
-        UUID vendorId = resolveVendorId(vendorEmail);
-        Product product = productRepository.findByIdAndVendorId(productId, vendorId)
+    public ProductResponse updateStock(UUID productId, UpdateStockRequest request) {
+        Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new ProductNotFoundException(productId));
 
         product.setQuantity(request.getQuantity());
@@ -154,15 +136,14 @@ public class ProductServiceImpl implements ProductService {
 
     /** {@inheritDoc} */
     @Override
-    public BulkStockUpdateResponse bulkUpdateStock(String vendorEmail, BulkStockUpdateRequest request) {
-        UUID vendorId = resolveVendorId(vendorEmail);
+    public BulkStockUpdateResponse bulkUpdateStock(BulkStockUpdateRequest request) {
         List<BulkStockUpdateResponse.StockUpdateResult> results = new ArrayList<>();
         int totalUpdated = 0;
         int totalErrors = 0;
 
         for (BulkStockUpdateRequest.StockUpdateItem item : request.getUpdates()) {
             try {
-                Product product = productRepository.findByIdAndVendorId(item.getProductId(), vendorId)
+                Product product = productRepository.findById(item.getProductId())
                         .orElseThrow(() -> new ProductNotFoundException(item.getProductId()));
                 product.setQuantity(item.getQuantity());
                 product.setStockAlertThreshold(item.getStockAlertThreshold());
@@ -184,10 +165,9 @@ public class ProductServiceImpl implements ProductService {
     /** {@inheritDoc} */
     @Override
     @Transactional(readOnly = true)
-    public List<StockAlertResponse> listPendingAlerts(String vendorEmail) {
-        UUID vendorId = resolveVendorId(vendorEmail);
+    public List<StockAlertResponse> listPendingAlerts() {
         return stockAlertRepository
-                .findByProduct_VendorIdAndAcknowledgedOrderByTriggeredAtDesc(vendorId, false)
+                .findByAcknowledgedOrderByTriggeredAtDesc(false)
                 .stream()
                 .map(StockAlertResponse::from)
                 .toList();
@@ -195,10 +175,8 @@ public class ProductServiceImpl implements ProductService {
 
     /** {@inheritDoc} */
     @Override
-    public StockAlertResponse acknowledgeAlert(String vendorEmail, UUID alertId) {
-        UUID vendorId = resolveVendorId(vendorEmail);
+    public StockAlertResponse acknowledgeAlert(UUID alertId) {
         StockAlert alert = stockAlertRepository.findById(alertId)
-                .filter(a -> a.getProduct().getVendorId().equals(vendorId))
                 .orElseThrow(() -> new ProductNotFoundException(alertId));
         alert.setAcknowledged(true);
         return StockAlertResponse.from(stockAlertRepository.save(alert));
@@ -231,8 +209,8 @@ public class ProductServiceImpl implements ProductService {
     /** {@inheritDoc} */
     @Override
     @Transactional(readOnly = true)
-    public String exportProductsCsv(String vendorEmail) {
-        List<ProductResponse> products = listProducts(vendorEmail);
+    public String exportProductsCsv() {
+        List<ProductResponse> products = listProducts();
         StringBuilder sb = new StringBuilder();
         sb.append("nom,description,prix,categorie,quantite,seuil_alerte,statut\n");
         for (ProductResponse p : products) {
@@ -267,12 +245,9 @@ public class ProductServiceImpl implements ProductService {
 
     /** {@inheritDoc} */
     @Override
-    public CsvImportResponse importProductsCsv(String vendorEmail, String csvContent) {
-        UUID vendorId = resolveVendorId(vendorEmail);
-
+    public CsvImportResponse importProductsCsv(String csvContent) {
         String[] lines = csvContent.lines().toArray(String[]::new);
 
-        // Locate and validate the header (first non-blank line)
         int dataStartIndex = -1;
         String headerLine = null;
         for (int i = 0; i < lines.length; i++) {
@@ -293,23 +268,22 @@ public class ProductServiceImpl implements ProductService {
         for (int i = dataStartIndex; i < lines.length; i++) {
             String line = lines[i];
             if (line.isBlank()) continue;
-            int lineNumber = i + 1; // 1-based, header = line 1
+            int lineNumber = i + 1;
 
             try {
                 List<String> fields = parseCsvLine(line);
-                String nom        = fields.size() > 0 ? fields.get(0) : "";
+                String nom         = fields.size() > 0 ? fields.get(0) : "";
                 String description = fields.size() > 1 ? fields.get(1) : "";
-                String prixStr    = fields.size() > 2 ? fields.get(2) : "";
-                String categorie  = fields.size() > 3 ? fields.get(3) : "";
+                String prixStr     = fields.size() > 2 ? fields.get(2) : "";
+                String categorie   = fields.size() > 3 ? fields.get(3) : "";
                 String quantiteStr = fields.size() > 4 ? fields.get(4) : "";
-                String seuilStr   = fields.size() > 5 ? fields.get(5) : "";
+                String seuilStr    = fields.size() > 5 ? fields.get(5) : "";
 
                 if (nom.isBlank()) {
                     results.add(CsvImportRowResult.error(lineNumber, "Le nom est obligatoire"));
                     totalErrors++;
                     continue;
                 }
-
                 if (prixStr.isBlank()) {
                     results.add(CsvImportRowResult.error(lineNumber, "Le prix est obligatoire"));
                     totalErrors++;
@@ -362,7 +336,6 @@ public class ProductServiceImpl implements ProductService {
                 }
 
                 Product product = new Product();
-                product.setVendorId(vendorId);
                 product.setName(nom);
                 product.setDescription(description.isBlank() ? null : description);
                 product.setPriceExclTax(prix);
@@ -389,12 +362,6 @@ public class ProductServiceImpl implements ProductService {
     // Helpers
     // -------------------------------------------------------------------------
 
-    private UUID resolveVendorId(String email) {
-        return accountRepository.findByEmail(email)
-                .map(Account::getId)
-                .orElseThrow(() -> new AccountNotFoundException(email));
-    }
-
     private void applyPhotos(Product product, List<String> photoUrls) {
         for (int i = 0; i < photoUrls.size(); i++) {
             ProductPhoto photo = new ProductPhoto();
@@ -420,7 +387,6 @@ public class ProductServiceImpl implements ProductService {
             char c = line.charAt(i);
             if (c == '"') {
                 if (inQuotes && i + 1 < line.length() && line.charAt(i + 1) == '"') {
-                    // escaped double-quote inside a quoted field
                     current.append('"');
                     i++;
                 } else {

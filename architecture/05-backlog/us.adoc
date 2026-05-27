@@ -224,7 +224,7 @@ a|
 | Terminée
 
 | *US-CAT-04*
-| En tant que vendeur, je peux consulter et mettre à jour les niveaux de stock de mes produits et définir un seuil d'alerte.
+| En tant que vendeur, je peux consulter et mettre à jour les niveaux de stock des produits du catalogue partagé et définir un seuil d'alerte.
 a|
 - [x] Stock et seuil d'alerte affichés dans la liste des produits
 - [x] Quantités modifiables depuis le formulaire produit et via `PATCH /stock`
@@ -262,7 +262,7 @@ a|
 | Terminée
 
 | *US-CAT-07*
-| En tant que vendeur, je peux exporter mon catalogue produits au format CSV afin de le consulter ou le réimporter ultérieurement.
+| En tant que vendeur, je peux exporter le catalogue produits partagé au format CSV afin de le consulter ou le réimporter ultérieurement.
 a|
 - [x] Un bouton « Exporter CSV » est disponible dans la section gestion du catalogue du back-office vendeur
 - [x] Le fichier généré contient toutes les fiches produits (publiées et archivées) avec les colonnes : `nom,description,prix,categorie,quantite,seuil_alerte,statut`
@@ -347,7 +347,7 @@ a|
 | En tant qu'acheteur, je peux régler ma commande par carte bancaire avec autorisation immédiate via Stripe.
 a|
 - [x] Données carte transmises directement à Stripe sans transit en clair par le backend (PCI-DSS)
-- [x] Commande confirmée et vendeur notifié si la transaction est autorisée ; stock réservé
+- [x] Commande confirmée et tous les vendeurs notifiés par email si la transaction est autorisée ; stock réservé
 - [x] Message d'erreur explicite si la transaction est refusée
 | Terminée
 
@@ -356,7 +356,7 @@ a|
 a|
 - [x] Commande créée en statut `paiement_en_attente_virement`
 - [x] Coordonnées bancaires et référence à inclure affichées et envoyées par email
-- [x] Stock pré-réservé ; vendeur notifié du virement en attente
+- [x] Stock pré-réservé ; tous les vendeurs notifiés par email du virement en attente
 | Terminée
 
 | *US-ORD-05*

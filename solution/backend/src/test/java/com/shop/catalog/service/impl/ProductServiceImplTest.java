@@ -1,8 +1,5 @@
 package com.shop.catalog.service.impl;
 
-import com.shop.account.entity.Account;
-import com.shop.account.exception.AccountNotFoundException;
-import com.shop.account.repository.AccountRepository;
 import com.shop.catalog.dto.BuyerProductResponse;
 import com.shop.catalog.dto.CreateProductRequest;
 import com.shop.catalog.dto.ProductResponse;
@@ -44,36 +41,18 @@ class ProductServiceImplTest {
 
     @Mock ProductRepository productRepository;
     @Mock StockAlertRepository stockAlertRepository;
-    @Mock AccountRepository accountRepository;
 
     ProductServiceImpl service;
 
-    private static final String VENDOR_EMAIL = "vendor@example.com";
-    private static final UUID VENDOR_ID = UUID.randomUUID();
     private static final UUID PRODUCT_ID = UUID.randomUUID();
 
     @BeforeEach
     void setUp() {
-        service = new ProductServiceImpl(productRepository, stockAlertRepository, accountRepository);
-    }
-
-    private Account vendorAccount() {
-        Account a = new Account();
-        java.lang.reflect.Field idField;
-        try {
-            idField = Account.class.getDeclaredField("id");
-            idField.setAccessible(true);
-            idField.set(a, VENDOR_ID);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-        a.setEmail(VENDOR_EMAIL);
-        return a;
+        service = new ProductServiceImpl(productRepository, stockAlertRepository);
     }
 
     private Product publishedProduct() {
         Product p = new Product();
-        p.setVendorId(VENDOR_ID);
         p.setName("Aquarelle");
         p.setDescription("Belle aquarelle");
         p.setPriceExclTax(new BigDecimal("29.90"));
@@ -99,10 +78,9 @@ class ProductServiceImplTest {
     /** createProduct must persist a PUBLISHED product and return its DTO. */
     @Test
     void createProduct_savesPublishedProductAndReturnsDto() {
-        given(accountRepository.findByEmail(VENDOR_EMAIL)).willReturn(Optional.of(vendorAccount()));
         given(productRepository.save(any(Product.class))).willAnswer(inv -> inv.getArgument(0));
 
-        ProductResponse result = service.createProduct(VENDOR_EMAIL, createRequest(10));
+        ProductResponse result = service.createProduct(createRequest(10));
 
         then(productRepository).should().save(any(Product.class));
         assertThat(result.getName()).isEqualTo("Aquarelle");
@@ -112,11 +90,10 @@ class ProductServiceImplTest {
     /** createProduct must raise a stock alert when quantity is below the threshold. */
     @Test
     void createProduct_raisesStockAlert_whenQuantityBelowThreshold() {
-        given(accountRepository.findByEmail(VENDOR_EMAIL)).willReturn(Optional.of(vendorAccount()));
         given(productRepository.save(any(Product.class))).willAnswer(inv -> inv.getArgument(0));
         given(stockAlertRepository.existsByProduct_IdAndAcknowledged(any(), anyBoolean())).willReturn(false);
 
-        service.createProduct(VENDOR_EMAIL, createRequest(1));
+        service.createProduct(createRequest(1));
 
         then(stockAlertRepository).should().save(any(StockAlert.class));
     }
@@ -124,64 +101,49 @@ class ProductServiceImplTest {
     /** createProduct must not raise a duplicate alert when one already exists. */
     @Test
     void createProduct_doesNotRaiseDuplicateAlert_whenAlertAlreadyPending() {
-        given(accountRepository.findByEmail(VENDOR_EMAIL)).willReturn(Optional.of(vendorAccount()));
         given(productRepository.save(any(Product.class))).willAnswer(inv -> inv.getArgument(0));
         given(stockAlertRepository.existsByProduct_IdAndAcknowledged(any(), anyBoolean())).willReturn(true);
 
-        service.createProduct(VENDOR_EMAIL, createRequest(1));
+        service.createProduct(createRequest(1));
 
         then(stockAlertRepository).should(org.mockito.Mockito.never()).save(any(StockAlert.class));
     }
 
-    /** createProduct must throw AccountNotFoundException when vendor email is unknown. */
+    /** listProducts must return all products ordered by creation date. */
     @Test
-    void createProduct_throwsAccountNotFoundException_whenVendorUnknown() {
-        given(accountRepository.findByEmail(VENDOR_EMAIL)).willReturn(Optional.empty());
-
-        assertThatThrownBy(() -> service.createProduct(VENDOR_EMAIL, createRequest(10)))
-                .isInstanceOf(AccountNotFoundException.class);
-    }
-
-    /** listProducts must return all products owned by the vendor. */
-    @Test
-    void listProducts_returnsVendorProducts() {
-        given(accountRepository.findByEmail(VENDOR_EMAIL)).willReturn(Optional.of(vendorAccount()));
-        given(productRepository.findByVendorIdOrderByCreatedAtDesc(VENDOR_ID))
+    void listProducts_returnsAllProducts() {
+        given(productRepository.findAllByOrderByCreatedAtDesc())
                 .willReturn(List.of(publishedProduct(), publishedProduct()));
 
-        List<ProductResponse> result = service.listProducts(VENDOR_EMAIL);
+        List<ProductResponse> result = service.listProducts();
 
         assertThat(result).hasSize(2);
     }
 
-    /** getProduct must return the product when it belongs to the vendor. */
+    /** getProduct must return the product when it exists. */
     @Test
-    void getProduct_returnsProduct_whenOwnedByVendor() {
-        given(accountRepository.findByEmail(VENDOR_EMAIL)).willReturn(Optional.of(vendorAccount()));
-        given(productRepository.findByIdAndVendorId(PRODUCT_ID, VENDOR_ID))
+    void getProduct_returnsProduct_whenFound() {
+        given(productRepository.findById(PRODUCT_ID))
                 .willReturn(Optional.of(publishedProduct()));
 
-        ProductResponse result = service.getProduct(VENDOR_EMAIL, PRODUCT_ID);
+        ProductResponse result = service.getProduct(PRODUCT_ID);
 
         assertThat(result.getName()).isEqualTo("Aquarelle");
     }
 
-    /** getProduct must throw ProductNotFoundException when product does not belong to vendor. */
+    /** getProduct must throw ProductNotFoundException when product does not exist. */
     @Test
-    void getProduct_throwsProductNotFoundException_whenNotOwned() {
-        given(accountRepository.findByEmail(VENDOR_EMAIL)).willReturn(Optional.of(vendorAccount()));
-        given(productRepository.findByIdAndVendorId(PRODUCT_ID, VENDOR_ID))
-                .willReturn(Optional.empty());
+    void getProduct_throwsProductNotFoundException_whenNotFound() {
+        given(productRepository.findById(PRODUCT_ID)).willReturn(Optional.empty());
 
-        assertThatThrownBy(() -> service.getProduct(VENDOR_EMAIL, PRODUCT_ID))
+        assertThatThrownBy(() -> service.getProduct(PRODUCT_ID))
                 .isInstanceOf(ProductNotFoundException.class);
     }
 
     /** updateProduct must update all fields and return the updated DTO. */
     @Test
     void updateProduct_updatesFieldsAndReturnsDto() {
-        given(accountRepository.findByEmail(VENDOR_EMAIL)).willReturn(Optional.of(vendorAccount()));
-        given(productRepository.findByIdAndVendorId(PRODUCT_ID, VENDOR_ID))
+        given(productRepository.findById(PRODUCT_ID))
                 .willReturn(Optional.of(publishedProduct()));
         given(productRepository.save(any(Product.class))).willAnswer(inv -> inv.getArgument(0));
 
@@ -194,7 +156,7 @@ class ProductServiceImplTest {
         req.setStockAlertThreshold(2);
         req.setPhotoUrls(List.of());
 
-        ProductResponse result = service.updateProduct(VENDOR_EMAIL, PRODUCT_ID, req);
+        ProductResponse result = service.updateProduct(PRODUCT_ID, req);
 
         assertThat(result.getName()).isEqualTo("Huile sur toile");
         assertThat(result.getPriceExclTax()).isEqualByComparingTo("49.00");
@@ -203,12 +165,11 @@ class ProductServiceImplTest {
     /** archiveProduct must change status to ARCHIVED. */
     @Test
     void archiveProduct_setsStatusArchivedAndReturnsDto() {
-        given(accountRepository.findByEmail(VENDOR_EMAIL)).willReturn(Optional.of(vendorAccount()));
-        given(productRepository.findByIdAndVendorId(PRODUCT_ID, VENDOR_ID))
+        given(productRepository.findById(PRODUCT_ID))
                 .willReturn(Optional.of(publishedProduct()));
         given(productRepository.save(any(Product.class))).willAnswer(inv -> inv.getArgument(0));
 
-        ProductResponse result = service.archiveProduct(VENDOR_EMAIL, PRODUCT_ID);
+        ProductResponse result = service.archiveProduct(PRODUCT_ID);
 
         assertThat(result.getStatus()).isEqualTo(ProductStatus.ARCHIVED);
     }
@@ -216,8 +177,7 @@ class ProductServiceImplTest {
     /** updateStock must update quantity and threshold then return the product. */
     @Test
     void updateStock_updatesQuantityAndThreshold() {
-        given(accountRepository.findByEmail(VENDOR_EMAIL)).willReturn(Optional.of(vendorAccount()));
-        given(productRepository.findByIdAndVendorId(PRODUCT_ID, VENDOR_ID))
+        given(productRepository.findById(PRODUCT_ID))
                 .willReturn(Optional.of(publishedProduct()));
         given(productRepository.save(any(Product.class))).willAnswer(inv -> inv.getArgument(0));
 
@@ -225,24 +185,23 @@ class ProductServiceImplTest {
         req.setQuantity(20);
         req.setStockAlertThreshold(5);
 
-        ProductResponse result = service.updateStock(VENDOR_EMAIL, PRODUCT_ID, req);
+        ProductResponse result = service.updateStock(PRODUCT_ID, req);
 
         assertThat(result.getQuantity()).isEqualTo(20);
         assertThat(result.getStockAlertThreshold()).isEqualTo(5);
     }
 
-    /** listPendingAlerts must return only unacknowledged alerts for the vendor's products. */
+    /** listPendingAlerts must return only unacknowledged alerts. */
     @Test
-    void listPendingAlerts_returnsUnacknowledgedAlertsForVendor() {
-        given(accountRepository.findByEmail(VENDOR_EMAIL)).willReturn(Optional.of(vendorAccount()));
+    void listPendingAlerts_returnsUnacknowledgedAlerts() {
         Product product = publishedProduct();
         StockAlert alert = new StockAlert();
         alert.setProduct(product);
         alert.setTriggeredAt(LocalDateTime.now());
-        given(stockAlertRepository.findByProduct_VendorIdAndAcknowledgedOrderByTriggeredAtDesc(
-                VENDOR_ID, false)).willReturn(List.of(alert));
+        given(stockAlertRepository.findByAcknowledgedOrderByTriggeredAtDesc(false))
+                .willReturn(List.of(alert));
 
-        List<StockAlertResponse> result = service.listPendingAlerts(VENDOR_EMAIL);
+        List<StockAlertResponse> result = service.listPendingAlerts();
 
         assertThat(result).hasSize(1);
     }
@@ -264,7 +223,7 @@ class ProductServiceImplTest {
                 .isEqualByComparingTo(new BigDecimal("35.88"));
     }
 
-    /** browseProducts must exclude out-of-stock products when inStockOnly is true (spec applied via repo). */
+    /** browseProducts must exclude out-of-stock products when inStockOnly is true. */
     @Test
     @SuppressWarnings("unchecked")
     void browseProducts_withInStockOnly_returnsEmptyPageWhenNoneInStock() {

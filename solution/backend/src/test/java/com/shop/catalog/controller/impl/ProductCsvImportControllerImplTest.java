@@ -58,7 +58,7 @@ class ProductCsvImportControllerImplTest {
                 csvContent.getBytes(StandardCharsets.UTF_8));
 
         CsvImportResponse response = new CsvImportResponse(List.of(), 1, 0);
-        given(productService.importProductsCsv(eq(VENDOR_EMAIL), any())).willReturn(response);
+        given(productService.importProductsCsv(any())).willReturn(response);
 
         mvc.perform(multipart("/api/vendor/products/import")
                         .file(file)
@@ -75,7 +75,7 @@ class ProductCsvImportControllerImplTest {
                 "file", "products.csv", "text/csv",
                 csvContent.getBytes(StandardCharsets.UTF_8));
 
-        given(productService.importProductsCsv(eq(VENDOR_EMAIL), any()))
+        given(productService.importProductsCsv(any()))
                 .willThrow(new CsvHeaderInvalidException());
         given(messageSource.getMessage(eq("error.csv.header.invalid"), any(), any(Locale.class)))
                 .willReturn("En-tête CSV invalide");
@@ -114,7 +114,7 @@ class ProductCsvImportControllerImplTest {
                         CsvImportRowResult.created(2, null),
                         CsvImportRowResult.error(3, "Le nom est obligatoire")
                 ), 1, 1);
-        given(productService.importProductsCsv(eq(VENDOR_EMAIL), any())).willReturn(response);
+        given(productService.importProductsCsv(any())).willReturn(response);
 
         mvc.perform(multipart("/api/vendor/products/import")
                         .file(file)

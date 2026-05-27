@@ -361,9 +361,11 @@ alt Card payment
     note right : SendGrid Java SDK\nIFS-06
     Mail --> NotifMod : 202 Accepted
 
-    API -> NotifMod : notify(vendor_id, "new_order", order_id)
-    NotifMod -> Mail : POST /v3/mail/send {to: vendor, ...}
-    Mail --> NotifMod : 202 Accepted
+    loop for each vendor account
+      API -> NotifMod : notifyVendor(vendor_email, "new_order", order_id)
+      NotifMod -> Mail : POST /v3/mail/send {to: vendor_email, ...}
+      Mail --> NotifMod : 202 Accepted
+    end
 
     API --> SPA : 201 Created {order_id, status: "pending"}
 
@@ -395,9 +397,11 @@ else Wire transfer payment (CS-02 / FS-V09)
   NotifMod -> Mail : POST /v3/mail/send {to, template_id: "wire_transfer_pending", ...}
   Mail --> NotifMod : 202 Accepted
 
-  API -> NotifMod : notify(vendor_id, "wire_transfer_to_confirm", order_id)
-  NotifMod -> Mail : POST /v3/mail/send {to: vendor, template_id: "wire_transfer_to_confirm", ...}
-  Mail --> NotifMod : 202 Accepted
+  loop for each vendor account
+    API -> NotifMod : notifyVendor(vendor_email, "wire_transfer_to_confirm", order_id)
+    NotifMod -> Mail : POST /v3/mail/send {to: vendor_email, template_id: "wire_transfer_to_confirm", ...}
+    Mail --> NotifMod : 202 Accepted
+  end
 
   API --> SPA : 201 Created {order_id, status: "pending_wire_transfer"}
 
@@ -417,9 +421,11 @@ else Wire transfer payment (CS-02 / FS-V09)
   NotifMod -> Mail : POST /v3/mail/send {to, template_id: "order_confirmation", ...}
   Mail --> NotifMod : 202 Accepted
 
-  API -> NotifMod : notify(vendor_id, "new_order", order_id)
-  NotifMod -> Mail : POST /v3/mail/send {to: vendor, ...}
-  Mail --> NotifMod : 202 Accepted
+  loop for each vendor account
+    API -> NotifMod : notifyVendor(vendor_email, "new_order", order_id)
+    NotifMod -> Mail : POST /v3/mail/send {to: vendor_email, ...}
+    Mail --> NotifMod : 202 Accepted
+  end
 
   API --> SPAVendor : 200 OK {order_id, status: "pending"}
 end

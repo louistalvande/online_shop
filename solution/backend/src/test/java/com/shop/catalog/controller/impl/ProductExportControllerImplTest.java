@@ -44,7 +44,7 @@ class ProductExportControllerImplTest {
 
     @Test
     void exportProducts_returns200WithCsvContentType() throws Exception {
-        given(productService.exportProductsCsv(VENDOR_EMAIL))
+        given(productService.exportProductsCsv())
                 .willReturn("nom,description,prix,categorie,quantite,seuil_alerte,statut\n");
 
         mvc.perform(get("/api/vendor/products/export").principal(vendorPrincipal))
@@ -54,7 +54,7 @@ class ProductExportControllerImplTest {
 
     @Test
     void exportProducts_contentDispositionHasDateStampedFilename() throws Exception {
-        given(productService.exportProductsCsv(VENDOR_EMAIL))
+        given(productService.exportProductsCsv())
                 .willReturn("nom,description,prix,categorie,quantite,seuil_alerte,statut\n");
 
         mvc.perform(get("/api/vendor/products/export").principal(vendorPrincipal))
@@ -66,7 +66,7 @@ class ProductExportControllerImplTest {
 
     @Test
     void exportProducts_bodyStartsWithUtf8Bom() throws Exception {
-        given(productService.exportProductsCsv(VENDOR_EMAIL))
+        given(productService.exportProductsCsv())
                 .willReturn("nom,description,prix,categorie,quantite,seuil_alerte,statut\n");
 
         byte[] body = mvc.perform(get("/api/vendor/products/export").principal(vendorPrincipal))
@@ -83,7 +83,7 @@ class ProductExportControllerImplTest {
 
     @Test
     void exportProducts_csvContentFollowsAfterBom() throws Exception {
-        given(productService.exportProductsCsv(VENDOR_EMAIL))
+        given(productService.exportProductsCsv())
                 .willReturn("nom,description,prix,categorie,quantite,seuil_alerte,statut\nProduit,,10.00,,0,0,PUBLISHED\n");
 
         byte[] body = mvc.perform(get("/api/vendor/products/export").principal(vendorPrincipal))

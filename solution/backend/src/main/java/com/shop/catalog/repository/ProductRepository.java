@@ -6,19 +6,17 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 /** Data access layer for {@link Product} entities. */
 public interface ProductRepository extends JpaRepository<Product, UUID>, JpaSpecificationExecutor<Product> {
 
     /**
-     * Returns all products belonging to a vendor, ordered by creation date descending.
+     * Returns all products ordered by creation date descending (vendor back-office listing).
      *
-     * @param vendorId the vendor account UUID
-     * @return list of the vendor's products
+     * @return list of all products
      */
-    List<Product> findByVendorIdOrderByCreatedAtDesc(UUID vendorId);
+    List<Product> findAllByOrderByCreatedAtDesc();
 
     /**
      * Returns all published products for buyer catalog browsing (US-SHP-01).
@@ -26,13 +24,4 @@ public interface ProductRepository extends JpaRepository<Product, UUID>, JpaSpec
      * @return list of published products
      */
     List<Product> findByStatus(ProductStatus status);
-
-    /**
-     * Finds a product by its ID, ensuring it belongs to the given vendor.
-     *
-     * @param id       the product UUID
-     * @param vendorId the vendor account UUID
-     * @return the matching product, or empty if not found or not owned by the vendor
-     */
-    Optional<Product> findByIdAndVendorId(UUID id, UUID vendorId);
 }

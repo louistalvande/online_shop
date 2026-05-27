@@ -15,9 +15,6 @@ public class ProductResponse {
     @Schema(description = "Product UUID")
     private UUID id;
 
-    @Schema(description = "Vendor account UUID")
-    private UUID vendorId;
-
     @Schema(description = "Product display name")
     private String name;
 
@@ -63,7 +60,6 @@ public class ProductResponse {
     public static ProductResponse from(Product p) {
         ProductResponse r = new ProductResponse();
         r.id = p.getId();
-        r.vendorId = p.getVendorId();
         r.name = p.getName();
         r.description = p.getDescription();
         r.priceExclTax = p.getPriceExclTax();
@@ -83,9 +79,6 @@ public class ProductResponse {
 
     /** @return the product UUID */
     public UUID getId() { return id; }
-
-    /** @return the vendor account UUID */
-    public UUID getVendorId() { return vendorId; }
 
     /** @return the product display name */
     public String getName() { return name; }

@@ -235,13 +235,10 @@ class OrderControllerImplTest {
     private String checkoutBody(String paymentMethod) {
         return """
                 {
-                  "deliveryAddressLine": "1 rue Test",
-                  "deliveryCity": "Paris",
-                  "deliveryPostalCode": "75001",
-                  "deliveryCountryCode": "FR",
+                  "addressId": "%s",
                   "carrierId": "%s",
                   "paymentMethod": "%s"
-                }""".formatted(UUID.randomUUID(), paymentMethod);
+                }""".formatted(UUID.randomUUID(), UUID.randomUUID(), paymentMethod);
     }
 
     private OrderResponse buildOrderResponse(OrderStatus status) {

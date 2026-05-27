@@ -1,6 +1,5 @@
 package com.shop.order.service.impl;
 
-import com.shop.account.exception.AccountNotFoundException;
 import com.shop.account.repository.AccountRepository;
 import com.shop.catalog.repository.ProductRepository;
 import com.shop.notification.service.NotificationService;
@@ -35,7 +34,7 @@ public class VendorOrderServiceImpl implements VendorOrderService {
     /**
      * @param orderRepository     JPA repository for orders
      * @param productRepository   JPA repository for products (stock restoration)
-     * @param accountRepository   JPA repository for accounts (vendor/buyer lookup)
+     * @param accountRepository   JPA repository for accounts (buyer lookup)
      * @param notificationService email notification service
      * @param paymentGateway      card payment abstraction (Stripe refund)
      */
@@ -55,9 +54,8 @@ public class VendorOrderServiceImpl implements VendorOrderService {
     /** {@inheritDoc} */
     @Override
     @Transactional(readOnly = true)
-    public List<OrderResponse> getVendorOrders(String vendorEmail) {
-        UUID vendorId = resolveAccountId(vendorEmail);
-        return orderRepository.findByVendorIdOrderByCreatedAtDesc(vendorId)
+    public List<OrderResponse> getVendorOrders() {
+        return orderRepository.findAllByOrderByCreatedAtDesc()
                 .stream()
                 .map(OrderResponse::from)
                 .toList();
@@ -66,18 +64,16 @@ public class VendorOrderServiceImpl implements VendorOrderService {
     /** {@inheritDoc} */
     @Override
     @Transactional(readOnly = true)
-    public OrderResponse getVendorOrder(String vendorEmail, UUID orderId) {
-        UUID vendorId = resolveAccountId(vendorEmail);
-        return orderRepository.findByIdAndVendorId(orderId, vendorId)
+    public OrderResponse getVendorOrder(UUID orderId) {
+        return orderRepository.findById(orderId)
                 .map(OrderResponse::from)
                 .orElseThrow(() -> new OrderNotFoundException(orderId));
     }
 
     /** {@inheritDoc} */
     @Override
-    public OrderResponse confirmWirePayment(String vendorEmail, UUID orderId, Locale locale) {
-        UUID vendorId = resolveAccountId(vendorEmail);
-        Order order = orderRepository.findByIdAndVendorId(orderId, vendorId)
+    public OrderResponse confirmWirePayment(UUID orderId, Locale locale) {
+        Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new OrderNotFoundException(orderId));
 
         if (order.getStatus() != OrderStatus.PAYMENT_PENDING_WIRE) {
@@ -97,9 +93,8 @@ public class VendorOrderServiceImpl implements VendorOrderService {
 
     /** {@inheritDoc} */
     @Override
-    public OrderResponse rejectWirePayment(String vendorEmail, UUID orderId, Locale locale) {
-        UUID vendorId = resolveAccountId(vendorEmail);
-        Order order = orderRepository.findByIdAndVendorId(orderId, vendorId)
+    public OrderResponse rejectWirePayment(UUID orderId, Locale locale) {
+        Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new OrderNotFoundException(orderId));
 
         if (order.getStatus() != OrderStatus.PAYMENT_PENDING_WIRE) {
@@ -120,9 +115,8 @@ public class VendorOrderServiceImpl implements VendorOrderService {
 
     /** {@inheritDoc} */
     @Override
-    public OrderResponse shipOrder(String vendorEmail, UUID orderId, String trackingNumber, Locale locale) {
-        UUID vendorId = resolveAccountId(vendorEmail);
-        Order order = orderRepository.findByIdAndVendorId(orderId, vendorId)
+    public OrderResponse shipOrder(UUID orderId, String trackingNumber, Locale locale) {
+        Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new OrderNotFoundException(orderId));
 
         if (order.getStatus() != OrderStatus.AWAITING_PROCESSING
@@ -144,9 +138,8 @@ public class VendorOrderServiceImpl implements VendorOrderService {
 
     /** {@inheritDoc} */
     @Override
-    public OrderResponse acceptReturn(String vendorEmail, UUID orderId, String buyerIban, Locale locale) {
-        UUID vendorId = resolveAccountId(vendorEmail);
-        Order order = orderRepository.findByIdAndVendorId(orderId, vendorId)
+    public OrderResponse acceptReturn(UUID orderId, String buyerIban, Locale locale) {
+        Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new OrderNotFoundException(orderId));
 
         if (order.getStatus() != OrderStatus.SHIPPED
@@ -177,9 +170,8 @@ public class VendorOrderServiceImpl implements VendorOrderService {
 
     /** {@inheritDoc} */
     @Override
-    public OrderResponse confirmReturn(String vendorEmail, UUID orderId, Locale locale) {
-        UUID vendorId = resolveAccountId(vendorEmail);
-        Order order = orderRepository.findByIdAndVendorId(orderId, vendorId)
+    public OrderResponse confirmReturn(UUID orderId, Locale locale) {
+        Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new OrderNotFoundException(orderId));
 
         if (order.getStatus() != OrderStatus.PENDING_RETURN) {
@@ -209,9 +201,8 @@ public class VendorOrderServiceImpl implements VendorOrderService {
 
     /** {@inheritDoc} */
     @Override
-    public OrderResponse waiveReturn(String vendorEmail, UUID orderId, String buyerIban, Locale locale) {
-        UUID vendorId = resolveAccountId(vendorEmail);
-        Order order = orderRepository.findByIdAndVendorId(orderId, vendorId)
+    public OrderResponse waiveReturn(UUID orderId, String buyerIban, Locale locale) {
+        Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new OrderNotFoundException(orderId));
 
         if (order.getStatus() != OrderStatus.SHIPPED
@@ -247,9 +238,8 @@ public class VendorOrderServiceImpl implements VendorOrderService {
 
     /** {@inheritDoc} */
     @Override
-    public OrderResponse confirmWireRefund(String vendorEmail, UUID orderId, Locale locale) {
-        UUID vendorId = resolveAccountId(vendorEmail);
-        Order order = orderRepository.findByIdAndVendorId(orderId, vendorId)
+    public OrderResponse confirmWireRefund(UUID orderId, Locale locale) {
+        Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new OrderNotFoundException(orderId));
 
         if (order.getStatus() != OrderStatus.WIRE_REFUND_IN_PROGRESS) {
@@ -269,9 +259,8 @@ public class VendorOrderServiceImpl implements VendorOrderService {
 
     /** {@inheritDoc} */
     @Override
-    public OrderResponse refuseCancellationRequest(String vendorEmail, UUID orderId, Locale locale) {
-        UUID vendorId = resolveAccountId(vendorEmail);
-        Order order = orderRepository.findByIdAndVendorId(orderId, vendorId)
+    public OrderResponse refuseCancellationRequest(UUID orderId, Locale locale) {
+        Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new OrderNotFoundException(orderId));
 
         if (order.getStatus() != OrderStatus.CANCELLATION_REQUESTED_AFTER_SHIPMENT) {
@@ -301,18 +290,5 @@ public class VendorOrderServiceImpl implements VendorOrderService {
                         product.setQuantity(product.getQuantity() + line.getQuantity()));
             }
         });
-    }
-
-    /**
-     * Resolves the account UUID for the given email address.
-     *
-     * @param email the account email
-     * @return the account UUID
-     * @throws AccountNotFoundException if no account exists with that email
-     */
-    private UUID resolveAccountId(String email) {
-        return accountRepository.findByEmail(email)
-                .map(a -> a.getId())
-                .orElseThrow(() -> new AccountNotFoundException(email));
     }
 }
