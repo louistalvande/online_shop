@@ -137,6 +137,6 @@ const inputStyle: React.CSSProperties = {
 }
 const errorStyle: React.CSSProperties = {
   fontSize: 13,
-  color: 'var(--accent)',
+  color: '#b91c1c',
   margin: 0,
 }

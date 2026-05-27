@@ -1,6 +1,6 @@
 import type { HTMLAttributes } from 'react'
 
-export function Card({ className, style: _style, ...props }: HTMLAttributes<HTMLDivElement>) {
+export function Card({ className, ...props }: HTMLAttributes<HTMLDivElement>) {
   return (
     <div
       className={['card', className].filter(Boolean).join(' ')}
