@@ -34,6 +34,7 @@ export default function CatalogPage() {
   const [addingId, setAddingId] = useState<string | null>(null)
   const [cartFeedback, setCartFeedback] = useState<{ id: string; ok: boolean } | null>(null)
   const [showLogin, setShowLogin] = useState(false)
+  const [pendingCartProductId, setPendingCartProductId] = useState<string | null>(null)
   const cartCount = useCartCount()
 
   const load = useCallback(async (filters: CatalogFilters) => {
@@ -80,8 +81,7 @@ export default function CatalogPage() {
     setPage(0)
   }
 
-  async function handleAddToCart(productId: string) {
-    if (!session) { setShowLogin(true); return }
+  async function doAddToCart(productId: string) {
     setAddingId(productId)
     setCartFeedback(null)
     try {
@@ -96,12 +96,25 @@ export default function CatalogPage() {
     }
   }
 
+  async function handleAddToCart(productId: string) {
+    if (!session) { setPendingCartProductId(productId); setShowLogin(true); return }
+    await doAddToCart(productId)
+  }
+
   return (
     <>
     {showLogin && (
       <LoginModal
-        onClose={() => setShowLogin(false)}
-        onLogin={() => { setSession(getSession()); setShowLogin(false) }}
+        onClose={() => { setShowLogin(false); setPendingCartProductId(null) }}
+        onLogin={async () => {
+          setSession(getSession())
+          setShowLogin(false)
+          if (pendingCartProductId) {
+            const id = pendingCartProductId
+            setPendingCartProductId(null)
+            await doAddToCart(id)
+          }
+        }}
       />
     )}
     <AppShell

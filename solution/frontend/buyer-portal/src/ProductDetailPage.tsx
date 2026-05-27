@@ -24,6 +24,7 @@ export default function ProductDetailPage({ productId }: Props) {
   const [adding, setAdding] = useState(false)
   const [cartFeedback, setCartFeedback] = useState<boolean | null>(null)
   const [showLogin, setShowLogin] = useState(false)
+  const [pendingAdd, setPendingAdd] = useState(false)
   const [currentPhoto, setCurrentPhoto] = useState(0)
   const cartCount = useCartCount()
 
@@ -34,8 +35,7 @@ export default function ProductDetailPage({ productId }: Props) {
       .finally(() => setLoading(false))
   }, [productId])
 
-  async function handleAddToCart() {
-    if (!session) { setShowLogin(true); return }
+  async function doAddToCart() {
     setAdding(true)
     setCartFeedback(null)
     try {
@@ -50,12 +50,24 @@ export default function ProductDetailPage({ productId }: Props) {
     }
   }
 
+  async function handleAddToCart() {
+    if (!session) { setPendingAdd(true); setShowLogin(true); return }
+    await doAddToCart()
+  }
+
   return (
     <>
       {showLogin && (
         <LoginModal
-          onClose={() => setShowLogin(false)}
-          onLogin={() => { setSession(getSession()); setShowLogin(false) }}
+          onClose={() => { setShowLogin(false); setPendingAdd(false) }}
+          onLogin={async () => {
+            setSession(getSession())
+            setShowLogin(false)
+            if (pendingAdd) {
+              setPendingAdd(false)
+              await doAddToCart()
+            }
+          }}
         />
       )}
       <AppShell
