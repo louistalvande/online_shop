@@ -10,6 +10,8 @@ tags:
   description: Public carousel announcements for the buyer portal
 - name: Vendor Orders
   description: Vendor order management
+- name: Vendor Catalog
+  description: Product management for vendors
 - name: Admin — Accounts
   description: Account management for administrators
 - name: Admin — Settings
@@ -279,6 +281,48 @@ paths:
             '*/*':
               schema:
                 $ref: "#/components/schemas/CsvImportResponse"
+  /api/vendor/products/images:
+    post:
+      tags:
+      - Vendor Catalog
+      summary: Upload a product image and receive its public URL
+      operationId: upload
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              required:
+              - file
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+      responses:
+        "200":
+          description: Image stored — public URL returned
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ProductImageUploadResponse"
+        "403":
+          description: Not a vendor account
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ProductImageUploadResponse"
+        "400":
+          description: Unsupported file type
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ProductImageUploadResponse"
+        "401":
+          description: Not authenticated
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ProductImageUploadResponse"
   /api/vendor/orders/{orderId}/waive-return:
     post:
       tags:
@@ -565,7 +609,7 @@ paths:
       tags:
       - Vendor Announcements
       summary: Upload an announcement image and detect its orientation
-      operationId: upload
+      operationId: upload_1
       requestBody:
         content:
           multipart/form-data:
@@ -2416,6 +2460,13 @@ components:
         product:
           $ref: "#/components/schemas/ProductResponse"
       description: Per-row results in file order
+    ProductImageUploadResponse:
+      type: object
+      properties:
+        imageUrl:
+          type: string
+          description: "Public URL to the stored product image, ready to be saved\
+            \ in the product's photo list"
     VendorReturnRequest:
       type: object
       properties:

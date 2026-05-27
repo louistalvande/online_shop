@@ -271,6 +271,20 @@ a|
 - [x] L'export est accessible uniquement aux comptes vendeur authentifiés (FS-V02 / CS-01)
 | Terminée
 
+| *US-CAT-09*
+| En tant que vendeur, je peux téléverser des fichiers images pour les photos de mes produits afin de ne pas avoir à héberger moi-même les images.
+a|
+- [x] Un bouton « Ajouter une photo » est disponible dans le formulaire de création et d'édition d'un produit
+- [x] Le vendeur sélectionne un fichier image local (JPEG, PNG, GIF ou WebP) ; le fichier est envoyé au serveur qui le stocke et retourne une URL publique
+- [x] L'URL retournée est automatiquement ajoutée à la liste des photos du produit
+- [x] Les photos sont affichées sous forme de miniatures avec bouton de suppression individuel
+- [x] Le serveur valide le type MIME déclaré **et** le contenu réel du fichier ; tout fichier non conforme est rejeté avec HTTP 400
+- [x] La taille maximale acceptée est 5 Mo par fichier
+- [x] Les fichiers sont renommés en UUID côté serveur pour éviter les collisions et les attaques path traversal
+- [x] Les images sont servies publiquement par le backend sous `/uploads/products/**` (accessibles sans authentification pour l'affichage dans le catalogue acheteur)
+- [x] L'upload est accessible uniquement aux comptes vendeur authentifiés (FS-V16 / CS-01)
+| Terminée
+
 |===
 
 == Catalogue produits — Acheteur
@@ -627,6 +641,7 @@ a|
 | FS-V15 | Exporter la liste des acheteurs consentants (mailing) | US-PRF-05
 | FS-V03 | Gérer les stocks et alertes | US-CAT-04, US-CAT-05
 | FS-V14 | Mise à jour en masse des stocks | US-CAT-08
+| FS-V16 | Téléverser et stocker les images des produits | US-CAT-09
 | FS-V04 | Traiter les commandes reçues | US-VND-01
 | FS-V05 | Déclarer l'expédition avec numéro de suivi | US-EXP-01
 | FS-V07 | Consulter les rapports de ventes | US-RPT-01

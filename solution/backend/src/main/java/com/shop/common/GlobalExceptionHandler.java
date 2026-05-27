@@ -23,6 +23,7 @@ import com.shop.carrier.exception.CarrierNotFoundException;
 import com.shop.catalog.exception.CsvHeaderInvalidException;
 import com.shop.catalog.exception.ProductArchivedConflictException;
 import com.shop.catalog.exception.ProductNotFoundException;
+import com.shop.catalog.exception.UnsupportedProductImageTypeException;
 import com.shop.order.exception.CarrierNotAvailableException;
 import com.shop.order.exception.EmptyCartException;
 import com.shop.order.exception.InvalidDeliveryCountryException;
@@ -435,6 +436,21 @@ public class GlobalExceptionHandler {
     public ResponseEntity<Map<String, String>> handleUnsupportedImageType(
             UnsupportedImageTypeException ex, Locale locale) {
         String message = messageSource.getMessage("error.announcement.image.type", null, locale);
+        return ResponseEntity.badRequest()
+                .body(Map.of("error", "UNSUPPORTED_IMAGE_TYPE", "message", message));
+    }
+
+    /**
+     * Handles upload of an unsupported image type for a product photo — returns HTTP 400 (US-CAT-09).
+     *
+     * @param ex     the exception
+     * @param locale the request locale
+     * @return a 400 response with a localised error body
+     */
+    @ExceptionHandler(UnsupportedProductImageTypeException.class)
+    public ResponseEntity<Map<String, String>> handleUnsupportedProductImageType(
+            UnsupportedProductImageTypeException ex, Locale locale) {
+        String message = messageSource.getMessage("error.product.image.type", null, locale);
         return ResponseEntity.badRequest()
                 .body(Map.of("error", "UNSUPPORTED_IMAGE_TYPE", "message", message));
     }

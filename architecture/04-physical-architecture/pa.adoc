@@ -789,6 +789,10 @@ Formulaire de création et de modification d'un produit (FS-V02 / FS-V03). Les c
 include::diagrams/ihm/ihm-bov-produit.puml[]
 ----
 
+==== Téléversement d'images produit
+
+Upload de fichiers images pour les photos d'un produit (FS-V16 / US-CAT-09). Le vendeur clique sur « Ajouter une photo » dans le formulaire produit ; le fichier est envoyé en `multipart/form-data` à `POST /api/vendor/products/images`. Le backend effectue deux passes de validation : le type MIME déclaré, puis le contenu réel du fichier via `ImageIO.read()` (JPEG, PNG, GIF) ou vérification des magic bytes RIFF/WEBP (WebP). La taille maximale acceptée est 5 Mo (`spring.servlet.multipart.max-file-size`). Le fichier est stocké sur le système de fichiers sous `uploads/products/` avec un nom UUID pour prévenir les collisions et les attaques path traversal ; le serveur retourne l'URL publique (`/uploads/products/<uuid>.<ext>`). Cette URL est automatiquement ajoutée à la liste des photos du produit et sera soumise dans `photoUrls` à la création ou mise à jour. Les images sont servies sans authentification via `WebMvcConfig` (règle `SecurityConfig : /uploads/**` → `permitAll`) pour permettre leur affichage dans le catalogue acheteur.
+
 ==== Annonces défilantes
 
 Gestion du carrousel d'annonces affiché sur la page d'accueil (FS-V11). Chaque annonce est composée d'un texte, d'une image ou des deux. Un lien de redirection optionnel est associé : un clic de l'internaute sur l'annonce déclenche la navigation vers ce lien. Les annonces sont triées par ordre croissant ; les boutons ↑ / ↓ modifient l'ordre. La suppression est immédiate et retire l'annonce du carrousel sans confirmation.
@@ -939,7 +943,7 @@ include::diagrams/ihm/ihm-admin-form-transporteur.puml[]
 | Service Catalogue
 | composant-catalogue
 | Conteneur API Spring Boot
-| Spring Boot / Spring Data JPA / Hibernate — import : `POST /api/vendor/products/import` (`multipart/form-data`, parser RFC 4180 natif) créations uniquement, rapport ligne par ligne (créé / erreur) ; export : `GET /api/vendor/products/export` (`text/csv`, UTF-8 BOM, `Content-Disposition: attachment`)
+| Spring Boot / Spring Data JPA / Hibernate — import : `POST /api/vendor/products/import` (`multipart/form-data`, parser RFC 4180 natif) créations uniquement, rapport ligne par ligne (créé / erreur) ; export : `GET /api/vendor/products/export` (`text/csv`, UTF-8 BOM, `Content-Disposition: attachment`) ; upload image : `POST /api/vendor/products/images` (`multipart/form-data`, max 5 Mo, validation MIME + contenu réel, stockage UUID, réponse `{ imageUrl }`, service statique public `/uploads/products/**`)
 
 | Service Panier
 | composant-panier

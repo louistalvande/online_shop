@@ -173,3 +173,13 @@ export async function importProductsCsv(file: File): Promise<CsvImportResponse> 
   if (res.status === 400) throw Object.assign(new Error('CSV_HEADER_INVALID'), { code: 'CSV_HEADER_INVALID' })
   return handleResponse<CsvImportResponse>(res)
 }
+
+/** Uploads a product image file and returns the public URL assigned by the server (US-CAT-09). */
+export async function uploadProductImage(file: File): Promise<string> {
+  const formData = new FormData()
+  formData.append('file', file)
+  const data = await handleResponse<{ imageUrl: string }>(
+    await authedFetch('/api/vendor/products/images', { method: 'POST', body: formData })
+  )
+  return data.imageUrl
+}

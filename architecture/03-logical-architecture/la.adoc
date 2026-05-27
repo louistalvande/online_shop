@@ -57,8 +57,8 @@ Le système est structuré en cinq couches logiques : *Présentation*, *Applicat
 
 | *Service Catalogue*
 | Application
-| CRUD produits, gestion des catégories, recherche et filtrage, publication / archivage, suivi des niveaux de stock, mise à jour en masse des stocks, réservation à la commande, libération à l'annulation, alertes de rupture, import CSV de nouveaux produits, export CSV du catalogue
-| FS-V02, FS-V03, FS-V12, FS-V13, FS-V14, FS-B03
+| CRUD produits, gestion des catégories, recherche et filtrage, publication / archivage, suivi des niveaux de stock, mise à jour en masse des stocks, réservation à la commande, libération à l'annulation, alertes de rupture, import CSV de nouveaux produits, export CSV du catalogue, téléversement et stockage des images produit (renommage UUID, validation du contenu réel, service statique public)
+| FS-V02, FS-V03, FS-V12, FS-V13, FS-V14, FS-V16, FS-B03
 
 | *Service Commande*
 | Application
