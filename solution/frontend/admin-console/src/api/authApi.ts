@@ -53,3 +53,11 @@ export function getSession(): AdminSession | null {
   const raw = localStorage.getItem(SESSION_KEY)
   return raw ? JSON.parse(raw) : null
 }
+
+export function authedFetch(url: string, options: RequestInit = {}): Promise<Response> {
+  const session = getSession()
+  return fetch(url, {
+    ...options,
+    headers: { ...options.headers, Authorization: session ? `Bearer ${session.token}` : '' },
+  })
+}
