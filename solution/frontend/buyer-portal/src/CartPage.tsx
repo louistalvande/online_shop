@@ -72,7 +72,7 @@ export default function CartPage() {
           settingsLabel={t('nav.profile')}
           logoutLabel={t('nav.logout')}
           onSettings={() => { window.location.href = '/profile' }}
-          onLogout={() => { logout(); setSession(null); setCart(null) }}
+          onLogout={() => { logout(); setSession(null); setCart(null); window.dispatchEvent(new Event('session-changed')) }}
         />
       ) : (
         <Button variant="ghost" size="sm" onClick={() => setShowLogin(true)}>
@@ -87,7 +87,7 @@ export default function CartPage() {
       {showLogin && (
         <LoginModal
           onClose={() => setShowLogin(false)}
-          onLogin={() => { setSession(getSession()); setShowLogin(false) }}
+          onLogin={(s) => { setSession(s); setShowLogin(false) }}
         />
       )}
       <AppShell

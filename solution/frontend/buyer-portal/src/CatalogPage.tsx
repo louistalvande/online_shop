@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Button, Card, AppShell, LangToggle, CartIcon, UserMenu } from '@workspace/theme'
+import { Button, Card, AppShell, LangToggle, CartIcon, UserMenu, Snackbar } from '@workspace/theme'
 import { fetchProducts, type BuyerProduct, type CatalogFilters } from './api/catalogApi'
 import { addToCart } from './api/cartApi'
 import { getSession, logout, type BuyerSession } from './api/authApi'
@@ -35,7 +35,17 @@ export default function CatalogPage() {
   const [cartFeedback, setCartFeedback] = useState<{ id: string; ok: boolean } | null>(null)
   const [showLogin, setShowLogin] = useState(false)
   const [pendingCartProductId, setPendingCartProductId] = useState<string | null>(null)
+  const [snackbar, setSnackbar] = useState<{ message: string; variant: 'success' | 'error' } | null>(null)
   const cartCount = useCartCount()
+
+  useEffect(() => {
+    if (session && pendingCartProductId) {
+      const id = pendingCartProductId
+      setPendingCartProductId(null)
+      doAddToCart(id)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [session])
 
   const load = useCallback(async (filters: CatalogFilters) => {
     setLoading(true)
@@ -88,8 +98,10 @@ export default function CatalogPage() {
       await addToCart(productId, 1)
       window.dispatchEvent(new Event('cart-updated'))
       setCartFeedback({ id: productId, ok: true })
+      setSnackbar({ message: t('cart.added'), variant: 'success' })
     } catch {
       setCartFeedback({ id: productId, ok: false })
+      setSnackbar({ message: t('cart.error.add'), variant: 'error' })
     } finally {
       setAddingId(null)
       setTimeout(() => setCartFeedback(null), 2500)
@@ -103,17 +115,14 @@ export default function CatalogPage() {
 
   return (
     <>
+    {snackbar && <Snackbar message={snackbar.message} variant={snackbar.variant} onDismiss={() => setSnackbar(null)} />}
     {showLogin && (
       <LoginModal
         onClose={() => { setShowLogin(false); setPendingCartProductId(null) }}
-        onLogin={async () => {
-          setSession(getSession())
+        onLogin={(s) => {
+          setSession(s)
           setShowLogin(false)
-          if (pendingCartProductId) {
-            const id = pendingCartProductId
-            setPendingCartProductId(null)
-            await doAddToCart(id)
-          }
+          window.dispatchEvent(new Event('session-changed'))
         }}
       />
     )}
@@ -136,7 +145,7 @@ export default function CatalogPage() {
               settingsLabel={t('nav.profile')}
               logoutLabel={t('nav.logout')}
               onSettings={() => { window.location.href = '/profile' }}
-              onLogout={() => { logout(); setSession(null) }}
+              onLogout={() => { logout(); setSession(null); window.dispatchEvent(new Event('session-changed')) }}
             />
           ) : (
             <Button variant="ghost" size="sm" onClick={() => { window.location.href = '/login' }}>

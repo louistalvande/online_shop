@@ -212,7 +212,7 @@ export default function ProfilePage() {
       actions={
         <div className="header-actions">
           <LangToggle lang={i18n.language} onToggle={() => i18n.changeLanguage(i18n.language === 'fr' ? 'en' : 'fr')} />
-          <Button variant="ghost" size="sm" onClick={() => { logout(); window.location.href = '/' }}>
+          <Button variant="ghost" size="sm" onClick={() => { logout(); window.dispatchEvent(new Event('session-changed')); window.location.href = '/' }}>
             {t('nav.logout')}
           </Button>
         </div>

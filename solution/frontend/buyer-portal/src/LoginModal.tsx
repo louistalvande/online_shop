@@ -1,11 +1,11 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Button } from '@workspace/theme'
-import { login, verifyMfa } from './api/authApi'
+import { login, verifyMfa, type BuyerSession } from './api/authApi'
 
 interface Props {
   onClose: () => void
-  onLogin: () => void
+  onLogin: (session: BuyerSession) => void
 }
 
 export default function LoginModal({ onClose, onLogin }: Props) {
@@ -27,8 +27,8 @@ export default function LoginModal({ onClose, onLogin }: Props) {
       if (result.requiresMfa && result.mfaToken) {
         setMfaToken(result.mfaToken)
         setMfaStep(true)
-      } else {
-        onLogin()
+      } else if (result.session) {
+        onLogin(result.session)
       }
     } catch (err: unknown) {
       const code = err instanceof Error ? (err as { code?: string }).code : undefined
@@ -46,8 +46,8 @@ export default function LoginModal({ onClose, onLogin }: Props) {
     setError(null)
     setLoading(true)
     try {
-      await verifyMfa(mfaToken, mfaCode)
-      onLogin()
+      const session = await verifyMfa(mfaToken, mfaCode)
+      onLogin(session)
     } catch (err: unknown) {
       const code = err instanceof Error ? (err as { code?: string }).code : undefined
       setError(code === 'INVALID_MFA_CODE' ? t('login.mfa.error.invalid') : t('login.error.generic'))

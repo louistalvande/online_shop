@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { AppShell, Button, LangToggle, CartIcon, UserMenu } from '@workspace/theme'
+import { AppShell, Button, LangToggle, CartIcon, UserMenu, Snackbar } from '@workspace/theme'
 import { fetchProduct, type BuyerProduct } from './api/catalogApi'
 import { addToCart } from './api/cartApi'
 import { getSession, logout, type BuyerSession } from './api/authApi'
@@ -25,6 +25,7 @@ export default function ProductDetailPage({ productId }: Props) {
   const [cartFeedback, setCartFeedback] = useState<boolean | null>(null)
   const [showLogin, setShowLogin] = useState(false)
   const [pendingAdd, setPendingAdd] = useState(false)
+  const [snackbar, setSnackbar] = useState<{ message: string; variant: 'success' | 'error' } | null>(null)
   const [currentPhoto, setCurrentPhoto] = useState(0)
   const cartCount = useCartCount()
 
@@ -35,6 +36,14 @@ export default function ProductDetailPage({ productId }: Props) {
       .finally(() => setLoading(false))
   }, [productId])
 
+  useEffect(() => {
+    if (session && pendingAdd) {
+      setPendingAdd(false)
+      doAddToCart()
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [session])
+
   async function doAddToCart() {
     setAdding(true)
     setCartFeedback(null)
@@ -42,8 +51,10 @@ export default function ProductDetailPage({ productId }: Props) {
       await addToCart(productId, 1)
       window.dispatchEvent(new Event('cart-updated'))
       setCartFeedback(true)
+      setSnackbar({ message: t('cart.added'), variant: 'success' })
     } catch {
       setCartFeedback(false)
+      setSnackbar({ message: t('cart.error.add'), variant: 'error' })
     } finally {
       setAdding(false)
       setTimeout(() => setCartFeedback(null), 2500)
@@ -57,16 +68,14 @@ export default function ProductDetailPage({ productId }: Props) {
 
   return (
     <>
+      {snackbar && <Snackbar message={snackbar.message} variant={snackbar.variant} onDismiss={() => setSnackbar(null)} />}
       {showLogin && (
         <LoginModal
           onClose={() => { setShowLogin(false); setPendingAdd(false) }}
-          onLogin={async () => {
-            setSession(getSession())
+          onLogin={(s) => {
+            setSession(s)
             setShowLogin(false)
-            if (pendingAdd) {
-              setPendingAdd(false)
-              await doAddToCart()
-            }
+            window.dispatchEvent(new Event('session-changed'))
           }}
         />
       )}
@@ -89,7 +98,7 @@ export default function ProductDetailPage({ productId }: Props) {
                 settingsLabel={t('nav.profile')}
                 logoutLabel={t('nav.logout')}
                 onSettings={() => { window.location.href = '/profile' }}
-                onLogout={() => { logout(); setSession(null) }}
+                onLogout={() => { logout(); setSession(null); window.dispatchEvent(new Event('session-changed')) }}
               />
             ) : (
               <Button variant="ghost" size="sm" onClick={() => { window.location.href = '/login' }}>
