@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { AppShell, Button, LangToggle } from '@workspace/theme'
 import { getSession, logout } from './api/authApi'
@@ -193,21 +193,12 @@ export default function ProfilePage() {
     }
   }
 
-  if (loadError) {
-    return (
-      <div className="profile-error-state">
-        <p className="profile-error-text">{t('profile.error.load')}</p>
-        <Button onClick={() => window.location.reload()}>{t('profile.retry')}</Button>
-      </div>
-    )
-  }
-
-  return (
+  const shell = (content: React.ReactNode) => (
     <AppShell
       appName={t('app.name')}
       navLinks={[
         { label: t('nav.home'), href: '/' },
-        { label: t('nav.catalog'), href: '/#catalogue' },
+        { label: t('nav.catalog'), href: '/catalog' },
       ]}
       actions={
         <div className="header-actions">
@@ -218,6 +209,20 @@ export default function ProfilePage() {
         </div>
       }
     >
+      {content}
+    </AppShell>
+  )
+
+  if (loadError) {
+    return shell(
+      <div className="profile-error-state">
+        <p className="profile-error-text">{t('profile.error.load')}</p>
+        <Button onClick={() => window.location.reload()}>{t('profile.retry')}</Button>
+      </div>
+    )
+  }
+
+  return shell(
       <div className="profile-page">
         <h1 className="profile-title">{t('profile.title')}</h1>
 
@@ -427,6 +432,5 @@ export default function ProfilePage() {
           </form>
         )}
       </div>
-    </AppShell>
   )
 }
