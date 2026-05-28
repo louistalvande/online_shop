@@ -1,8 +1,9 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
-import Header from './Header'
-import { getVendorOrder, confirmWirePayment, rejectWirePayment, shipOrder, acceptReturn, confirmReturn, waiveReturn, confirmWireRefund, refuseCancellationRequest, type OrderData } from './api/orderApi'
-import { getSession } from './api/authApi'
+import { AppShell, LangToggle, Button } from '@workspace/theme'
+import { getVendorOrder, confirmWirePayment, rejectWirePayment, markInPreparation, shipOrder, acceptReturn, confirmReturn, waiveReturn, confirmWireRefund, refuseCancellationRequest, type OrderData } from './api/orderApi'
+import { getSession, logout } from './api/authApi'
+import ConfirmModal from './ConfirmModal'
 
 const STATUS_LABELS: Record<string, string> = {
   PAYMENT_PENDING_CARD: 'orders.status.pendingCard',
@@ -17,13 +18,22 @@ const STATUS_LABELS: Record<string, string> = {
   CANCELLATION_REQUESTED_AFTER_SHIPMENT: 'orders.status.cancellationRequested',
 }
 
+interface ModalConfig {
+  title: string
+  message: string
+  confirmLabel: string
+  cancelLabel: string
+  variant: 'primary' | 'danger'
+  onConfirm: () => void
+}
+
 interface Props {
   orderId: string
 }
 
 /** Vendor order detail page — US-VND-01 (view) and US-VND-02 (wire actions). */
 export default function OrderDetailPage({ orderId }: Props) {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   const session = getSession()
   const [order, setOrder] = useState<OrderData | null>(null)
   const [loading, setLoading] = useState(true)
@@ -32,6 +42,7 @@ export default function OrderDetailPage({ orderId }: Props) {
   const [actionError, setActionError] = useState<string | null>(null)
   const [trackingInput, setTrackingInput] = useState('')
   const [returnIban, setReturnIban] = useState('')
+  const [modal, setModal] = useState<ModalConfig | null>(null)
 
   useEffect(() => {
     if (!session) return
@@ -41,50 +52,61 @@ export default function OrderDetailPage({ orderId }: Props) {
       .finally(() => setLoading(false))
   }, [orderId])
 
-  const handleConfirmWire = async () => {
-    if (!window.confirm(t('orders.wire.confirmPrompt'))) return
+  const closeModal = useCallback(() => setModal(null), [])
+
+  function ask(config: Omit<ModalConfig, 'cancelLabel'> & { cancelLabel?: string }) {
+    setModal({ cancelLabel: t('common.cancel'), ...config })
+  }
+
+  async function run(action: () => Promise<OrderData>, errorKey: string) {
+    setModal(null)
     setActionLoading(true)
     setActionError(null)
     try {
-      const updated = await confirmWirePayment(orderId)
+      const updated = await action()
       setOrder(updated)
     } catch {
-      setActionError(t('orders.wire.confirmError'))
+      setActionError(t(errorKey))
     } finally {
       setActionLoading(false)
     }
   }
 
-  const handleRejectWire = async () => {
-    if (!window.confirm(t('orders.wire.rejectPrompt'))) return
-    setActionLoading(true)
-    setActionError(null)
-    try {
-      const updated = await rejectWirePayment(orderId)
-      setOrder(updated)
-    } catch {
-      setActionError(t('orders.wire.rejectError'))
-    } finally {
-      setActionLoading(false)
-    }
-  }
+  const shellActions = (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+      <LangToggle lang={i18n.language} onToggle={() => i18n.changeLanguage(i18n.language === 'fr' ? 'en' : 'fr')} />
+      <Button variant="ghost" size="sm" onClick={() => { logout(); window.location.href = import.meta.env.BASE_URL }}>
+        {t('nav.logout')}
+      </Button>
+    </div>
+  )
 
   if (!session) {
     return (
-      <>
-        <Header />
+      <AppShell appName={t('app.name')} navLinks={[{ label: t('nav.dashboard'), href: import.meta.env.BASE_URL }]} actions={shellActions}>
         <main style={{ padding: '2rem' }}>
           <p>{t('orders.error.notAuthenticated')}</p>
         </main>
-      </>
+      </AppShell>
     )
   }
 
   return (
-    <>
-      <Header />
+    <AppShell appName={t('app.name')} navLinks={[{ label: t('nav.dashboard'), href: import.meta.env.BASE_URL }]} actions={shellActions}>
+      {modal && (
+        <ConfirmModal
+          title={modal.title}
+          message={modal.message}
+          confirmLabel={modal.confirmLabel}
+          cancelLabel={modal.cancelLabel}
+          variant={modal.variant}
+          onConfirm={modal.onConfirm}
+          onCancel={closeModal}
+        />
+      )}
+
       <main style={{ padding: '2rem', maxWidth: '900px', margin: '0 auto' }}>
-        <p><a href="/orders">← {t('orders.list.title')}</a></p>
+        <p><a href={`${import.meta.env.BASE_URL}orders`}>← {t('orders.list.title')}</a></p>
 
         {loading && <p>{t('catalog.loading')}</p>}
         {error && <p style={{ color: 'red' }}>{error}</p>}
@@ -138,17 +160,34 @@ export default function OrderDetailPage({ orderId }: Props) {
               </table>
             </section>
 
+            {/* Wire transfer confirmation — US-VND-02 */}
             {order.status === 'PAYMENT_PENDING_WIRE' && (
               <section style={{ background: '#fff8e1', padding: '1rem', borderRadius: '4px', marginBottom: '1rem' }}>
                 <h2>{t('orders.wire.title')}</h2>
                 <p>{t('orders.wire.description')}</p>
                 {actionError && <p style={{ color: 'red' }}>{actionError}</p>}
                 <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
-                  <button onClick={handleConfirmWire} disabled={actionLoading}
+                  <button
+                    onClick={() => ask({
+                      title: t('orders.wire.confirmTitle'),
+                      message: t('orders.wire.confirmPrompt'),
+                      confirmLabel: t('orders.wire.confirm'),
+                      variant: 'primary',
+                      onConfirm: () => run(() => confirmWirePayment(orderId), 'orders.wire.confirmError'),
+                    })}
+                    disabled={actionLoading}
                     style={{ padding: '0.5rem 1.2rem', background: '#2e7d32', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>
                     {actionLoading ? t('orders.wire.confirming') : t('orders.wire.confirm')}
                   </button>
-                  <button onClick={handleRejectWire} disabled={actionLoading}
+                  <button
+                    onClick={() => ask({
+                      title: t('orders.wire.rejectTitle'),
+                      message: t('orders.wire.rejectPrompt'),
+                      confirmLabel: t('orders.wire.reject'),
+                      variant: 'danger',
+                      onConfirm: () => run(() => rejectWirePayment(orderId), 'orders.wire.rejectError'),
+                    })}
+                    disabled={actionLoading}
                     style={{ padding: '0.5rem 1.2rem', background: '#c62828', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>
                     {actionLoading ? t('orders.wire.rejecting') : t('orders.wire.reject')}
                   </button>
@@ -156,7 +195,31 @@ export default function OrderDetailPage({ orderId }: Props) {
               </section>
             )}
 
-            {(order.status === 'AWAITING_PROCESSING' || order.status === 'IN_PREPARATION') && (
+            {/* Mark as in preparation — US-VND-01 */}
+            {order.status === 'AWAITING_PROCESSING' && (
+              <section style={{ background: '#e3f2fd', padding: '1rem', borderRadius: '4px', marginBottom: '1rem' }}>
+                <h2>{t('orders.prepare.title')}</h2>
+                <p>{t('orders.prepare.description')}</p>
+                {actionError && <p style={{ color: 'red' }}>{actionError}</p>}
+                <div style={{ marginTop: '1rem' }}>
+                  <button
+                    onClick={() => ask({
+                      title: t('orders.prepare.title'),
+                      message: t('orders.prepare.confirmPrompt'),
+                      confirmLabel: t('orders.prepare.submit'),
+                      variant: 'primary',
+                      onConfirm: () => run(() => markInPreparation(orderId), 'orders.prepare.error'),
+                    })}
+                    disabled={actionLoading}
+                    style={{ padding: '0.5rem 1.2rem', background: '#1565c0', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>
+                    {actionLoading ? t('orders.prepare.loading') : t('orders.prepare.submit')}
+                  </button>
+                </div>
+              </section>
+            )}
+
+            {/* Declare shipment — US-EXP-01 */}
+            {order.status === 'IN_PREPARATION' && (
               <section style={{ background: '#e8f5e9', padding: '1rem', borderRadius: '4px', marginBottom: '1rem' }}>
                 <h2>{t('orders.ship.title')}</h2>
                 <p>{t('orders.ship.description')}</p>
@@ -170,20 +233,19 @@ export default function OrderDetailPage({ orderId }: Props) {
                     style={{ padding: '0.4rem 0.8rem', border: '1px solid #ccc', borderRadius: '4px', flex: 1 }}
                   />
                   <button
-                    onClick={async () => {
+                    onClick={() => {
                       if (!trackingInput.trim()) return
-                      if (!window.confirm(t('orders.ship.confirmPrompt'))) return
-                      setActionLoading(true)
-                      setActionError(null)
-                      try {
-                        const updated = await shipOrder(orderId, trackingInput.trim())
-                        setOrder(updated)
-                        setTrackingInput('')
-                      } catch {
-                        setActionError(t('orders.ship.error'))
-                      } finally {
-                        setActionLoading(false)
-                      }
+                      ask({
+                        title: t('orders.ship.title'),
+                        message: t('orders.ship.confirmPrompt'),
+                        confirmLabel: t('orders.ship.submit'),
+                        variant: 'primary',
+                        onConfirm: () => run(async () => {
+                          const updated = await shipOrder(orderId, trackingInput.trim())
+                          setTrackingInput('')
+                          return updated
+                        }, 'orders.ship.error'),
+                      })
                     }}
                     disabled={actionLoading || !trackingInput.trim()}
                     style={{ padding: '0.5rem 1.2rem', background: '#1565c0', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>
@@ -193,7 +255,7 @@ export default function OrderDetailPage({ orderId }: Props) {
               </section>
             )}
 
-            {/* Post-shipment cancellation — US-CAN-03 / US-CAN-04 (vendor initiated for SHIPPED orders) */}
+            {/* Post-shipment cancellation — US-CAN-03 / US-CAN-04 */}
             {order.status === 'SHIPPED' && (
               <section style={{ background: '#fff3e0', padding: '1rem', borderRadius: '4px', marginBottom: '1rem' }}>
                 <h2>{t('orders.postShipCancel.title')}</h2>
@@ -213,31 +275,25 @@ export default function OrderDetailPage({ orderId }: Props) {
                 {actionError && <p style={{ color: 'red' }}>{actionError}</p>}
                 <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
                   <button
-                    onClick={async () => {
-                      if (!window.confirm(t('orders.postShipCancel.acceptReturnPrompt'))) return
-                      setActionLoading(true); setActionError(null)
-                      try {
-                        const updated = await acceptReturn(orderId, order.paymentMethod === 'WIRE_TRANSFER' ? returnIban : undefined)
-                        setOrder(updated)
-                      } catch {
-                        setActionError(t('orders.postShipCancel.error'))
-                      } finally { setActionLoading(false) }
-                    }}
+                    onClick={() => ask({
+                      title: t('orders.postShipCancel.acceptReturn'),
+                      message: t('orders.postShipCancel.acceptReturnPrompt'),
+                      confirmLabel: t('orders.postShipCancel.acceptReturn'),
+                      variant: 'danger',
+                      onConfirm: () => run(() => acceptReturn(orderId, order.paymentMethod === 'WIRE_TRANSFER' ? returnIban : undefined), 'orders.postShipCancel.error'),
+                    })}
                     disabled={actionLoading || (order.paymentMethod === 'WIRE_TRANSFER' && !returnIban.trim())}
                     style={{ padding: '0.5rem 1.2rem', background: '#e65100', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>
                     {t('orders.postShipCancel.acceptReturn')}
                   </button>
                   <button
-                    onClick={async () => {
-                      if (!window.confirm(t('orders.postShipCancel.waiveReturnPrompt'))) return
-                      setActionLoading(true); setActionError(null)
-                      try {
-                        const updated = await waiveReturn(orderId, order.paymentMethod === 'WIRE_TRANSFER' ? returnIban : undefined)
-                        setOrder(updated)
-                      } catch {
-                        setActionError(t('orders.postShipCancel.error'))
-                      } finally { setActionLoading(false) }
-                    }}
+                    onClick={() => ask({
+                      title: t('orders.postShipCancel.waiveReturn'),
+                      message: t('orders.postShipCancel.waiveReturnPrompt'),
+                      confirmLabel: t('orders.postShipCancel.waiveReturn'),
+                      variant: 'danger',
+                      onConfirm: () => run(() => waiveReturn(orderId, order.paymentMethod === 'WIRE_TRANSFER' ? returnIban : undefined), 'orders.postShipCancel.error'),
+                    })}
                     disabled={actionLoading || (order.paymentMethod === 'WIRE_TRANSFER' && !returnIban.trim())}
                     style={{ padding: '0.5rem 1.2rem', background: '#c62828', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>
                     {t('orders.postShipCancel.waiveReturn')}
@@ -272,48 +328,43 @@ export default function OrderDetailPage({ orderId }: Props) {
                 {actionError && <p style={{ color: 'red' }}>{actionError}</p>}
                 <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
                   <button
-                    onClick={async () => {
-                      if (!window.confirm(t('orders.buyerCancelRequest.acceptReturnPrompt'))) return
-                      setActionLoading(true); setActionError(null)
-                      try {
+                    onClick={() => ask({
+                      title: t('orders.postShipCancel.acceptReturn'),
+                      message: t('orders.buyerCancelRequest.acceptReturnPrompt'),
+                      confirmLabel: t('orders.postShipCancel.acceptReturn'),
+                      variant: 'danger',
+                      onConfirm: () => {
                         const iban = order.buyerIban ?? (order.paymentMethod === 'WIRE_TRANSFER' ? returnIban : undefined)
-                        const updated = await acceptReturn(orderId, iban)
-                        setOrder(updated)
-                      } catch {
-                        setActionError(t('orders.postShipCancel.error'))
-                      } finally { setActionLoading(false) }
-                    }}
+                        run(() => acceptReturn(orderId, iban), 'orders.postShipCancel.error')
+                      },
+                    })}
                     disabled={actionLoading || (order.paymentMethod === 'WIRE_TRANSFER' && !order.buyerIban && !returnIban.trim())}
                     style={{ padding: '0.5rem 1.2rem', background: '#e65100', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>
                     {t('orders.postShipCancel.acceptReturn')}
                   </button>
                   <button
-                    onClick={async () => {
-                      if (!window.confirm(t('orders.buyerCancelRequest.waiveReturnPrompt'))) return
-                      setActionLoading(true); setActionError(null)
-                      try {
+                    onClick={() => ask({
+                      title: t('orders.postShipCancel.waiveReturn'),
+                      message: t('orders.buyerCancelRequest.waiveReturnPrompt'),
+                      confirmLabel: t('orders.postShipCancel.waiveReturn'),
+                      variant: 'danger',
+                      onConfirm: () => {
                         const iban = order.buyerIban ?? (order.paymentMethod === 'WIRE_TRANSFER' ? returnIban : undefined)
-                        const updated = await waiveReturn(orderId, iban)
-                        setOrder(updated)
-                      } catch {
-                        setActionError(t('orders.postShipCancel.error'))
-                      } finally { setActionLoading(false) }
-                    }}
+                        run(() => waiveReturn(orderId, iban), 'orders.postShipCancel.error')
+                      },
+                    })}
                     disabled={actionLoading || (order.paymentMethod === 'WIRE_TRANSFER' && !order.buyerIban && !returnIban.trim())}
                     style={{ padding: '0.5rem 1.2rem', background: '#c62828', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>
                     {t('orders.postShipCancel.waiveReturn')}
                   </button>
                   <button
-                    onClick={async () => {
-                      if (!window.confirm(t('orders.buyerCancelRequest.refusePrompt'))) return
-                      setActionLoading(true); setActionError(null)
-                      try {
-                        const updated = await refuseCancellationRequest(orderId)
-                        setOrder(updated)
-                      } catch {
-                        setActionError(t('orders.buyerCancelRequest.refuseError'))
-                      } finally { setActionLoading(false) }
-                    }}
+                    onClick={() => ask({
+                      title: t('orders.buyerCancelRequest.refuse'),
+                      message: t('orders.buyerCancelRequest.refusePrompt'),
+                      confirmLabel: t('orders.buyerCancelRequest.refuse'),
+                      variant: 'primary',
+                      onConfirm: () => run(() => refuseCancellationRequest(orderId), 'orders.buyerCancelRequest.refuseError'),
+                    })}
                     disabled={actionLoading}
                     style={{ padding: '0.5rem 1.2rem', background: '#546e7a', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>
                     {t('orders.buyerCancelRequest.refuse')}
@@ -329,18 +380,15 @@ export default function OrderDetailPage({ orderId }: Props) {
                 <p>{t('orders.confirmReturn.description')}</p>
                 {actionError && <p style={{ color: 'red' }}>{actionError}</p>}
                 <button
-                  onClick={async () => {
-                    if (!window.confirm(t('orders.confirmReturn.prompt'))) return
-                    setActionLoading(true); setActionError(null)
-                    try {
-                      const updated = await confirmReturn(orderId)
-                      setOrder(updated)
-                    } catch {
-                      setActionError(t('orders.confirmReturn.error'))
-                    } finally { setActionLoading(false) }
-                  }}
+                  onClick={() => ask({
+                    title: t('orders.confirmReturn.title'),
+                    message: t('orders.confirmReturn.prompt'),
+                    confirmLabel: t('orders.confirmReturn.submit'),
+                    variant: 'primary',
+                    onConfirm: () => run(() => confirmReturn(orderId), 'orders.confirmReturn.error'),
+                  })}
                   disabled={actionLoading}
-                  style={{ padding: '0.5rem 1.2rem', background: '#2e7d32', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>
+                  style={{ padding: '0.5rem 1.2rem', background: '#2e7d32', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer', marginTop: '1rem' }}>
                   {t('orders.confirmReturn.submit')}
                 </button>
               </section>
@@ -357,18 +405,15 @@ export default function OrderDetailPage({ orderId }: Props) {
                 <p><strong>{t('orders.wireRefund.amount')}:</strong> {order.totalAmountTtc.toFixed(2)} €</p>
                 {actionError && <p style={{ color: 'red' }}>{actionError}</p>}
                 <button
-                  onClick={async () => {
-                    if (!window.confirm(t('orders.wireRefund.prompt'))) return
-                    setActionLoading(true); setActionError(null)
-                    try {
-                      const updated = await confirmWireRefund(orderId)
-                      setOrder(updated)
-                    } catch {
-                      setActionError(t('orders.wireRefund.error'))
-                    } finally { setActionLoading(false) }
-                  }}
+                  onClick={() => ask({
+                    title: t('orders.wireRefund.title'),
+                    message: t('orders.wireRefund.prompt'),
+                    confirmLabel: t('orders.wireRefund.submit'),
+                    variant: 'primary',
+                    onConfirm: () => run(() => confirmWireRefund(orderId), 'orders.wireRefund.error'),
+                  })}
                   disabled={actionLoading}
-                  style={{ padding: '0.5rem 1.2rem', background: '#1a237e', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>
+                  style={{ padding: '0.5rem 1.2rem', background: '#1a237e', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer', marginTop: '1rem' }}>
                   {t('orders.wireRefund.submit')}
                 </button>
               </section>
@@ -376,6 +421,6 @@ export default function OrderDetailPage({ orderId }: Props) {
           </>
         )}
       </main>
-    </>
+    </AppShell>
   )
 }

@@ -73,6 +73,21 @@ public interface VendorOrderController {
     ResponseEntity<OrderResponse> rejectWire(@PathVariable UUID orderId, Principal principal, Locale locale);
 
     /**
+     * Marks an order as in preparation, transitioning it from {@code AWAITING_PROCESSING}
+     * to {@code IN_PREPARATION} and notifying the buyer (US-VND-01).
+     *
+     * @param orderId   the order UUID
+     * @param principal the authenticated vendor principal
+     * @param locale    locale for buyer notification
+     * @return 200 with the updated order
+     */
+    @Operation(summary = "Mark order as in preparation (US-VND-01)")
+    @ApiResponse(responseCode = "200", description = "Order marked as in preparation")
+    @ApiResponse(responseCode = "409", description = "Order not in AWAITING_PROCESSING state")
+    @PostMapping("/{orderId}/prepare")
+    ResponseEntity<OrderResponse> prepare(@PathVariable UUID orderId, Principal principal, Locale locale);
+
+    /**
      * Declares shipment of an order by recording the carrier tracking number.
      * Transitions the order to {@code SHIPPED} and notifies the buyer (US-EXP-01).
      *

@@ -12,7 +12,6 @@ import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 /** Native SQL aggregation queries for vendor sales reports (US-RPT-01). */
 @Repository
@@ -26,8 +25,7 @@ public class SalesReportRepository {
                    COUNT(CASE WHEN status = 'CANCELLED' THEN 1 END),
                    COALESCE(SUM(CASE WHEN status != 'CANCELLED' THEN total_amount_ttc ELSE 0 END), 0)
             FROM orders
-            WHERE vendor_id = :vendorId
-              AND created_at >= :from
+            WHERE created_at >= :from
               AND created_at < :to
             """;
 
@@ -37,8 +35,7 @@ public class SalesReportRepository {
               FROM orders o
               JOIN order_lines ol ON ol.order_id = o.id
               JOIN products p ON p.id = ol.product_id
-              WHERE o.vendor_id = :vendorId
-                AND o.created_at >= :from
+              WHERE o.created_at >= :from
                 AND o.created_at < :to
                 AND p.category = :category
             )
@@ -55,8 +52,7 @@ public class SalesReportRepository {
                    SUM(ol.line_total_ttc)
             FROM order_lines ol
             JOIN orders o ON o.id = ol.order_id
-            WHERE o.vendor_id = :vendorId
-              AND o.status != 'CANCELLED'
+            WHERE o.status != 'CANCELLED'
               AND o.created_at >= :from
               AND o.created_at < :to
             GROUP BY ol.product_name
@@ -70,8 +66,7 @@ public class SalesReportRepository {
             FROM order_lines ol
             JOIN orders o ON o.id = ol.order_id
             JOIN products p ON p.id = ol.product_id
-            WHERE o.vendor_id = :vendorId
-              AND o.status != 'CANCELLED'
+            WHERE o.status != 'CANCELLED'
               AND o.created_at >= :from
               AND o.created_at < :to
               AND p.category = :category
@@ -80,18 +75,16 @@ public class SalesReportRepository {
             """;
 
     /**
-     * Computes aggregated sales metrics for the given vendor and date range.
+     * Computes aggregated sales metrics for the given date range.
      *
-     * @param vendorId the vendor account UUID
      * @param from     inclusive start of the period (start of the first day)
      * @param to       exclusive end of the period (start of the first day of the next month)
      * @param category optional product category filter; {@code null} means all categories
      * @return the computed metrics
      */
-    public SalesMetrics computeMetrics(UUID vendorId, LocalDateTime from, LocalDateTime to, String category) {
+    public SalesMetrics computeMetrics(LocalDateTime from, LocalDateTime to, String category) {
         String sql = category != null ? METRICS_SQL_CATEGORY : METRICS_SQL;
         Query q = em.createNativeQuery(sql);
-        q.setParameter("vendorId", vendorId);
         q.setParameter("from", from);
         q.setParameter("to", to);
         if (category != null) {
@@ -120,9 +113,8 @@ public class SalesReportRepository {
     }
 
     /**
-     * Returns the top-selling products for the given vendor and date range.
+     * Returns the top-selling products for the given date range.
      *
-     * @param vendorId the vendor account UUID
      * @param from     inclusive start of the period
      * @param to       exclusive end of the period
      * @param category optional product category filter; {@code null} means all categories
@@ -130,11 +122,10 @@ public class SalesReportRepository {
      * @return list of top products ranked by quantity sold descending
      */
     @SuppressWarnings("unchecked")
-    public List<TopProduct> findTopProducts(UUID vendorId, LocalDateTime from, LocalDateTime to,
+    public List<TopProduct> findTopProducts(LocalDateTime from, LocalDateTime to,
                                             String category, int limit) {
         String sql = category != null ? TOP_PRODUCTS_SQL_CATEGORY : TOP_PRODUCTS_SQL;
         Query q = em.createNativeQuery(sql);
-        q.setParameter("vendorId", vendorId);
         q.setParameter("from", from);
         q.setParameter("to", to);
         if (category != null) {

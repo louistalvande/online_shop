@@ -1,7 +1,7 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Button } from '@workspace/theme'
-import { createProduct, updateProduct, type Product, type CreateProductPayload } from './api/productApi'
+import { createProduct, updateProduct, uploadProductImage, type Product, type CreateProductPayload } from './api/productApi'
 
 interface Props {
   product?: Product | null
@@ -16,7 +16,7 @@ interface FormState {
   category: string
   quantity: string
   stockAlertThreshold: string
-  photoUrls: string
+  photoUrls: string[]
 }
 
 function toForm(p: Product): FormState {
@@ -27,29 +27,51 @@ function toForm(p: Product): FormState {
     category: p.category ?? '',
     quantity: String(p.quantity),
     stockAlertThreshold: String(p.stockAlertThreshold),
-    photoUrls: p.photoUrls.join('\n'),
+    photoUrls: [...p.photoUrls],
   }
 }
 
 const EMPTY: FormState = {
   name: '', description: '', priceExclTax: '', category: '',
-  quantity: '', stockAlertThreshold: '0', photoUrls: '',
+  quantity: '', stockAlertThreshold: '0', photoUrls: [],
 }
 
-/** Modal form for creating (US-CAT-01) and editing (US-CAT-02) a product. */
+/** Modal form for creating (US-CAT-01) and editing (US-CAT-02) a product, with image upload (US-CAT-09). */
 export default function ProductFormModal({ product, onSave, onClose }: Props) {
   const { t } = useTranslation()
   const [form, setForm] = useState<FormState>(product ? toForm(product) : EMPTY)
   const [error, setError] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
+  const [uploading, setUploading] = useState(false)
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
     setForm(product ? toForm(product) : EMPTY)
     setError(null)
   }, [product])
 
-  function set(key: keyof FormState, value: string) {
+  function set<K extends keyof FormState>(key: K, value: FormState[K]) {
     setForm(prev => ({ ...prev, [key]: value }))
+  }
+
+  async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (!file) return
+    e.target.value = ''
+    setUploading(true)
+    setError(null)
+    try {
+      const url = await uploadProductImage(file)
+      set('photoUrls', [...form.photoUrls, url])
+    } catch {
+      setError(t('catalog.form.uploadError'))
+    } finally {
+      setUploading(false)
+    }
+  }
+
+  function removePhoto(index: number) {
+    set('photoUrls', form.photoUrls.filter((_, i) => i !== index))
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -71,7 +93,7 @@ export default function ProductFormModal({ product, onSave, onClose }: Props) {
       category: form.category.trim() || undefined,
       quantity: qty,
       stockAlertThreshold: isNaN(threshold) ? 0 : threshold,
-      photoUrls: form.photoUrls.split('\n').map(u => u.trim()).filter(Boolean),
+      photoUrls: form.photoUrls,
     }
 
     setSaving(true)
@@ -111,6 +133,14 @@ export default function ProductFormModal({ product, onSave, onClose }: Props) {
     width: '100%', padding: '8px 12px', border: '1px solid var(--border)',
     borderRadius: 6, fontSize: 14, boxSizing: 'border-box',
     background: 'var(--surface)', color: 'var(--text)',
+  }
+  const photoItemStyle: React.CSSProperties = {
+    display: 'flex', alignItems: 'center', gap: 10,
+    padding: '6px 8px',
+    border: '1px solid var(--border)',
+    borderRadius: 6,
+    marginBottom: 6,
+    background: 'var(--surface)',
   }
 
   return (
@@ -164,11 +194,54 @@ export default function ProductFormModal({ product, onSave, onClose }: Props) {
           </div>
 
           <div style={{ marginBottom: 24 }}>
-            <label htmlFor="pf-photos" style={labelStyle}>{t('catalog.form.photoUrls')}</label>
-            <textarea id="pf-photos" style={{ ...inputStyle, minHeight: 64, resize: 'vertical', fontSize: 12 }}
-              placeholder={t('catalog.form.photoUrlsPlaceholder')}
-              value={form.photoUrls}
-              onChange={e => set('photoUrls', e.target.value)} />
+            <label style={labelStyle}>{t('catalog.form.photos')}</label>
+
+            {form.photoUrls.length > 0 && (
+              <div style={{ marginBottom: 8 }}>
+                {form.photoUrls.map((url, i) => (
+                  <div key={i} style={photoItemStyle}>
+                    <img
+                      src={url}
+                      alt=""
+                      style={{ width: 48, height: 48, objectFit: 'cover', borderRadius: 4, flexShrink: 0 }}
+                      onError={e => { (e.target as HTMLImageElement).style.display = 'none' }}
+                    />
+                    <span style={{ flex: 1, fontSize: 11, color: 'var(--text-muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      {url}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => removePhoto(i)}
+                      style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#c0392b', fontSize: 16, padding: '0 4px', flexShrink: 0 }}
+                      aria-label={t('catalog.form.removePhoto')}
+                    >
+                      ×
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/jpeg,image/png,image/gif,image/webp"
+              style={{ display: 'none' }}
+              onChange={handleFileChange}
+            />
+            <Button
+              type="button"
+              variant="secondary"
+              disabled={uploading || saving}
+              onClick={() => fileInputRef.current?.click()}
+            >
+              {uploading ? t('catalog.form.uploading') : t('catalog.form.addPhoto')}
+            </Button>
+            {form.photoUrls.length === 0 && (
+              <p style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 6 }}>
+                {t('catalog.form.noPhotos')}
+              </p>
+            )}
           </div>
 
           {error && (
@@ -179,7 +252,7 @@ export default function ProductFormModal({ product, onSave, onClose }: Props) {
             <Button type="button" variant="secondary" onClick={onClose} disabled={saving}>
               {t('catalog.form.cancel')}
             </Button>
-            <Button type="submit" variant="primary" disabled={saving}>
+            <Button type="submit" variant="primary" disabled={saving || uploading}>
               {saving ? t('catalog.form.saving') : t('catalog.form.save')}
             </Button>
           </div>

@@ -22,7 +22,7 @@ NOTE: Le système couvre l'ensemble des interactions numériques entre les six a
 
 === Mission du système
 
-Le système a pour mission de fournir une plateforme de vente en ligne permettant à un vendeur unique de commercialiser ses produits auprès d'acheteurs résidant dans la zone euro, en couvrant l'intégralité du cycle de vie d'une commande — de la présentation du catalogue jusqu'à la livraison et au service après-vente — avec gestion des paiements par carte bancaire et par virement bancaire, et administration centralisée des comptes par un administrateur.
+Le système a pour mission de fournir une plateforme de vente en ligne permettant à plusieurs vendeurs de gérer conjointement un catalogue produits partagé et de traiter collectivement les commandes d'acheteurs résidant dans la zone euro, en couvrant l'intégralité du cycle de vie d'une commande — de la présentation du catalogue jusqu'à la livraison et au service après-vente — avec gestion des paiements par carte bancaire et par virement bancaire, et administration centralisée des comptes par un administrateur.
 
 === Acteurs système et interfaces
 

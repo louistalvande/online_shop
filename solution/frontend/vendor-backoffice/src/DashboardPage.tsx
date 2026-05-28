@@ -1,31 +1,46 @@
+import { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Button, Card, PackageIcon } from '@workspace/theme'
+import { listVendorOrders, type OrderData, type OrderStatus } from './api/orderApi'
 
-const ORDERS = [
-  { id: 'CMD-001', buyer: 'Marie Dupont', items: 3, total: '14,70 €', status: 'En attente' },
-  { id: 'CMD-002', buyer: 'Jean Martin', items: 1, total: '4,90 €', status: 'Expédié' },
-  { id: 'CMD-003', buyer: 'Sophie Bernard', items: 5, total: '24,50 €', status: 'Livré' },
-]
-
-const statusColor: Record<string, string> = {
-  'En attente': '#b8431a',
-  'Expédié': '#2563eb',
-  'Livré': '#16a34a',
+const STATUS_LABELS: Record<OrderStatus, string> = {
+  PAYMENT_PENDING_CARD: 'orders.status.pendingCard',
+  PAYMENT_PENDING_WIRE: 'orders.status.pendingWire',
+  AWAITING_PROCESSING: 'orders.status.awaitingProcessing',
+  IN_PREPARATION: 'orders.status.inPreparation',
+  SHIPPED: 'orders.status.shipped',
+  DELIVERED: 'orders.status.delivered',
+  CANCELLED: 'orders.status.cancelled',
+  PENDING_RETURN: 'orders.status.pendingReturn',
+  WIRE_REFUND_IN_PROGRESS: 'orders.status.wireRefund',
+  CANCELLATION_REQUESTED_AFTER_SHIPMENT: 'orders.status.cancellationRequested',
 }
+
+const PENDING_STATUSES: OrderStatus[] = ['PAYMENT_PENDING_WIRE', 'AWAITING_PROCESSING', 'IN_PREPARATION']
 
 export default function DashboardPage() {
   const { t } = useTranslation()
+  const [orders, setOrders] = useState<OrderData[]>([])
+
+  useEffect(() => {
+    listVendorOrders().then(setOrders).catch(() => {})
+  }, [])
+
+  const now = new Date()
+  const pendingCount = orders.filter(o => PENDING_STATUSES.includes(o.status)).length
+  const monthlyRevenue = orders
+    .filter(o => {
+      const d = new Date(o.createdAt)
+      return d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth() && o.status !== 'CANCELLED'
+    })
+    .reduce((sum, o) => sum + o.totalAmountTtc, 0)
 
   const stats = [
-    { label: t('stats.pendingOrders'), value: '3', icon: <PackageIcon size={20} /> },
-    { label: t('stats.monthlyRevenue'), value: '147,00 €', icon: null },
-    { label: t('stats.activeProducts'), value: '24', icon: null },
+    { label: t('stats.pendingOrders'), value: String(pendingCount), icon: <PackageIcon size={20} /> },
+    { label: t('stats.monthlyRevenue'), value: `${monthlyRevenue.toFixed(2)} €`, icon: null },
   ]
 
-  const tableHeaders = [
-    t('orders.ref'), t('orders.buyer'), t('orders.items'),
-    t('orders.total'), t('orders.status'), '',
-  ]
+  const recent = orders.slice(0, 5)
 
   return (
     <div style={{ maxWidth: 1100, margin: '0 auto', padding: '40px 24px 64px' }}>
@@ -46,30 +61,36 @@ export default function DashboardPage() {
 
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }} id="orders">
         <h2 style={{ fontFamily: 'var(--font-serif)', fontSize: 22, fontWeight: 700 }}>{t('orders.recent')}</h2>
-        <Button variant="secondary" size="sm">{t('orders.viewAll')}</Button>
+        <Button variant="secondary" size="sm" onClick={() => { window.location.href = `${import.meta.env.BASE_URL}orders` }}>
+          {t('orders.viewAll')}
+        </Button>
       </div>
 
       <Card>
         <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 14 }}>
           <thead>
             <tr style={{ borderBottom: '1px solid var(--border)' }}>
-              {tableHeaders.map((h, i) => (
+              {[t('orders.ref'), t('orders.total'), t('orders.status'), t('orders.date'), ''].map((h, i) => (
                 <th key={i} style={{ padding: '12px 16px', textAlign: 'left', fontWeight: 600, color: 'var(--text-muted)', fontSize: 12 }}>{h}</th>
               ))}
             </tr>
           </thead>
           <tbody>
-            {ORDERS.map(o => (
+            {recent.length === 0 && (
+              <tr>
+                <td colSpan={5} style={{ padding: '14px 16px', color: 'var(--text-muted)' }}>{t('orders.list.empty')}</td>
+              </tr>
+            )}
+            {recent.map(o => (
               <tr key={o.id} style={{ borderBottom: '1px solid var(--border)' }}>
-                <td style={{ padding: '14px 16px', fontWeight: 600 }}>{o.id}</td>
-                <td style={{ padding: '14px 16px' }}>{o.buyer}</td>
-                <td style={{ padding: '14px 16px' }}>{o.items}</td>
-                <td style={{ padding: '14px 16px', fontWeight: 600 }}>{o.total}</td>
+                <td style={{ padding: '14px 16px', fontWeight: 600 }}>{o.orderNumber}</td>
+                <td style={{ padding: '14px 16px', fontWeight: 600 }}>{o.totalAmountTtc.toFixed(2)} €</td>
+                <td style={{ padding: '14px 16px' }}>{t(STATUS_LABELS[o.status] ?? o.status)}</td>
+                <td style={{ padding: '14px 16px' }}>{new Date(o.createdAt).toLocaleDateString()}</td>
                 <td style={{ padding: '14px 16px' }}>
-                  <span style={{ color: statusColor[o.status], fontWeight: 600, fontSize: 13 }}>{o.status}</span>
-                </td>
-                <td style={{ padding: '14px 16px' }}>
-                  <Button variant="ghost" size="sm">{t('orders.details')}</Button>
+                  <Button variant="ghost" size="sm" onClick={() => { window.location.href = `${import.meta.env.BASE_URL}orders/${o.id}` }}>
+                    {t('orders.details')}
+                  </Button>
                 </td>
               </tr>
             ))}

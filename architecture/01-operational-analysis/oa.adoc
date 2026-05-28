@@ -12,7 +12,7 @@
 
 L'Analyse du Besoin Opérationnel (OA) décrit le contexte métier réel d'une application ecommerce, indépendamment de tout système à construire. Elle identifie les acteurs impliqués, leurs activités opérationnelles et les échanges entre eux.
 
-La boutique repose sur trois acteurs distincts. L'**administrateur** est l'unique responsable de la gestion des comptes utilisateurs. Le **vendeur** (propriétaire du site) prend en charge l'ensemble des opérations commerciales : catalogue, stocks, commandes et expéditions. L'**acheteur** est le client final qui navigue et passe commande. La boutique propose une livraison à destination des pays de la **zone euro**, via un ou plusieurs services de transport externes. Les paiements sont traités par un **prestataire de paiement externe** et acceptés par **carte bancaire** ou **virement bancaire**. L'activation du compte acheteur s'effectue via un lien envoyé par un **service de messagerie externe**.
+La boutique repose sur trois acteurs distincts. L'**administrateur** est l'unique responsable de la gestion des comptes utilisateurs. **Plusieurs vendeurs** peuvent co-gérer la boutique : ils partagent un catalogue produits commun, traitent collectivement les commandes reçues et gèrent les expéditions. Chaque vendeur est notifié de toute nouvelle commande. L'**acheteur** est le client final qui navigue et passe commande. La boutique propose une livraison à destination des pays de la **zone euro**, via un ou plusieurs services de transport externes. Les paiements sont traités par un **prestataire de paiement externe** et acceptés par **carte bancaire** ou **virement bancaire**. L'activation du compte acheteur s'effectue via un lien envoyé par un **service de messagerie externe**.
 
 === Acteurs opérationnels
 
@@ -25,8 +25,8 @@ La boutique repose sur trois acteurs distincts. L'**administrateur** est l'uniqu
 | Créer, suspendre et supprimer les comptes vendeur et acheteurs ; gérer les droits d'accès à la plateforme ; ajouter et gérer les transporteurs disponibles
 
 | *Vendeur*
-| Propriétaire et exploitant de la boutique
-| Mettre à jour ses données de compte, gérer le catalogue produits, administrer les stocks, traiter les commandes reçues, gérer les expéditions vers les pays de la zone euro (déposer le colis auprès du transporteur, récupérer le numéro de suivi sur le reçu et le saisir dans la boutique), confirmer manuellement la réception des virements bancaires, consulter les rapports de ventes, traiter les demandes d'annulation après expédition reçues par email de l'acheteur en choisissant entre annulation avec condition de renvoi du colis ou annulation directe sans renvoi
+| Opérateur commercial de la boutique (plusieurs vendeurs partagent la même boutique)
+| Mettre à jour ses données de compte, gérer le catalogue produits partagé (créer, modifier, archiver des fiches), administrer les stocks, traiter les commandes reçues (chaque vendeur voit et traite l'ensemble des commandes), gérer les expéditions vers les pays de la zone euro (déposer le colis auprès du transporteur, récupérer le numéro de suivi sur le reçu et le saisir dans la boutique), confirmer manuellement la réception des virements bancaires, consulter les rapports de ventes, traiter les demandes d'annulation après expédition reçues par email de l'acheteur en choisissant entre annulation avec condition de renvoi du colis ou annulation directe sans renvoi
 
 | *Acheteur*
 | Client de la boutique (résidant dans la zone euro)

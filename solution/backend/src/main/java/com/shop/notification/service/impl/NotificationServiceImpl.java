@@ -124,27 +124,6 @@ public class NotificationServiceImpl implements NotificationService {
     /** {@inheritDoc} */
     @Async
     @Override
-    public void sendVendorNewOrderEmail(String toEmail, OrderResponse order, Locale locale) {
-        if (!sendGridConfigured) {
-            log.info("[EMAIL] Vendor new order notification for {} — order #{}", toEmail, order.getOrderNumber());
-            return;
-        }
-
-        String subject = messageSource.getMessage(
-                "email.vendor.new.order.subject",
-                new Object[]{order.getOrderNumber()},
-                locale);
-        String htmlBody = messageSource.getMessage(
-                "email.vendor.new.order.body.html",
-                new Object[]{order.getOrderNumber(), order.getTotalAmountTtc()},
-                locale);
-
-        sendEmail(toEmail, subject, htmlBody);
-    }
-
-    /** {@inheritDoc} */
-    @Async
-    @Override
     public void sendShipmentNotificationEmail(String toEmail, OrderResponse order, Locale locale) {
         if (!sendGridConfigured) {
             log.info("[EMAIL] Shipment notification for {} — order #{} tracking={}",
@@ -202,19 +181,6 @@ public class NotificationServiceImpl implements NotificationService {
     /** {@inheritDoc} */
     @Async
     @Override
-    public void sendVendorCancellationEmail(String toEmail, OrderResponse order, Locale locale) {
-        if (!sendGridConfigured) {
-            log.info("[EMAIL] Vendor cancellation notification for {} — order #{}", toEmail, order.getOrderNumber());
-            return;
-        }
-        String subject = messageSource.getMessage("email.cancellation.vendor.subject", new Object[]{order.getOrderNumber()}, locale);
-        String htmlBody = messageSource.getMessage("email.cancellation.vendor.body.html", new Object[]{order.getOrderNumber()}, locale);
-        sendEmail(toEmail, subject, htmlBody);
-    }
-
-    /** {@inheritDoc} */
-    @Async
-    @Override
     public void sendReturnRequestedEmail(String toEmail, OrderResponse order, Locale locale) {
         if (!sendGridConfigured) {
             log.info("[EMAIL] Return requested for {} — order #{}", toEmail, order.getOrderNumber());
@@ -241,22 +207,6 @@ public class NotificationServiceImpl implements NotificationService {
     /** {@inheritDoc} */
     @Async
     @Override
-    public void sendVendorCancellationRequestedEmail(String toEmail, OrderResponse order, Locale locale) {
-        if (!sendGridConfigured) {
-            log.info("[EMAIL] Post-shipment cancellation request for vendor {} — order #{} reason={}",
-                    toEmail, order.getOrderNumber(), order.getCancellationReason());
-            return;
-        }
-        String subject = messageSource.getMessage("email.cancellation.requested.vendor.subject",
-                new Object[]{order.getOrderNumber()}, locale);
-        String htmlBody = messageSource.getMessage("email.cancellation.requested.vendor.body.html",
-                new Object[]{order.getOrderNumber(), order.getCancellationReason()}, locale);
-        sendEmail(toEmail, subject, htmlBody);
-    }
-
-    /** {@inheritDoc} */
-    @Async
-    @Override
     public void sendCancellationRefusedEmail(String toEmail, OrderResponse order, Locale locale) {
         if (!sendGridConfigured) {
             log.info("[EMAIL] Cancellation refused notification for buyer {} — order #{}", toEmail, order.getOrderNumber());
@@ -266,6 +216,44 @@ public class NotificationServiceImpl implements NotificationService {
                 new Object[]{order.getOrderNumber()}, locale);
         String htmlBody = messageSource.getMessage("email.cancellation.refused.buyer.body.html",
                 new Object[]{order.getOrderNumber()}, locale);
+        sendEmail(toEmail, subject, htmlBody);
+    }
+
+    /** {@inheritDoc} */
+    @Async
+    @Override
+    public void sendOrderInPreparationEmail(String toEmail, OrderResponse order, Locale locale) {
+        if (!sendGridConfigured) {
+            log.info("[EMAIL] Order in preparation for {} — order #{}", toEmail, order.getOrderNumber());
+            return;
+        }
+        String subject = messageSource.getMessage(
+                "email.order.preparation.subject",
+                new Object[]{order.getOrderNumber()},
+                locale);
+        String htmlBody = messageSource.getMessage(
+                "email.order.preparation.body.html",
+                new Object[]{order.getOrderNumber()},
+                locale);
+        sendEmail(toEmail, subject, htmlBody);
+    }
+
+    /** {@inheritDoc} */
+    @Async
+    @Override
+    public void sendVendorNewOrderEmail(String toEmail, OrderResponse order, Locale locale) {
+        if (!sendGridConfigured) {
+            log.info("[EMAIL] New order notification for vendor {} — order #{}", toEmail, order.getOrderNumber());
+            return;
+        }
+        String subject = messageSource.getMessage(
+                "email.vendor.new.order.subject",
+                new Object[]{order.getOrderNumber()},
+                locale);
+        String htmlBody = messageSource.getMessage(
+                "email.vendor.new.order.body.html",
+                new Object[]{order.getOrderNumber(), order.getTotalAmountTtc()},
+                locale);
         sendEmail(toEmail, subject, htmlBody);
     }
 

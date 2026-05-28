@@ -26,6 +26,7 @@ export default function Header({ onLogout, onNavigate, currentPage, alertCount, 
           onClick: () => onNavigate('catalog'),
           badge: currentPage !== 'catalog' ? alertCount : 0,
         },
+        { label: t('nav.orders'), href: `${import.meta.env.BASE_URL}orders` },
         { label: t('nav.reports'), href: '#', onClick: () => onNavigate('reports') },
         { label: t('nav.announcements'), href: '#', onClick: () => onNavigate('announcements') },
       ]}

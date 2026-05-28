@@ -308,7 +308,11 @@ export default function CatalogPage() {
               )}
               {visibleProducts.map(p => (
                 <tr key={p.id} style={{ borderBottom: '1px solid var(--border)', opacity: p.status === 'ARCHIVED' ? 0.6 : 1 }}>
-                  <td style={{ padding: '14px 16px', fontWeight: 600 }}>{p.name}</td>
+                  <td style={{ padding: '14px 16px', fontWeight: 600 }}>
+                    <a href={`${import.meta.env.BASE_URL}catalog/${p.id}`} style={{ color: 'inherit', textDecoration: 'underline' }}>
+                      {p.name}
+                    </a>
+                  </td>
                   <td style={{ padding: '14px 16px', color: 'var(--text-muted)' }}>{p.category ?? '—'}</td>
                   <td style={{ padding: '14px 16px', fontWeight: 600 }}>{p.priceExclTax.toFixed(2)} €</td>
                   <td style={{ padding: '8px 16px' }}>

@@ -1,4 +1,4 @@
-import { getSession } from './authApi'
+import { authedFetch } from './authApi'
 
 export interface ProfileData {
   id: string
@@ -28,21 +28,16 @@ export interface UpdateProfilePayload {
   confirmPassword?: string
 }
 
-function authHeader(): Record<string, string> {
-  const session = getSession()
-  return session ? { Authorization: `Bearer ${session.token}` } : {}
-}
-
 export async function getProfile(): Promise<ProfileData> {
-  const res = await fetch('/api/me', { headers: authHeader() })
+  const res = await authedFetch('/api/me')
   if (!res.ok) throw new Error('Failed to load profile')
   return res.json()
 }
 
 export async function updateProfile(payload: UpdateProfilePayload): Promise<ProfileData> {
-  const res = await fetch('/api/me', {
+  const res = await authedFetch('/api/me', {
     method: 'PATCH',
-    headers: { 'Content-Type': 'application/json', ...authHeader() },
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload),
   })
   if (res.status === 422) throw Object.assign(new Error('Wrong password'), { code: 'WRONG_PASSWORD' })

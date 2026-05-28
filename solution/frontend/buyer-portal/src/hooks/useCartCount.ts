@@ -19,7 +19,11 @@ export function useCartCount(): number {
   useEffect(() => {
     refresh()
     window.addEventListener('cart-updated', refresh)
-    return () => window.removeEventListener('cart-updated', refresh)
+    window.addEventListener('session-changed', refresh)
+    return () => {
+      window.removeEventListener('cart-updated', refresh)
+      window.removeEventListener('session-changed', refresh)
+    }
   }, [])
 
   return count

@@ -1,9 +1,10 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 
 interface SnackbarProps {
   message: string
   variant?: 'success' | 'error'
   onDismiss?: () => void
+  duration?: number
 }
 
 const variantStyles: Record<string, React.CSSProperties> = {
@@ -11,8 +12,14 @@ const variantStyles: Record<string, React.CSSProperties> = {
   error:   { background: '#7f1d1d', color: '#fef2f2', borderLeft: '4px solid #f87171' },
 }
 
-/** Fixed bottom-center notification bar. */
-export function Snackbar({ message, variant = 'success', onDismiss }: SnackbarProps) {
+/** Fixed bottom-center notification bar. Auto-dismisses after `duration` ms (default 3000). */
+export function Snackbar({ message, variant = 'success', onDismiss, duration = 3000 }: SnackbarProps) {
+  useEffect(() => {
+    if (!onDismiss) return
+    const id = setTimeout(onDismiss, duration)
+    return () => clearTimeout(id)
+  }, [message, onDismiss, duration])
+
   const bar: React.CSSProperties = {
     position: 'fixed',
     bottom: 28,

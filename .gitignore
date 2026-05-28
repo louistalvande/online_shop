@@ -11,5 +11,5 @@ solution/frontend/node_modules/*
 .claude/*
 solution/frontend/e2e/node_modules/*
 solution/frontend/e2e/test-results/*
-solution/backend/uploads/announcements/*
 solution/backend/uploads/products/*
+solution/backend/uploads/announcements/*

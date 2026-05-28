@@ -3,6 +3,7 @@ import {
   API_URL,
   registerAndActivateBuyerViaApi,
   getBuyerToken,
+  injectBuyerSession,
   createCarrierViaApi,
   createActiveVendorViaApi,
   getVendorToken,
@@ -99,5 +100,26 @@ test.describe('US-ORD-05 — Order confirmation (listing and status)', () => {
       headers: { Authorization: `Bearer ${token2}` },
     });
     expect(res.status()).toBe(404);
+  });
+
+  test('UI — orders list page shows the order with a Details link', async ({ page }) => {
+    const freshToken = await getBuyerToken(page, BUYER_EMAIL, BUYER_PASSWORD);
+    await injectBuyerSession(page, BUYER_EMAIL, freshToken);
+
+    await page.goto('/my-orders');
+
+    await expect(page.getByRole('link', { name: 'Voir le détail' })).toBeVisible({ timeout: 10000 });
+  });
+
+  test('UI — clicking Details navigates to the order detail page', async ({ page }) => {
+    const freshToken = await getBuyerToken(page, BUYER_EMAIL, BUYER_PASSWORD);
+    await injectBuyerSession(page, BUYER_EMAIL, freshToken);
+
+    await page.goto('/my-orders');
+
+    await page.getByRole('link', { name: 'Voir le détail' }).click();
+
+    await expect(page).toHaveURL(new RegExp(`/my-orders/${orderId}`));
+    await expect(page.getByText(/Commande ORD-/)).toBeVisible({ timeout: 10000 });
   });
 });

@@ -135,11 +135,11 @@ NOTE: L'administrateur n'a pas accès aux données personnelles des comptes (nom
 | UC_V9, Activités vendeur
 
 | BES-VND-012
-| Le vendeur a besoin d'importer en masse de nouveaux produits dans son catalogue depuis un fichier CSV, afin de gagner du temps lors d'une initialisation ou d'un renouvellement important de l'offre.
+| Le vendeur a besoin d'importer en masse de nouveaux produits dans le catalogue partagé depuis un fichier CSV, afin de gagner du temps lors d'une initialisation ou d'un renouvellement important de l'offre.
 | UC_V1, Activités vendeur
 
 | BES-VND-013
-| Le vendeur a besoin d'exporter l'ensemble de son catalogue produits au format CSV afin de le consulter hors ligne, le partager ou le réimporter ultérieurement.
+| Le vendeur a besoin d'exporter l'ensemble du catalogue produits partagé au format CSV afin de le consulter hors ligne, le partager ou le réimporter ultérieurement.
 | UC_V1, Activités vendeur
 
 | BES-VND-014

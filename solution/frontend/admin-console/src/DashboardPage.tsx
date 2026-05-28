@@ -65,8 +65,8 @@ export default function DashboardPage({ onUnauthorized }: Props) {
       value: String(accounts.filter(a => a.role === 'VENDOR' && a.status === 'ACTIVE').length),
       icon: <PackageIcon size={18} />,
     },
-    { label: t('stats.totalOrders'), value: 'â€”', icon: null },
-    { label: t('stats.platformRevenue'), value: 'â€”', icon: null },
+    { label: t('stats.totalOrders'), value: '', icon: null },
+    { label: t('stats.platformRevenue'), value: '', icon: null },
   ]
 
   const tableHeaders = [

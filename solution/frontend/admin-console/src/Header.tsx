@@ -5,10 +5,11 @@ import type { AdminSession } from './api/authApi'
 interface Props {
   session: AdminSession
   onLogout: () => void
+  onSettings: () => void
   children: React.ReactNode
 }
 
-export default function Header({ session, onLogout, children }: Props) {
+export default function Header({ session, onLogout, onSettings, children }: Props) {
   const { t, i18n } = useTranslation()
 
   return (
@@ -30,6 +31,7 @@ export default function Header({ session, onLogout, children }: Props) {
             email={session.email}
             settingsLabel={t('nav.configuration')}
             logoutLabel={t('nav.logout')}
+            onSettings={onSettings}
             onLogout={onLogout}
           />
         </div>

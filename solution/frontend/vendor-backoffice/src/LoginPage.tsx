@@ -23,7 +23,9 @@ export default function LoginPage({ onLogin }: LoginPageProps) {
       onLogin()
     } catch (err: unknown) {
       const code = (err as { code?: string }).code
-      setError(code === 'INVALID_CREDENTIALS' ? t('login.error.invalid') : t('login.error.generic'))
+      if (code === 'INVALID_CREDENTIALS') setError(t('login.error.invalid'))
+      else if (code === 'UNAUTHORIZED') setError(t('login.error.unauthorized'))
+      else setError(t('login.error.generic'))
     } finally {
       setLoading(false)
     }
@@ -97,8 +99,8 @@ const brandNameStyle: React.CSSProperties = {
 }
 const cardStyle: React.CSSProperties = {
   width: '100%',
-  maxWidth: 400,
-  padding: '36px 32px',
+  maxWidth: 480,
+  padding: '36px 40px',
 }
 const titleStyle: React.CSSProperties = {
   fontFamily: 'var(--font-serif)',
@@ -108,7 +110,7 @@ const titleStyle: React.CSSProperties = {
 }
 const subtitleStyle: React.CSSProperties = {
   fontSize: 14,
-  color: 'var(--text-muted)',
+  color: 'var(--accent)',
   marginBottom: 28,
 }
 const formStyle: React.CSSProperties = {
@@ -135,6 +137,6 @@ const inputStyle: React.CSSProperties = {
 }
 const errorStyle: React.CSSProperties = {
   fontSize: 13,
-  color: 'var(--accent)',
+  color: '#b91c1c',
   margin: 0,
 }
