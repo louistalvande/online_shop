@@ -3,6 +3,7 @@ import './index.css'
 import { getSession, logout } from './api/authApi'
 import { listPendingAlerts } from './api/productApi'
 import { getMaintenanceStatus } from './api/maintenanceApi'
+import { getShopTheme } from './api/shopConfigApi'
 import LoginPage from './LoginPage'
 import Header, { type Page } from './Header'
 import DashboardPage from './DashboardPage'
@@ -16,11 +17,16 @@ export default function App() {
   const [page, setPage] = useState<Page>('dashboard')
   const [alertCount, setAlertCount] = useState(0)
   const [maintenance, setMaintenance] = useState(false)
+  const [logoUrl, setLogoUrl] = useState<string | null>(null)
 
   useEffect(() => {
     getMaintenanceStatus()
       .then(s => setMaintenance(s.active))
       .catch(() => {})
+  }, [])
+
+  useEffect(() => {
+    getShopTheme().then(t => setLogoUrl(t.logoUrl ?? null)).catch(() => {})
   }, [])
 
   useEffect(() => {
@@ -50,6 +56,7 @@ export default function App() {
       onNavigate={setPage}
       currentPage={page}
       alertCount={alertCount}
+      logoUrl={logoUrl}
     >
       {page === 'dashboard' && <DashboardPage />}
       {page === 'catalog' && <CatalogPage />}

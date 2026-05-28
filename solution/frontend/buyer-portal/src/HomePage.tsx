@@ -7,8 +7,12 @@ import { getSession, type BuyerSession } from './api/authApi'
 import LoginModal from './LoginModal'
 import AnnouncementCarousel from './AnnouncementCarousel'
 
+interface Props {
+  bannerUrl?: string | null
+}
+
 /** Hero banner + featured catalog for the buyer portal home page. */
-export default function HomePage() {
+export default function HomePage({ bannerUrl }: Props) {
   const { t } = useTranslation()
   const [session, setSession] = useState<BuyerSession | null>(getSession)
   const [products, setProducts] = useState<BuyerProduct[]>([])
@@ -45,6 +49,12 @@ export default function HomePage() {
           onClose={() => setShowLogin(false)}
           onLogin={() => { setSession(getSession()); setShowLogin(false) }}
         />
+      )}
+
+      {bannerUrl && (
+        <div className="home-banner">
+          <img src={bannerUrl} alt="" className="home-banner-img" />
+        </div>
       )}
 
       <AnnouncementCarousel />

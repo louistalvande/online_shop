@@ -191,6 +191,19 @@
 .register-login-link { color: var(--text); font-weight: 600; }
 
 /* ─── HomePage ─── */
+.home-banner {
+  width: 100%;
+  overflow: hidden;
+  line-height: 0;
+}
+
+.home-banner-img {
+  width: 100%;
+  max-height: 480px;
+  object-fit: cover;
+  display: block;
+}
+
 .home-hero {
   background: var(--bg);
   text-align: center;

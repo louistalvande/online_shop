@@ -13,7 +13,9 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 public class SettingsServiceImpl implements SettingsService {
 
-    static final String KEY_MAINTENANCE = "maintenance_mode";
+    static final String KEY_MAINTENANCE  = "maintenance_mode";
+    static final String KEY_ACCENT_COLOR = "shop_accent_color";
+    static final String DEFAULT_ACCENT   = "#4e8b82";
 
     private final PlatformSettingRepository settingRepository;
 
@@ -50,5 +52,23 @@ public class SettingsServiceImpl implements SettingsService {
         return settingRepository.findById(KEY_MAINTENANCE)
                 .map(s -> Boolean.parseBoolean(s.getValue()))
                 .orElse(false);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    @Transactional(readOnly = true)
+    public String getAccentColor() {
+        return settingRepository.findById(KEY_ACCENT_COLOR)
+                .map(PlatformSetting::getValue)
+                .orElse(DEFAULT_ACCENT);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void setAccentColor(String accentColor) {
+        PlatformSetting setting = settingRepository.findById(KEY_ACCENT_COLOR)
+                .orElseGet(() -> { PlatformSetting s = new PlatformSetting(); s.setKey(KEY_ACCENT_COLOR); return s; });
+        setting.setValue(accentColor);
+        settingRepository.save(setting);
     }
 }

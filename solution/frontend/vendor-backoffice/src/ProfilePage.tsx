@@ -2,7 +2,8 @@ import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { AppShell, Button, LangToggle } from '@workspace/theme'
 import { getSession, logout } from './api/authApi'
-import { getProfile, updateProfile, type ProfileData } from './api/profileApi'
+import { getProfile, updateProfile, uploadVendorLogo, deleteLogo, uploadVendorBanner, deleteBanner, type ProfileData } from './api/profileApi'
+import { getShopTheme, updateShopTheme } from './api/shopConfigApi'
 
 type Tab = 'profile' | 'security'
 
@@ -30,6 +31,21 @@ export default function ProfilePage() {
   const [saving, setSaving] = useState(false)
   const [successMsg, setSuccessMsg] = useState('')
   const [errorMsg, setErrorMsg] = useState('')
+  const [logoUrl, setLogoUrl] = useState<string | null>(null)
+  const [uploadingLogo, setUploadingLogo] = useState(false)
+  const [bannerUrl, setBannerUrl] = useState<string | null>(null)
+  const [uploadingBanner, setUploadingBanner] = useState(false)
+  const [accentColor, setAccentColor] = useState('#4e8b82')
+
+  useEffect(() => {
+    getShopTheme()
+      .then(t => {
+        setLogoUrl(t.logoUrl ?? null)
+        setBannerUrl(t.bannerUrl ?? null)
+        setAccentColor(t.accentColor ?? '#4e8b82')
+      })
+      .catch(() => {})
+  }, [])
 
   useEffect(() => {
     if (!session) { window.location.href = import.meta.env.BASE_URL; return }
@@ -50,12 +66,69 @@ export default function ProfilePage() {
 
   function clearMessages() { setSuccessMsg(''); setErrorMsg('') }
 
+  async function handleLogoUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setUploadingLogo(true)
+    clearMessages()
+    try {
+      const url = await uploadVendorLogo(file)
+      setLogoUrl(url)
+      setSuccessMsg(t('profile.logo.success'))
+    } catch {
+      setErrorMsg(t('profile.logo.error'))
+    } finally {
+      setUploadingLogo(false)
+      e.target.value = ''
+    }
+  }
+
+  async function handleRemoveLogo() {
+    clearMessages()
+    try {
+      await deleteLogo()
+      setLogoUrl(null)
+      setSuccessMsg(t('profile.logo.removed'))
+    } catch {
+      setErrorMsg(t('profile.error.generic'))
+    }
+  }
+
+  async function handleBannerUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setUploadingBanner(true)
+    clearMessages()
+    try {
+      const url = await uploadVendorBanner(file)
+      setBannerUrl(url)
+      setSuccessMsg(t('profile.banner.success'))
+    } catch {
+      setErrorMsg(t('profile.banner.error'))
+    } finally {
+      setUploadingBanner(false)
+      e.target.value = ''
+    }
+  }
+
+  async function handleRemoveBanner() {
+    clearMessages()
+    try {
+      await deleteBanner()
+      setBannerUrl(null)
+      setSuccessMsg(t('profile.banner.removed'))
+    } catch {
+      setErrorMsg(t('profile.error.generic'))
+    }
+  }
+
   async function handleSaveProfile(e: React.FormEvent) {
     e.preventDefault()
     clearMessages()
     setSaving(true)
     try {
       const updated = await updateProfile({ firstName, lastName, phone: phone || undefined, addressLine: addressLine || undefined, city: city || undefined, postalCode: postalCode || undefined, countryCode: countryCode || undefined, language })
+      await updateShopTheme({ accentColor })
       setProfile(updated)
       setSuccessMsg(t('profile.success'))
     } catch {
@@ -174,6 +247,79 @@ export default function ProfilePage() {
                 <option value="EN">{t('profile.language.en')}</option>
               </select>
             </div>
+
+            <hr style={{ border: 'none', borderTop: '1px solid var(--border)', margin: '4px 0' }} />
+            <h2 style={{ fontSize: 16, fontWeight: 600, margin: 0 }}>{t('profile.logo.title')}</h2>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+              {logoUrl && (
+                <img src={logoUrl} alt={t('profile.logo.preview')} style={{ height: 64, width: 'auto', objectFit: 'contain', borderRadius: 6, border: '1px solid var(--border)' }} />
+              )}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                <label style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+                  <Button type="button" variant="secondary" size="sm" disabled={uploadingLogo} onClick={() => document.getElementById('logo-upload')?.click()}>
+                    {uploadingLogo ? t('profile.logo.uploading') : logoUrl ? t('profile.logo.change') : t('profile.logo.add')}
+                  </Button>
+                  <input id="logo-upload" type="file" accept="image/jpeg,image/png,image/webp" style={{ display: 'none' }} onChange={handleLogoUpload} />
+                </label>
+                {logoUrl && (
+                  <Button type="button" variant="ghost" size="sm" onClick={handleRemoveLogo}>
+                    {t('profile.logo.remove')}
+                  </Button>
+                )}
+              </div>
+            </div>
+
+            <hr style={{ border: 'none', borderTop: '1px solid var(--border)', margin: '4px 0' }} />
+            <h2 style={{ fontSize: 16, fontWeight: 600, margin: 0 }}>{t('profile.banner.title')}</h2>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+              {bannerUrl && (
+                <img src={bannerUrl} alt={t('profile.banner.preview')} style={{ height: 64, width: 'auto', maxWidth: 200, objectFit: 'cover', borderRadius: 6, border: '1px solid var(--border)' }} />
+              )}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                <label style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+                  <Button type="button" variant="secondary" size="sm" disabled={uploadingBanner} onClick={() => document.getElementById('banner-upload')?.click()}>
+                    {uploadingBanner ? t('profile.banner.uploading') : bannerUrl ? t('profile.banner.change') : t('profile.banner.add')}
+                  </Button>
+                  <input id="banner-upload" type="file" accept="image/jpeg,image/png,image/webp" style={{ display: 'none' }} onChange={handleBannerUpload} />
+                </label>
+                {bannerUrl && (
+                  <Button type="button" variant="ghost" size="sm" onClick={handleRemoveBanner}>
+                    {t('profile.banner.remove')}
+                  </Button>
+                )}
+              </div>
+            </div>
+
+            <hr style={{ border: 'none', borderTop: '1px solid var(--border)', margin: '4px 0' }} />
+            <h2 style={{ fontSize: 16, fontWeight: 600, margin: 0 }}>{t('profile.theme.title')}</h2>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <input
+                  id="accentColorPicker"
+                  type="color"
+                  value={accentColor}
+                  onChange={e => setAccentColor(e.target.value)}
+                  style={{ width: 44, height: 36, padding: 2, border: '1px solid var(--border)', borderRadius: 6, cursor: 'pointer', background: 'none' }}
+                />
+                <div style={fieldStyle}>
+                  <label htmlFor="accentColorHex" style={labelStyle}>{t('profile.theme.accentColor')}</label>
+                  <input
+                    id="accentColorHex"
+                    style={{ ...inputStyle, width: 110 }}
+                    value={accentColor}
+                    onChange={e => { if (/^#[0-9a-fA-F]{0,6}$/.test(e.target.value)) setAccentColor(e.target.value) }}
+                    placeholder="#4e8b82"
+                    maxLength={7}
+                  />
+                </div>
+              </div>
+              {accentColor !== '#4e8b82' && (
+                <Button type="button" variant="ghost" size="sm" onClick={() => setAccentColor('#4e8b82')}>
+                  {t('profile.theme.reset')}
+                </Button>
+              )}
+            </div>
+            <p style={{ fontSize: 13, color: 'var(--text-muted)', margin: 0 }}>{t('profile.theme.hint')}</p>
 
             <hr style={{ border: 'none', borderTop: '1px solid var(--border)', margin: '4px 0' }} />
             <h2 style={{ fontSize: 16, fontWeight: 600, margin: 0 }}>{t('profile.address.title')}</h2>

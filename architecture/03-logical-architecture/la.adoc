@@ -52,8 +52,8 @@ Le système est structuré en cinq couches logiques : *Présentation*, *Applicat
 
 | *Service Compte*
 | Application
-| Inscription, activation par token email, authentification, gestion du profil, gestion du carnet d'adresses de livraison, gestion des rôles
-| FS-B01, FS-B02, FS-B10, FS-B11, FS-A01, FS-A02
+| Inscription, activation par token email, authentification, gestion du profil, gestion du carnet d'adresses de livraison, gestion des rôles, gestion des images de l'identité visuelle (logo et bannière hero — fichiers stockés sur le système de fichiers, URL publique dérivée), exposition d'une API publique de thème (`logoUrl`, `bannerUrl`, `accentColor`)
+| FS-B01, FS-B02, FS-B10, FS-B11, FS-A01, FS-A02, FS-V16
 
 | *Service Catalogue*
 | Application
@@ -193,6 +193,7 @@ UI_Vendor --> SvcOrder : IFL-04
 UI_Vendor --> SvcShipping : IFL-05
 UI_Vendor --> SvcReport : IFL-07
 UI_Vendor --> SvcAnnounce : IFL-15
+UI_Vendor --> SvcAccount : IFL-17
 
 UI_Buyer --> SvcAnnounce : IFL-16
 
@@ -324,6 +325,12 @@ Les interfaces logiques définissent les contrats d'échange entre composants, i
 | Service Annonce
 | Lire la liste des annonces actives (lecture seule) pour affichage dans le carrousel de la page d'accueil
 | FS-V11
+
+| *IFL-17*
+| Back-office Vendeur
+| Service Compte
+| Gérer les images de l'identité visuelle : téléverser / supprimer le logo (`POST/DELETE /api/me/logo`), téléverser / supprimer la bannière hero (`POST/DELETE /api/me/banner`), mettre à jour la couleur d'accentuation (`PATCH /api/vendor/shop/theme`) ; l'API publique de thème (`GET /api/public/theme`) retourne `logoUrl`, `bannerUrl` et `accentColor` aux deux portails
+| FS-V16
 |===
 
 == Diagramme de séquence logique — Inscription et activation de compte

@@ -129,7 +129,7 @@ NOTE: Les choix technologiques retenus ci-dessous sont des recommandations archi
 
 | Service Compte
 | Module Spring Boot (Java)
-| Authentification JWT — Spring Security + JJWT (CS-08 / CPA-08), hachage BCrypt, gestion des tokens d'activation (CS-07) ; CRUD carnet d'adresses de livraison — entité `delivery_address` (FK vers `account`, suppression logique) ; endpoints REST `/api/profile/addresses` (FS-B11) ; gestion du consentement marketing — colonnes `marketing_consent BOOLEAN DEFAULT FALSE` et `marketing_consent_date TIMESTAMPTZ` sur la table `account` ; endpoint `PUT /api/profile/marketing-consent` (FS-B13)
+| Authentification JWT — Spring Security + JJWT (CS-08 / CPA-08), hachage BCrypt, gestion des tokens d'activation (CS-07) ; CRUD carnet d'adresses de livraison — entité `delivery_address` (FK vers `account`, suppression logique) ; endpoints REST `/api/profile/addresses` (FS-B11) ; gestion du consentement marketing — colonnes `marketing_consent BOOLEAN DEFAULT FALSE` et `marketing_consent_date TIMESTAMPTZ` sur la table `account` ; endpoint `PUT /api/profile/marketing-consent` (FS-B13) ; identité visuelle (FS-V16) — logo (`POST/DELETE /api/me/logo`, fichier fixe `vendor-logo.png` dans `uploads/logos/`), bannière hero (`POST/DELETE /api/me/banner`, fichier fixe `vendor-banner.{ext}` dans `uploads/banners/`), couleur d'accentuation stockée dans `platform_settings` clé `shop_accent_color` (`PATCH /api/vendor/shop/theme`) ; API publique de thème `GET /api/public/theme` retourne `{ logoUrl, bannerUrl, accentColor }`
 
 | Service Catalogue
 | Module Spring Boot (Java)
@@ -529,17 +529,14 @@ include::diagrams/ihm/ihm-pa-activation.puml[]
 
 ==== Page d'accueil
 
-La page d'accueil est le point d'entrée de la boutique pour tout internaute non encore connecté ou souhaitant parcourir le catalogue. Elle affiche en haut un *carrousel d'annonces défilantes* (FS-V11), suivi d'un accès direct au catalogue.
+La page d'accueil est le point d'entrée de la boutique. Elle est structurée en quatre zones verticales, dans cet ordre :
 
-*Carrousel d'annonces* :
+. *Header* — barre de navigation avec logo configurable (FS-V16), liens de navigation, sélecteur de langue et accès panier / compte.
+. *Bannière hero* — image pleine largeur configurable par le vendeur (FS-V16). Si aucune bannière n'est définie, cette zone est masquée.
+. *Carrousel d'annonces* (FS-V11) — une annonce visible à la fois, défilement automatique contrôlable manuellement. Chaque annonce peut contenir un texte, une image ou les deux, avec un lien de redirection optionnel. Masqué si aucune annonce n'est active.
+. *Extraits catalogue* — grille de produits mis en avant avec accès au catalogue complet.
 
-* Une seule annonce est visible à la fois ; le défilement est automatique (intervalle configurable) et peut être contrôlé manuellement via les flèches `<` / `>`.
-* Chaque annonce peut contenir un texte, une image ou les deux, selon la configuration du vendeur.
-* Si un lien est renseigné, l'ensemble du bloc annonce est cliquable et redirige l'internaute vers ce lien.
-* Les indicateurs de position (● ○ ○) reflètent le nombre d'annonces et la position courante.
-* Si aucune annonce n'est configurée, le carrousel est masqué et le catalogue s'affiche directement.
-
-.Maquette filaire : Portail Acheteur — Page d'accueil avec carrousel
+.Maquette filaire : Portail Acheteur — Page d'accueil
 [plantuml, ihm-pa-accueil, svg]
 ----
 include::diagrams/ihm/ihm-pa-accueil.puml[]
@@ -797,6 +794,24 @@ include::diagrams/ihm/ihm-bov-annonces.puml[]
 [plantuml, ihm-bov-annonce-form, svg]
 ----
 include::diagrams/ihm/ihm-bov-annonce-form.puml[]
+----
+
+==== Identité visuelle
+
+Personnalisation de l'identité visuelle de la boutique (FS-V16). La section « Identité visuelle » est accessible depuis l'onglet Profil du back-office vendeur. Elle regroupe trois sous-sections : logo, bannière hero et couleur d'accentuation.
+
+*Logo* — Image affichée dans l'en-tête des deux portails. Upload : `POST /api/me/logo` (multipart/form-data, champ `file`). Suppression : `DELETE /api/me/logo`. Le fichier est stocké sous le nom fixe `vendor-logo.png` dans `uploads/logos/` (configurable via `app.vendor-logo-upload-dir`) ; l'URL publique est dérivée du chemin et ne change jamais lors d'un remplacement. La suppression du fichier restaure l'icône par défaut dans les deux portails.
+
+*Bannière hero* — Image affichée en pleine largeur en section supérieure de la page d'accueil du portail acheteur, au-dessus du titre hero. Upload : `POST /api/me/banner` (multipart/form-data, champ `file`). Suppression : `DELETE /api/me/banner`. Le fichier est stocké sous le nom fixe `vendor-banner.{ext}` dans `uploads/banners/` (configurable via `app.vendor-banner-upload-dir`). La suppression masque la bannière et laisse s'afficher uniquement le titre et le sous-titre.
+
+*Couleur d'accentuation* — Couleur CSS (`--accent`) appliquée globalement à toute l'interface du portail acheteur. Mise à jour : `PATCH /api/vendor/shop/theme` avec `{ "accentColor": "#rrggbb" }`. La valeur est stockée dans `platform_settings` à la clé `shop_accent_color` (valeur par défaut `#4e8b82`). La couleur dérivée (`--accent-hover`) est calculée côté client.
+
+L'API publique `GET /api/public/theme` retourne les trois champs `{ logoUrl, bannerUrl, accentColor }` aux deux portails au démarrage. Les images du carrousel restent gérées via la section Annonces défilantes (UCSA-15 / FS-V11).
+
+.Maquette filaire : Back-office Vendeur — Identité visuelle (logo, bannière, couleur)
+[plantuml, ihm-bov-logo, svg]
+----
+include::diagrams/ihm/ihm-bov-logo.puml[]
 ----
 
 ==== Rapports de ventes

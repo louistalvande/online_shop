@@ -200,7 +200,7 @@ Les capacités système raffinent les capacités opérationnelles (CAP-xxx) de l
 | CAPS-007
 | Fournir le reporting et la gestion de la vitrine
 | CAP-007
-| FS-V07, FS-V11
+| FS-V07, FS-V11, FS-V16
 
 | CAPS-008
 | Assurer la communication transactionnelle
@@ -254,7 +254,7 @@ wbsDiagram {
 ***_ FS-B09, FS-V08 <<funcs>>
 
 ** CAPS-007 — Reporting & vitrine <<caps>>
-***_ FS-V07, FS-V11 <<funcs>>
+***_ FS-V07, FS-V11, FS-V16 <<funcs>>
 
 ** CAPS-008 — Communication <<caps>>
 ***_ IFS-06 (FS-B01, V04, V05, V08...) <<funcs>>
@@ -296,6 +296,7 @@ Les fonctions système (FS) sont dérivées des cas d'utilisation opérationnels
 | FS-V09 | Confirmer manuellement la réception d'un virement bancaire et déclencher la prise en charge de la commande correspondante | —
 | FS-V10 | Confirmer l'émission d'un virement inverse de remboursement vers l'acheteur à la suite d'une annulation de commande réglée par virement bancaire | UC_V7
 | FS-V11 | Créer, modifier, réordonner et supprimer les annonces défilantes affichées sur la page d'accueil ; chaque annonce comporte un contenu texte, une image ou les deux, et un lien de redirection optionnel au clic | UC_V9
+| FS-V16 | Configurer l'identité visuelle de la boutique : (1) téléverser et gérer le logo affiché dans l'en-tête des deux portails, (2) téléverser et gérer une bannière hero affichée en section supérieure de la page d'accueil du portail acheteur, (3) définir la couleur d'accentuation de l'interface ; la suppression d'une image restaure l'état par défaut ; toute modification est répercutée immédiatement sur le portail acheteur | UC_V11
 | FS-V12 | Importer en masse de nouveaux produits depuis un fichier CSV : validation du format, création des fiches produits, rapport d'erreurs ligne par ligne | UC_V1
 | FS-V13 | Exporter le catalogue produits au format CSV (toutes les fiches actives et archivées) | UC_V1
 | FS-V15 | Exporter la liste des acheteurs ayant donné leur consentement marketing (`consentement_marketing = true`) au format CSV (email, prénom, nom), destiné à l'import dans un outil de mailing externe (CS-22 / RGPD-CONS-003) | UC_B_MKTG
@@ -410,6 +411,7 @@ rectangle "Système — Application e-commerce" {
     usecase (UCSA-11\nConsulter les rapports\nde ventes) as UC11
     usecase (UCSA-13\nConfirmer la réception\nd'un virement bancaire) as UC13
     usecase (UCSA-15\nGérer les annonces\ndéfilantes) as UC15
+    usecase (UCSA-16\nPersonnaliser\nl'identité visuelle) as UC16
   }
 
   package "Expérience d'achat" {
@@ -1016,6 +1018,47 @@ a|
 
 | *Exigences liées*
 | FS-V11
+|===
+
+=== UCSA-16 : Personnaliser l'identité visuelle de la boutique
+
+[cols="1,3", options="header"]
+|===
+| Champ | Description
+
+| *Identifiant*
+| UCSA-16
+
+| *Acteurs*
+| Vendeur (principal)
+
+| *Préconditions*
+| Vendeur authentifié
+
+| *Déclencheur*
+| Le vendeur souhaite modifier un élément de l'identité visuelle de la boutique (logo, bannière hero, couleur)
+
+| *Scénario nominal*
+a|
+. Le vendeur accède à la section « Profil » du back-office, onglet « Identité visuelle ».
+. *Logo* — Il téléverse une image (JPEG, PNG ou WebP) ; le système valide le fichier, le stocke et affiche le logo dans l'en-tête des deux portails (FS-V16).
+. *Bannière hero* — Il téléverse une image (JPEG, PNG ou WebP) ; le système valide le fichier, le stocke et affiche la bannière en section supérieure de la page d'accueil du portail acheteur (FS-V16).
+. *Couleur d'accentuation* — Il sélectionne une couleur via le sélecteur ou saisit un code hexadécimal ; le système persiste la valeur et l'applique immédiatement à l'interface (FS-V16).
+. Toute modification est répercutée immédiatement sur le portail acheteur sans rechargement.
+. Pour les images du carrousel, le vendeur accède à la section « Annonces défilantes » et suit le scénario UCSA-15 (FS-V11).
+
+| *Scénarios alternatifs*
+a|
+* *2a / 3a.* Le format de fichier n'est pas supporté : le système affiche un message d'erreur et conserve l'image courante.
+* *2b.* Le vendeur supprime le logo : l'icône par défaut est restaurée dans les deux portails.
+* *3b.* Le vendeur supprime la bannière hero : la section hero revient à son état par défaut (titre et sous-titre uniquement).
+* *4a.* Le vendeur réinitialise la couleur : la couleur par défaut de la plateforme est restaurée.
+
+| *Postconditions*
+| Les éléments visuels modifiés (logo, bannière, couleur) sont visibles immédiatement sur le portail acheteur et le back-office vendeur.
+
+| *Exigences liées*
+| FS-V16
 |===
 
 == Diagramme d'activité système — Flux de commande complet

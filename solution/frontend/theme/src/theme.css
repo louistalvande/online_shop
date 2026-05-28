@@ -76,6 +76,7 @@ button { cursor: pointer; font-family: inherit; }
 }
 .shell-brand-name { font-weight: 700; font-size: 16px; letter-spacing: -0.01em; }
 .shell-brand-sub { font-size: 11px; color: rgba(255, 255, 255, 0.65); margin-top: 1px; }
+.shell-brand-logo { height: 36px; width: auto; object-fit: contain; border-radius: 4px; }
 .shell-nav { display: flex; align-items: center; gap: 24px; }
 .shell-nav-link { font-size: 14px; font-weight: 500; color: #fff; }
 .shell-nav-badge {

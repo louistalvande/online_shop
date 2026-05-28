@@ -105,4 +105,5 @@ public interface AccountService {
      * @throws WrongCurrentPasswordException if the current password does not match
      */
     ProfileResponse updateProfile(String email, UpdateProfileRequest request);
+
 }

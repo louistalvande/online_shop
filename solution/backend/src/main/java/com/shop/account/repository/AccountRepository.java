@@ -35,4 +35,5 @@ public interface AccountRepository extends JpaRepository<Account, UUID> {
      * @return all accounts with a different status
      */
     List<Account> findByStatusNot(AccountStatus status);
+
 }

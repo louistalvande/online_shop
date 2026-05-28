@@ -3,18 +3,22 @@ import { GalleryIcon } from './icons'
 
 interface AppShellProps {
   appName: string
+  logoUrl?: string
   navLinks?: { label: string; href: string; onClick?: () => void; badge?: number }[]
   actions?: ReactNode
   children: ReactNode
 }
 
-export function AppShell({ appName, navLinks = [], actions, children }: AppShellProps) {
+export function AppShell({ appName, logoUrl, navLinks = [], actions, children }: AppShellProps) {
   return (
     <>
       <header className="shell-header">
         <div className="shell-inner">
           <div className="shell-brand">
-            <GalleryIcon size={32} />
+            {logoUrl
+              ? <img src={logoUrl} alt={appName} className="shell-brand-logo" />
+              : <GalleryIcon size={32} />
+            }
             <div>
               <div className="shell-brand-name">Catalogue de dessins</div>
               <div className="shell-brand-sub">{appName}</div>

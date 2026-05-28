@@ -1,0 +1,39 @@
+@startsalt
+' Composant PA — Back-office Vendeur
+' Illustre la fonction allouée : FS-V16 (personnalisation identité visuelle — logo, bannière hero, couleur)
+' Interface : IFL-17 (Back-office Vendeur → Service Compte)
+title Back-office Vendeur — Identité visuelle (FS-V16)
+
+{+
+  {/ Informations | Sécurité | <b>Identité visuelle | Adresse }
+  ==
+  Logo de la boutique
+  --
+  Aperçu actuel :
+  {
+    [      logo.png (64×64)      ]
+  }
+  [ Choisir un fichier… ]   Formats : JPEG · PNG · WebP
+  [  Supprimer le logo  ]
+  <i>Affiché dans l'en-tête des deux portails.
+  ==
+  Bannière hero (page d'accueil)
+  --
+  Aperçu actuel :
+  {
+    [      banner.png (bannière pleine largeur)      ]
+  }
+  [ Choisir un fichier… ]   Formats : JPEG · PNG · WebP
+  [  Supprimer la bannière  ]
+  <i>Affichée en section supérieure de la page d'accueil du portail acheteur.
+  ==
+  Couleur d'accentuation
+  --
+  Couleur : | [#4e8b82  ] "Hex : #4e8b82"
+  [  Réinitialiser  ]
+  <i>Appliquée à l'ensemble de l'interface du portail acheteur.
+  ==
+  [ Enregistrer ]   [ Annuler ]
+}
+
+@endsalt

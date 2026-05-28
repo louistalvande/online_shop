@@ -145,6 +145,10 @@ NOTE: L'administrateur n'a pas accès aux données personnelles des comptes (nom
 | BES-VND-014
 | Le vendeur a besoin de mettre à jour les niveaux de stock de plusieurs produits simultanément depuis une vue liste, sans avoir à ouvrir chaque fiche produit individuellement.
 | UC_V2, Activités vendeur
+
+| BES-VND-015
+| Le vendeur a besoin de personnaliser l'identité visuelle de sa boutique en configurant l'ensemble de ses visuels. Chaque visuel peut être téléversé, remplacé ou supprimé ; la suppression restaure l'état par défaut. Toute modification est répercutée immédiatement sur le portail acheteur, sans interruption de service. Les visuels des annonces défilantes du carrousel sont gérés via `BES-VND-011`.
+| UC_V11, Activités vendeur
 |===
 
 ---
@@ -269,6 +273,7 @@ Le tableau ci-dessous relie chaque besoin opérationnel aux activités et cas d'
 | BES-VND-012 | Vendeur | UC_V1 — Import CSV catalogue (nouveaux produits)
 | BES-VND-013 | Vendeur | UC_V1 — Export CSV catalogue
 | BES-VND-014 | Vendeur | UC_V2 — Mise à jour en masse des stocks
+| BES-VND-015 | Vendeur | UC_V11 — Personnaliser l'identité visuelle
 | BES-ACH-001 | Acheteur | UC_B0 — S'inscrire
 | BES-ACH-002 | Acheteur | UC_B0B — Activer son compte via email ; COp-04
 | BES-ACH-003 | Acheteur | UC_B_AUTH — S'authentifier

@@ -8,15 +8,17 @@ interface Props {
   onNavigate: (page: Page) => void
   currentPage: Page
   alertCount: number
+  logoUrl?: string | null
   children: React.ReactNode
 }
 
-export default function Header({ onLogout, onNavigate, currentPage, alertCount, children }: Props) {
+export default function Header({ onLogout, onNavigate, currentPage, alertCount, logoUrl, children }: Props) {
   const { t, i18n } = useTranslation()
 
   return (
     <AppShell
       appName={t('app.name')}
+      logoUrl={logoUrl ?? undefined}
       navLinks={[
         { label: t('nav.dashboard'), href: '#', onClick: () => onNavigate('dashboard') },
         {
