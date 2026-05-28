@@ -190,6 +190,89 @@
 
 .register-login-link { color: var(--text); font-weight: 600; }
 
+/* ─── AnnouncementCarousel ─── */
+.announcement-carousel {
+  width: 100%;
+  overflow: hidden;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+}
+
+.carousel-slide {
+  width: 100%;
+}
+
+.carousel-slide--clickable {
+  cursor: pointer;
+}
+
+.carousel-image-wrapper {
+  width: 100%;
+  overflow: hidden;
+}
+
+.carousel-image--landscape .carousel-image {
+  width: 100%;
+  height: 420px;
+  object-fit: cover;
+  display: block;
+}
+
+.carousel-image--portrait {
+  display: flex;
+  justify-content: center;
+}
+
+.carousel-image--portrait .carousel-image {
+  max-width: 480px;
+  width: 100%;
+  height: 420px;
+  object-fit: cover;
+  display: block;
+}
+
+.carousel-text {
+  padding: 20px 32px;
+  text-align: center;
+  font-size: 16px;
+  color: var(--text-muted);
+}
+
+.carousel-controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 12px 0;
+}
+
+.carousel-btn {
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  font-size: 20px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text);
+}
+
+.carousel-dots { display: flex; gap: 6px; }
+
+.carousel-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  border: none;
+  background: var(--border);
+  padding: 0;
+}
+
+.carousel-dot--active { background: var(--accent); }
+
 /* ─── HomePage ─── */
 .home-hero {
   background: var(--bg);

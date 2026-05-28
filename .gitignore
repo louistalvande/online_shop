@@ -12,3 +12,4 @@ solution/frontend/node_modules/*
 solution/frontend/e2e/node_modules/*
 solution/frontend/e2e/test-results/*
 solution/backend/uploads/products/*
+solution/backend/uploads/announcements/*
