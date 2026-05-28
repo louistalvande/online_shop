@@ -31,6 +31,7 @@ export default function CatalogPage() {
 
   const [pendingSearch, setPendingSearch] = useState('')
 
+  const [quantities, setQuantities] = useState<Record<string, number>>({})
   const [addingId, setAddingId] = useState<string | null>(null)
   const [cartFeedback, setCartFeedback] = useState<{ id: string; ok: boolean } | null>(null)
   const [showLogin, setShowLogin] = useState(false)
@@ -91,11 +92,16 @@ export default function CatalogPage() {
     setPage(0)
   }
 
+  function getQty(id: string) { return quantities[id] ?? 1 }
+  function setQty(id: string, val: number) {
+    setQuantities(prev => ({ ...prev, [id]: Math.max(1, val) }))
+  }
+
   async function doAddToCart(productId: string) {
     setAddingId(productId)
     setCartFeedback(null)
     try {
-      await addToCart(productId, 1)
+      await addToCart(productId, getQty(productId))
       window.dispatchEvent(new Event('cart-updated'))
       setCartFeedback({ id: productId, ok: true })
       setSnackbar({ message: t('cart.added'), variant: 'success' })
@@ -152,7 +158,7 @@ export default function CatalogPage() {
               {t('nav.login')}
             </Button>
           )}
-          <Button variant="ghost" size="sm" aria-label={t('nav.cart')} onClick={() => { window.location.href = '/cart' }}>
+          <Button variant="ghost" size="sm" className="cart-icon-btn" aria-label={t('nav.cart')} onClick={() => { window.location.href = '/cart' }}>
             <span className="cart-btn-wrapper">
               <CartIcon size={22} />
               {cartCount > 0 && <span className="cart-badge">{cartCount > 99 ? '99+' : cartCount}</span>}
@@ -272,18 +278,26 @@ export default function CatalogPage() {
                               {t('catalog.outOfStock')}
                             </Button>
                           ) : (
-                            <Button
-                              variant="secondary"
-                              size="sm"
-                              disabled={addingId === p.id}
-                              onClick={() => handleAddToCart(p.id)}
-                            >
-                              {cartFeedback?.id === p.id
-                                ? t(cartFeedback.ok ? 'cart.added' : 'cart.error.add')
-                                : addingId === p.id
-                                  ? '…'
-                                  : t('product.addToCart')}
-                            </Button>
+                            <div className="add-to-cart-compact">
+                              <div className="qty-stepper qty-stepper--sm">
+                                <button className="qty-btn qty-btn--sm" onClick={() => setQty(p.id, getQty(p.id) - 1)} aria-label="-">−</button>
+                                <span className="qty-value qty-value--sm">{getQty(p.id)}</span>
+                                <button className="qty-btn qty-btn--sm" onClick={() => setQty(p.id, getQty(p.id) + 1)} aria-label="+">+</button>
+                              </div>
+                              <Button
+                                variant="secondary"
+                                size="sm"
+                                disabled={addingId === p.id}
+                                onClick={() => handleAddToCart(p.id)}
+                              >
+                                <CartIcon size={13} />
+                                {cartFeedback?.id === p.id
+                                  ? t(cartFeedback.ok ? 'cart.added' : 'cart.error.add')
+                                  : addingId === p.id
+                                    ? '…'
+                                    : t('product.addToCart')}
+                              </Button>
+                            </div>
                           )}
                         </div>
                       </div>

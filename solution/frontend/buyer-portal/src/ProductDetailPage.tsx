@@ -27,6 +27,7 @@ export default function ProductDetailPage({ productId }: Props) {
   const [pendingAdd, setPendingAdd] = useState(false)
   const [snackbar, setSnackbar] = useState<{ message: string; variant: 'success' | 'error' } | null>(null)
   const [currentPhoto, setCurrentPhoto] = useState(0)
+  const [quantity, setQuantity] = useState(1)
   const cartCount = useCartCount()
 
   useEffect(() => {
@@ -48,7 +49,7 @@ export default function ProductDetailPage({ productId }: Props) {
     setAdding(true)
     setCartFeedback(null)
     try {
-      await addToCart(productId, 1)
+      await addToCart(productId, quantity)
       window.dispatchEvent(new Event('cart-updated'))
       setCartFeedback(true)
       setSnackbar({ message: t('cart.added'), variant: 'success' })
@@ -105,7 +106,7 @@ export default function ProductDetailPage({ productId }: Props) {
                 {t('nav.login')}
               </Button>
             )}
-            <Button variant="ghost" size="sm" aria-label={t('nav.cart')} onClick={() => { window.location.href = '/cart' }}>
+            <Button variant="ghost" size="sm" className="cart-icon-btn" aria-label={t('nav.cart')} onClick={() => { window.location.href = '/cart' }}>
               <span className="cart-btn-wrapper">
                 <CartIcon size={22} />
                 {cartCount > 0 && <span className="cart-badge">{cartCount > 99 ? '99+' : cartCount}</span>}
@@ -175,13 +176,21 @@ export default function ProductDetailPage({ productId }: Props) {
                     {t('catalog.outOfStock')}
                   </Button>
                 ) : (
-                  <Button variant="primary" disabled={adding} onClick={handleAddToCart}>
-                    {cartFeedback === true
-                      ? t('cart.added')
-                      : cartFeedback === false
-                        ? t('cart.error.add')
-                        : adding ? '…' : t('product.addToCart')}
-                  </Button>
+                  <div className="add-to-cart-row">
+                    <div className="qty-stepper">
+                      <button className="qty-btn" onClick={() => setQuantity(q => Math.max(1, q - 1))} aria-label="-">−</button>
+                      <span className="qty-value">{quantity}</span>
+                      <button className="qty-btn" onClick={() => setQuantity(q => q + 1)} aria-label="+">+</button>
+                    </div>
+                    <Button variant="primary" disabled={adding} onClick={handleAddToCart}>
+                      <CartIcon size={16} />
+                      {cartFeedback === true
+                        ? t('cart.added')
+                        : cartFeedback === false
+                          ? t('cart.error.add')
+                          : adding ? '…' : t('product.addToCart')}
+                    </Button>
+                  </div>
                 )}
 
                 {product.description && (
