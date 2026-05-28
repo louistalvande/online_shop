@@ -1,6 +1,7 @@
 package com.shop.account.repository;
 
 import com.shop.account.entity.Account;
+import com.shop.account.entity.AccountRole;
 import com.shop.account.entity.AccountStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 
@@ -35,4 +36,13 @@ public interface AccountRepository extends JpaRepository<Account, UUID> {
      * @return all accounts with a different status
      */
     List<Account> findByStatusNot(AccountStatus status);
+
+    /**
+     * Returns all accounts with the given role.
+     * Used to broadcast notifications to all vendors when a new order is placed.
+     *
+     * @param role the role to filter by
+     * @return all accounts holding that role
+     */
+    List<Account> findAllByRole(AccountRole role);
 }

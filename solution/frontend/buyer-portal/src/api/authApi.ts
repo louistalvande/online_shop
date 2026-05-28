@@ -20,6 +20,16 @@ export interface LoginResult {
   requiresPasswordSetup?: boolean
 }
 
+function decodeJwtRole(token: string | null | undefined): string | null {
+  if (!token) return null
+  try {
+    const payload = token.split('.')[1]
+    return JSON.parse(atob(payload.replace(/-/g, '+').replace(/_/g, '/'))).role ?? null
+  } catch {
+    return null
+  }
+}
+
 export async function register(payload: RegisterPayload): Promise<void> {
   const res = await fetch('/api/auth/register', {
     method: 'POST',
@@ -64,9 +74,11 @@ export async function login(email: string, password: string): Promise<LoginResul
   if (!res.ok) throw new Error('Login failed')
 
   const data = await res.json()
-
   if (data.requiresMfa) {
     return { requiresMfa: true, mfaToken: data.mfaToken, email: data.email }
+  }
+  if (decodeJwtRole(data.token) !== 'BUYER') {
+    throw Object.assign(new Error('Access restricted to buyers'), { code: 'UNAUTHORIZED' })
   }
 
   const session: BuyerSession = { email: data.email, token: data.token }
@@ -96,6 +108,25 @@ export function logout(): void {
 export function getSession(): BuyerSession | null {
   const raw = localStorage.getItem(SESSION_KEY)
   return raw ? JSON.parse(raw) : null
+}
+
+/** fetch wrapper that injects the Bearer token and redirects to /login on 401. */
+export async function authedFetch(url: string, init: RequestInit = {}): Promise<Response> {
+  const session = getSession()
+  if (!session) {
+    window.location.href = '/login'
+    throw new Error('NOT_AUTHENTICATED')
+  }
+  const res = await fetch(url, {
+    ...init,
+    headers: { Authorization: `Bearer ${session.token}`, ...init.headers },
+  })
+  if (res.status === 401) {
+    logout()
+    window.location.href = '/login'
+    throw new Error('SESSION_EXPIRED')
+  }
+  return res
 }
 
 export async function resendActivation(email: string): Promise<void> {

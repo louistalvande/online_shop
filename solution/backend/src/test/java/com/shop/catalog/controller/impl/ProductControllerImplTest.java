@@ -60,7 +60,6 @@ class ProductControllerImplTest {
     private ProductResponse buildProductResponse(UUID id, String name) {
         ProductResponse r = new ProductResponse();
         setField(r, "id", id);
-        setField(r, "vendorId", UUID.randomUUID());
         setField(r, "name", name);
         setField(r, "priceExclTax", new BigDecimal("29.90"));
         setField(r, "quantity", 10);
@@ -87,7 +86,7 @@ class ProductControllerImplTest {
     /** POST /products returns 201 with valid payload. */
     @Test
     void createProduct_returns201_whenValid() throws Exception {
-        given(productService.createProduct(eq(VENDOR_EMAIL), any()))
+        given(productService.createProduct(any()))
                 .willReturn(buildProductResponse(PRODUCT_ID, "Aquarelle"));
 
         mvc.perform(post("/api/vendor/products")
@@ -138,7 +137,7 @@ class ProductControllerImplTest {
     /** GET /products returns 200 with product list. */
     @Test
     void listProducts_returns200() throws Exception {
-        given(productService.listProducts(VENDOR_EMAIL))
+        given(productService.listProducts())
                 .willReturn(List.of(buildProductResponse(PRODUCT_ID, "Aquarelle")));
 
         mvc.perform(get("/api/vendor/products").principal(vendorPrincipal))
@@ -149,7 +148,7 @@ class ProductControllerImplTest {
     /** GET /products/{id} returns 200 when product exists. */
     @Test
     void getProduct_returns200_whenFound() throws Exception {
-        given(productService.getProduct(VENDOR_EMAIL, PRODUCT_ID))
+        given(productService.getProduct(PRODUCT_ID))
                 .willReturn(buildProductResponse(PRODUCT_ID, "Aquarelle"));
 
         mvc.perform(get("/api/vendor/products/" + PRODUCT_ID).principal(vendorPrincipal))
@@ -160,7 +159,7 @@ class ProductControllerImplTest {
     /** GET /products/{id} returns 404 when product does not exist. */
     @Test
     void getProduct_returns404_whenNotFound() throws Exception {
-        given(productService.getProduct(VENDOR_EMAIL, PRODUCT_ID))
+        given(productService.getProduct(PRODUCT_ID))
                 .willThrow(new ProductNotFoundException(PRODUCT_ID));
         given(messageSource.getMessage(eq("error.product.not.found"), isNull(), any(Locale.class)))
                 .willReturn("Product not found.");
@@ -172,7 +171,7 @@ class ProductControllerImplTest {
     /** PUT /products/{id} returns 200 with updated product. */
     @Test
     void updateProduct_returns200_whenValid() throws Exception {
-        given(productService.updateProduct(eq(VENDOR_EMAIL), eq(PRODUCT_ID), any()))
+        given(productService.updateProduct(eq(PRODUCT_ID), any()))
                 .willReturn(buildProductResponse(PRODUCT_ID, "Huile sur toile"));
 
         mvc.perform(put("/api/vendor/products/" + PRODUCT_ID)
@@ -196,7 +195,7 @@ class ProductControllerImplTest {
     void archiveProduct_returns200() throws Exception {
         ProductResponse archived = buildProductResponse(PRODUCT_ID, "Aquarelle");
         setField(archived, "status", ProductStatus.ARCHIVED);
-        given(productService.archiveProduct(VENDOR_EMAIL, PRODUCT_ID)).willReturn(archived);
+        given(productService.archiveProduct(PRODUCT_ID)).willReturn(archived);
 
         mvc.perform(patch("/api/vendor/products/" + PRODUCT_ID + "/archive").principal(vendorPrincipal))
                 .andExpect(status().isOk())
@@ -206,7 +205,7 @@ class ProductControllerImplTest {
     /** PATCH /products/{id}/archive returns 404 when product not found. */
     @Test
     void archiveProduct_returns404_whenNotFound() throws Exception {
-        given(productService.archiveProduct(VENDOR_EMAIL, PRODUCT_ID))
+        given(productService.archiveProduct(PRODUCT_ID))
                 .willThrow(new ProductNotFoundException(PRODUCT_ID));
         given(messageSource.getMessage(eq("error.product.not.found"), isNull(), any(Locale.class)))
                 .willReturn("Product not found.");
@@ -218,7 +217,7 @@ class ProductControllerImplTest {
     /** PATCH /products/{id}/stock returns 200 with updated stock. */
     @Test
     void updateStock_returns200_whenValid() throws Exception {
-        given(productService.updateStock(eq(VENDOR_EMAIL), eq(PRODUCT_ID), any()))
+        given(productService.updateStock(eq(PRODUCT_ID), any()))
                 .willReturn(buildProductResponse(PRODUCT_ID, "Aquarelle"));
 
         mvc.perform(patch("/api/vendor/products/" + PRODUCT_ID + "/stock")
@@ -241,7 +240,7 @@ class ProductControllerImplTest {
         setField(alert, "stockAlertThreshold", 3);
         setField(alert, "triggeredAt", LocalDateTime.now());
         setField(alert, "acknowledged", false);
-        given(productService.listPendingAlerts(VENDOR_EMAIL)).willReturn(List.of(alert));
+        given(productService.listPendingAlerts()).willReturn(List.of(alert));
 
         mvc.perform(get("/api/vendor/alerts").principal(vendorPrincipal))
                 .andExpect(status().isOk())

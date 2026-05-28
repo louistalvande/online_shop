@@ -32,8 +32,10 @@ export default function Header({ session, onShowLogin, onLogout, children }: Pro
               label={t('nav.account')}
               email={session.email}
               settingsLabel={t('nav.profile')}
+              ordersLabel={t('nav.orders')}
               logoutLabel={t('nav.logout')}
               onSettings={() => { window.location.href = '/profile' }}
+              onOrders={() => { window.location.href = '/my-orders' }}
               onLogout={onLogout}
             />
           ) : (
@@ -41,7 +43,7 @@ export default function Header({ session, onShowLogin, onLogout, children }: Pro
               {t('nav.login')}
             </Button>
           )}
-          <Button variant="ghost" size="sm" aria-label={t('nav.cart')} onClick={() => { window.location.href = '/cart' }}>
+          <Button variant="ghost" size="sm" className="cart-icon-btn" aria-label={t('nav.cart')} onClick={() => { window.location.href = '/cart' }}>
             <span className="cart-btn-wrapper">
               <CartIcon size={22} />
               {cartCount > 0 && <span className="cart-badge">{cartCount > 99 ? '99+' : cartCount}</span>}

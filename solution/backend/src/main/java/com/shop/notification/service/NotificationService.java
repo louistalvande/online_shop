@@ -43,15 +43,6 @@ public interface NotificationService {
                                       Locale locale);
 
     /**
-     * Notifies a vendor by email that a new order has been placed (US-ORD-03, US-ORD-04).
-     *
-     * @param toEmail the vendor's email address
-     * @param order   the new order
-     * @param locale  the locale used to select the email language
-     */
-    void sendVendorNewOrderEmail(String toEmail, OrderResponse order, Locale locale);
-
-    /**
      * Notifies the buyer that the vendor has rejected their wire transfer payment and the order is cancelled (US-VND-02).
      *
      * @param toEmail the buyer's email address
@@ -77,15 +68,6 @@ public interface NotificationService {
      * @param locale  the locale used to select the email language
      */
     void sendBuyerCancellationEmail(String toEmail, OrderResponse order, Locale locale);
-
-    /**
-     * Notifies the vendor that the buyer has cancelled an order before shipment (US-CAN-02).
-     *
-     * @param toEmail the vendor's email address
-     * @param order   the cancelled order
-     * @param locale  the locale used to select the email language
-     */
-    void sendVendorCancellationEmail(String toEmail, OrderResponse order, Locale locale);
 
     /**
      * Sends a password-reset email containing the one-time recovery link (SEC-PWD-006 / CPA-17).
@@ -116,15 +98,6 @@ public interface NotificationService {
     void sendWireRefundConfirmedEmail(String toEmail, OrderResponse order, Locale locale);
 
     /**
-     * Notifies the vendor that a buyer has requested post-shipment cancellation (US-CAN-06).
-     *
-     * @param toEmail the vendor's email address
-     * @param order   the order now in CANCELLATION_REQUESTED_AFTER_SHIPMENT status
-     * @param locale  the locale used to select the email language
-     */
-    void sendVendorCancellationRequestedEmail(String toEmail, OrderResponse order, Locale locale);
-
-    /**
      * Notifies the buyer that the vendor has refused their post-shipment cancellation request (US-CAN-06).
      *
      * @param toEmail the buyer's email address
@@ -132,5 +105,24 @@ public interface NotificationService {
      * @param locale  the locale used to select the email language
      */
     void sendCancellationRefusedEmail(String toEmail, OrderResponse order, Locale locale);
+
+    /**
+     * Notifies the buyer that their order is now being prepared by the vendor (US-VND-01).
+     *
+     * @param toEmail the buyer's email address
+     * @param order   the order now in IN_PREPARATION status
+     * @param locale  the locale used to select the email language
+     */
+    void sendOrderInPreparationEmail(String toEmail, OrderResponse order, Locale locale);
+
+    /**
+     * Notifies a vendor that a new order has been placed and awaits processing (US-ORD-05).
+     * Called for all vendor accounts so every vendor is aware of incoming orders.
+     *
+     * @param toEmail the vendor's email address
+     * @param order   the newly placed order
+     * @param locale  the locale used to select the email language
+     */
+    void sendVendorNewOrderEmail(String toEmail, OrderResponse order, Locale locale);
 
 }

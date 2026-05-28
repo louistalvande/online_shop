@@ -128,7 +128,6 @@ CREATE INDEX idx_audit_log_occurred_at ON audit_log (occurred_at);
 
 CREATE TABLE products (
     id                    UUID          PRIMARY KEY DEFAULT gen_random_uuid(),
-    vendor_id             UUID          NOT NULL REFERENCES accounts(id),
     name                  VARCHAR(200)  NOT NULL,
     description           TEXT,
     price_excl_tax        NUMERIC(10,2) NOT NULL,
@@ -140,7 +139,6 @@ CREATE TABLE products (
     updated_at            TIMESTAMP     NOT NULL DEFAULT NOW()
 );
 
-CREATE INDEX idx_products_vendor_id ON products (vendor_id);
 CREATE INDEX idx_products_status    ON products (status);
 
 CREATE TABLE product_photos (
@@ -230,8 +228,6 @@ CREATE TABLE orders (
     buyer_iban               VARCHAR(34),
     tracking_number          VARCHAR(100),
     cancellation_reason      VARCHAR(500),
-    vendor_email             VARCHAR(255)  NOT NULL DEFAULT '',
-    vendor_id                UUID          REFERENCES accounts(id),
     created_at               TIMESTAMP     NOT NULL DEFAULT NOW(),
     updated_at               TIMESTAMP     NOT NULL DEFAULT NOW()
 );
@@ -239,7 +235,6 @@ CREATE TABLE orders (
 CREATE INDEX idx_orders_buyer_id    ON orders (buyer_id);
 CREATE INDEX idx_orders_status      ON orders (status);
 CREATE INDEX idx_orders_order_number ON orders (order_number);
-CREATE INDEX idx_orders_vendor_id   ON orders (vendor_id);
 
 CREATE TABLE order_lines (
     id                  UUID          PRIMARY KEY DEFAULT gen_random_uuid(),

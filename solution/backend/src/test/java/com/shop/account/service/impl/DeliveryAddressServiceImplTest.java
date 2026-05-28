@@ -220,7 +220,6 @@ class DeliveryAddressServiceImplTest {
         given(accountRepository.findByEmail(BUYER_EMAIL)).willReturn(Optional.of(buildAccount()));
         given(addressRepository.findByIdAndAccountIdAndDeletedFalse(ADDRESS_ID, ACCOUNT_ID))
                 .willReturn(Optional.empty());
-        given(addressRepository.countByAccountIdAndDeletedFalse(ACCOUNT_ID)).willReturn(2L);
 
         assertThatThrownBy(() -> service.deleteAddress(BUYER_EMAIL, ADDRESS_ID))
                 .isInstanceOf(DeliveryAddressNotFoundException.class);

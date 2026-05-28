@@ -1,6 +1,7 @@
 package com.shop.order.service.impl;
 
 import com.shop.account.entity.Account;
+import com.shop.account.entity.AccountRole;
 import com.shop.account.entity.DeliveryAddress;
 import com.shop.account.repository.AccountRepository;
 import com.shop.account.repository.DeliveryAddressRepository;
@@ -96,7 +97,6 @@ class OrderServiceImplTest {
                 .willReturn(Optional.of(buildDeliveryAddress("FR")));
         given(countryRepository.existsByCode("FR")).willReturn(true);
         given(carrierRepository.findById(CARRIER_ID)).willReturn(Optional.of(buildCarrier("FR")));
-        given(accountRepository.findById(any())).willReturn(Optional.of(buildAccount("vendor@example.com")));
         given(paymentGateway.createPaymentIntent(any(), any()))
                 .willReturn(new PaymentIntentResult("pi_test", "pi_test_secret"));
         Order saved = buildSavedOrder(OrderStatus.PAYMENT_PENDING_CARD);
@@ -117,9 +117,9 @@ class OrderServiceImplTest {
                 .willReturn(Optional.of(buildDeliveryAddress("FR")));
         given(countryRepository.existsByCode("FR")).willReturn(true);
         given(carrierRepository.findById(CARRIER_ID)).willReturn(Optional.of(buildCarrier("FR")));
-        given(accountRepository.findById(any())).willReturn(Optional.of(buildAccount("vendor@example.com")));
         Order saved = buildSavedOrder(OrderStatus.PAYMENT_PENDING_WIRE);
         given(orderRepository.save(any())).willReturn(saved);
+        given(accountRepository.findAllByRole(AccountRole.VENDOR)).willReturn(List.of(buildVendorAccount()));
 
         CheckoutInitResponse response = service.initCheckout(BUYER_EMAIL, wireRequest(), Locale.FRENCH);
 
@@ -168,6 +168,7 @@ class OrderServiceImplTest {
         given(orderRepository.findByIdAndBuyerId(ORDER_ID, BUYER_ID)).willReturn(Optional.of(order));
         given(paymentGateway.isPaymentSucceeded(any())).willReturn(true);
         given(orderRepository.save(any())).willReturn(order);
+        given(accountRepository.findAllByRole(AccountRole.VENDOR)).willReturn(List.of(buildVendorAccount()));
 
         service.confirmCardPayment(BUYER_EMAIL, ORDER_ID, Locale.FRENCH);
 
@@ -216,7 +217,6 @@ class OrderServiceImplTest {
         assertThat(order.getStatus()).isEqualTo(OrderStatus.CANCELLED);
         then(paymentGateway).should().refund("pi_stub");
         then(notificationService).should().sendBuyerCancellationEmail(any(), any(), any());
-        then(notificationService).should().sendVendorCancellationEmail(any(), any(), any());
     }
 
     @Test
@@ -276,7 +276,6 @@ class OrderServiceImplTest {
 
         assertThat(order.getStatus()).isEqualTo(OrderStatus.CANCELLATION_REQUESTED_AFTER_SHIPMENT);
         assertThat(order.getCancellationReason()).isEqualTo("Product defective");
-        then(notificationService).should().sendVendorCancellationRequestedEmail(any(), any(), any());
     }
 
     @Test
@@ -350,9 +349,7 @@ class OrderServiceImplTest {
 
     private Product buildProduct() {
         Product p = new Product();
-        UUID vendorId = UUID.randomUUID();
         setField(p, "id", UUID.randomUUID());
-        p.setVendorId(vendorId);
         p.setName("Test product");
         p.setPriceExclTax(new BigDecimal("10.00"));
         p.setQuantity(10);
@@ -368,12 +365,6 @@ class OrderServiceImplTest {
         c.setActive(true);
         c.setSupportedCountries(new ArrayList<>(List.of(countries)));
         return c;
-    }
-
-    private Account buildAccount(String email) {
-        Account a = new Account();
-        a.setEmail(email);
-        return a;
     }
 
     private DeliveryAddress buildDeliveryAddress(String countryCode) {
@@ -405,7 +396,6 @@ class OrderServiceImplTest {
         o.setStatus(status);
         o.setTotalAmountTtc(new BigDecimal("24.00"));
         o.setStripePaymentIntentId("pi_stub");
-        o.setVendorEmail("vendor@example.com");
         return o;
     }
 
@@ -421,6 +411,13 @@ class OrderServiceImplTest {
         CreateOrderRequest r = cardRequest();
         r.setPaymentMethod(PaymentMethod.WIRE_TRANSFER);
         return r;
+    }
+
+    private Account buildVendorAccount() {
+        Account v = new Account();
+        v.setEmail("vendor@test.com");
+        v.setRole(AccountRole.VENDOR);
+        return v;
     }
 
     private static void setField(Object target, String name, Object value) {

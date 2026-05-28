@@ -5,12 +5,14 @@ interface UserMenuProps {
   label: string
   email?: string
   settingsLabel: string
+  ordersLabel?: string
   logoutLabel: string
   onSettings?: () => void
+  onOrders?: () => void
   onLogout?: () => void
 }
 
-export function UserMenu({ label, email, settingsLabel, logoutLabel, onSettings, onLogout }: UserMenuProps) {
+export function UserMenu({ label, email, settingsLabel, ordersLabel, logoutLabel, onSettings, onOrders, onLogout }: UserMenuProps) {
   const [open, setOpen] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
 
@@ -35,6 +37,11 @@ export function UserMenu({ label, email, settingsLabel, logoutLabel, onSettings,
           <button className="user-menu-item" onClick={() => { onSettings?.(); setOpen(false) }}>
             {settingsLabel}
           </button>
+          {ordersLabel && (
+            <button className="user-menu-item" onClick={() => { onOrders?.(); setOpen(false) }}>
+              {ordersLabel}
+            </button>
+          )}
           <button className="user-menu-item" onClick={() => { onLogout?.(); setOpen(false) }}>
             {logoutLabel}
           </button>

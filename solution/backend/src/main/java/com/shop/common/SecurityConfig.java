@@ -82,7 +82,13 @@ public class SecurityConfig {
                 .requestMatchers("/api/me", "/api/me/**").authenticated()
                 .requestMatchers("/api/cart", "/api/cart/**").hasRole("BUYER")
                 .requestMatchers("/api/orders", "/api/orders/**").hasRole("BUYER")
-                .requestMatchers("/swagger-ui/**", "/api-docs/**", "/actuator/health", "/actuator/info").permitAll()
+                .requestMatchers("/api/profile/**").hasRole("BUYER")
+                .requestMatchers(HttpMethod.GET, "/api/buyer/**").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/carriers").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/countries").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/announcements").permitAll()
+                .requestMatchers("/uploads/**").permitAll()
+                .requestMatchers("/swagger-ui/**", "/api-docs", "/api-docs/**", "/api-docs.yaml", "/actuator/health", "/actuator/info").permitAll()
                 .requestMatchers(HttpMethod.GET,    "/api/admin/**").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.POST,   "/api/admin/**").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.PUT,    "/api/admin/**").hasRole("ADMIN")
@@ -93,7 +99,7 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.PUT,    "/api/vendor/**").hasRole("VENDOR")
                 .requestMatchers(HttpMethod.PATCH,  "/api/vendor/**").hasRole("VENDOR")
                 .requestMatchers(HttpMethod.DELETE, "/api/vendor/**").hasRole("VENDOR")
-                .anyRequest().permitAll()
+                .anyRequest().authenticated()
             )
             .exceptionHandling(eh -> eh
                 .authenticationEntryPoint((req, res, ex) ->

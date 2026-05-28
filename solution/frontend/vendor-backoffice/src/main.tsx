@@ -6,6 +6,7 @@ import App from './App.tsx'
 import ProfilePage from './ProfilePage'
 import OrderListPage from './OrderListPage'
 import OrderDetailPage from './OrderDetailPage'
+import VendorProductDetailPage from './VendorProductDetailPage'
 
 const base = import.meta.env.BASE_URL.replace(/\/$/, '') // '/vendor'
 const rawPath = window.location.pathname
@@ -16,6 +17,8 @@ function Root() {
   if (path === '/orders') return <OrderListPage />
   const orderDetailMatch = path.match(/^\/orders\/([^/]+)$/)
   if (orderDetailMatch) return <OrderDetailPage orderId={orderDetailMatch[1]} />
+  const catalogDetailMatch = path.match(/^\/catalog\/([^/]+)$/)
+  if (catalogDetailMatch) return <VendorProductDetailPage productId={catalogDetailMatch[1]} />
   return <App />
 }
 

@@ -29,62 +29,68 @@ public class VendorOrderControllerImpl implements VendorOrderController {
     /** {@inheritDoc} */
     @Override
     public ResponseEntity<List<OrderResponse>> listOrders(Principal principal) {
-        return ResponseEntity.ok(vendorOrderService.getVendorOrders(principal.getName()));
+        return ResponseEntity.ok(vendorOrderService.getVendorOrders());
     }
 
     /** {@inheritDoc} */
     @Override
     public ResponseEntity<OrderResponse> getOrder(UUID orderId, Principal principal) {
-        return ResponseEntity.ok(vendorOrderService.getVendorOrder(principal.getName(), orderId));
+        return ResponseEntity.ok(vendorOrderService.getVendorOrder(orderId));
     }
 
     /** {@inheritDoc} */
     @Override
     public ResponseEntity<OrderResponse> confirmWire(UUID orderId, Principal principal, Locale locale) {
-        return ResponseEntity.ok(vendorOrderService.confirmWirePayment(principal.getName(), orderId, locale));
+        return ResponseEntity.ok(vendorOrderService.confirmWirePayment(orderId, locale));
     }
 
     /** {@inheritDoc} */
     @Override
     public ResponseEntity<OrderResponse> rejectWire(UUID orderId, Principal principal, Locale locale) {
-        return ResponseEntity.ok(vendorOrderService.rejectWirePayment(principal.getName(), orderId, locale));
+        return ResponseEntity.ok(vendorOrderService.rejectWirePayment(orderId, locale));
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public ResponseEntity<OrderResponse> prepare(UUID orderId, Principal principal, Locale locale) {
+        return ResponseEntity.ok(vendorOrderService.markOrderInPreparation(orderId, locale));
     }
 
     /** {@inheritDoc} */
     @Override
     public ResponseEntity<OrderResponse> ship(UUID orderId, ShipOrderRequest request, Principal principal, Locale locale) {
-        return ResponseEntity.ok(vendorOrderService.shipOrder(principal.getName(), orderId, request.getTrackingNumber(), locale));
+        return ResponseEntity.ok(vendorOrderService.shipOrder(orderId, request.getTrackingNumber(), locale));
     }
 
     /** {@inheritDoc} */
     @Override
     public ResponseEntity<OrderResponse> acceptReturn(UUID orderId, VendorReturnRequest request, Principal principal, Locale locale) {
         String buyerIban = request != null ? request.getBuyerIban() : null;
-        return ResponseEntity.ok(vendorOrderService.acceptReturn(principal.getName(), orderId, buyerIban, locale));
+        return ResponseEntity.ok(vendorOrderService.acceptReturn(orderId, buyerIban, locale));
     }
 
     /** {@inheritDoc} */
     @Override
     public ResponseEntity<OrderResponse> confirmReturn(UUID orderId, Principal principal, Locale locale) {
-        return ResponseEntity.ok(vendorOrderService.confirmReturn(principal.getName(), orderId, locale));
+        return ResponseEntity.ok(vendorOrderService.confirmReturn(orderId, locale));
     }
 
     /** {@inheritDoc} */
     @Override
     public ResponseEntity<OrderResponse> waiveReturn(UUID orderId, VendorReturnRequest request, Principal principal, Locale locale) {
         String buyerIban = request != null ? request.getBuyerIban() : null;
-        return ResponseEntity.ok(vendorOrderService.waiveReturn(principal.getName(), orderId, buyerIban, locale));
+        return ResponseEntity.ok(vendorOrderService.waiveReturn(orderId, buyerIban, locale));
     }
 
     /** {@inheritDoc} */
     @Override
     public ResponseEntity<OrderResponse> confirmWireRefund(UUID orderId, Principal principal, Locale locale) {
-        return ResponseEntity.ok(vendorOrderService.confirmWireRefund(principal.getName(), orderId, locale));
+        return ResponseEntity.ok(vendorOrderService.confirmWireRefund(orderId, locale));
     }
 
     /** {@inheritDoc} */
     @Override
     public ResponseEntity<OrderResponse> refuseCancellation(UUID orderId, Principal principal, Locale locale) {
-        return ResponseEntity.ok(vendorOrderService.refuseCancellationRequest(principal.getName(), orderId, locale));
+        return ResponseEntity.ok(vendorOrderService.refuseCancellationRequest(orderId, locale));
     }
 }

@@ -1,4 +1,4 @@
-import { getSession } from './authApi'
+import { authedFetch } from './authApi'
 
 export interface Product {
   id: string
@@ -78,13 +78,7 @@ export interface CsvImportResponse {
   totalErrors: number
 }
 
-function authHeaders(): Record<string, string> {
-  const session = getSession()
-  return {
-    'Content-Type': 'application/json',
-    ...(session ? { Authorization: `Bearer ${session.token}` } : {}),
-  }
-}
+const JSON_HEADERS = { 'Content-Type': 'application/json' }
 
 async function handleResponse<T>(res: Response): Promise<T> {
   if (!res.ok) {
@@ -96,80 +90,68 @@ async function handleResponse<T>(res: Response): Promise<T> {
 
 /** Fetches all products for the authenticated vendor. */
 export async function listProducts(): Promise<Product[]> {
-  const res = await fetch('/api/vendor/products', { headers: authHeaders() })
-  return handleResponse<Product[]>(res)
+  return handleResponse<Product[]>(await authedFetch('/api/vendor/products'))
+}
+
+/** Fetches a single product by ID for the authenticated vendor. */
+export async function getProduct(id: string): Promise<Product> {
+  return handleResponse<Product>(await authedFetch(`/api/vendor/products/${id}`))
 }
 
 /** Creates a new product. */
 export async function createProduct(payload: CreateProductPayload): Promise<Product> {
-  const res = await fetch('/api/vendor/products', {
+  return handleResponse<Product>(await authedFetch('/api/vendor/products', {
     method: 'POST',
-    headers: authHeaders(),
+    headers: JSON_HEADERS,
     body: JSON.stringify(payload),
-  })
-  return handleResponse<Product>(res)
+  }))
 }
 
 /** Updates an existing product. */
 export async function updateProduct(id: string, payload: CreateProductPayload): Promise<Product> {
-  const res = await fetch(`/api/vendor/products/${id}`, {
+  return handleResponse<Product>(await authedFetch(`/api/vendor/products/${id}`, {
     method: 'PUT',
-    headers: authHeaders(),
+    headers: JSON_HEADERS,
     body: JSON.stringify(payload),
-  })
-  return handleResponse<Product>(res)
+  }))
 }
 
 /** Archives a product. */
 export async function archiveProduct(id: string): Promise<Product> {
-  const res = await fetch(`/api/vendor/products/${id}/archive`, {
-    method: 'PATCH',
-    headers: authHeaders(),
-  })
-  return handleResponse<Product>(res)
+  return handleResponse<Product>(await authedFetch(`/api/vendor/products/${id}/archive`, { method: 'PATCH' }))
 }
 
 /** Updates stock quantity and alert threshold for a product. */
 export async function updateStock(id: string, payload: UpdateStockPayload): Promise<Product> {
-  const res = await fetch(`/api/vendor/products/${id}/stock`, {
+  return handleResponse<Product>(await authedFetch(`/api/vendor/products/${id}/stock`, {
     method: 'PATCH',
-    headers: authHeaders(),
+    headers: JSON_HEADERS,
     body: JSON.stringify(payload),
-  })
-  return handleResponse<Product>(res)
+  }))
 }
 
 /** Fetches all unacknowledged stock alerts for the vendor. */
 export async function listPendingAlerts(): Promise<StockAlert[]> {
-  const res = await fetch('/api/vendor/alerts', { headers: authHeaders() })
-  return handleResponse<StockAlert[]>(res)
+  return handleResponse<StockAlert[]>(await authedFetch('/api/vendor/alerts'))
 }
 
 /** Acknowledges a stock alert. */
 export async function acknowledgeAlert(alertId: string): Promise<StockAlert> {
-  const res = await fetch(`/api/vendor/alerts/${alertId}/acknowledge`, {
-    method: 'PATCH',
-    headers: authHeaders(),
-  })
-  return handleResponse<StockAlert>(res)
+  return handleResponse<StockAlert>(await authedFetch(`/api/vendor/alerts/${alertId}/acknowledge`, { method: 'PATCH' }))
 }
 
 /** Bulk-updates stock quantity and alert threshold for multiple products (US-CAT-08). */
 export async function bulkUpdateStocks(payload: BulkStockUpdatePayload): Promise<BulkStockUpdateResponse> {
-  const res = await fetch('/api/vendor/products/stocks', {
+  return handleResponse<BulkStockUpdateResponse>(await authedFetch('/api/vendor/products/stocks', {
     method: 'PATCH',
-    headers: authHeaders(),
+    headers: JSON_HEADERS,
     body: JSON.stringify(payload),
-  })
-  return handleResponse<BulkStockUpdateResponse>(res)
+  }))
 }
 
 /** Exports all vendor products as a UTF-8 CSV file and triggers a browser download (US-CAT-07). */
 export async function exportProductsCsv(): Promise<void> {
-  const session = getSession()
-  const res = await fetch('/api/vendor/products/export', {
-    headers: session ? { Authorization: `Bearer ${session.token}` } : {},
-  })
+  const res = await authedFetch('/api/vendor/products/export')
   if (!res.ok) throw new Error('EXPORT_ERROR')
   const blob = await res.blob()
   const disposition = res.headers.get('Content-Disposition') ?? ''
@@ -185,14 +167,19 @@ export async function exportProductsCsv(): Promise<void> {
 
 /** Imports products from a CSV file (US-CAT-06). */
 export async function importProductsCsv(file: File): Promise<CsvImportResponse> {
-  const session = getSession()
   const formData = new FormData()
   formData.append('file', file)
-  const res = await fetch('/api/vendor/products/import', {
-    method: 'POST',
-    headers: session ? { Authorization: `Bearer ${session.token}` } : {},
-    body: formData,
-  })
+  const res = await authedFetch('/api/vendor/products/import', { method: 'POST', body: formData })
   if (res.status === 400) throw Object.assign(new Error('CSV_HEADER_INVALID'), { code: 'CSV_HEADER_INVALID' })
   return handleResponse<CsvImportResponse>(res)
+}
+
+/** Uploads a product image file and returns the public URL assigned by the server (US-CAT-09). */
+export async function uploadProductImage(file: File): Promise<string> {
+  const formData = new FormData()
+  formData.append('file', file)
+  const data = await handleResponse<{ imageUrl: string }>(
+    await authedFetch('/api/vendor/products/images', { method: 'POST', body: formData })
+  )
+  return data.imageUrl
 }

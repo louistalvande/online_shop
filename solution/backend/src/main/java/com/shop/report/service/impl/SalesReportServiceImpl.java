@@ -1,8 +1,5 @@
 package com.shop.report.service.impl;
 
-import com.shop.account.entity.Account;
-import com.shop.account.exception.AccountNotFoundException;
-import com.shop.account.repository.AccountRepository;
 import com.shop.report.dto.SalesMetrics;
 import com.shop.report.dto.SalesReportResponse;
 import com.shop.report.dto.TopProduct;
@@ -16,37 +13,30 @@ import java.time.LocalDateTime;
 import java.time.YearMonth;
 import java.time.format.DateTimeParseException;
 import java.util.List;
-import java.util.UUID;
 
 /** Sales report service implementation for the vendor back-office (US-RPT-01). */
 @Service
 @Transactional(readOnly = true)
 public class SalesReportServiceImpl implements SalesReportService {
 
-    private final AccountRepository accountRepository;
     private final SalesReportRepository salesReportRepository;
 
     /**
-     * @param accountRepository     JPA repository for account email resolution
      * @param salesReportRepository report-specific aggregation repository
      */
-    public SalesReportServiceImpl(
-            AccountRepository accountRepository,
-            SalesReportRepository salesReportRepository) {
-        this.accountRepository = accountRepository;
+    public SalesReportServiceImpl(SalesReportRepository salesReportRepository) {
         this.salesReportRepository = salesReportRepository;
     }
 
     /** {@inheritDoc} */
     @Override
     public SalesReportResponse getSalesReport(String vendorEmail, String period, String category) {
-        UUID vendorId = resolveAccountId(vendorEmail);
         YearMonth ym = parsePeriod(period);
         LocalDateTime from = ym.atDay(1).atStartOfDay();
         LocalDateTime to = ym.plusMonths(1).atDay(1).atStartOfDay();
 
-        SalesMetrics metrics = salesReportRepository.computeMetrics(vendorId, from, to, category);
-        List<TopProduct> top = salesReportRepository.findTopProducts(vendorId, from, to, category, 10);
+        SalesMetrics metrics = salesReportRepository.computeMetrics(from, to, category);
+        List<TopProduct> top = salesReportRepository.findTopProducts(from, to, category, 10);
 
         return new SalesReportResponse(period, category, metrics, top);
     }
@@ -99,18 +89,5 @@ public class SalesReportServiceImpl implements SalesReportService {
         } catch (DateTimeParseException e) {
             throw new InvalidPeriodException(period);
         }
-    }
-
-    /**
-     * Resolves the account UUID for the given email address.
-     *
-     * @param email the account email
-     * @return the account UUID
-     * @throws AccountNotFoundException if no account exists with that email
-     */
-    private UUID resolveAccountId(String email) {
-        return accountRepository.findByEmail(email)
-                .map(Account::getId)
-                .orElseThrow(() -> new AccountNotFoundException(email));
     }
 }

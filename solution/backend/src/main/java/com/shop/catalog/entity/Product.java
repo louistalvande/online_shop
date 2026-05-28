@@ -17,10 +17,6 @@ public class Product {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    /** UUID of the vendor account that owns this product. */
-    @Column(name = "vendor_id", nullable = false)
-    private UUID vendorId;
-
     /** Display name of the product. */
     @Column(nullable = false, length = 200)
     private String name;
@@ -78,12 +74,6 @@ public class Product {
 
     /** @return the product UUID */
     public UUID getId() { return id; }
-
-    /** @return the vendor account UUID */
-    public UUID getVendorId() { return vendorId; }
-
-    /** @param vendorId the vendor account UUID */
-    public void setVendorId(UUID vendorId) { this.vendorId = vendorId; }
 
     /** @return the product display name */
     public String getName() { return name; }

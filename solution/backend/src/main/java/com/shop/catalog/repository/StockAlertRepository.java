@@ -10,23 +10,20 @@ import java.util.UUID;
 public interface StockAlertRepository extends JpaRepository<StockAlert, UUID> {
 
     /**
-     * Returns all unacknowledged alerts for products owned by the given vendor.
+     * Returns all alerts matching the given acknowledgment status, ordered by triggered date.
      *
-     * @param vendorId     the vendor account UUID
      * @param acknowledged the acknowledgment status to filter on
      * @return list of matching alerts ordered by triggered date descending
      */
-    List<StockAlert> findByProduct_VendorIdAndAcknowledgedOrderByTriggeredAtDesc(
-            UUID vendorId, boolean acknowledged);
+    List<StockAlert> findByAcknowledgedOrderByTriggeredAtDesc(boolean acknowledged);
 
     /**
-     * Counts unacknowledged alerts for products owned by a given vendor.
+     * Counts alerts matching the given acknowledgment status.
      *
-     * @param vendorId     the vendor account UUID
      * @param acknowledged the acknowledgment status to filter on
      * @return the count of matching alerts
      */
-    long countByProduct_VendorIdAndAcknowledged(UUID vendorId, boolean acknowledged);
+    long countByAcknowledged(boolean acknowledged);
 
     /**
      * Checks whether any unacknowledged alert already exists for the given product.

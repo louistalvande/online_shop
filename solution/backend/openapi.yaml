@@ -6,8 +6,22 @@ servers:
 - url: http://localhost
   description: Generated server url
 tags:
+- name: Announcements
+  description: Public carousel announcements for the buyer portal
+- name: Vendor Orders
+  description: Vendor order management
+- name: Vendor Catalog
+  description: Product management for vendors
+- name: Admin — Accounts
+  description: Account management for administrators
+- name: Admin — Settings
+  description: Platform maintenance mode management
+- name: Vendor Announcements
+  description: CRUD and reordering of vendor announcements
 - name: Profile
   description: "Self-service profile management (US-PRF-01, US-PRF-02)"
+- name: Public
+  description: Reference data for checkout (no authentication required)
 - name: Admin — Countries
   description: Eurozone country reference list
 - name: Vendor — Catalog
@@ -16,10 +30,18 @@ tags:
   description: Authentication — shared across all actors
 - name: Admin — Carriers
   description: Carrier management for administrators
-- name: Admin — Accounts
-  description: Account management for administrators
+- name: Orders
+  description: Buyer order lifecycle
+- name: Buyer — Cart
+  description: Shopping cart management for authenticated buyers
 - name: Buyer — Catalog
   description: Product catalog browsing for buyers and visitors
+- name: Vendor - Reports
+  description: Vendor sales reporting endpoints
+- name: Vendor Announcements
+  description: Image upload for announcement creation
+- name: Delivery Addresses
+  description: Buyer delivery address book (US-PRF-03)
 paths:
   /api/vendor/products/{id}:
     get:
@@ -84,6 +106,112 @@ paths:
             '*/*':
               schema:
                 $ref: "#/components/schemas/ProductResponse"
+  /api/vendor/announcements/{id}:
+    put:
+      tags:
+      - Vendor Announcements
+      summary: Update an announcement
+      operationId: update
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateAnnouncementRequest"
+        required: true
+      responses:
+        "200":
+          description: Announcement updated
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/AnnouncementResponse"
+        "404":
+          description: Announcement not found
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/AnnouncementResponse"
+    delete:
+      tags:
+      - Vendor Announcements
+      summary: Delete an announcement
+      operationId: delete
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "204":
+          description: Announcement deleted
+        "404":
+          description: Announcement not found
+  /api/profile/addresses/{addressId}:
+    put:
+      tags:
+      - Delivery Addresses
+      summary: Update a delivery address (US-PRF-03)
+      operationId: updateAddress
+      parameters:
+      - name: addressId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DeliveryAddressRequest"
+        required: true
+      responses:
+        "400":
+          description: Validation error
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/DeliveryAddressResponse"
+        "200":
+          description: Address updated
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/DeliveryAddressResponse"
+        "404":
+          description: Address not found
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/DeliveryAddressResponse"
+    delete:
+      tags:
+      - Delivery Addresses
+      summary: Delete a delivery address (US-PRF-03)
+      operationId: deleteAddress
+      parameters:
+      - name: addressId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "204":
+          description: Address deleted
+        "404":
+          description: Address not found
+        "409":
+          description: Cannot delete the last active address
   /api/vendor/products:
     get:
       tags:
@@ -123,6 +251,653 @@ paths:
             '*/*':
               schema:
                 $ref: "#/components/schemas/ProductResponse"
+  /api/vendor/products/import:
+    post:
+      tags:
+      - Vendor — Catalog
+      summary: Import products from a CSV file
+      operationId: importProducts
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              required:
+              - file
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+      responses:
+        "200":
+          description: Import processed — may contain row-level errors
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/CsvImportResponse"
+        "400":
+          description: Empty file or invalid CSV header
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/CsvImportResponse"
+  /api/vendor/products/images:
+    post:
+      tags:
+      - Vendor Catalog
+      summary: Upload a product image and receive its public URL
+      operationId: upload
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              required:
+              - file
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+      responses:
+        "200":
+          description: Image stored — public URL returned
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ProductImageUploadResponse"
+        "403":
+          description: Not a vendor account
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ProductImageUploadResponse"
+        "400":
+          description: Unsupported file type
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ProductImageUploadResponse"
+        "401":
+          description: Not authenticated
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ProductImageUploadResponse"
+  /api/vendor/orders/{orderId}/waive-return:
+    post:
+      tags:
+      - Vendor Orders
+      summary: Accept post-shipment cancellation without return requirement (US-CAN-04)
+      operationId: waiveReturn
+      parameters:
+      - name: orderId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/VendorReturnRequest"
+      responses:
+        "422":
+          description: Buyer IBAN missing for wire transfer order
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/OrderResponse"
+        "200":
+          description: "Cancellation accepted, refund triggered or wire initiated"
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/OrderResponse"
+        "409":
+          description: Order not in SHIPPED state
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/OrderResponse"
+  /api/vendor/orders/{orderId}/ship:
+    post:
+      tags:
+      - Vendor Orders
+      summary: Declare order shipment with tracking number
+      operationId: ship
+      parameters:
+      - name: orderId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ShipOrderRequest"
+        required: true
+      responses:
+        "409":
+          description: Order not in a shippable state
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/OrderResponse"
+        "200":
+          description: Order marked as shipped
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/OrderResponse"
+  /api/vendor/orders/{orderId}/reject-wire:
+    post:
+      tags:
+      - Vendor Orders
+      summary: Reject wire transfer payment
+      operationId: rejectWire
+      parameters:
+      - name: orderId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "409":
+          description: Order not in PAYMENT_PENDING_WIRE state
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/OrderResponse"
+        "200":
+          description: "Wire rejected, order cancelled"
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/OrderResponse"
+  /api/vendor/orders/{orderId}/refuse-cancellation:
+    post:
+      tags:
+      - Vendor Orders
+      summary: Refuse buyer's post-shipment cancellation request (US-CAN-06)
+      operationId: refuseCancellation
+      parameters:
+      - name: orderId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "404":
+          description: Order not found
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/OrderResponse"
+        "200":
+          description: "Cancellation refused, order back to SHIPPED"
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/OrderResponse"
+        "409":
+          description: Order not in CANCELLATION_REQUESTED_AFTER_SHIPMENT state
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/OrderResponse"
+  /api/vendor/orders/{orderId}/confirm-wire:
+    post:
+      tags:
+      - Vendor Orders
+      summary: Confirm wire transfer receipt
+      operationId: confirmWire
+      parameters:
+      - name: orderId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          description: "Wire confirmed, order awaiting processing"
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/OrderResponse"
+        "409":
+          description: Order not in PAYMENT_PENDING_WIRE state
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/OrderResponse"
+  /api/vendor/orders/{orderId}/confirm-wire-refund:
+    post:
+      tags:
+      - Vendor Orders
+      summary: Confirm wire refund has been sent to the buyer (US-CAN-05)
+      operationId: confirmWireRefund
+      parameters:
+      - name: orderId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          description: "Wire refund confirmed, order cancelled"
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/OrderResponse"
+        "409":
+          description: Order not in WIRE_REFUND_IN_PROGRESS state
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/OrderResponse"
+  /api/vendor/orders/{orderId}/confirm-return:
+    post:
+      tags:
+      - Vendor Orders
+      summary: Confirm return parcel received and process refund (US-CAN-03)
+      operationId: confirmReturn
+      parameters:
+      - name: orderId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "409":
+          description: Order not in PENDING_RETURN state
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/OrderResponse"
+        "200":
+          description: "Return confirmed, refund triggered"
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/OrderResponse"
+  /api/vendor/orders/{orderId}/accept-return:
+    post:
+      tags:
+      - Vendor Orders
+      summary: Accept post-shipment cancellation with return requirement (US-CAN-03)
+      operationId: acceptReturn
+      parameters:
+      - name: orderId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/VendorReturnRequest"
+      responses:
+        "422":
+          description: Buyer IBAN missing for wire transfer order
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/OrderResponse"
+        "409":
+          description: Order not in SHIPPED state
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/OrderResponse"
+        "200":
+          description: Order moved to PENDING_RETURN
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/OrderResponse"
+  /api/vendor/announcements:
+    get:
+      tags:
+      - Vendor Announcements
+      summary: List all announcements for the authenticated vendor
+      operationId: list
+      responses:
+        "200":
+          description: List returned
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/AnnouncementResponse"
+    post:
+      tags:
+      - Vendor Announcements
+      summary: Create a new announcement
+      operationId: create
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateAnnouncementRequest"
+        required: true
+      responses:
+        "400":
+          description: Validation error
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/AnnouncementResponse"
+        "201":
+          description: Announcement created
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/AnnouncementResponse"
+  /api/vendor/announcements/images:
+    post:
+      tags:
+      - Vendor Announcements
+      summary: Upload an announcement image and detect its orientation
+      operationId: upload_1
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              required:
+              - file
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+      responses:
+        "200":
+          description: Image stored — URL and orientation returned
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ImageUploadResponse"
+        "400":
+          description: Unsupported file type or unreadable image
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ImageUploadResponse"
+  /api/profile/addresses:
+    get:
+      tags:
+      - Delivery Addresses
+      summary: List buyer delivery addresses (US-PRF-03)
+      operationId: listAddresses
+      responses:
+        "200":
+          description: List returned
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/DeliveryAddressResponse"
+    post:
+      tags:
+      - Delivery Addresses
+      summary: Create a delivery address (US-PRF-03)
+      operationId: createAddress
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DeliveryAddressRequest"
+        required: true
+      responses:
+        "400":
+          description: Validation error
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/DeliveryAddressResponse"
+        "422":
+          description: Country not in Eurozone
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/DeliveryAddressResponse"
+        "201":
+          description: Address created
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/DeliveryAddressResponse"
+  /api/orders:
+    get:
+      tags:
+      - Orders
+      summary: List all orders for the authenticated buyer
+      operationId: getMyOrders
+      responses:
+        "200":
+          description: Orders retrieved
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/OrderResponse"
+    post:
+      tags:
+      - Orders
+      summary: Create order from cart and initiate payment (US-ORD-01..04)
+      operationId: initCheckout
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateOrderRequest"
+        required: true
+      responses:
+        "409":
+          description: Carrier not available for the delivery country
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/CheckoutInitResponse"
+        "422":
+          description: Delivery country not in Eurozone
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/CheckoutInitResponse"
+        "400":
+          description: Invalid request or empty cart
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/CheckoutInitResponse"
+        "201":
+          description: Order created
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/CheckoutInitResponse"
+  /api/orders/{orderId}/request-post-shipment-cancellation:
+    post:
+      tags:
+      - Orders
+      summary: Request post-shipment cancellation (US-CAN-06)
+      operationId: requestPostShipmentCancellation
+      parameters:
+      - name: orderId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RequestPostShipmentCancellationRequest"
+        required: true
+      responses:
+        "200":
+          description: "Cancellation request recorded, vendor notified"
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/OrderResponse"
+        "404":
+          description: Order not found
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/OrderResponse"
+        "422":
+          description: Buyer IBAN missing for wire transfer order
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/OrderResponse"
+        "400":
+          description: Reason missing or request invalid
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/OrderResponse"
+        "409":
+          description: Order not in SHIPPED status
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/OrderResponse"
+  /api/orders/{orderId}/confirm-payment:
+    post:
+      tags:
+      - Orders
+      summary: Confirm card payment after Stripe.js confirmation (US-ORD-03)
+      operationId: confirmCardPayment
+      parameters:
+      - name: orderId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          description: "Payment confirmed, order awaiting processing"
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/OrderResponse"
+        "404":
+          description: Order not found
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/OrderResponse"
+        "402":
+          description: Payment not succeeded
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/OrderResponse"
+        "409":
+          description: Order not in PAYMENT_PENDING_CARD status
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/OrderResponse"
+  /api/orders/{orderId}/cancel:
+    post:
+      tags:
+      - Orders
+      summary: Cancel an order placed by the buyer (US-CAN-01)
+      operationId: cancelOrder
+      parameters:
+      - name: orderId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CancelOrderRequest"
+      responses:
+        "409":
+          description: Order not in a cancellable status
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/OrderResponse"
+        "404":
+          description: Order not found
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/OrderResponse"
+        "422":
+          description: Buyer IBAN missing for wire transfer order
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/OrderResponse"
+        "200":
+          description: Order cancelled or wire refund initiated
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/OrderResponse"
+  /api/cart/items:
+    post:
+      tags:
+      - Buyer — Cart
+      summary: Add a product to the cart
+      operationId: addToCart
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AddToCartRequest"
+        required: true
+      responses:
+        "404":
+          description: Product not found or not published
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/CartResponse"
+        "200":
+          description: Cart updated
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/CartResponse"
+        "400":
+          description: Invalid input
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/CartResponse"
+        "409":
+          description: Product out of stock or insufficient quantity
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/CartResponse"
   /api/auth/setup-password:
     post:
       tags:
@@ -140,8 +915,31 @@ paths:
           description: Passwords do not match
         "401":
           description: Not authenticated
+        "422":
+          description: Password found in known data breaches
         "204":
           description: Password set
+  /api/auth/reset-password:
+    post:
+      tags:
+      - Auth
+      summary: Reset password using the one-time token received by email (SEC-PWD-006)
+      operationId: resetPassword
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ResetPasswordRequest"
+        required: true
+      responses:
+        "410":
+          description: "Token expired, not found, or already used"
+        "400":
+          description: Invalid input
+        "204":
+          description: Password updated
+        "422":
+          description: Password found in known data breaches
   /api/auth/resend-activation:
     post:
       tags:
@@ -178,11 +976,74 @@ paths:
           description: Email already registered
         "400":
           description: Invalid input
+        "422":
+          description: Password found in known data breaches
+  /api/auth/mfa/verify:
+    post:
+      tags:
+      - Auth
+      summary: Verify TOTP code after password login — issues the final JWT (SEC-AUTH-007)
+      operationId: verifyMfa
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MfaVerifyRequest"
+        required: true
+      responses:
+        "200":
+          description: MFA verified — JWT issued
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/AuthResponse"
+        "401":
+          description: Invalid or expired MFA token or code
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/AuthResponse"
+  /api/auth/mfa/setup/init:
+    post:
+      tags:
+      - Auth
+      summary: Initialise TOTP MFA setup — returns secret and otpauth URI (SEC-AUTH-007)
+      operationId: initMfaSetup
+      responses:
+        "200":
+          description: Secret generated — display QR code to the user
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/MfaSetupResponse"
+        "401":
+          description: Not authenticated
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/MfaSetupResponse"
+  /api/auth/mfa/setup/confirm:
+    post:
+      tags:
+      - Auth
+      summary: Confirm TOTP MFA setup by verifying the first code (SEC-AUTH-007)
+      operationId: confirmMfaSetup
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MfaConfirmRequest"
+        required: true
+      responses:
+        "204":
+          description: MFA activated
+        "401":
+          description: Invalid or expired TOTP code
   /api/auth/login:
     post:
       tags:
       - Auth
-      summary: Login — returns a signed JWT
+      summary: Login — returns a signed JWT or an MFA challenge
       operationId: login
       requestBody:
         content:
@@ -191,18 +1052,41 @@ paths:
               $ref: "#/components/schemas/LoginRequest"
         required: true
       responses:
+        "200":
+          description: Credentials valid — JWT issued or MFA required
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/AuthResponse"
         "401":
           description: Invalid credentials or account not active
           content:
             '*/*':
               schema:
                 $ref: "#/components/schemas/AuthResponse"
-        "200":
-          description: Authentication successful
+        "429":
+          description: Too many failed attempts
           content:
             '*/*':
               schema:
                 $ref: "#/components/schemas/AuthResponse"
+  /api/auth/forgot-password:
+    post:
+      tags:
+      - Auth
+      summary: Request a password-reset link by email (SEC-PWD-006)
+      operationId: forgotPassword
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ForgotPasswordRequest"
+        required: true
+      responses:
+        "204":
+          description: Request processed — email sent if account exists
+        "400":
+          description: Invalid email format
   /api/auth/activate:
     post:
       tags:
@@ -222,12 +1106,14 @@ paths:
           description: Token expired or not found
         "400":
           description: Password required or mismatch
+        "422":
+          description: Password found in known data breaches
   /api/admin/carriers:
     get:
       tags:
       - Admin — Carriers
       summary: List all carriers
-      operationId: listCarriers
+      operationId: listCarriers_1
       responses:
         "200":
           description: Carrier list returned
@@ -376,6 +1262,71 @@ paths:
             '*/*':
               schema:
                 $ref: "#/components/schemas/ProductResponse"
+  /api/vendor/products/stocks:
+    patch:
+      tags:
+      - Vendor — Catalog
+      summary: Bulk update stock for multiple products
+      operationId: bulkUpdateStock
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BulkStockUpdateRequest"
+        required: true
+      responses:
+        "200":
+          description: Bulk update processed — may contain per-product errors
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/BulkStockUpdateResponse"
+        "400":
+          description: Invalid input
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/BulkStockUpdateResponse"
+  /api/vendor/announcements/{id}/move-up:
+    patch:
+      tags:
+      - Vendor Announcements
+      summary: Move announcement one position up
+      operationId: moveUp
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          description: Announcement moved
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/AnnouncementResponse"
+  /api/vendor/announcements/{id}/move-down:
+    patch:
+      tags:
+      - Vendor Announcements
+      summary: Move announcement one position down
+      operationId: moveDown
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          description: Announcement moved
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/AnnouncementResponse"
   /api/vendor/alerts/{alertId}/acknowledge:
     patch:
       tags:
@@ -402,6 +1353,32 @@ paths:
             '*/*':
               schema:
                 $ref: "#/components/schemas/StockAlertResponse"
+  /api/profile/addresses/{addressId}/set-default:
+    patch:
+      tags:
+      - Delivery Addresses
+      summary: Set an address as default (US-PRF-03)
+      operationId: setDefault
+      parameters:
+      - name: addressId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "404":
+          description: Address not found
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/DeliveryAddressResponse"
+        "200":
+          description: Default updated
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/DeliveryAddressResponse"
   /api/me:
     get:
       tags:
@@ -457,6 +1434,112 @@ paths:
             '*/*':
               schema:
                 $ref: "#/components/schemas/ProfileResponse"
+  /api/cart/items/{itemId}:
+    delete:
+      tags:
+      - Buyer — Cart
+      summary: Remove an item from the cart
+      operationId: removeCartItem
+      parameters:
+      - name: itemId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          description: Cart item removed
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/CartResponse"
+        "404":
+          description: Cart item not found
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/CartResponse"
+    patch:
+      tags:
+      - Buyer — Cart
+      summary: Update cart item quantity
+      operationId: updateCartItem
+      parameters:
+      - name: itemId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateCartItemRequest"
+        required: true
+      responses:
+        "200":
+          description: Cart item updated
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/CartResponse"
+        "409":
+          description: Requested quantity exceeds available stock
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/CartResponse"
+        "400":
+          description: Invalid input
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/CartResponse"
+        "404":
+          description: Cart item not found
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/CartResponse"
+  /api/admin/settings/maintenance:
+    get:
+      tags:
+      - Admin — Settings
+      summary: Get maintenance mode status (admin)
+      operationId: getMaintenanceStatusAdmin
+      responses:
+        "200":
+          description: Status returned
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/MaintenanceStatusResponse"
+    patch:
+      tags:
+      - Admin — Settings
+      summary: Set maintenance mode
+      operationId: setMaintenanceMode
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SetMaintenanceModeRequest"
+        required: true
+      responses:
+        "400":
+          description: Invalid request body
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/MaintenanceStatusResponse"
+        "200":
+          description: Maintenance mode updated
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/MaintenanceStatusResponse"
   /api/admin/carriers/{id}:
     delete:
       tags:
@@ -715,6 +1798,133 @@ paths:
             '*/*':
               schema:
                 $ref: "#/components/schemas/AccountResponse"
+  /api/vendor/reports/sales:
+    get:
+      tags:
+      - Vendor - Reports
+      summary: Get sales report for a period
+      operationId: getSalesReport
+      parameters:
+      - name: period
+        in: query
+        required: true
+        schema:
+          type: string
+      - name: category
+        in: query
+        required: false
+        schema:
+          type: string
+      responses:
+        "400":
+          description: Invalid period format
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/SalesReportResponse"
+        "200":
+          description: Sales report returned
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/SalesReportResponse"
+        "401":
+          description: Authentication required
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/SalesReportResponse"
+  /api/vendor/reports/sales/export:
+    get:
+      tags:
+      - Vendor - Reports
+      summary: Export sales report as a CSV file
+      operationId: exportSalesCsv
+      parameters:
+      - name: period
+        in: query
+        required: true
+        schema:
+          type: string
+      - name: category
+        in: query
+        required: false
+        schema:
+          type: string
+      responses:
+        "400":
+          description: Invalid period format
+          content:
+            '*/*':
+              schema:
+                type: string
+        "401":
+          description: Authentication required
+          content:
+            '*/*':
+              schema:
+                type: string
+        "200":
+          description: CSV file returned
+          content:
+            '*/*':
+              schema:
+                type: string
+  /api/vendor/products/export:
+    get:
+      tags:
+      - Vendor — Catalog
+      summary: Export all vendor products as a CSV file
+      operationId: exportProducts
+      responses:
+        "200":
+          description: CSV file returned
+          content:
+            text/csv;charset=UTF-8:
+              schema:
+                type: string
+                format: byte
+  /api/vendor/orders:
+    get:
+      tags:
+      - Vendor Orders
+      summary: List vendor orders
+      operationId: listOrders
+      responses:
+        "200":
+          description: Orders listed
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/OrderResponse"
+  /api/vendor/orders/{orderId}:
+    get:
+      tags:
+      - Vendor Orders
+      summary: Get vendor order details
+      operationId: getOrder
+      parameters:
+      - name: orderId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "404":
+          description: Order not found
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/OrderResponse"
+        "200":
+          description: Order found
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/OrderResponse"
   /api/vendor/alerts:
     get:
       tags:
@@ -730,6 +1940,96 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/StockAlertResponse"
+  /api/public/maintenance:
+    get:
+      tags:
+      - Admin — Settings
+      summary: Get current maintenance mode status (public)
+      operationId: getMaintenanceStatus
+      responses:
+        "200":
+          description: Status returned
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/MaintenanceStatusResponse"
+  /api/orders/{orderId}:
+    get:
+      tags:
+      - Orders
+      summary: Get a specific order for the authenticated buyer
+      operationId: getMyOrder
+      parameters:
+      - name: orderId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "404":
+          description: Order not found
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/OrderResponse"
+        "200":
+          description: Order retrieved
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/OrderResponse"
+  /api/countries:
+    get:
+      tags:
+      - Public
+      summary: List Eurozone countries available for delivery
+      operationId: listCountries
+      responses:
+        "200":
+          description: Country list returned
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  type: object
+                  additionalProperties:
+                    type: string
+  /api/cart:
+    get:
+      tags:
+      - Buyer — Cart
+      summary: Get the buyer's cart
+      operationId: getCart
+      responses:
+        "200":
+          description: Cart returned
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/CartResponse"
+  /api/carriers:
+    get:
+      tags:
+      - Public
+      summary: List active carriers available for a delivery country
+      operationId: listCarriers
+      parameters:
+      - name: countryCode
+        in: query
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: Carriers returned
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/CarrierResponse"
   /api/buyer/products:
     get:
       tags:
@@ -796,12 +2096,27 @@ paths:
             '*/*':
               schema:
                 $ref: "#/components/schemas/BuyerProductResponse"
+  /api/announcements:
+    get:
+      tags:
+      - Announcements
+      summary: List active announcements for the buyer portal carousel
+      operationId: listActive
+      responses:
+        "200":
+          description: List returned
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/AnnouncementResponse"
   /api/admin/countries:
     get:
       tags:
       - Admin — Countries
       summary: List all Eurozone countries
-      operationId: listCountries
+      operationId: listCountries_1
       responses:
         "200":
           description: Country list returned
@@ -866,10 +2181,6 @@ components:
           type: string
           description: Product UUID
           format: uuid
-        vendorId:
-          type: string
-          description: Vendor account UUID
-          format: uuid
         name:
           type: string
           description: Product display name
@@ -916,6 +2227,158 @@ components:
           type: string
           description: Last update timestamp
           format: date-time
+    UpdateAnnouncementRequest:
+      required:
+      - contentType
+      type: object
+      properties:
+        contentType:
+          type: string
+          description: "Content type: TEXT, IMAGE, or BOTH"
+          enum:
+          - TEXT
+          - IMAGE
+          - BOTH
+        textContent:
+          maxLength: 500
+          minLength: 0
+          type: string
+          description: Text body — required for TEXT and BOTH types
+        imageUrl:
+          maxLength: 500
+          minLength: 0
+          type: string
+          description: Server-side path of the uploaded image
+        imageOrientation:
+          type: string
+          description: Orientation detected server-side at upload time (PORTRAIT or
+            LANDSCAPE)
+          enum:
+          - LANDSCAPE
+          - PORTRAIT
+        redirectUrl:
+          maxLength: 500
+          minLength: 0
+          type: string
+          description: Optional redirect URL
+        sortOrder:
+          minimum: 0
+          type: integer
+          description: Display sort order
+          format: int32
+        active:
+          type: boolean
+          description: Whether the announcement is visible in the carousel
+    AnnouncementResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Announcement UUID
+          format: uuid
+        vendorId:
+          type: string
+          description: Vendor account UUID
+          format: uuid
+        contentType:
+          type: string
+          description: "Content type: TEXT, IMAGE, or BOTH"
+          enum:
+          - TEXT
+          - IMAGE
+          - BOTH
+        textContent:
+          type: string
+          description: "Text body, or null for image-only announcements"
+        imageUrl:
+          type: string
+          description: "Image URL, or null for text-only announcements"
+        imageOrientation:
+          type: string
+          description: "Auto-detected image orientation (PORTRAIT or LANDSCAPE), null\
+            \ when no image"
+          enum:
+          - LANDSCAPE
+          - PORTRAIT
+        redirectUrl:
+          type: string
+          description: Optional redirect URL
+        sortOrder:
+          type: integer
+          description: Display sort order (0 = first)
+          format: int32
+        active:
+          type: boolean
+          description: Whether the announcement is visible in the carousel
+        createdAt:
+          type: string
+          description: Creation timestamp
+          format: date-time
+        updatedAt:
+          type: string
+          description: Last-modified timestamp
+          format: date-time
+    DeliveryAddressRequest:
+      required:
+      - addressLine
+      - city
+      - countryCode
+      - label
+      - postalCode
+      type: object
+      properties:
+        label:
+          maxLength: 100
+          minLength: 0
+          type: string
+          description: "Short label for this address, e.g. Home or Office"
+        addressLine:
+          maxLength: 255
+          minLength: 0
+          type: string
+          description: Street address line
+        city:
+          maxLength: 100
+          minLength: 0
+          type: string
+          description: City
+        postalCode:
+          maxLength: 20
+          minLength: 0
+          type: string
+          description: Postal code
+        countryCode:
+          pattern: "[A-Z]{2}"
+          type: string
+          description: ISO 3166-1 alpha-2 country code — must be a Eurozone country
+            (CS-04)
+        makeDefault:
+          type: boolean
+          description: Set to true to make this address the default at checkout
+    DeliveryAddressResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Address UUID
+          format: uuid
+        label:
+          type: string
+          description: Short label
+        addressLine:
+          type: string
+          description: Street address line
+        city:
+          type: string
+          description: City
+        postalCode:
+          type: string
+          description: Postal code
+        countryCode:
+          type: string
+          description: ISO alpha-2 country code
+        default:
+          type: boolean
     CreateProductRequest:
       required:
       - name
@@ -963,6 +2426,384 @@ components:
           items:
             type: string
             description: List of publicly accessible photo URLs
+    CsvImportResponse:
+      type: object
+      properties:
+        rows:
+          type: array
+          description: Per-row results in file order
+          items:
+            $ref: "#/components/schemas/CsvImportRowResult"
+        totalCreated:
+          type: integer
+          description: Total number of successfully created products
+          format: int32
+        totalErrors:
+          type: integer
+          description: Total number of rows that failed to import
+          format: int32
+    CsvImportRowResult:
+      type: object
+      properties:
+        lineNumber:
+          type: integer
+          description: 1-based line number in the CSV file (header counts as line
+            1)
+          format: int32
+        status:
+          type: string
+          description: "Row outcome: CREATED or ERROR"
+        message:
+          type: string
+          description: Error description when status is ERROR; null when status is
+            CREATED
+        product:
+          $ref: "#/components/schemas/ProductResponse"
+      description: Per-row results in file order
+    ProductImageUploadResponse:
+      type: object
+      properties:
+        imageUrl:
+          type: string
+          description: "Public URL to the stored product image, ready to be saved\
+            \ in the product's photo list"
+    VendorReturnRequest:
+      type: object
+      properties:
+        buyerIban:
+          type: string
+          description: Buyer IBAN for wire transfer refund — required when the order
+            was paid by WIRE_TRANSFER
+          example: FR7630006000011234567890189
+    OrderLineResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Line UUID
+          format: uuid
+        productId:
+          type: string
+          description: "Product UUID, null if product was deleted"
+          format: uuid
+        productName:
+          type: string
+          description: Product name snapshot
+        unitPriceExclTax:
+          type: number
+          description: Unit price excluding VAT
+        unitPriceTtc:
+          type: number
+          description: Unit price including VAT
+        quantity:
+          type: integer
+          description: Quantity ordered
+          format: int32
+        lineTotalTtc:
+          type: number
+          description: Line total including VAT
+      description: Order line items
+    OrderResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Order UUID
+          format: uuid
+        orderNumber:
+          type: string
+          description: Human-readable order number
+        buyerId:
+          type: string
+          description: Buyer account UUID
+          format: uuid
+        carrierId:
+          type: string
+          description: Carrier UUID
+          format: uuid
+        carrierName:
+          type: string
+          description: Carrier name snapshot
+        carrierTrackingUrl:
+          type: string
+          description: Carrier tracking URL snapshot
+        deliveryAddressId:
+          type: string
+          description: Delivery address UUID
+          format: uuid
+        deliveryAddressLine:
+          type: string
+          description: Delivery street address
+        deliveryCity:
+          type: string
+          description: Delivery city
+        deliveryPostalCode:
+          type: string
+          description: Delivery postal code
+        deliveryCountryCode:
+          type: string
+          description: Delivery country ISO code
+        paymentMethod:
+          type: string
+          description: Payment method
+          enum:
+          - CARD
+          - WIRE_TRANSFER
+        status:
+          type: string
+          description: Current order status
+          enum:
+          - PAYMENT_PENDING_CARD
+          - PAYMENT_PENDING_WIRE
+          - AWAITING_PROCESSING
+          - IN_PREPARATION
+          - SHIPPED
+          - DELIVERED
+          - CANCELLED
+          - PENDING_RETURN
+          - WIRE_REFUND_IN_PROGRESS
+          - CANCELLATION_REQUESTED_AFTER_SHIPMENT
+        totalAmountTtc:
+          type: number
+          description: Grand total including VAT
+        trackingNumber:
+          type: string
+          description: "Shipment tracking number, null until shipped"
+        buyerIban:
+          type: string
+          description: "Buyer IBAN for wire refund, populated when provided"
+        cancellationReason:
+          type: string
+          description: Reason given by the buyer when requesting post-shipment cancellation
+            (US-CAN-06)
+        lines:
+          type: array
+          description: Order line items
+          items:
+            $ref: "#/components/schemas/OrderLineResponse"
+        createdAt:
+          type: string
+          description: Order creation timestamp
+          format: date-time
+        updatedAt:
+          type: string
+          description: Last status-change timestamp
+          format: date-time
+    ShipOrderRequest:
+      required:
+      - trackingNumber
+      type: object
+      properties:
+        trackingNumber:
+          type: string
+          description: Tracking number from the carrier receipt
+          example: 1Z999AA10123456784
+    CreateAnnouncementRequest:
+      required:
+      - contentType
+      type: object
+      properties:
+        contentType:
+          type: string
+          description: "Content type: TEXT, IMAGE, or BOTH"
+          enum:
+          - TEXT
+          - IMAGE
+          - BOTH
+        textContent:
+          maxLength: 500
+          minLength: 0
+          type: string
+          description: Text body — required for TEXT and BOTH types
+        imageUrl:
+          maxLength: 500
+          minLength: 0
+          type: string
+          description: "Server-side path of the uploaded image, returned by the upload\
+            \ endpoint"
+        imageOrientation:
+          type: string
+          description: Orientation detected server-side at upload time (PORTRAIT or
+            LANDSCAPE)
+          enum:
+          - LANDSCAPE
+          - PORTRAIT
+        redirectUrl:
+          maxLength: 500
+          minLength: 0
+          type: string
+          description: Optional URL to redirect to when the announcement is clicked
+        sortOrder:
+          minimum: 0
+          type: integer
+          description: Display sort order (0 = first)
+          format: int32
+        active:
+          type: boolean
+          description: Whether the announcement is visible in the carousel
+    ImageUploadResponse:
+      type: object
+      properties:
+        imageUrl:
+          type: string
+          description: Public URL to the stored image
+        imageOrientation:
+          type: string
+          description: "Auto-detected orientation: PORTRAIT if height >= width, LANDSCAPE\
+            \ if width > height"
+          enum:
+          - LANDSCAPE
+          - PORTRAIT
+    CreateOrderRequest:
+      required:
+      - addressId
+      - carrierId
+      - paymentMethod
+      type: object
+      properties:
+        addressId:
+          type: string
+          description: UUID of the delivery address from the buyer's address book
+            (US-PRF-03)
+          format: uuid
+        carrierId:
+          type: string
+          description: UUID of the selected carrier
+          format: uuid
+        paymentMethod:
+          type: string
+          description: "CARD for immediate Stripe authorisation, WIRE_TRANSFER for\
+            \ bank payment"
+          enum:
+          - CARD
+          - WIRE_TRANSFER
+    CheckoutInitResponse:
+      type: object
+      properties:
+        orderId:
+          type: string
+          description: Order UUID
+          format: uuid
+        orderNumber:
+          type: string
+          description: Human-readable order number
+        paymentMethod:
+          type: string
+          description: Chosen payment method
+          enum:
+          - CARD
+          - WIRE_TRANSFER
+        totalAmountTtc:
+          type: number
+          description: Grand total including VAT
+        clientSecret:
+          type: string
+          description: Stripe PaymentIntent client secret (CARD only)
+        bankIban:
+          type: string
+          description: Vendor bank IBAN (WIRE_TRANSFER only)
+        bankBic:
+          type: string
+          description: Vendor bank BIC (WIRE_TRANSFER only)
+        paymentReference:
+          type: string
+          description: Payment reference to include in the wire transfer (WIRE_TRANSFER
+            only)
+    RequestPostShipmentCancellationRequest:
+      required:
+      - reason
+      type: object
+      properties:
+        reason:
+          maxLength: 500
+          minLength: 0
+          type: string
+          description: Mandatory reason for requesting the cancellation
+          example: Item no longer needed
+        buyerIban:
+          type: string
+          description: Buyer IBAN for wire refund — required when the order was paid
+            by WIRE_TRANSFER
+          example: FR7630006000011234567890189
+    CancelOrderRequest:
+      type: object
+      properties:
+        buyerIban:
+          type: string
+          description: Buyer IBAN for wire transfer refund — required when the order
+            was paid by WIRE_TRANSFER
+          example: FR7630006000011234567890189
+    AddToCartRequest:
+      required:
+      - productId
+      type: object
+      properties:
+        productId:
+          type: string
+          description: UUID of the product to add
+          format: uuid
+        quantity:
+          minimum: 1
+          type: integer
+          description: Number of units to add (minimum 1)
+          format: int32
+    CartItemResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Cart item UUID
+          format: uuid
+        productId:
+          type: string
+          description: Product UUID
+          format: uuid
+        productName:
+          type: string
+          description: Product display name
+        priceExclTax:
+          type: number
+          description: Product unit price excluding VAT
+        priceTTC:
+          type: number
+          description: Product unit price including 20% VAT
+        photoUrl:
+          type: string
+          description: "URL of the first product photo, null if none"
+        inStock:
+          type: boolean
+          description: Whether the product currently has stock available
+        quantity:
+          type: integer
+          description: Quantity in this line
+          format: int32
+        lineTotal:
+          type: number
+          description: Total price for this line (priceTTC × quantity)
+      description: Line items
+    CartResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Cart UUID
+          format: uuid
+        buyerId:
+          type: string
+          description: Buyer account UUID
+          format: uuid
+        items:
+          type: array
+          description: Line items
+          items:
+            $ref: "#/components/schemas/CartItemResponse"
+        total:
+          type: number
+          description: Grand total of all line items including VAT
+        updatedAt:
+          type: string
+          description: Timestamp of the last cart modification
+          format: date-time
     SetupPasswordRequest:
       required:
       - confirmPassword
@@ -979,6 +2820,22 @@ components:
         confirmPassword:
           type: string
           description: Password confirmation — must match password
+    ResetPasswordRequest:
+      required:
+      - newPassword
+      - token
+      type: object
+      properties:
+        token:
+          type: string
+          description: One-time reset token received by email
+        newPassword:
+          maxLength: 2147483647
+          minLength: 12
+          pattern: "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[^a-zA-Z0-9]).+$"
+          type: string
+          description: "New password — min 12 chars, must contain uppercase, lowercase,\
+            \ digit, and special character"
     ResendActivationRequest:
       required:
       - email
@@ -1012,6 +2869,62 @@ components:
         lastName:
           type: string
           description: Last name
+    MfaVerifyRequest:
+      required:
+      - code
+      - mfaToken
+      type: object
+      properties:
+        mfaToken:
+          type: string
+          description: Pre-auth token returned by the login endpoint when requiresMfa
+            is true
+        code:
+          pattern: "^\\d{6}$"
+          type: string
+          description: 6-digit TOTP code from the authenticator app
+    AuthResponse:
+      type: object
+      properties:
+        token:
+          type: string
+          description: Signed JWT to include in subsequent requests as Bearer token
+            — null when requiresMfa is true
+        email:
+          type: string
+          description: Authenticated account email
+        requiresPasswordSetup:
+          type: boolean
+          description: True when the account has no password yet — client must call
+            /api/auth/setup-password
+        requiresMfa:
+          type: boolean
+          description: True when the account has TOTP MFA enabled — client must call
+            /api/auth/mfa/verify with the mfaToken
+        mfaToken:
+          type: string
+          description: Short-lived pre-auth token required by /api/auth/mfa/verify
+            — present only when requiresMfa is true
+    MfaSetupResponse:
+      type: object
+      properties:
+        secret:
+          type: string
+          description: Base32-encoded TOTP secret to import into the authenticator
+            app
+        otpauthUri:
+          type: string
+          description: otpauth:// URI to encode as a QR code in the client UI
+    MfaConfirmRequest:
+      required:
+      - code
+      type: object
+      properties:
+        code:
+          pattern: "^\\d{6}$"
+          type: string
+          description: 6-digit TOTP code from the authenticator app to confirm the
+            secret was imported correctly
     LoginRequest:
       required:
       - email
@@ -1023,19 +2936,14 @@ components:
         password:
           type: string
           description: Account password — omit on first login
-    AuthResponse:
+    ForgotPasswordRequest:
+      required:
+      - email
       type: object
       properties:
-        token:
-          type: string
-          description: Signed JWT to include in subsequent requests as Bearer token
         email:
           type: string
-          description: Authenticated account email
-        requiresPasswordSetup:
-          type: boolean
-          description: True when the account has no password yet — client must call
-            /api/auth/setup-password
+          description: Email address of the account to reset the password for
     ActivateAccountRequest:
       required:
       - token
@@ -1194,6 +3102,73 @@ components:
             below this value
           format: int32
           example: 3
+    BulkStockUpdateRequest:
+      required:
+      - updates
+      type: object
+      properties:
+        updates:
+          type: array
+          description: List of per-product stock updates to apply
+          items:
+            $ref: "#/components/schemas/StockUpdateItem"
+    StockUpdateItem:
+      required:
+      - productId
+      - quantity
+      type: object
+      properties:
+        productId:
+          type: string
+          description: Product identifier
+          format: uuid
+          example: 3fa85f64-5717-4562-b3fc-2c963f66afa6
+        quantity:
+          minimum: 0
+          type: integer
+          description: New available quantity in stock
+          format: int32
+          example: 15
+        stockAlertThreshold:
+          minimum: 0
+          type: integer
+          description: Stock alert threshold — alert triggered when quantity falls
+            below this value
+          format: int32
+          example: 3
+      description: List of per-product stock updates to apply
+    BulkStockUpdateResponse:
+      type: object
+      properties:
+        totalUpdated:
+          type: integer
+          description: Number of products successfully updated
+          format: int32
+        totalErrors:
+          type: integer
+          description: Number of failed updates
+          format: int32
+        results:
+          type: array
+          description: Per-product update results
+          items:
+            $ref: "#/components/schemas/StockUpdateResult"
+    StockUpdateResult:
+      type: object
+      properties:
+        productId:
+          type: string
+          description: Product identifier
+          format: uuid
+        status:
+          type: string
+          description: "Update status: UPDATED or ERROR"
+        message:
+          type: string
+          description: "Error message when status is ERROR, null otherwise"
+        product:
+          $ref: "#/components/schemas/ProductResponse"
+      description: Per-product update results
     StockAlertResponse:
       type: object
       properties:
@@ -1241,27 +3216,6 @@ components:
           minLength: 0
           type: string
           description: Phone number to set — omit to leave unchanged
-        addressLine:
-          maxLength: 255
-          minLength: 0
-          type: string
-          description: Street address line to set — omit to leave unchanged
-        city:
-          maxLength: 100
-          minLength: 0
-          type: string
-          description: City to set — omit to leave unchanged
-        postalCode:
-          maxLength: 20
-          minLength: 0
-          type: string
-          description: Postal code to set — omit to leave unchanged
-        countryCode:
-          maxLength: 2
-          minLength: 2
-          type: string
-          description: ISO 3166-1 alpha-2 country code (euro zone) — omit to leave
-            unchanged
         language:
           type: string
           description: Preferred notification language to set — omit to leave unchanged
@@ -1298,18 +3252,6 @@ components:
         phone:
           type: string
           description: Phone number
-        addressLine:
-          type: string
-          description: Street address line
-        city:
-          type: string
-          description: City
-        postalCode:
-          type: string
-          description: Postal code
-        countryCode:
-          type: string
-          description: ISO 3166-1 alpha-2 country code (euro zone only)
         language:
           type: string
           description: Preferred notification language
@@ -1327,6 +3269,29 @@ components:
           type: string
           description: Account creation timestamp
           format: date-time
+    UpdateCartItemRequest:
+      type: object
+      properties:
+        quantity:
+          minimum: 1
+          type: integer
+          description: New quantity for the cart item (minimum 1)
+          format: int32
+    SetMaintenanceModeRequest:
+      required:
+      - active
+      type: object
+      properties:
+        active:
+          type: boolean
+          description: "Set to true to enable maintenance mode, false to disable it"
+    MaintenanceStatusResponse:
+      type: object
+      properties:
+        active:
+          type: boolean
+          description: True when the platform is in maintenance mode and non-admin
+            access is blocked
     UpdateCarrierRequest:
       required:
       - name
@@ -1373,6 +3338,59 @@ components:
           enum:
           - FR
           - EN
+    SalesMetrics:
+      type: object
+      properties:
+        revenue:
+          type: number
+          description: "Total revenue for non-cancelled orders, including VAT."
+        orderCount:
+          type: integer
+          description: Number of non-cancelled orders.
+          format: int32
+        averageCartValue:
+          type: number
+          description: Average order value (revenue divided by orderCount).
+        cancellationRate:
+          type: number
+          description: Percentage of all orders that were cancelled.
+      description: Aggregated key performance indicators for the period.
+    SalesReportResponse:
+      type: object
+      properties:
+        period:
+          type: string
+          description: The reporting period in YYYY-MM format.
+        category:
+          type: string
+          description: Optional product category filter applied to this report; null
+            means all categories.
+        metrics:
+          $ref: "#/components/schemas/SalesMetrics"
+        topSellingProducts:
+          type: array
+          description: Up to 10 top-selling products ranked by quantity sold.
+          items:
+            $ref: "#/components/schemas/TopProduct"
+    TopProduct:
+      type: object
+      properties:
+        rank:
+          type: integer
+          description: "Rank of this product, starting at 1 for the best seller."
+          format: int32
+        productName:
+          type: string
+          description: Product name snapshot from order lines.
+        quantitySold:
+          type: integer
+          description: Total quantity sold across all non-cancelled orders in the
+            period.
+          format: int32
+        revenueGenerated:
+          type: number
+          description: Total revenue generated by this product including VAT.
+      description: Up to 10 top-selling products ranked by quantity sold.
     Pageable:
       type: object
       properties:

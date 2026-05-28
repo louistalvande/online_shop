@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Button, Card, AppShell, LangToggle, CartIcon, UserMenu } from '@workspace/theme'
+import { Button, Card, AppShell, LangToggle, CartIcon, UserMenu, Snackbar } from '@workspace/theme'
 import { fetchProducts, type BuyerProduct, type CatalogFilters } from './api/catalogApi'
 import { addToCart } from './api/cartApi'
 import { getSession, logout, type BuyerSession } from './api/authApi'
@@ -31,10 +31,22 @@ export default function CatalogPage() {
 
   const [pendingSearch, setPendingSearch] = useState('')
 
+  const [quantities, setQuantities] = useState<Record<string, number>>({})
   const [addingId, setAddingId] = useState<string | null>(null)
   const [cartFeedback, setCartFeedback] = useState<{ id: string; ok: boolean } | null>(null)
   const [showLogin, setShowLogin] = useState(false)
+  const [pendingCartProductId, setPendingCartProductId] = useState<string | null>(null)
+  const [snackbar, setSnackbar] = useState<{ message: string; variant: 'success' | 'error' } | null>(null)
   const cartCount = useCartCount()
+
+  useEffect(() => {
+    if (session && pendingCartProductId) {
+      const id = pendingCartProductId
+      setPendingCartProductId(null)
+      doAddToCart(id)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [session])
 
   const load = useCallback(async (filters: CatalogFilters) => {
     setLoading(true)
@@ -80,28 +92,44 @@ export default function CatalogPage() {
     setPage(0)
   }
 
-  async function handleAddToCart(productId: string) {
-    if (!session) { setShowLogin(true); return }
+  function getQty(id: string) { return quantities[id] ?? 1 }
+  function setQty(id: string, val: number) {
+    setQuantities(prev => ({ ...prev, [id]: Math.max(1, val) }))
+  }
+
+  async function doAddToCart(productId: string) {
     setAddingId(productId)
     setCartFeedback(null)
     try {
-      await addToCart(productId, 1)
+      await addToCart(productId, getQty(productId))
       window.dispatchEvent(new Event('cart-updated'))
       setCartFeedback({ id: productId, ok: true })
+      setSnackbar({ message: t('cart.added'), variant: 'success' })
     } catch {
       setCartFeedback({ id: productId, ok: false })
+      setSnackbar({ message: t('cart.error.add'), variant: 'error' })
     } finally {
       setAddingId(null)
       setTimeout(() => setCartFeedback(null), 2500)
     }
   }
 
+  async function handleAddToCart(productId: string) {
+    if (!session) { setPendingCartProductId(productId); setShowLogin(true); return }
+    await doAddToCart(productId)
+  }
+
   return (
     <>
+    {snackbar && <Snackbar message={snackbar.message} variant={snackbar.variant} onDismiss={() => setSnackbar(null)} />}
     {showLogin && (
       <LoginModal
-        onClose={() => setShowLogin(false)}
-        onLogin={() => { setSession(getSession()); setShowLogin(false) }}
+        onClose={() => { setShowLogin(false); setPendingCartProductId(null) }}
+        onLogin={(s) => {
+          setSession(s)
+          setShowLogin(false)
+          window.dispatchEvent(new Event('session-changed'))
+        }}
       />
     )}
     <AppShell
@@ -123,14 +151,14 @@ export default function CatalogPage() {
               settingsLabel={t('nav.profile')}
               logoutLabel={t('nav.logout')}
               onSettings={() => { window.location.href = '/profile' }}
-              onLogout={() => { logout(); setSession(null) }}
+              onLogout={() => { logout(); setSession(null); window.dispatchEvent(new Event('session-changed')) }}
             />
           ) : (
             <Button variant="ghost" size="sm" onClick={() => { window.location.href = '/login' }}>
               {t('nav.login')}
             </Button>
           )}
-          <Button variant="ghost" size="sm" aria-label={t('nav.cart')} onClick={() => { window.location.href = '/cart' }}>
+          <Button variant="ghost" size="sm" className="cart-icon-btn" aria-label={t('nav.cart')} onClick={() => { window.location.href = '/cart' }}>
             <span className="cart-btn-wrapper">
               <CartIcon size={22} />
               {cartCount > 0 && <span className="cart-badge">{cartCount > 99 ? '99+' : cartCount}</span>}
@@ -220,20 +248,24 @@ export default function CatalogPage() {
                 <div className="catalog-product-grid">
                   {products.map(p => (
                     <Card key={p.id}>
-                      {p.photoUrls.length > 0 ? (
-                        <img
-                          src={p.photoUrls[0]}
-                          alt={p.name}
-                          className="catalog-product-image"
-                        />
-                      ) : (
-                        <div className="catalog-product-placeholder" />
-                      )}
-                      <div className="catalog-product-body">
-                        {p.category && (
-                          <span className="catalog-product-category">{p.category}</span>
+                      <a href={`/catalog/${p.id}`} style={{ textDecoration: 'none', color: 'inherit', display: 'block' }}>
+                        {p.photoUrls.length > 0 ? (
+                          <img
+                            src={p.photoUrls[0]}
+                            alt={p.name}
+                            className="catalog-product-image"
+                          />
+                        ) : (
+                          <div className="catalog-product-placeholder" />
                         )}
-                        <h3 className="catalog-product-name">{p.name}</h3>
+                        <div className="catalog-product-body" style={{ paddingBottom: 0 }}>
+                          {p.category && (
+                            <span className="catalog-product-category">{p.category}</span>
+                          )}
+                          <h3 className="catalog-product-name">{p.name}</h3>
+                        </div>
+                      </a>
+                      <div className="catalog-product-body" style={{ paddingTop: 0 }}>
                         <div className="catalog-product-footer">
                           <div>
                             <div className="catalog-product-price">{formatPrice(p.priceTTC)}</div>
@@ -246,18 +278,26 @@ export default function CatalogPage() {
                               {t('catalog.outOfStock')}
                             </Button>
                           ) : (
-                            <Button
-                              variant="secondary"
-                              size="sm"
-                              disabled={addingId === p.id}
-                              onClick={() => handleAddToCart(p.id)}
-                            >
-                              {cartFeedback?.id === p.id
-                                ? t(cartFeedback.ok ? 'cart.added' : 'cart.error.add')
-                                : addingId === p.id
-                                  ? '…'
-                                  : t('product.addToCart')}
-                            </Button>
+                            <div className="add-to-cart-compact">
+                              <div className="qty-stepper qty-stepper--sm">
+                                <button className="qty-btn qty-btn--sm" onClick={() => setQty(p.id, getQty(p.id) - 1)} aria-label="-">−</button>
+                                <span className="qty-value qty-value--sm">{getQty(p.id)}</span>
+                                <button className="qty-btn qty-btn--sm" onClick={() => setQty(p.id, getQty(p.id) + 1)} aria-label="+">+</button>
+                              </div>
+                              <Button
+                                variant="secondary"
+                                size="sm"
+                                disabled={addingId === p.id}
+                                onClick={() => handleAddToCart(p.id)}
+                              >
+                                <CartIcon size={13} />
+                                {cartFeedback?.id === p.id
+                                  ? t(cartFeedback.ok ? 'cart.added' : 'cart.error.add')
+                                  : addingId === p.id
+                                    ? '…'
+                                    : t('product.addToCart')}
+                              </Button>
+                            </div>
                           )}
                         </div>
                       </div>

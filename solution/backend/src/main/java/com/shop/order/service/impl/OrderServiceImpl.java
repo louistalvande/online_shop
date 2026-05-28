@@ -1,5 +1,6 @@
 package com.shop.order.service.impl;
 
+import com.shop.account.entity.AccountRole;
 import com.shop.account.entity.DeliveryAddress;
 import com.shop.account.exception.AccountNotFoundException;
 import com.shop.account.exception.DeliveryAddressNotFoundException;
@@ -124,9 +125,6 @@ public class OrderServiceImpl implements com.shop.order.service.OrderService {
                 .filter(c -> c.isActive() && c.getSupportedCountries().contains(countryCode))
                 .orElseThrow(() -> new CarrierNotAvailableException(request.getCarrierId()));
 
-        UUID vendorId = resolveVendorId(cart);
-        String vendorEmail = resolveVendorEmail(cart);
-
         Order order = new Order();
         order.setBuyerId(buyerId);
         order.setOrderNumber(generateOrderNumber());
@@ -135,8 +133,6 @@ public class OrderServiceImpl implements com.shop.order.service.OrderService {
         order.setCarrierTrackingUrl(carrier.getTrackingUrl());
         order.setDeliveryAddress(address);
         order.setPaymentMethod(request.getPaymentMethod());
-        order.setVendorEmail(vendorEmail);
-        order.setVendorId(vendorId);
 
         List<OrderLine> lines = buildLines(cart, order);
         order.getLines().addAll(lines);
@@ -164,8 +160,9 @@ public class OrderServiceImpl implements com.shop.order.service.OrderService {
             notificationService.sendWireTransferDetailsEmail(
                     buyerEmail, saved.getOrderNumber(), saved.getTotalAmountTtc(),
                     bankIban, bankBic, locale);
-            notificationService.sendVendorNewOrderEmail(
-                    vendorEmail, OrderResponse.from(saved), locale);
+            OrderResponse wireResponse = OrderResponse.from(saved);
+            accountRepository.findAllByRole(AccountRole.VENDOR).forEach(vendor ->
+                    notificationService.sendVendorNewOrderEmail(vendor.getEmail(), wireResponse, locale));
             return CheckoutInitResponse.forWire(saved.getId(), saved.getOrderNumber(),
                     saved.getTotalAmountTtc(), bankIban, bankBic);
         }
@@ -191,7 +188,8 @@ public class OrderServiceImpl implements com.shop.order.service.OrderService {
         OrderResponse response = OrderResponse.from(saved);
 
         notificationService.sendOrderConfirmationEmail(buyerEmail, response, locale);
-        notificationService.sendVendorNewOrderEmail(saved.getVendorEmail(), response, locale);
+        accountRepository.findAllByRole(AccountRole.VENDOR).forEach(vendor ->
+                notificationService.sendVendorNewOrderEmail(vendor.getEmail(), response, locale));
 
         return response;
     }
@@ -249,7 +247,6 @@ public class OrderServiceImpl implements com.shop.order.service.OrderService {
         OrderResponse response = OrderResponse.from(saved);
 
         notificationService.sendBuyerCancellationEmail(buyerEmail, response, locale);
-        notificationService.sendVendorCancellationEmail(saved.getVendorEmail(), response, locale);
 
         return response;
     }
@@ -277,11 +274,8 @@ public class OrderServiceImpl implements com.shop.order.service.OrderService {
         order.setCancellationReason(reason);
         order.setStatus(OrderStatus.CANCELLATION_REQUESTED_AFTER_SHIPMENT);
         Order saved = orderRepository.save(order);
-        OrderResponse response = OrderResponse.from(saved);
 
-        notificationService.sendVendorCancellationRequestedEmail(saved.getVendorEmail(), response, locale);
-
-        return response;
+        return OrderResponse.from(saved);
     }
 
     /**
@@ -323,34 +317,6 @@ public class OrderServiceImpl implements com.shop.order.service.OrderService {
             Product product = item.getProduct();
             product.setQuantity(product.getQuantity() - item.getQuantity());
         }
-    }
-
-    /**
-     * Resolves the vendor UUID from the first cart item's product.
-     *
-     * @param cart the buyer's cart
-     * @return the vendor account UUID, or null if not found
-     */
-    private UUID resolveVendorId(Cart cart) {
-        return cart.getItems().stream()
-                .findFirst()
-                .map(item -> item.getProduct().getVendorId())
-                .orElse(null);
-    }
-
-    /**
-     * Resolves the vendor email by looking up the first cart item's product vendor.
-     *
-     * @param cart the buyer's cart
-     * @return the vendor's email address, or empty string if not found
-     */
-    private String resolveVendorEmail(Cart cart) {
-        return cart.getItems().stream()
-                .findFirst()
-                .map(item -> item.getProduct().getVendorId())
-                .flatMap(accountRepository::findById)
-                .map(a -> a.getEmail())
-                .orElse("");
     }
 
     /**

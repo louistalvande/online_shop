@@ -22,6 +22,12 @@ export default function App({ openLogin = false }: Props) {
       .catch(() => {})
   }, [])
 
+  useEffect(() => {
+    function sync() { setSession(getSession()) }
+    window.addEventListener('session-changed', sync)
+    return () => window.removeEventListener('session-changed', sync)
+  }, [])
+
   if (maintenance) {
     return <MaintenancePage />
   }
@@ -31,13 +37,13 @@ export default function App({ openLogin = false }: Props) {
       {showLogin && (
         <LoginModal
           onClose={() => setShowLogin(false)}
-          onLogin={() => { setSession(getSession()); setShowLogin(false) }}
+          onLogin={(s) => { setSession(s); setShowLogin(false) }}
         />
       )}
       <Header
         session={session}
         onShowLogin={() => setShowLogin(true)}
-        onLogout={() => { logout(); setSession(null) }}
+        onLogout={() => { logout(); setSession(null); window.dispatchEvent(new Event('session-changed')) }}
       >
         <HomePage />
       </Header>

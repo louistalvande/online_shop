@@ -46,28 +46,9 @@ public interface OrderRepository extends JpaRepository<Order, UUID> {
     List<Order> findByCarrierId(UUID carrierId);
 
     /**
-     * Returns all orders for a given vendor, newest first.
+     * Returns all orders, newest first (vendor back-office listing).
      *
-     * @param vendorId the vendor account UUID
-     * @return vendor's orders ordered by creation date descending
+     * @return all orders ordered by creation date descending
      */
-    List<Order> findByVendorIdOrderByCreatedAtDesc(UUID vendorId);
-
-    /**
-     * Finds an order by its UUID and vendor, enforcing ownership.
-     *
-     * @param id       the order UUID
-     * @param vendorId the vendor account UUID
-     * @return the order, or empty if not found or not owned by this vendor
-     */
-    Optional<Order> findByIdAndVendorId(UUID id, UUID vendorId);
-
-    /**
-     * Returns all orders for a given vendor in a specific status.
-     *
-     * @param vendorId the vendor account UUID
-     * @param status   the status to filter by
-     * @return matching orders ordered by creation date descending
-     */
-    List<Order> findByVendorIdAndStatusOrderByCreatedAtDesc(UUID vendorId, OrderStatus status);
+    List<Order> findAllByOrderByCreatedAtDesc();
 }

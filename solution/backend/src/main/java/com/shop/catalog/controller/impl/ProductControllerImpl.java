@@ -44,7 +44,7 @@ public class ProductControllerImpl implements ProductController {
     @Override
     public ResponseEntity<ProductResponse> createProduct(Principal principal,
                                                           CreateProductRequest request) {
-        ProductResponse created = productService.createProduct(principal.getName(), request);
+        ProductResponse created = productService.createProduct(request);
         URI location = ServletUriComponentsBuilder.fromCurrentRequest()
                 .path("/{id}")
                 .buildAndExpand(created.getId())
@@ -55,13 +55,13 @@ public class ProductControllerImpl implements ProductController {
     /** {@inheritDoc} */
     @Override
     public ResponseEntity<List<ProductResponse>> listProducts(Principal principal) {
-        return ResponseEntity.ok(productService.listProducts(principal.getName()));
+        return ResponseEntity.ok(productService.listProducts());
     }
 
     /** {@inheritDoc} */
     @Override
     public ResponseEntity<ProductResponse> getProduct(Principal principal, UUID id) {
-        return ResponseEntity.ok(productService.getProduct(principal.getName(), id));
+        return ResponseEntity.ok(productService.getProduct(id));
     }
 
     /** {@inheritDoc} */
@@ -69,13 +69,13 @@ public class ProductControllerImpl implements ProductController {
     public ResponseEntity<ProductResponse> updateProduct(Principal principal,
                                                           UUID id,
                                                           UpdateProductRequest request) {
-        return ResponseEntity.ok(productService.updateProduct(principal.getName(), id, request));
+        return ResponseEntity.ok(productService.updateProduct(id, request));
     }
 
     /** {@inheritDoc} */
     @Override
     public ResponseEntity<ProductResponse> archiveProduct(Principal principal, UUID id) {
-        return ResponseEntity.ok(productService.archiveProduct(principal.getName(), id));
+        return ResponseEntity.ok(productService.archiveProduct(id));
     }
 
     /** {@inheritDoc} */
@@ -83,32 +83,32 @@ public class ProductControllerImpl implements ProductController {
     public ResponseEntity<ProductResponse> updateStock(Principal principal,
                                                         UUID id,
                                                         UpdateStockRequest request) {
-        return ResponseEntity.ok(productService.updateStock(principal.getName(), id, request));
+        return ResponseEntity.ok(productService.updateStock(id, request));
     }
 
     /** {@inheritDoc} */
     @Override
     public ResponseEntity<List<StockAlertResponse>> listPendingAlerts(Principal principal) {
-        return ResponseEntity.ok(productService.listPendingAlerts(principal.getName()));
+        return ResponseEntity.ok(productService.listPendingAlerts());
     }
 
     /** {@inheritDoc} */
     @Override
     public ResponseEntity<StockAlertResponse> acknowledgeAlert(Principal principal, UUID alertId) {
-        return ResponseEntity.ok(productService.acknowledgeAlert(principal.getName(), alertId));
+        return ResponseEntity.ok(productService.acknowledgeAlert(alertId));
     }
 
     /** {@inheritDoc} */
     @Override
     public ResponseEntity<BulkStockUpdateResponse> bulkUpdateStock(Principal principal,
                                                                     BulkStockUpdateRequest request) {
-        return ResponseEntity.ok(productService.bulkUpdateStock(principal.getName(), request));
+        return ResponseEntity.ok(productService.bulkUpdateStock(request));
     }
 
     /** {@inheritDoc} */
     @Override
     public ResponseEntity<byte[]> exportProducts(Principal principal) {
-        String csv = productService.exportProductsCsv(principal.getName());
+        String csv = productService.exportProductsCsv();
         byte[] bom = new byte[]{(byte) 0xEF, (byte) 0xBB, (byte) 0xBF};
         byte[] csvBytes = csv.getBytes(StandardCharsets.UTF_8);
         byte[] body = new byte[bom.length + csvBytes.length];
@@ -132,7 +132,7 @@ public class ProductControllerImpl implements ProductController {
         }
         try {
             String csvContent = new String(file.getBytes(), StandardCharsets.UTF_8);
-            return ResponseEntity.ok(productService.importProductsCsv(principal.getName(), csvContent));
+            return ResponseEntity.ok(productService.importProductsCsv(csvContent));
         } catch (IOException e) {
             throw new CsvHeaderInvalidException();
         }

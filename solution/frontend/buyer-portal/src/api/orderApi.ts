@@ -1,4 +1,4 @@
-import { getSession } from './authApi'
+import { authedFetch } from './authApi'
 
 const BASE = '/api/orders'
 
@@ -81,17 +81,11 @@ export interface CountryData {
   nameEn: string
 }
 
-function authHeaders(): Record<string, string> {
-  const session = getSession()
-  if (!session) throw new Error('NOT_AUTHENTICATED')
-  return { 'Content-Type': 'application/json', Authorization: `Bearer ${session.token}` }
-}
-
 /** Creates an order from the buyer's cart and initiates payment. */
 export async function initCheckout(req: CreateOrderRequest): Promise<CheckoutInitResponse> {
-  const res = await fetch(BASE, {
+  const res = await authedFetch(BASE, {
     method: 'POST',
-    headers: authHeaders(),
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(req),
   })
   if (res.status === 400) throw new Error('EMPTY_CART')
@@ -103,10 +97,7 @@ export async function initCheckout(req: CreateOrderRequest): Promise<CheckoutIni
 
 /** Confirms that the Stripe card payment succeeded (call after Stripe.js confirmCardPayment). */
 export async function confirmCardPayment(orderId: string): Promise<OrderData> {
-  const res = await fetch(`${BASE}/${orderId}/confirm-payment`, {
-    method: 'POST',
-    headers: authHeaders(),
-  })
+  const res = await authedFetch(`${BASE}/${orderId}/confirm-payment`, { method: 'POST' })
   if (res.status === 404) throw new Error('ORDER_NOT_FOUND')
   if (res.status === 402) throw new Error('PAYMENT_FAILED')
   if (res.status === 409) throw new Error('INVALID_ORDER_STATE')
@@ -130,14 +121,14 @@ export async function listCountries(): Promise<CountryData[]> {
 
 /** Returns all orders for the authenticated buyer. */
 export async function getMyOrders(): Promise<OrderData[]> {
-  const res = await fetch(BASE, { headers: authHeaders() })
+  const res = await authedFetch(BASE)
   if (!res.ok) throw new Error('ORDERS_LOAD_ERROR')
   return res.json()
 }
 
 /** Returns a single order for the authenticated buyer. */
 export async function getMyOrder(orderId: string): Promise<OrderData> {
-  const res = await fetch(`${BASE}/${orderId}`, { headers: authHeaders() })
+  const res = await authedFetch(`${BASE}/${orderId}`)
   if (res.status === 404) throw new Error('ORDER_NOT_FOUND')
   if (!res.ok) throw new Error('ORDER_LOAD_ERROR')
   return res.json()
@@ -149,9 +140,9 @@ export async function requestPostShipmentCancellation(
   reason: string,
   buyerIban?: string
 ): Promise<OrderData> {
-  const res = await fetch(`${BASE}/${orderId}/request-post-shipment-cancellation`, {
+  const res = await authedFetch(`${BASE}/${orderId}/request-post-shipment-cancellation`, {
     method: 'POST',
-    headers: authHeaders(),
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ reason, buyerIban: buyerIban ?? null }),
   })
   if (res.status === 404) throw new Error('ORDER_NOT_FOUND')
@@ -163,9 +154,9 @@ export async function requestPostShipmentCancellation(
 
 /** Cancels an order placed by the buyer (US-CAN-01). Pass buyerIban for wire transfer orders. */
 export async function cancelOrder(orderId: string, buyerIban?: string): Promise<OrderData> {
-  const res = await fetch(`${BASE}/${orderId}/cancel`, {
+  const res = await authedFetch(`${BASE}/${orderId}/cancel`, {
     method: 'POST',
-    headers: authHeaders(),
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ buyerIban: buyerIban ?? null }),
   })
   if (res.status === 404) throw new Error('ORDER_NOT_FOUND')
