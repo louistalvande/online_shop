@@ -84,14 +84,18 @@ export default function HomePage() {
         <div className="home-catalog-grid">
           {products.map(p => (
             <Card key={p.id}>
-              {p.photoUrls.length > 0 ? (
-                <img src={p.photoUrls[0]} alt={p.name} className="catalog-product-image" />
-              ) : (
-                <div className="product-image-placeholder" />
-              )}
-              <div className="product-card-body">
-                {p.category && <span className="product-card-category">{p.category}</span>}
-                <h3 className="product-card-title">{p.name}</h3>
+              <a href={`/catalog/${p.id}`} style={{ textDecoration: 'none', color: 'inherit', display: 'block' }}>
+                {p.photoUrls.length > 0 ? (
+                  <img src={p.photoUrls[0]} alt={p.name} className="catalog-product-image" />
+                ) : (
+                  <div className="product-image-placeholder" />
+                )}
+                <div className="product-card-body" style={{ paddingBottom: 0 }}>
+                  {p.category && <span className="product-card-category">{p.category}</span>}
+                  <h3 className="product-card-title">{p.name}</h3>
+                </div>
+              </a>
+              <div className="product-card-body" style={{ paddingTop: 0 }}>
                 <div className="product-card-footer">
                   <span className="product-card-price">
                     {p.priceTTC.toLocaleString('fr-FR', { style: 'currency', currency: 'EUR' })}
@@ -118,6 +122,7 @@ export default function HomePage() {
               </div>
             </Card>
           ))}
+
         </div>
       </section>
     </>
