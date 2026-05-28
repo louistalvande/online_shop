@@ -1,4 +1,4 @@
-# Site E-commerce
+# Site E-commerce sécurisé
 ## Conçu avec une méthode d'ingénierie MBSE / Built with MBSE Method (Model-Based System Engineering)
 
 ![PoC](https://img.shields.io/badge/Status-Proof%20of%20Concept-yellow)
