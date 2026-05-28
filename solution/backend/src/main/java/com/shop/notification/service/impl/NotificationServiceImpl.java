@@ -222,6 +222,25 @@ public class NotificationServiceImpl implements NotificationService {
     /** {@inheritDoc} */
     @Async
     @Override
+    public void sendOrderInPreparationEmail(String toEmail, OrderResponse order, Locale locale) {
+        if (!sendGridConfigured) {
+            log.info("[EMAIL] Order in preparation for {} — order #{}", toEmail, order.getOrderNumber());
+            return;
+        }
+        String subject = messageSource.getMessage(
+                "email.order.preparation.subject",
+                new Object[]{order.getOrderNumber()},
+                locale);
+        String htmlBody = messageSource.getMessage(
+                "email.order.preparation.body.html",
+                new Object[]{order.getOrderNumber()},
+                locale);
+        sendEmail(toEmail, subject, htmlBody);
+    }
+
+    /** {@inheritDoc} */
+    @Async
+    @Override
     public void sendVendorNewOrderEmail(String toEmail, OrderResponse order, Locale locale) {
         if (!sendGridConfigured) {
             log.info("[EMAIL] New order notification for vendor {} — order #{}", toEmail, order.getOrderNumber());

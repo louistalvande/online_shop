@@ -115,6 +115,27 @@ public class VendorOrderServiceImpl implements VendorOrderService {
 
     /** {@inheritDoc} */
     @Override
+    public OrderResponse markOrderInPreparation(UUID orderId, Locale locale) {
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new OrderNotFoundException(orderId));
+
+        if (order.getStatus() != OrderStatus.AWAITING_PROCESSING) {
+            throw new InvalidOrderStateException(orderId, order.getStatus());
+        }
+
+        order.setStatus(OrderStatus.IN_PREPARATION);
+        Order saved = orderRepository.save(order);
+        OrderResponse response = OrderResponse.from(saved);
+
+        String buyerEmail = accountRepository.findById(saved.getBuyerId())
+                .map(a -> a.getEmail()).orElse("");
+        notificationService.sendOrderInPreparationEmail(buyerEmail, response, locale);
+
+        return response;
+    }
+
+    /** {@inheritDoc} */
+    @Override
     public OrderResponse shipOrder(UUID orderId, String trackingNumber, Locale locale) {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new OrderNotFoundException(orderId));

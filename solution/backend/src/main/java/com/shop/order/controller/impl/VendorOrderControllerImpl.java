@@ -52,6 +52,12 @@ public class VendorOrderControllerImpl implements VendorOrderController {
 
     /** {@inheritDoc} */
     @Override
+    public ResponseEntity<OrderResponse> prepare(UUID orderId, Principal principal, Locale locale) {
+        return ResponseEntity.ok(vendorOrderService.markOrderInPreparation(orderId, locale));
+    }
+
+    /** {@inheritDoc} */
+    @Override
     public ResponseEntity<OrderResponse> ship(UUID orderId, ShipOrderRequest request, Principal principal, Locale locale) {
         return ResponseEntity.ok(vendorOrderService.shipOrder(orderId, request.getTrackingNumber(), locale));
     }

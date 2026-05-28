@@ -107,6 +107,15 @@ public interface NotificationService {
     void sendCancellationRefusedEmail(String toEmail, OrderResponse order, Locale locale);
 
     /**
+     * Notifies the buyer that their order is now being prepared by the vendor (US-VND-01).
+     *
+     * @param toEmail the buyer's email address
+     * @param order   the order now in IN_PREPARATION status
+     * @param locale  the locale used to select the email language
+     */
+    void sendOrderInPreparationEmail(String toEmail, OrderResponse order, Locale locale);
+
+    /**
      * Notifies a vendor that a new order has been placed and awaits processing (US-ORD-05).
      * Called for all vendor accounts so every vendor is aware of incoming orders.
      *

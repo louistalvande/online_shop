@@ -44,6 +44,16 @@ public interface VendorOrderService {
     OrderResponse rejectWirePayment(UUID orderId, Locale locale);
 
     /**
+     * Marks an order as in preparation: transitions it from {@code AWAITING_PROCESSING}
+     * to {@code IN_PREPARATION} and notifies the buyer (US-VND-01).
+     *
+     * @param orderId the order UUID
+     * @param locale  buyer notification locale
+     * @return the updated order response
+     */
+    OrderResponse markOrderInPreparation(UUID orderId, Locale locale);
+
+    /**
      * Marks an order as shipped by recording the carrier tracking number and transitioning the order
      * to {@code SHIPPED}. The buyer is notified by email (US-EXP-01).
      *

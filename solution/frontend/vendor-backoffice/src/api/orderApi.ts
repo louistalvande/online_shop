@@ -79,6 +79,14 @@ export async function rejectWirePayment(orderId: string): Promise<OrderData> {
   return res.json()
 }
 
+/** Marks an order as in preparation (AWAITING_PROCESSING → IN_PREPARATION). */
+export async function markInPreparation(orderId: string): Promise<OrderData> {
+  const res = await authedFetch(`/api/vendor/orders/${orderId}/prepare`, { method: 'POST' })
+  if (res.status === 409) throw Object.assign(new Error('Invalid order state'), { code: 'INVALID_STATE' })
+  if (!res.ok) throw new Error('Failed to mark order as in preparation')
+  return res.json()
+}
+
 /** Declares order shipment with a carrier tracking number. */
 export async function shipOrder(orderId: string, trackingNumber: string): Promise<OrderData> {
   const res = await authedFetch(`/api/vendor/orders/${orderId}/ship`, {
