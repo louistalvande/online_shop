@@ -49,7 +49,7 @@ export async function updateProfile(payload: UpdateProfilePayload): Promise<Prof
 export async function uploadVendorLogo(file: File): Promise<string> {
   const form = new FormData()
   form.append('file', file)
-  const res = await fetch('/api/me/logo', { method: 'POST', headers: authHeader(), body: form })
+  const res = await authedFetch('/api/me/logo', { method: 'POST', body: form })
   if (!res.ok) throw new Error('Failed to upload logo')
   const data: { logoUrl: string } = await res.json()
   return data.logoUrl
@@ -57,7 +57,7 @@ export async function uploadVendorLogo(file: File): Promise<string> {
 
 /** Deletes the vendor logo file. */
 export async function deleteLogo(): Promise<void> {
-  const res = await fetch('/api/me/logo', { method: 'DELETE', headers: authHeader() })
+  const res = await authedFetch('/api/me/logo', { method: 'DELETE' })
   if (!res.ok) throw new Error('Failed to delete logo')
 }
 
@@ -65,7 +65,7 @@ export async function deleteLogo(): Promise<void> {
 export async function uploadVendorBanner(file: File): Promise<string> {
   const form = new FormData()
   form.append('file', file)
-  const res = await fetch('/api/me/banner', { method: 'POST', headers: authHeader(), body: form })
+  const res = await authedFetch('/api/me/banner', { method: 'POST', body: form })
   if (!res.ok) throw new Error('Failed to upload banner')
   const data: { bannerUrl: string } = await res.json()
   return data.bannerUrl
@@ -73,6 +73,6 @@ export async function uploadVendorBanner(file: File): Promise<string> {
 
 /** Deletes the vendor hero banner file. */
 export async function deleteBanner(): Promise<void> {
-  const res = await fetch('/api/me/banner', { method: 'DELETE', headers: authHeader() })
+  const res = await authedFetch('/api/me/banner', { method: 'DELETE' })
   if (!res.ok) throw new Error('Failed to delete banner')
 }

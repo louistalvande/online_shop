@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next'
 import { AppShell, LangToggle, UserMenu } from '@workspace/theme'
 
-export type Page = 'dashboard' | 'catalog' | 'reports' | 'announcements'
+export type Page = 'dashboard' | 'catalog' | 'reports' | 'visual-identity'
 
 interface Props {
   onLogout: () => void
@@ -28,7 +28,7 @@ export default function Header({ onLogout, onNavigate, currentPage, alertCount, 
         },
         { label: t('nav.orders'), href: `${import.meta.env.BASE_URL}orders` },
         { label: t('nav.reports'), href: '#', onClick: () => onNavigate('reports') },
-        { label: t('nav.announcements'), href: '#', onClick: () => onNavigate('announcements') },
+        { label: t('nav.visualIdentity'), href: '#', onClick: () => onNavigate('visual-identity') },
       ]}
       actions={
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>

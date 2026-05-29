@@ -289,13 +289,13 @@ export default function CatalogPage() {
                                 size="sm"
                                 disabled={addingId === p.id}
                                 onClick={() => handleAddToCart(p.id)}
+                                aria-label={t('product.addToCart')}
                               >
-                                <CartIcon size={13} />
-                                {cartFeedback?.id === p.id
-                                  ? t(cartFeedback.ok ? 'cart.added' : 'cart.error.add')
+                                {cartFeedback?.id === p.id && cartFeedback.ok
+                                  ? '✓'
                                   : addingId === p.id
                                     ? '…'
-                                    : t('product.addToCart')}
+                                    : <CartIcon size={15} />}
                               </Button>
                             </div>
                           )}

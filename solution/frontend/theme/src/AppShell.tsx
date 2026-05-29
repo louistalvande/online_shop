@@ -4,17 +4,24 @@ import { GalleryIcon } from './icons'
 interface AppShellProps {
   appName: string
   logoUrl?: string
+  onLogoClick?: () => void
   navLinks?: { label: string; href: string; onClick?: () => void; badge?: number }[]
   actions?: ReactNode
   children: ReactNode
 }
 
-export function AppShell({ appName, logoUrl, navLinks = [], actions, children }: AppShellProps) {
+export function AppShell({ appName, logoUrl, onLogoClick, navLinks = [], actions, children }: AppShellProps) {
   return (
     <>
       <header className="shell-header">
         <div className="shell-inner">
-          <div className="shell-brand">
+          <div
+            className={['shell-brand', onLogoClick ? 'shell-brand--clickable' : ''].filter(Boolean).join(' ')}
+            onClick={onLogoClick}
+            role={onLogoClick ? 'button' : undefined}
+            tabIndex={onLogoClick ? 0 : undefined}
+            onKeyDown={onLogoClick ? (e) => { if (e.key === 'Enter' || e.key === ' ') onLogoClick() } : undefined}
+          >
             {logoUrl
               ? <img src={logoUrl} alt={appName} className="shell-brand-logo" />
               : <GalleryIcon size={32} />
@@ -27,7 +34,7 @@ export function AppShell({ appName, logoUrl, navLinks = [], actions, children }:
           <nav className="shell-nav">
             {navLinks.map(l => (
               <a
-                key={l.href}
+                key={l.label}
                 href={l.href}
                 className="shell-nav-link"
                 onClick={l.onClick ? (e) => { e.preventDefault(); l.onClick!() } : undefined}

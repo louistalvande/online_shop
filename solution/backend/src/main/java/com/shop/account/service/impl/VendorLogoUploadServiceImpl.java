@@ -1,5 +1,6 @@
 package com.shop.account.service.impl;
 
+import com.shop.account.exception.UnsupportedLogoImageTypeException;
 import com.shop.account.service.VendorLogoUploadService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -46,9 +47,9 @@ public class VendorLogoUploadServiceImpl implements VendorLogoUploadService {
     /** {@inheritDoc} */
     @Override
     public String store(MultipartFile file) {
-        String contentType = file.getContentType();
+        String contentType = resolveContentType(file);
         if (contentType == null || !ALLOWED_TYPES.contains(contentType)) {
-            throw new IllegalArgumentException("Unsupported logo image type: " + contentType);
+            throw new UnsupportedLogoImageTypeException(contentType);
         }
 
         // Fixed filename so the public URL never changes when the logo is replaced (FS-V16).
@@ -71,13 +72,13 @@ public class VendorLogoUploadServiceImpl implements VendorLogoUploadService {
             if ("image/webp".equals(contentType)) {
                 if (!hasWebpMagicBytes(destination)) {
                     Files.deleteIfExists(destination);
-                    throw new IllegalArgumentException("Unsupported logo image type: " + contentType);
+                    throw new UnsupportedLogoImageTypeException(contentType);
                 }
             } else {
                 BufferedImage img = ImageIO.read(destination.toFile());
                 if (img == null) {
                     Files.deleteIfExists(destination);
-                    throw new IllegalArgumentException("Unsupported logo image type: " + contentType);
+                    throw new UnsupportedLogoImageTypeException(contentType);
                 }
             }
         } catch (IOException e) {
@@ -102,6 +103,16 @@ public class VendorLogoUploadServiceImpl implements VendorLogoUploadService {
         } catch (IOException e) {
             throw new IllegalStateException("Failed to delete vendor logo", e);
         }
+    }
+
+    private String resolveContentType(MultipartFile file) {
+        String ct = file.getContentType();
+        if (ct != null && !ct.isBlank()) return ct;
+        String name = file.getOriginalFilename() != null ? file.getOriginalFilename().toLowerCase() : "";
+        if (name.endsWith(".jpg") || name.endsWith(".jpeg")) return "image/jpeg";
+        if (name.endsWith(".png"))  return "image/png";
+        if (name.endsWith(".webp")) return "image/webp";
+        return null;
     }
 
     private boolean hasWebpMagicBytes(Path path) throws IOException {

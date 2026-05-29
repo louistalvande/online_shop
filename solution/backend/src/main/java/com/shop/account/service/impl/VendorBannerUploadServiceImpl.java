@@ -1,5 +1,6 @@
 package com.shop.account.service.impl;
 
+import com.shop.account.exception.UnsupportedBannerImageTypeException;
 import com.shop.account.service.VendorBannerUploadService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -48,9 +49,9 @@ public class VendorBannerUploadServiceImpl implements VendorBannerUploadService 
     /** {@inheritDoc} */
     @Override
     public String store(MultipartFile file) {
-        String contentType = file.getContentType();
+        String contentType = resolveContentType(file);
         if (contentType == null || !ALLOWED_TYPES.contains(contentType)) {
-            throw new IllegalArgumentException("Unsupported banner image type: " + contentType);
+            throw new UnsupportedBannerImageTypeException(contentType);
         }
 
         // Fixed filename so the public URL never changes when the banner is replaced (FS-V16).
@@ -72,13 +73,13 @@ public class VendorBannerUploadServiceImpl implements VendorBannerUploadService 
             if ("image/webp".equals(contentType)) {
                 if (!hasWebpMagicBytes(destination)) {
                     Files.deleteIfExists(destination);
-                    throw new IllegalArgumentException("Unsupported banner image type: " + contentType);
+                    throw new UnsupportedBannerImageTypeException(contentType);
                 }
             } else {
                 BufferedImage img = ImageIO.read(destination.toFile());
                 if (img == null) {
                     Files.deleteIfExists(destination);
-                    throw new IllegalArgumentException("Unsupported banner image type: " + contentType);
+                    throw new UnsupportedBannerImageTypeException(contentType);
                 }
             }
         } catch (IOException e) {
@@ -102,6 +103,16 @@ public class VendorBannerUploadServiceImpl implements VendorBannerUploadService 
         } catch (IOException e) {
             throw new IllegalStateException("Failed to delete vendor banner", e);
         }
+    }
+
+    private String resolveContentType(MultipartFile file) {
+        String ct = file.getContentType();
+        if (ct != null && !ct.isBlank()) return ct;
+        String name = file.getOriginalFilename() != null ? file.getOriginalFilename().toLowerCase() : "";
+        if (name.endsWith(".jpg") || name.endsWith(".jpeg")) return "image/jpeg";
+        if (name.endsWith(".png"))  return "image/png";
+        if (name.endsWith(".webp")) return "image/webp";
+        return null;
     }
 
     private boolean hasWebpMagicBytes(Path path) throws IOException {

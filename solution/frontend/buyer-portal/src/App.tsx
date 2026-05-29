@@ -62,6 +62,7 @@ export default function App({ openLogin = false }: Props) {
       )}
       <Header
         session={session}
+        logoUrl={logoUrl}
         onShowLogin={() => setShowLogin(true)}
         onLogout={() => { logout(); setSession(null); window.dispatchEvent(new Event('session-changed')) }}
       >

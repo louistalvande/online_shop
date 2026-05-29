@@ -31,7 +31,7 @@ export default defineConfig({
     },
     {
       name: 'vendor-portal',
-      testMatch: ['profile/prf-02.spec.js', 'catalog/**/*.spec.js', 'announcement/**/*.spec.js'],
+      testMatch: ['profile/prf-02.spec.js', 'catalog/**/*.spec.js', 'announcement/**/*.spec.js', 'visual-identity/**/*.spec.js'],
       use: {
         ...devices['Desktop Chrome'],
         baseURL: process.env.VENDOR_URL ?? 'http://vendor.localhost',

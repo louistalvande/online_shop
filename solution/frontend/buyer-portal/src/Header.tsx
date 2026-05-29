@@ -18,6 +18,7 @@ export default function Header({ session, onShowLogin, onLogout, children, logoU
   return (
     <AppShell
       appName={t('app.name')}
+      logoUrl={logoUrl ?? undefined}
       navLinks={[
         { label: t('nav.home'), href: '/' },
         { label: t('nav.catalog'), href: '/catalog' },

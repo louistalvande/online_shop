@@ -266,7 +266,13 @@
   "reports.topProducts.qtySold": "Qté vendue",
   "reports.topProducts.revenue": "CA généré",
 
+  "nav.visualIdentity": "Identité visuelle",
   "nav.announcements": "Annonces",
+  "visual.title": "Identité visuelle",
+  "visual.section.logo": "Logo de la boutique",
+  "visual.section.color": "Couleur d'accentuation",
+  "visual.section.banner": "Bannière de la page d'accueil",
+  "visual.section.carousel": "Carrousel d'annonces",
   "announcements.title": "Annonces défilantes",
   "announcements.add": "Ajouter une annonce",
   "announcements.loading": "Chargement…",
