@@ -29,8 +29,8 @@ public class BuyerCatalogControllerImpl implements BuyerCatalogController {
     /** {@inheritDoc} */
     @Override
     public ResponseEntity<Page<BuyerProductResponse>> browseProducts(
-            String category, BigDecimal maxPrice, boolean inStockOnly, String search, Pageable pageable) {
-        return ResponseEntity.ok(productService.browseProducts(category, maxPrice, inStockOnly, search, pageable));
+            String category, String theme, BigDecimal maxPrice, boolean inStockOnly, String search, Pageable pageable) {
+        return ResponseEntity.ok(productService.browseProducts(category, theme, maxPrice, inStockOnly, search, pageable));
     }
 
     /** {@inheritDoc} */

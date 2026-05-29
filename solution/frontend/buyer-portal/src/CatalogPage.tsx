@@ -19,8 +19,7 @@ export default function CatalogPage() {
 
   const [search, setSearch] = useState('')
   const [category, setCategory] = useState('')
-  const [maxPrice, setMaxPrice] = useState('')
-  const [inStockOnly, setInStockOnly] = useState(false)
+  const [theme, setTheme] = useState('')
   const [page, setPage] = useState(0)
 
   const [products, setProducts] = useState<BuyerProduct[]>([])
@@ -66,12 +65,11 @@ export default function CatalogPage() {
   useEffect(() => {
     load({
       category: category || undefined,
-      maxPrice: maxPrice ? Number(maxPrice) : undefined,
-      inStockOnly,
+      theme: theme || undefined,
       search: search || undefined,
       page,
     })
-  }, [category, maxPrice, inStockOnly, search, page, load])
+  }, [category, theme, search, page, load])
 
   function handleSearchSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -81,8 +79,7 @@ export default function CatalogPage() {
 
   function handleReset() {
     setCategory('')
-    setMaxPrice('')
-    setInStockOnly(false)
+    setTheme('')
     setSearch('')
     setPendingSearch('')
     setPage(0)
@@ -199,25 +196,14 @@ export default function CatalogPage() {
               </label>
 
               <label className="catalog-filter-label">
-                <span className="catalog-filter-hint">{t('catalog.filters.maxPrice')}</span>
+                <span className="catalog-filter-hint">{t('catalog.filters.theme')}</span>
                 <input
-                  type="number"
-                  min={0}
-                  step={0.01}
-                  value={maxPrice}
-                  onChange={e => { setMaxPrice(e.target.value); handleFilterChange() }}
-                  placeholder="—"
+                  type="text"
+                  value={theme}
+                  onChange={e => { setTheme(e.target.value); handleFilterChange() }}
+                  placeholder={t('catalog.filters.themeAll')}
                   className="catalog-filter-input"
                 />
-              </label>
-
-              <label className="catalog-filter-stock-label">
-                <input
-                  type="checkbox"
-                  checked={inStockOnly}
-                  onChange={e => { setInStockOnly(e.target.checked); handleFilterChange() }}
-                />
-                <span className="catalog-filter-stock-text">{t('catalog.filters.inStockOnly')}</span>
               </label>
 
               <Button variant="secondary" size="sm" onClick={handleReset} className="catalog-filter-reset-btn">

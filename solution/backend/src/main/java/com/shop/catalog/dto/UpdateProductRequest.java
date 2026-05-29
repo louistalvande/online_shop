@@ -27,9 +27,13 @@ public class UpdateProductRequest {
     @DecimalMin("0.01")
     private BigDecimal priceExclTax;
 
-    @Schema(description = "Product category", example = "Aquarelle")
+    @Schema(description = "Product type (poster, carte, affiche…)", example = "Poster")
     @Size(max = 100)
     private String category;
+
+    @Schema(description = "Product theme or occasion (paysage, naissance, vacances…)", example = "Paysage")
+    @Size(max = 100)
+    private String theme;
 
     @Schema(description = "Available quantity in stock", example = "10")
     @NotNull
@@ -61,11 +65,17 @@ public class UpdateProductRequest {
     /** @param priceExclTax the pre-tax price */
     public void setPriceExclTax(BigDecimal priceExclTax) { this.priceExclTax = priceExclTax; }
 
-    /** @return the product category */
+    /** @return the product type */
     public String getCategory() { return category; }
 
-    /** @param category the product category */
+    /** @param category the product type */
     public void setCategory(String category) { this.category = category; }
+
+    /** @return the product theme or occasion */
+    public String getTheme() { return theme; }
+
+    /** @param theme the product theme or occasion */
+    public void setTheme(String theme) { this.theme = theme; }
 
     /** @return the current quantity */
     public Integer getQuantity() { return quantity; }

@@ -5,6 +5,7 @@ export interface BuyerProduct {
   priceExclTax: number
   priceTTC: number
   category: string | null
+  theme: string | null
   photoUrls: string[]
   outOfStock: boolean
 }
@@ -19,6 +20,7 @@ export interface ProductPage {
 
 export interface CatalogFilters {
   category?: string
+  theme?: string
   maxPrice?: number
   inStockOnly?: boolean
   search?: string
@@ -30,6 +32,7 @@ export interface CatalogFilters {
 export async function fetchProducts(filters: CatalogFilters = {}): Promise<ProductPage> {
   const params = new URLSearchParams()
   if (filters.category) params.set('category', filters.category)
+  if (filters.theme) params.set('theme', filters.theme)
   if (filters.maxPrice != null) params.set('maxPrice', String(filters.maxPrice))
   if (filters.inStockOnly) params.set('inStockOnly', 'true')
   if (filters.search) params.set('search', filters.search)

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { AppShell, Button, LangToggle } from '@workspace/theme'
-import { getProduct, updateProduct, archiveProduct, type Product, type CreateProductPayload } from './api/productApi'
+import { getProduct, updateProduct, archiveProduct, fetchDistinctTypes, fetchDistinctThemes, type Product, type CreateProductPayload } from './api/productApi'
 import { getSession, logout } from './api/authApi'
 
 interface FormState {
@@ -9,6 +9,7 @@ interface FormState {
   description: string
   priceExclTax: string
   category: string
+  theme: string
   quantity: string
   stockAlertThreshold: string
   photoUrls: string
@@ -20,6 +21,7 @@ function toForm(p: Product): FormState {
     description: p.description ?? '',
     priceExclTax: String(p.priceExclTax),
     category: p.category ?? '',
+    theme: p.theme ?? '',
     quantity: String(p.quantity),
     stockAlertThreshold: String(p.stockAlertThreshold),
     photoUrls: p.photoUrls.join('\n'),
@@ -43,6 +45,13 @@ export default function VendorProductDetailPage({ productId }: Props) {
   const [saveSuccess, setSaveSuccess] = useState(false)
   const [archiving, setArchiving] = useState(false)
   const [currentPhoto, setCurrentPhoto] = useState(0)
+  const [existingTypes, setExistingTypes] = useState<string[]>([])
+  const [existingThemes, setExistingThemes] = useState<string[]>([])
+
+  useEffect(() => {
+    fetchDistinctTypes().then(setExistingTypes).catch(() => {})
+    fetchDistinctThemes().then(setExistingThemes).catch(() => {})
+  }, [])
 
   useEffect(() => {
     if (!session) return
@@ -75,6 +84,7 @@ export default function VendorProductDetailPage({ productId }: Props) {
       description: form.description.trim() || undefined,
       priceExclTax: price,
       category: form.category.trim() || undefined,
+      theme: form.theme.trim() || undefined,
       quantity: qty,
       stockAlertThreshold: isNaN(threshold) ? 0 : threshold,
       photoUrls: form.photoUrls.split('\n').map(u => u.trim()).filter(Boolean),
@@ -220,9 +230,23 @@ export default function VendorProductDetailPage({ productId }: Props) {
                   </div>
                   <div>
                     <label htmlFor="pd-category" style={labelStyle}>{t('catalog.form.category')}</label>
-                    <input id="pd-category" style={inputStyle} value={form.category} maxLength={100}
+                    <input id="pd-category" style={inputStyle} list="pd-category-list"
+                      value={form.category} maxLength={100}
                       onChange={e => setField('category', e.target.value)} />
+                    <datalist id="pd-category-list">
+                      {existingTypes.map(v => <option key={v} value={v} />)}
+                    </datalist>
                   </div>
+                </div>
+
+                <div>
+                  <label htmlFor="pd-theme" style={labelStyle}>{t('catalog.form.theme')}</label>
+                  <input id="pd-theme" style={inputStyle} list="pd-theme-list"
+                    value={form.theme} maxLength={100}
+                    onChange={e => setField('theme', e.target.value)} />
+                  <datalist id="pd-theme-list">
+                    {existingThemes.map(v => <option key={v} value={v} />)}
+                  </datalist>
                 </div>
 
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>

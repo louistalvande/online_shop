@@ -8,9 +8,9 @@
 
 == Objectif et périmètre
 
-Ce document recense les **besoins opérationnels** de l'application e-commerce, c'est-à-dire ce que les acteurs ont besoin de pouvoir faire dans leur contexte métier réel, indépendamment de tout système à construire.
+Ce document recense les **besoins opérationnels** de l'application e-commerce, c'est-à-dire ce que les acteurs ont besoin de pouvoir faire dans leur contexte métier réel, indépendamment de tout système à construire. Ce document inclus également les exigences de sécurité issus des recommendations de l'ANSSI, ainsi que les exigences règlementaires de la loi RGPD.
 
-Les besoins sont dérivés directement de l'Analyse du Besoin Opérationnel (OA — voir `01-operational-analysis/oa.adoc`). Ils constituent la référence à satisfaire ; la manière dont le système y répond est documentée aux niveaux SA, LA et PA de l'architecture ARCADIA.
+L'Analyse du Besoin Opérationnel (OA — voir `01-operational-analysis/oa.adoc`) dérive de ces besoins. Ils constituent la référence à satisfaire ; la manière dont le système y répond est documentée aux niveaux SA, LA et PA de l'architecture ARCADIA.
 
 Un besoin opérationnel exprime **la nécessité d'un acteur** (ce qu'il doit pouvoir accomplir dans son activité), non une fonction système.
 
@@ -99,7 +99,7 @@ NOTE: L'administrateur n'a pas accès aux données personnelles des comptes (nom
 | UC_V0, Activités vendeur
 
 | BES-VND-002
-| Le vendeur a besoin de créer, modifier et supprimer des fiches produits dans le catalogue (photos, descriptions, prix, catégories).
+| Le vendeur a besoin de créer, modifier et supprimer des fiches produits dans le catalogue (photos, descriptions, prix, type de produit, thème/occasion).
 | UC_V1, Activités vendeur
 
 | BES-VND-003
@@ -149,6 +149,10 @@ NOTE: L'administrateur n'a pas accès aux données personnelles des comptes (nom
 | BES-VND-015
 | Le vendeur a besoin de personnaliser l'identité visuelle de sa boutique en configurant l'ensemble de ses visuels. Chaque visuel peut être téléversé, remplacé ou supprimé ; la suppression restaure l'état par défaut. Toute modification est répercutée immédiatement sur le portail acheteur, sans interruption de service. Les visuels des annonces défilantes du carrousel sont gérés via `BES-VND-011`.
 | UC_V11, Activités vendeur
+
+| BES-VND-016
+| Le vendeur a besoin de classer chaque produit selon deux axes de catégorisation indépendants : le **type de produit** (ex. carte, poster, affiche…) et le **thème ou occasion** (ex. paysage, portrait, naissance, vacances…). Pour chaque axe, il doit pouvoir saisir librement une valeur ou sélectionner une valeur déjà utilisée dans le catalogue via une liste déroulante combinée (combobox).
+| UC_V1, Activités vendeur
 |===
 
 ---
@@ -176,7 +180,7 @@ NOTE: L'administrateur n'a pas accès aux données personnelles des comptes (nom
 | UC_B_ACC, Activités acheteur
 
 | BES-ACH-005
-| L'acheteur a besoin de parcourir, rechercher et filtrer les produits disponibles dans le catalogue.
+| L'acheteur a besoin de parcourir, rechercher et filtrer les produits disponibles dans le catalogue. Les critères de filtrage disponibles sont : recherche textuelle (nom), type de produit et thème/occasion.
 | UC_B1, Activités acheteur
 
 | BES-ACH-006
@@ -274,6 +278,7 @@ Le tableau ci-dessous relie chaque besoin opérationnel aux activités et cas d'
 | BES-VND-013 | Vendeur | UC_V1 — Export CSV catalogue
 | BES-VND-014 | Vendeur | UC_V2 — Mise à jour en masse des stocks
 | BES-VND-015 | Vendeur | UC_V11 — Personnaliser l'identité visuelle
+| BES-VND-016 | Vendeur | UC_V1 — Classer les produits par type et thème/occasion
 | BES-ACH-001 | Acheteur | UC_B0 — S'inscrire
 | BES-ACH-002 | Acheteur | UC_B0B — Activer son compte via email ; COp-04
 | BES-ACH-003 | Acheteur | UC_B_AUTH — S'authentifier

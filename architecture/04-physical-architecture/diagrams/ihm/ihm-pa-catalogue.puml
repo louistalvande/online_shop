@@ -11,9 +11,8 @@ title Portail Acheteur — Catalogue produits
   {
     {+
       == Filtres
-      Catégorie    | ^Toutes^
-      Prix max (€) | "     "
-      Disponible   | [X] Uniquement
+      Type de produit  | "               "
+      Thème / occasion | "               "
       --
       [Réinitialiser]
     }

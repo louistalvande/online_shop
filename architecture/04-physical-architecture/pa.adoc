@@ -550,7 +550,7 @@ include::diagrams/ihm/ihm-pa-accueil.puml[]
 
 ==== Catalogue produits
 
-Écran principal d'exploration du catalogue (FS-B03). La barre de filtres (catégorie, prix maximum) et la barre de recherche textuelle correspondent aux critères de filtrage définis en SA. Le bouton « Ajouter au panier » déclenche FS-B04 ; les produits en rupture sont affichés mais non ajoutables.
+Écran principal d'exploration du catalogue (FS-B03). La barre de recherche textuelle (nom) et les filtres de type de produit et thème/occasion correspondent aux critères définis dans BES-ACH-005. Le bouton « Ajouter au panier » déclenche FS-B04 ; les produits en rupture sont affichés mais non ajoutables.
 
 .Maquette filaire : Portail Acheteur — Catalogue
 [plantuml, ihm-pa-catalogue, svg]
@@ -778,7 +778,7 @@ include::diagrams/ihm/ihm-bov-csv-import.puml[]
 
 ==== Édition d'un produit
 
-Formulaire de création et de modification d'un produit (FS-V02 / FS-V03). Les champs `Quantité disponible` et `Seuil d'alerte` sont intégrés directement dans le formulaire produit, conformément à la fusion Produit/Stock opérée en LA. Le statut `Archivé` retire le produit du catalogue acheteur sans le supprimer.
+Formulaire de création et de modification d'un produit (FS-V02 / FS-V03 / BES-VND-016). Les champs `Type de produit` et `Thème / occasion` sont des combobox : le vendeur peut saisir librement une valeur ou sélectionner une valeur déjà utilisée dans le catalogue. Les champs `Quantité disponible` et `Seuil d'alerte` sont intégrés directement dans le formulaire produit, conformément à la fusion Produit/Stock opérée en LA. Le statut `Archivé` retire le produit du catalogue acheteur sans le supprimer.
 
 .Maquette filaire : Back-office Vendeur — Édition d'un produit
 [plantuml, ihm-bov-produit, svg]

@@ -60,6 +60,7 @@ public class ProductServiceImpl implements ProductService {
         product.setDescription(request.getDescription());
         product.setPriceExclTax(request.getPriceExclTax());
         product.setCategory(request.getCategory());
+        product.setTheme(request.getTheme());
         product.setQuantity(request.getQuantity());
         product.setStockAlertThreshold(request.getStockAlertThreshold());
         product.setStatus(ProductStatus.PUBLISHED);
@@ -99,6 +100,7 @@ public class ProductServiceImpl implements ProductService {
         product.setDescription(request.getDescription());
         product.setPriceExclTax(request.getPriceExclTax());
         product.setCategory(request.getCategory());
+        product.setTheme(request.getTheme());
         product.setQuantity(request.getQuantity());
         product.setStockAlertThreshold(request.getStockAlertThreshold());
 
@@ -186,14 +188,29 @@ public class ProductServiceImpl implements ProductService {
     @Override
     @Transactional(readOnly = true)
     public Page<BuyerProductResponse> browseProducts(
-            String category, BigDecimal maxPrice, boolean inStockOnly, String search, Pageable pageable) {
+            String category, String theme, BigDecimal maxPrice, boolean inStockOnly, String search, Pageable pageable) {
         Specification<Product> spec = Specification
                 .where(ProductSpecifications.published())
                 .and(ProductSpecifications.withCategory(category))
+                .and(ProductSpecifications.withTheme(theme))
                 .and(ProductSpecifications.withMaxPriceTTC(maxPrice))
                 .and(ProductSpecifications.inStockOnly(inStockOnly))
                 .and(ProductSpecifications.nameLike(search));
         return productRepository.findAll(spec, pageable).map(BuyerProductResponse::from);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    @Transactional(readOnly = true)
+    public List<String> distinctProductTypes() {
+        return productRepository.findDistinctTypes();
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    @Transactional(readOnly = true)
+    public List<String> distinctProductThemes() {
+        return productRepository.findDistinctThemes();
     }
 
     /** {@inheritDoc} */

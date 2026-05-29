@@ -160,6 +160,7 @@ CREATE TABLE products (
     description           TEXT,
     price_excl_tax        NUMERIC(10,2) NOT NULL,
     category              VARCHAR(100),
+    theme                 VARCHAR(100),
     quantity              INTEGER       NOT NULL DEFAULT 0,
     stock_alert_threshold INTEGER       NOT NULL DEFAULT 0,
     status                VARCHAR(20)   NOT NULL DEFAULT 'PUBLISHED',

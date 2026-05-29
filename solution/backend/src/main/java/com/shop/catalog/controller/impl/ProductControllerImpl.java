@@ -137,4 +137,16 @@ public class ProductControllerImpl implements ProductController {
             throw new CsvHeaderInvalidException();
         }
     }
+
+    /** {@inheritDoc} */
+    @Override
+    public ResponseEntity<List<String>> listDistinctTypes(Principal principal) {
+        return ResponseEntity.ok(productService.distinctProductTypes());
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public ResponseEntity<List<String>> listDistinctThemes(Principal principal) {
+        return ResponseEntity.ok(productService.distinctProductThemes());
+    }
 }

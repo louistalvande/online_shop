@@ -7,6 +7,7 @@ export interface Product {
   description: string | null
   priceExclTax: number
   category: string | null
+  theme: string | null
   quantity: number
   stockAlertThreshold: number
   status: 'PUBLISHED' | 'ARCHIVED'
@@ -32,6 +33,7 @@ export interface CreateProductPayload {
   description?: string
   priceExclTax: number
   category?: string
+  theme?: string
   quantity: number
   stockAlertThreshold: number
   photoUrls: string[]
@@ -172,6 +174,16 @@ export async function importProductsCsv(file: File): Promise<CsvImportResponse> 
   const res = await authedFetch('/api/vendor/products/import', { method: 'POST', body: formData })
   if (res.status === 400) throw Object.assign(new Error('CSV_HEADER_INVALID'), { code: 'CSV_HEADER_INVALID' })
   return handleResponse<CsvImportResponse>(res)
+}
+
+/** Returns existing distinct product types for combobox autocompletion (US-CAT-01). */
+export async function fetchDistinctTypes(): Promise<string[]> {
+  return handleResponse<string[]>(await authedFetch('/api/vendor/products/distinct-types'))
+}
+
+/** Returns existing distinct product themes for combobox autocompletion (US-CAT-01). */
+export async function fetchDistinctThemes(): Promise<string[]> {
+  return handleResponse<string[]>(await authedFetch('/api/vendor/products/distinct-themes'))
 }
 
 /** Uploads a product image file and returns the public URL assigned by the server (US-CAT-09). */
