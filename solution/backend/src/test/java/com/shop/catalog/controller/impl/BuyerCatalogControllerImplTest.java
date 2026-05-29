@@ -76,7 +76,7 @@ class BuyerCatalogControllerImplTest {
         Page<BuyerProductResponse> page = new PageImpl<>(
                 List.of(buildResponse(PRODUCT_ID, "Aquarelle forêt", false)),
                 PageRequest.of(0, 20), 1);
-        given(productService.browseProducts(isNull(), isNull(), eq(false), isNull(), any()))
+        given(productService.browseProducts(isNull(), isNull(), isNull(), eq(false), isNull(), any()))
                 .willReturn(page);
 
         mvc.perform(get("/api/buyer/products"))
@@ -92,7 +92,7 @@ class BuyerCatalogControllerImplTest {
         Page<BuyerProductResponse> page = new PageImpl<>(
                 List.of(buildResponse(PRODUCT_ID, "Aquarelle forêt", false)),
                 PageRequest.of(0, 20), 1);
-        given(productService.browseProducts(eq("Aquarelle"), isNull(), eq(false), isNull(), any()))
+        given(productService.browseProducts(eq("Aquarelle"), isNull(), isNull(), eq(false), isNull(), any()))
                 .willReturn(page);
 
         mvc.perform(get("/api/buyer/products?category=Aquarelle"))
@@ -100,11 +100,25 @@ class BuyerCatalogControllerImplTest {
                 .andExpect(jsonPath("$.content[0].category").value("Aquarelle"));
     }
 
+    /** GET /buyer/products?theme=Paysage filters by theme. */
+    @Test
+    void browseProducts_returns200_withThemeFilter() throws Exception {
+        Page<BuyerProductResponse> page = new PageImpl<>(
+                List.of(buildResponse(PRODUCT_ID, "Aquarelle forêt", false)),
+                PageRequest.of(0, 20), 1);
+        given(productService.browseProducts(isNull(), eq("Paysage"), isNull(), eq(false), isNull(), any()))
+                .willReturn(page);
+
+        mvc.perform(get("/api/buyer/products?theme=Paysage"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.totalElements").value(1));
+    }
+
     /** GET /buyer/products?inStockOnly=true passes inStockOnly flag. */
     @Test
     void browseProducts_returns200_withInStockFilter() throws Exception {
         Page<BuyerProductResponse> empty = new PageImpl<>(List.of(), PageRequest.of(0, 20), 0);
-        given(productService.browseProducts(isNull(), isNull(), eq(true), isNull(), any()))
+        given(productService.browseProducts(isNull(), isNull(), isNull(), eq(true), isNull(), any()))
                 .willReturn(empty);
 
         mvc.perform(get("/api/buyer/products?inStockOnly=true"))

@@ -6,9 +6,10 @@ title Back-office Vendeur — Édition d'un produit
 
 {+
   == Modifier le produit
-  Nom            | "Chaussures cuir brun       "
-  Catégorie      | ^Chaussures                 ^
-  Description    | {SI
+  Nom              | "Chaussures cuir brun       "
+  Type de produit  | "Chaussures            " (combobox)
+  Thème / occasion | "Casual                " (combobox)
+  Description      | {SI
                      "Chaussures en cuir pleine fleur,
                       doublure cuir, semelle Goodyear."
                    }

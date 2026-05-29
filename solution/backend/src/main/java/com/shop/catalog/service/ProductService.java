@@ -100,7 +100,7 @@ public interface ProductService {
      * @return a page of buyer-facing product responses
      */
     Page<BuyerProductResponse> browseProducts(
-            String category, BigDecimal maxPrice, boolean inStockOnly, String search, Pageable pageable);
+            String category, String theme, BigDecimal maxPrice, boolean inStockOnly, String search, Pageable pageable);
 
     /**
      * Returns a single published product visible to buyers (US-SHP-01).
@@ -111,6 +111,20 @@ public interface ProductService {
      *         or is not published
      */
     BuyerProductResponse getPublishedProduct(UUID productId);
+
+    /**
+     * Returns all distinct non-blank product type values, sorted alphabetically (US-CAT-01).
+     *
+     * @return sorted list of existing product types for autocompletion
+     */
+    List<String> distinctProductTypes();
+
+    /**
+     * Returns all distinct non-blank product theme values, sorted alphabetically (US-CAT-01).
+     *
+     * @return sorted list of existing product themes for autocompletion
+     */
+    List<String> distinctProductThemes();
 
     /**
      * Updates stock quantity and alert threshold for multiple products in a single operation (US-CAT-08).

@@ -36,6 +36,34 @@ VALUES (
   NOW() + INTERVAL '2 years'
 );
 
+-- Seed vendor account
+INSERT INTO accounts (id, email, password_hash, first_name, last_name, role, status, must_change_password, created_at)
+VALUES (
+  gen_random_uuid(),
+  'mlloubiere@gmail.com',
+  '$2a$12$p8qx.P/UPC0iBPtwiliBFO9fyoFK7k9ciql2mOOCWvgB.24.prp0O', -- Admin123456!
+  'Vendor',
+  'Seed',
+  'VENDOR',
+  'ACTIVE',
+  FALSE,
+  NOW()
+);
+
+-- Seed buyer account
+INSERT INTO accounts (id, email, password_hash, first_name, last_name, role, status, must_change_password, created_at)
+VALUES (
+  gen_random_uuid(),
+  'louis.talvande@gmail.com',
+  '$2a$12$p8qx.P/UPC0iBPtwiliBFO9fyoFK7k9ciql2mOOCWvgB.24.prp0O', -- Admin123456!
+  'Louis',
+  'Talvande',
+  'BUYER',
+  'ACTIVE',
+  FALSE,
+  NOW()
+);
+
 
 -- Activation tokens for admin-created accounts (US-ADM-01) and buyer self-registration (US-REG-01)
 CREATE TABLE activation_tokens (
@@ -132,6 +160,7 @@ CREATE TABLE products (
     description           TEXT,
     price_excl_tax        NUMERIC(10,2) NOT NULL,
     category              VARCHAR(100),
+    theme                 VARCHAR(100),
     quantity              INTEGER       NOT NULL DEFAULT 0,
     stock_alert_threshold INTEGER       NOT NULL DEFAULT 0,
     status                VARCHAR(20)   NOT NULL DEFAULT 'PUBLISHED',
@@ -257,6 +286,7 @@ CREATE TABLE platform_settings (
 );
 
 INSERT INTO platform_settings (key, value) VALUES ('maintenance_mode', 'false');
+INSERT INTO platform_settings (key, value) VALUES ('shop_accent_color', '#4e8b82');
 
 
 -- Scrolling announcements (US-ANN-01 — FS-V11)

@@ -30,7 +30,6 @@ export default function ProfilePage() {
   const [saving, setSaving] = useState(false)
   const [successMsg, setSuccessMsg] = useState('')
   const [errorMsg, setErrorMsg] = useState('')
-
   useEffect(() => {
     if (!session) { window.location.href = import.meta.env.BASE_URL; return }
     getProfile()

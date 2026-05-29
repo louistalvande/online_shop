@@ -24,8 +24,11 @@ public class ProductResponse {
     @Schema(description = "Pre-tax unit price in euros")
     private BigDecimal priceExclTax;
 
-    @Schema(description = "Product category")
+    @Schema(description = "Product type (poster, carte, affiche…)")
     private String category;
+
+    @Schema(description = "Product theme or occasion (paysage, naissance…)")
+    private String theme;
 
     @Schema(description = "Current available quantity in stock")
     private int quantity;
@@ -64,6 +67,7 @@ public class ProductResponse {
         r.description = p.getDescription();
         r.priceExclTax = p.getPriceExclTax();
         r.category = p.getCategory();
+        r.theme = p.getTheme();
         r.quantity = p.getQuantity();
         r.stockAlertThreshold = p.getStockAlertThreshold();
         r.status = p.getStatus();
@@ -89,8 +93,11 @@ public class ProductResponse {
     /** @return the pre-tax price */
     public BigDecimal getPriceExclTax() { return priceExclTax; }
 
-    /** @return the product category */
+    /** @return the product type */
     public String getCategory() { return category; }
+
+    /** @return the product theme or occasion */
+    public String getTheme() { return theme; }
 
     /** @return the current available quantity */
     public int getQuantity() { return quantity; }

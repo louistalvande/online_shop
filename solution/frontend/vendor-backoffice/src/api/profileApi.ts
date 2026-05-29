@@ -44,3 +44,35 @@ export async function updateProfile(payload: UpdateProfilePayload): Promise<Prof
   if (!res.ok) throw new Error('Failed to update profile')
   return res.json()
 }
+
+/** Uploads a vendor logo image and returns its fixed public URL. */
+export async function uploadVendorLogo(file: File): Promise<string> {
+  const form = new FormData()
+  form.append('file', file)
+  const res = await authedFetch('/api/me/logo', { method: 'POST', body: form })
+  if (!res.ok) throw new Error('Failed to upload logo')
+  const data: { logoUrl: string } = await res.json()
+  return data.logoUrl
+}
+
+/** Deletes the vendor logo file. */
+export async function deleteLogo(): Promise<void> {
+  const res = await authedFetch('/api/me/logo', { method: 'DELETE' })
+  if (!res.ok) throw new Error('Failed to delete logo')
+}
+
+/** Uploads a vendor hero banner image and returns its fixed public URL. */
+export async function uploadVendorBanner(file: File): Promise<string> {
+  const form = new FormData()
+  form.append('file', file)
+  const res = await authedFetch('/api/me/banner', { method: 'POST', body: form })
+  if (!res.ok) throw new Error('Failed to upload banner')
+  const data: { bannerUrl: string } = await res.json()
+  return data.bannerUrl
+}
+
+/** Deletes the vendor hero banner file. */
+export async function deleteBanner(): Promise<void> {
+  const res = await authedFetch('/api/me/banner', { method: 'DELETE' })
+  if (!res.ok) throw new Error('Failed to delete banner')
+}

@@ -38,7 +38,7 @@
 
 ## Introduction 🇫🇷
 
-Le projet a pour objectif de développer un site e-commerce dans l'état de l'art actuel, aussi bien en terme de technologie que de cybersécurité, en suivant un processus éprouvé d'ingénierie logicielle basée sur les modèles ([IDM](https://fr.wikipedia.org/wiki/Ing%C3%A9nierie_dirig%C3%A9e_par_les_mod%C3%A8les)). Il débute par la rédaction d'un [document d'architecture](architecture/Boutique%20en%20ligne%20-%20Documentation%20d%27Architecture.pdf) à partir des [exigences](architecture/Boutique%20en%20ligne%20-%20Exigences%20d%27utilisateurs.pdf) avant de passer au développement de la solution logicielle concrète.
+Le projet a pour objectif de développer un site e-commerce dans l'état de l'art actuel, aussi bien en terme de technologie que de cybersécurité, en suivant un processus éprouvé d'ingénierie logicielle basée sur les modèles ([IDM](https://fr.wikipedia.org/wiki/Ing%C3%A9nierie_dirig%C3%A9e_par_les_mod%C3%A8les)). Il débute par la rédaction d'un [document d'architecture](architecture/Application%20e-commerce%20s%C3%A9curis%C3%A9e%20-%20Documentation%20d%27Architecture.pdf) à partir des [exigences](architecture/Application%20e-commerce%20s%C3%A9curis%C3%A9e%20-%20Documentation%20des%20exigences.pdf) avant de passer au développement de la solution logicielle concrète.
 
 > **Note :** La solution suit les **recommandations de sécurité de l'[ANSSI](https://www.ssi.gouv.fr/)**, notamment le guide [authentification multifacteur et mots de passe](https://messervices.cyber.gouv.fr/guides/recommandations-relatives-lauthentification-multifacteur-et-aux-mots-de-passe) et le guide [sécurité des sites web](https://messervices.cyber.gouv.fr/guides/securiser-un-site-web). Ces recommandations sont déclinées des exigences, jusqu'au code source de la solution, en passant par les documents d'architecture.
 
@@ -62,7 +62,7 @@ En voici les grandes phases d'analyse, qui représentent le besoin ou le systèm
 
 ![ARCADIA](architecture/arcadia.png)
 
-La méthode ARCADIA est suivie, dans cet exemple, en s'appuyant uniquement sur le langage de modélisation [UML](https://fr.wikipedia.org/wiki/UML_(informatique)). Le [document d'architecture](architecture/Boutique%20en%20ligne%20-%20Documentation%20d%27Architecture.pdf) est produit à partir du [**document des exigences utilisateurs**](architecture/Boutique%20en%20ligne%20-%20Exigences%20utilisateurs.pdf), qui constitue l'entrant formel de la démarche ARCADIA. Ce document recense les besoins opérationnels des acteurs (administrateur, vendeur, acheteur) ainsi que les exigences de sécurité issues des recommandations de l'ANSSI, et sert de référence tout au long des quatre niveaux d'analyse.
+La méthode ARCADIA est suivie, dans cet exemple, en s'appuyant uniquement sur le langage de modélisation [UML](https://fr.wikipedia.org/wiki/UML_(informatique)). Le [document d'architecture](architecture/Application%20e-commerce%20s%C3%A9curis%C3%A9e%20-%20Documentation%20d%27Architecture.pdf) est produit à partir du [**document des exigences utilisateurs**](architecture/Application%20e-commerce%20s%C3%A9curis%C3%A9e%20-%20Documentation%20des%20exigences.pdf), qui constitue l'entrant formel de la démarche ARCADIA. Ce document recense les besoins opérationnels des acteurs (administrateur, vendeur, acheteur) ainsi que les exigences de sécurité issues des recommandations de l'ANSSI, et sert de référence tout au long des quatre niveaux d'analyse.
 
 ### Analyse du besoin
 
@@ -148,7 +148,7 @@ L'objectif est de fournir une documentation claire, accessible et maintenable, c
 
 ## Introduction 🇬🇧
 
-The project aims to develop an e-commerce website built to current best practices, in terms of both technology and cybersecurity, following a proven [model-driven](https://en.wikipedia.org/wiki/Model-driven_engineering) software engineering process. It begins with the writing of an [architecture document](architecture/Boutique%20en%20ligne%20-%20Documentation%20d%27Architecture.pdf) from the [requirements](architecture/Boutique%20en%20ligne%20-%20Exigences%20d%27utilisateurs.pdf), before moving on to the concrete development of the software solution.
+The project aims to develop an e-commerce website built to current best practices, in terms of both technology and cybersecurity, following a proven [model-driven](https://en.wikipedia.org/wiki/Model-driven_engineering) software engineering process. It begins with the writing of an [architecture document](architecture/Application%20e-commerce%20s%C3%A9curis%C3%A9e%20-%20Documentation%20d%27Architecture.pdf) from the [requirements](architecture/Application%20e-commerce%20s%C3%A9curis%C3%A9e%20-%20Documentation%20des%20exigences.pdf), before moving on to the concrete development of the software solution.
 
 > **Note:** The solution broadly follows **[ANSSI](https://www.ssi.gouv.fr/en/) security recommendations**, including the guide on [multi-factor authentication and passwords](https://messervices.cyber.gouv.fr/guides/recommandations-relatives-lauthentification-multifacteur-et-aux-mots-de-passe) and the [web security guide](https://messervices.cyber.gouv.fr/guides/securiser-un-site-web). These recommendations are traced from the requirements down to the source code, through the architecture documents.
 
@@ -172,7 +172,7 @@ Here are the main analysis phases, each representing the need or the system at a
 
 ![ARCADIA](architecture/arcadia.png)
 
-The ARCADIA method is followed in this example using exclusively [UML](https://en.wikipedia.org/wiki/Unified_Modeling_Language) modelling language. The [architecture document](architecture/Boutique%20en%20ligne%20-%20Documentation%20d%27Architecture.pdf) is produced from the [**user requirements document**](architecture/Boutique%20en%20ligne%20-%20Exigences%20utilisateurs.pdf), which constitutes the formal input to the ARCADIA process. This document captures the operational needs of all actors (administrator, vendor, buyer) as well as the security requirements derived from ANSSI recommendations, and serves as the reference throughout all four levels of analysis.
+The ARCADIA method is followed in this example using exclusively [UML](https://en.wikipedia.org/wiki/Unified_Modeling_Language) modelling language. The [architecture document](architecture/Application%20e-commerce%20s%C3%A9curis%C3%A9e%20-%20Documentation%20d%27Architecture.pdf) is produced from the [**user requirements document**](architecture/Application%20e-commerce%20s%C3%A9curis%C3%A9e%20-%20Documentation%20des%20exigences.pdf), which constitutes the formal input to the ARCADIA process. This document captures the operational needs of all actors (administrator, vendor, buyer) as well as the security requirements derived from ANSSI recommendations, and serves as the reference throughout all four levels of analysis.
 
 ### Needs Analysis
 

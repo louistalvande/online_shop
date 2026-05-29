@@ -29,9 +29,13 @@ public class Product {
     @Column(name = "price_excl_tax", nullable = false, precision = 10, scale = 2)
     private BigDecimal priceExclTax;
 
-    /** Optional product category. */
+    /** Optional product category — represents the physical product type (poster, carte…). */
     @Column(length = 100)
     private String category;
+
+    /** Optional product theme or occasion (paysage, naissance, vacances…). */
+    @Column(length = 100)
+    private String theme;
 
     /** Current available quantity in stock. */
     @Column(nullable = false)
@@ -93,11 +97,17 @@ public class Product {
     /** @param priceExclTax the pre-tax unit price */
     public void setPriceExclTax(BigDecimal priceExclTax) { this.priceExclTax = priceExclTax; }
 
-    /** @return the product category, or {@code null} if not set */
+    /** @return the product category (type), or {@code null} if not set */
     public String getCategory() { return category; }
 
-    /** @param category the product category */
+    /** @param category the product category (type) */
     public void setCategory(String category) { this.category = category; }
+
+    /** @return the product theme or occasion, or {@code null} if not set */
+    public String getTheme() { return theme; }
+
+    /** @param theme the product theme or occasion */
+    public void setTheme(String theme) { this.theme = theme; }
 
     /** @return the current available quantity */
     public int getQuantity() { return quantity; }

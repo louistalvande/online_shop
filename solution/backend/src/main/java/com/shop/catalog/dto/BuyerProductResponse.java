@@ -28,8 +28,11 @@ public class BuyerProductResponse {
     @Schema(description = "All-inclusive price in euros (priceExclTax × 1.20)")
     private BigDecimal priceTTC;
 
-    @Schema(description = "Product category")
+    @Schema(description = "Product type (poster, carte, affiche…)")
     private String category;
+
+    @Schema(description = "Product theme or occasion (paysage, naissance…)")
+    private String theme;
 
     @Schema(description = "Ordered list of photo URLs")
     private List<String> photoUrls;
@@ -51,6 +54,7 @@ public class BuyerProductResponse {
         r.priceExclTax = p.getPriceExclTax();
         r.priceTTC = p.getPriceExclTax().multiply(VAT_RATE).setScale(2, RoundingMode.HALF_UP);
         r.category = p.getCategory();
+        r.theme = p.getTheme();
         r.photoUrls = p.getPhotos().stream().map(ph -> ph.getUrl()).toList();
         r.outOfStock = p.getQuantity() == 0;
         return r;
@@ -71,8 +75,11 @@ public class BuyerProductResponse {
     /** @return the all-inclusive price (VAT included) */
     public BigDecimal getPriceTTC() { return priceTTC; }
 
-    /** @return the product category */
+    /** @return the product type */
     public String getCategory() { return category; }
+
+    /** @return the product theme or occasion */
+    public String getTheme() { return theme; }
 
     /** @return the ordered list of photo URLs */
     public List<String> getPhotoUrls() { return photoUrls; }

@@ -179,4 +179,26 @@ public interface ProductController {
     @PostMapping(value = "/products/import", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     ResponseEntity<CsvImportResponse> importProducts(Principal principal,
                                                      @RequestParam("file") MultipartFile file);
+
+    /**
+     * Returns all distinct product type values used across the catalog for autocompletion (US-CAT-01).
+     *
+     * @param principal the authenticated vendor principal
+     * @return sorted list of existing types with HTTP 200
+     */
+    @Operation(summary = "List distinct product types for autocompletion")
+    @ApiResponse(responseCode = "200", description = "Distinct types returned")
+    @GetMapping("/products/distinct-types")
+    ResponseEntity<List<String>> listDistinctTypes(Principal principal);
+
+    /**
+     * Returns all distinct product theme values used across the catalog for autocompletion (US-CAT-01).
+     *
+     * @param principal the authenticated vendor principal
+     * @return sorted list of existing themes with HTTP 200
+     */
+    @Operation(summary = "List distinct product themes for autocompletion")
+    @ApiResponse(responseCode = "200", description = "Distinct themes returned")
+    @GetMapping("/products/distinct-themes")
+    ResponseEntity<List<String>> listDistinctThemes(Principal principal);
 }

@@ -27,4 +27,18 @@ public interface SettingsService {
      * @return {@code true} when maintenance mode is enabled
      */
     boolean isMaintenanceActive();
+
+    /**
+     * Returns the current shop accent colour (FS-V16).
+     *
+     * @return CSS hex colour string, defaults to {@code #4e8b82}
+     */
+    String getAccentColor();
+
+    /**
+     * Updates the shop accent colour (FS-V16).
+     *
+     * @param accentColor the new CSS hex colour (e.g. {@code #4e8b82})
+     */
+    void setAccentColor(String accentColor);
 }

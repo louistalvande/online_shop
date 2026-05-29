@@ -67,6 +67,20 @@ public final class ProductSpecifications {
     }
 
     /**
+     * Restricts to products whose theme matches exactly (case-insensitive).
+     * Returns an unrestricted predicate when {@code theme} is null or blank.
+     *
+     * @param theme the theme string to match
+     * @return the specification
+     */
+    public static Specification<Product> withTheme(String theme) {
+        return (root, query, cb) -> {
+            if (theme == null || theme.isBlank()) return null;
+            return cb.equal(cb.lower(root.get("theme")), theme.toLowerCase());
+        };
+    }
+
+    /**
      * Restricts to products whose name contains the given search term (case-insensitive).
      * Returns an unrestricted predicate when {@code search} is null or blank.
      *

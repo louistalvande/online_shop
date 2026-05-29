@@ -1,14 +1,18 @@
 import { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Button, Card, Snackbar } from '@workspace/theme'
+import { Button, Card, Snackbar, CartIcon } from '@workspace/theme'
 import { fetchProducts, type BuyerProduct } from './api/catalogApi'
 import { addToCart } from './api/cartApi'
 import { getSession, type BuyerSession } from './api/authApi'
 import LoginModal from './LoginModal'
 import AnnouncementCarousel from './AnnouncementCarousel'
 
+interface Props {
+  bannerUrl?: string | null
+}
+
 /** Hero banner + featured catalog for the buyer portal home page. */
-export default function HomePage() {
+export default function HomePage({ bannerUrl }: Props) {
   const { t } = useTranslation()
   const [session, setSession] = useState<BuyerSession | null>(getSession)
   const [products, setProducts] = useState<BuyerProduct[]>([])
@@ -69,18 +73,16 @@ export default function HomePage() {
         />
       )}
 
+      {bannerUrl && (
+        <div className="home-banner">
+          <img src={bannerUrl} alt="" className="home-banner-img" />
+        </div>
+      )}
+
       <AnnouncementCarousel />
 
-      <section className="home-hero">
-        <h1 className="home-hero-title">{t('home.title')}</h1>
-        <p className="home-hero-subtitle">{t('home.subtitle')}</p>
-      </section>
-
       <section id="catalogue" className="home-catalog-section">
-        <div className="home-catalog-header">
-          <h2 className="home-catalog-title">{t('home.featured')}</h2>
-          <Button onClick={() => { window.location.href = '/catalog' }}>{t('home.viewAll')}</Button>
-        </div>
+        <h2 className="home-catalog-title">{t('home.catalog')}</h2>
         <div className="home-catalog-grid">
           {products.map(p => (
             <Card key={p.id}>
@@ -110,19 +112,22 @@ export default function HomePage() {
                       size="sm"
                       disabled={addingId === p.id}
                       onClick={() => handleAddToCart(p.id)}
+                      aria-label={t('product.addToCart')}
                     >
-                      {cartFeedback?.id === p.id
-                        ? t(cartFeedback.ok ? 'cart.added' : 'cart.error.add')
+                      {cartFeedback?.id === p.id && cartFeedback.ok
+                        ? '✓'
                         : addingId === p.id
                           ? '…'
-                          : t('product.addToCart')}
+                          : <CartIcon size={16} />}
                     </Button>
                   )}
                 </div>
               </div>
             </Card>
           ))}
-
+        </div>
+        <div className="home-catalog-footer">
+          <Button onClick={() => { window.location.href = '/catalog' }}>{t('home.viewAll')}</Button>
         </div>
       </section>
     </>

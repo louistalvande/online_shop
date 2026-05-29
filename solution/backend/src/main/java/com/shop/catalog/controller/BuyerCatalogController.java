@@ -35,6 +35,7 @@ public interface BuyerCatalogController {
     @GetMapping("/products")
     ResponseEntity<Page<BuyerProductResponse>> browseProducts(
             @RequestParam(required = false) String category,
+            @RequestParam(required = false) String theme,
             @RequestParam(required = false) BigDecimal maxPrice,
             @RequestParam(defaultValue = "false") boolean inStockOnly,
             @RequestParam(required = false) String search,

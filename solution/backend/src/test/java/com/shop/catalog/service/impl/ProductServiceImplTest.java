@@ -215,7 +215,7 @@ class ProductServiceImplTest {
         given(productRepository.findAll(any(Specification.class), any(PageRequest.class)))
                 .willReturn(productPage);
 
-        Page<BuyerProductResponse> result = service.browseProducts(null, null, false, null, PageRequest.of(0, 20));
+        Page<BuyerProductResponse> result = service.browseProducts(null, null, null, false, null, PageRequest.of(0, 20));
 
         assertThat(result.getTotalElements()).isEqualTo(1);
         assertThat(result.getContent().get(0).getName()).isEqualTo("Aquarelle");
@@ -230,7 +230,7 @@ class ProductServiceImplTest {
         given(productRepository.findAll(any(Specification.class), any(PageRequest.class)))
                 .willReturn(Page.empty());
 
-        Page<BuyerProductResponse> result = service.browseProducts(null, null, true, null, PageRequest.of(0, 20));
+        Page<BuyerProductResponse> result = service.browseProducts(null, null, null, true, null, PageRequest.of(0, 20));
 
         assertThat(result.getContent()).isEmpty();
     }

@@ -1,13 +1,18 @@
 @startuml ihm-pa-accueil
 ' Composant PA : Portail Acheteur
-' Fonctions allouées : FS-V11 (affichage carrousel annonces défilantes)
+' Fonctions allouées : FS-V11 (carrousel annonces), FS-V16 (bannière hero configurable)
 salt
 {+
-  [Logo]  "Rechercher...          "  [Panier (3)]  [Mon compte]
+  ' ── Header ──────────────────────────────────────────
+  [Logo]  Catalogue de dessins  |  [FR/EN]  [Mon compte]  [Panier (3)]
   ==
+  ' ── Bannière hero (image configurable, FS-V16) ──────
   {+
-    ' Carrousel d'annonces — une annonce visible à la fois
-    ' Le bloc entier est cliquable si un lien est associé
+    [                  image bannière pleine largeur                  ]
+  }
+  ==
+  ' ── Carrousel d'annonces (FS-V11) ───────────────────
+  {+
     [<]  |  {
              [      image      ]
              Soldes d'été : -20% sur tout !
@@ -16,7 +21,8 @@ salt
     ● ○ ○
   }
   ==
-  Catégories : ^Toutes^  [Vêtements]  [Accessoires]  [Chaussures]
+  ' ── Extraits catalogue ───────────────────────────────
+  Nos produits
   --
   {
     {+
@@ -38,5 +44,7 @@ salt
       [Indisponible]
     }
   }
+  --
+  [Voir tout le catalogue]
 }
 @enduml

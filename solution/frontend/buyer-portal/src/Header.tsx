@@ -8,15 +8,17 @@ interface Props {
   onShowLogin: () => void
   onLogout: () => void
   children: React.ReactNode
+  logoUrl?: string | null
 }
 
-export default function Header({ session, onShowLogin, onLogout, children }: Props) {
+export default function Header({ session, onShowLogin, onLogout, children, logoUrl }: Props) {
   const { t, i18n } = useTranslation()
   const cartCount = useCartCount()
 
   return (
     <AppShell
       appName={t('app.name')}
+      logoUrl={logoUrl ?? undefined}
       navLinks={[
         { label: t('nav.home'), href: '/' },
         { label: t('nav.catalog'), href: '/catalog' },

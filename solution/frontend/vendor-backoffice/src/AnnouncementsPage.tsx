@@ -50,8 +50,13 @@ const EMPTY_FORM: FormState = {
   active: true,
 }
 
+interface AnnouncementsPageProps {
+  /** When true, suppresses outer padding and the page title (for embedding inside another page). */
+  embedded?: boolean
+}
+
 /** Vendor back-office page for managing scrolling announcements (US-ANN-01). */
-export default function AnnouncementsPage() {
+export default function AnnouncementsPage({ embedded = false }: AnnouncementsPageProps) {
   const { t } = useTranslation()
   const [announcements, setAnnouncements] = useState<Announcement[]>([])
   const [loading, setLoading] = useState(true)
@@ -178,11 +183,17 @@ export default function AnnouncementsPage() {
   const wantsText  = form.contentType === 'TEXT'  || form.contentType === 'BOTH'
 
   return (
-    <div style={{ padding: '24px 32px' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
-        <h1 style={{ margin: 0, fontSize: 22, fontWeight: 700 }}>{t('announcements.title')}</h1>
-        <button className="btn btn-primary" onClick={openCreate}>{t('announcements.add')}</button>
-      </div>
+    <div style={{ padding: embedded ? 0 : '24px 32px' }}>
+      {embedded ? (
+        <div style={{ marginBottom: 16 }}>
+          <button className="btn btn-primary" onClick={openCreate}>{t('announcements.add')}</button>
+        </div>
+      ) : (
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
+          <h1 style={{ margin: 0, fontSize: 22, fontWeight: 700 }}>{t('announcements.title')}</h1>
+          <button className="btn btn-primary" onClick={openCreate}>{t('announcements.add')}</button>
+        </div>
+      )}
 
       {loading && <p>{t('announcements.loading')}</p>}
       {loadError && <p style={{ color: 'red' }}>{t('announcements.error.load')} <button onClick={load}>{t('announcements.retry')}</button></p>}

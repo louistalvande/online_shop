@@ -2,6 +2,8 @@ package com.shop.common;
 
 import com.shop.account.exception.AccountNotFoundException;
 import com.shop.account.exception.DeliveryAddressNotFoundException;
+import com.shop.account.exception.UnsupportedBannerImageTypeException;
+import com.shop.account.exception.UnsupportedLogoImageTypeException;
 import com.shop.announcement.exception.AnnouncementNotFoundException;
 import com.shop.announcement.exception.UnsupportedImageTypeException;
 import com.shop.account.exception.LastActiveAddressException;
@@ -451,6 +453,36 @@ public class GlobalExceptionHandler {
     public ResponseEntity<Map<String, String>> handleUnsupportedProductImageType(
             UnsupportedProductImageTypeException ex, Locale locale) {
         String message = messageSource.getMessage("error.product.image.type", null, locale);
+        return ResponseEntity.badRequest()
+                .body(Map.of("error", "UNSUPPORTED_IMAGE_TYPE", "message", message));
+    }
+
+    /**
+     * Handles upload of an unsupported image type for the vendor logo — returns HTTP 400 (BES-VND-015).
+     *
+     * @param ex     the exception
+     * @param locale the request locale
+     * @return a 400 response with a localised error body
+     */
+    @ExceptionHandler(UnsupportedLogoImageTypeException.class)
+    public ResponseEntity<Map<String, String>> handleUnsupportedLogoImageType(
+            UnsupportedLogoImageTypeException ex, Locale locale) {
+        String message = messageSource.getMessage("error.vendor.logo.image.type", null, locale);
+        return ResponseEntity.badRequest()
+                .body(Map.of("error", "UNSUPPORTED_IMAGE_TYPE", "message", message));
+    }
+
+    /**
+     * Handles upload of an unsupported image type for the vendor banner — returns HTTP 400 (BES-VND-015).
+     *
+     * @param ex     the exception
+     * @param locale the request locale
+     * @return a 400 response with a localised error body
+     */
+    @ExceptionHandler(UnsupportedBannerImageTypeException.class)
+    public ResponseEntity<Map<String, String>> handleUnsupportedBannerImageType(
+            UnsupportedBannerImageTypeException ex, Locale locale) {
+        String message = messageSource.getMessage("error.vendor.banner.image.type", null, locale);
         return ResponseEntity.badRequest()
                 .body(Map.of("error", "UNSUPPORTED_IMAGE_TYPE", "message", message));
     }

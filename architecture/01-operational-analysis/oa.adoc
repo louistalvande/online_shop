@@ -121,8 +121,8 @@ Les capacités expriment ce que la boutique doit être en mesure d'accomplir pou
 | Acheteur, Vendeur
 
 | CAP-007
-| Reporting et pilotage
-| Consulter les rapports de ventes et les statistiques commerciales
+| Reporting, pilotage et identité visuelle
+| Consulter les rapports de ventes et les statistiques commerciales ; personnaliser l'ensemble des visuels de la boutique (logo, carrousel, bannières)
 | Vendeur
 
 | CAP-008
@@ -225,6 +225,7 @@ rectangle "Application e-commerce" {
   }
   package "Vitrine" {
     usecase (Gérer les annonces\ndéfilantes) as UC_V9
+    usecase (Personnaliser\nl'identité visuelle) as UC_V11
   }
 }
 
@@ -238,6 +239,7 @@ Vendor --> UC_V4
 Vendor --> UC_V6
 Vendor --> UC_V8
 Vendor --> UC_V9
+Vendor --> UC_V11
 UC_V0 ..> UC_V_AUTH : <<include>>
 UC_V1 ..> UC_V_AUTH : <<include>>
 UC_V2 ..> UC_V_AUTH : <<include>>
@@ -247,6 +249,7 @@ UC_V6 ..> UC_V_AUTH : <<include>>
 UC_V8 ..> UC_V_AUTH : <<include>>
 UC_V9 ..> UC_V_AUTH : <<include>>
 UC_V10 ..> UC_V_AUTH : <<include>>
+UC_V11 ..> UC_V_AUTH : <<include>>
 UC_V10 ..> UC_V2 : <<extend>>
 UC_V4 --> Carrier
 ----
@@ -559,6 +562,10 @@ NOTE: Le diagramme de séquence détaillant les échanges entre acteurs et syst�
 | UC_V9
 | Gérer les annonces défilantes
 | Créer, modifier et supprimer des annonces défilantes affichées sur la page d'accueil de la boutique (texte, lien, ordre d'affichage)
+
+| UC_V11
+| Personnaliser l'identité visuelle de la boutique
+| Téléverser et modifier le logo affiché dans l'en-tête du portail acheteur et du back-office ; gérer toutes les images du carrousel et des bannières via les annonces défilantes (UC_V9) ; les modifications prennent effet immédiatement sur le portail acheteur
 |===
 
 === Acheteur

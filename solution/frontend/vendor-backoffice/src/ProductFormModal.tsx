@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Button } from '@workspace/theme'
-import { createProduct, updateProduct, uploadProductImage, type Product, type CreateProductPayload } from './api/productApi'
+import { createProduct, updateProduct, uploadProductImage, fetchDistinctTypes, fetchDistinctThemes, type Product, type CreateProductPayload } from './api/productApi'
 
 interface Props {
   product?: Product | null
@@ -14,6 +14,7 @@ interface FormState {
   description: string
   priceExclTax: string
   category: string
+  theme: string
   quantity: string
   stockAlertThreshold: string
   photoUrls: string[]
@@ -25,6 +26,7 @@ function toForm(p: Product): FormState {
     description: p.description ?? '',
     priceExclTax: String(p.priceExclTax),
     category: p.category ?? '',
+    theme: p.theme ?? '',
     quantity: String(p.quantity),
     stockAlertThreshold: String(p.stockAlertThreshold),
     photoUrls: [...p.photoUrls],
@@ -33,7 +35,7 @@ function toForm(p: Product): FormState {
 
 const EMPTY: FormState = {
   name: '', description: '', priceExclTax: '', category: '',
-  quantity: '', stockAlertThreshold: '0', photoUrls: [],
+  theme: '', quantity: '', stockAlertThreshold: '0', photoUrls: [],
 }
 
 /** Modal form for creating (US-CAT-01) and editing (US-CAT-02) a product, with image upload (US-CAT-09). */
@@ -43,7 +45,14 @@ export default function ProductFormModal({ product, onSave, onClose }: Props) {
   const [error, setError] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
   const [uploading, setUploading] = useState(false)
+  const [existingTypes, setExistingTypes] = useState<string[]>([])
+  const [existingThemes, setExistingThemes] = useState<string[]>([])
   const fileInputRef = useRef<HTMLInputElement>(null)
+
+  useEffect(() => {
+    fetchDistinctTypes().then(setExistingTypes).catch(() => {})
+    fetchDistinctThemes().then(setExistingThemes).catch(() => {})
+  }, [])
 
   useEffect(() => {
     setForm(product ? toForm(product) : EMPTY)
@@ -91,6 +100,7 @@ export default function ProductFormModal({ product, onSave, onClose }: Props) {
       description: form.description.trim() || undefined,
       priceExclTax: price,
       category: form.category.trim() || undefined,
+      theme: form.theme.trim() || undefined,
       quantity: qty,
       stockAlertThreshold: isNaN(threshold) ? 0 : threshold,
       photoUrls: form.photoUrls,
@@ -173,9 +183,21 @@ export default function ProductFormModal({ product, onSave, onClose }: Props) {
             </div>
             <div>
               <label htmlFor="pf-category" style={labelStyle}>{t('catalog.form.category')}</label>
-              <input id="pf-category" style={inputStyle} value={form.category}
-                onChange={e => set('category', e.target.value)} maxLength={100} />
+              <input id="pf-category" style={inputStyle} list="pf-category-list"
+                value={form.category} onChange={e => set('category', e.target.value)} maxLength={100} />
+              <datalist id="pf-category-list">
+                {existingTypes.map(v => <option key={v} value={v} />)}
+              </datalist>
             </div>
+          </div>
+
+          <div style={{ marginBottom: 16 }}>
+            <label htmlFor="pf-theme" style={labelStyle}>{t('catalog.form.theme')}</label>
+            <input id="pf-theme" style={inputStyle} list="pf-theme-list"
+              value={form.theme} onChange={e => set('theme', e.target.value)} maxLength={100} />
+            <datalist id="pf-theme-list">
+              {existingThemes.map(th => <option key={th} value={th} />)}
+            </datalist>
           </div>
 
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 16 }}>
