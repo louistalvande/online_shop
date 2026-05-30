@@ -664,7 +664,7 @@ include::diagrams/ihm/ihm-pa-annulation-virement.puml[]
 
 ==== Mon compte
 
-Gestion du profil acheteur (FS-B02 / FS-B11). Réunit sur quatre onglets : informations personnelles, carnet d'adresses de livraison, sécurité, et accès aux commandes. La mise à jour de l'email est soumise à validation d'unicité côté Service Compte. L'onglet « Informations personnelles » inclut un champ `Langue` (liste déroulante `Français` / `English`) permettant à l'acheteur de configurer la langue de ses emails de notification (CS-10).
+Gestion du profil acheteur (FS-B02 / FS-B11). Réunit sur quatre onglets : informations personnelles, carnet d'adresses de livraison, sécurité, et accès aux commandes. La mise à jour de l'email est soumise à validation d'unicité côté Service Compte. L'onglet « Informations personnelles » inclut un champ `Langue` (liste déroulante `Français` / `English` / `Español`) permettant à l'acheteur de configurer la langue de ses emails de notification (CS-10 / COp-08).
 
 L'onglet « Mes adresses » (FS-B11 / US-PRF-03) expose le CRUD complet du carnet d'adresses de livraison via les endpoints `/api/profile/addresses`. L'adresse par défaut est présélectionnée automatiquement à l'étape 1 du tunnel d'achat. La suppression est logique (`supprimé = true`) pour préserver l'intégrité référentielle des commandes passées ; elle est bloquée si l'adresse est la dernière active du compte.
 
@@ -866,7 +866,7 @@ include::diagrams/ihm/ihm-admin-comptes.puml[]
 
 ==== Formulaire de création de compte
 
-Formulaire modal déclenché par le bouton « + Créer un compte » de la liste (FS-A01). Conforme à US-ADM-01 : l'administrateur saisit le prénom, le nom, l'email, le rôle et la langue de notification (FS-A06 / CS-10) — aucun mot de passe n'est demandé. La langue est initialisée à `Français` par défaut. À la soumission, le système crée le compte avec le statut `EN_ATTENTE_ACTIVATION` et envoie automatiquement un email d'activation dans la langue choisie (CS-07 / CS-10). Le lien expire après 24 h ; l'administrateur peut le renvoyer depuis la liste si nécessaire.
+Formulaire modal déclenché par le bouton « + Créer un compte » de la liste (FS-A01). Conforme à US-ADM-01 : l'administrateur saisit le prénom, le nom, l'email, le rôle et la langue de notification (FS-A06 / CS-10 / COp-08) — aucun mot de passe n'est demandé. La langue est initialisée à `Français` par défaut ; les valeurs disponibles sont `Français`, `English` et `Español`. À la soumission, le système crée le compte avec le statut `EN_ATTENTE_ACTIVATION` et envoie automatiquement un email d'activation dans la langue choisie (CS-07 / CS-10). Le lien expire après 24 h ; l'administrateur peut le renvoyer depuis la liste si nécessaire.
 
 .Maquette filaire : Console Admin — Formulaire de création de compte
 [plantuml, ihm-admin-form-compte, svg]

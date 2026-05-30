@@ -1,6 +1,7 @@
 @startsalt
 ' Composant PA : front-acheteur (Portail Acheteur)
 ' Fonctions allouées : Service Compte — FS-B02, FS-B11
+' Langue : liste déroulante Français / English / Español (CS-10 / COp-08)
 title Portail Acheteur — Mon compte (onglet Informations personnelles)
 
 {+

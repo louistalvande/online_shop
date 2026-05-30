@@ -108,7 +108,7 @@ Un compte suspendu ou supprimé ne peut pas s'authentifier. Les messages d'erreu
 
 | CS-10
 | Préférence de langue par compte
-| Chaque compte (acheteur, vendeur) dispose d'une préférence de langue (`fr` ou `en`), initialisée à la création et modifiable ultérieurement par le titulaire ou l'administrateur. Cette préférence détermine la langue des emails transactionnels envoyés par le système (IFS-06).
+| Chaque compte (acheteur, vendeur) dispose d'une préférence de langue (`fr`, `en` ou `es`), initialisée à la création et modifiable ultérieurement par le titulaire ou l'administrateur. Cette préférence détermine la langue des emails transactionnels envoyés par le système (IFS-06). _(COp-08)_
 
 | CS-11
 | Politique de mots de passe robuste (COp-05 / SEC-AUTH-001..002)
@@ -276,7 +276,7 @@ Les fonctions système (FS) sont dérivées des cas d'utilisation opérationnels
 | FS-A03 | Ajouter, modifier et supprimer les transporteurs disponibles | UC_A2
 | FS-A04 | Permettre à l'administrateur de modifier son mot de passe | UC_A_ACC
 | FS-A05 | Basculer en mode maintenance de la plateforme : activer ou désactiver la redirection de tous les internautes non administrateurs vers la page « Site en maintenance » | UC_A3
-| FS-A06 | Configurer la langue de notification d'un compte vendeur ou acheteur — à la création et en modification ultérieure — parmi les valeurs supportées : `fr` (français, défaut) et `en` (anglais) (CS-10) | UC_A1
+| FS-A06 | Configurer la langue de notification d'un compte vendeur ou acheteur — à la création et en modification ultérieure — parmi les valeurs supportées : `fr` (français, défaut), `en` (anglais) et `es` (espagnol) (CS-10 / COp-08) | UC_A1
 |===
 
 === Gestion de la boutique (Vendeur)
@@ -1383,7 +1383,7 @@ class CompteUtilisateur {
   + motDePasseHaché : String
   + rôle : Enum {admin, vendeur, acheteur}
   + statut : Enum {en_attente, actif, suspendu, supprimé}
-  + langue : Enum {fr, en}
+  + langue : Enum {fr, en, es}
   + dateCreation : DateTime
 }
 

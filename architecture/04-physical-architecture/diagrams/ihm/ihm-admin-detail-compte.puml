@@ -1,6 +1,7 @@
 @startsalt ihm-admin-detail-compte
 ' Composant PA : front-admin (Console Administrateur)
-' Fonctions allouées : Service Compte — FS-A01, FS-A02, FS-A06 (modifier compte — CS-10)
+' Fonctions allouées : Service Compte — FS-A01, FS-A02, FS-A06 (modifier compte — CS-10 / COp-08)
+' Langue : liste déroulante Français / English / Español
 title Console Admin — Fiche d'un compte
 
 {+
