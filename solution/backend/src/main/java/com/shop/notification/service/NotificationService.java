@@ -98,6 +98,15 @@ public interface NotificationService {
     void sendWireRefundConfirmedEmail(String toEmail, OrderResponse order, Locale locale);
 
     /**
+     * Notifies a buyer that an out-of-stock product they subscribed to is back in stock (US-SHP-03 / FS-B14).
+     *
+     * @param toEmail     the buyer's email address
+     * @param productName the name of the product now available
+     * @param locale      the locale used to select the email language
+     */
+    void sendBackInStockEmail(String toEmail, String productName, Locale locale);
+
+    /**
      * Notifies the buyer that the vendor has refused their post-shipment cancellation request (US-CAN-06).
      *
      * @param toEmail the buyer's email address

@@ -10,8 +10,10 @@ import com.shop.catalog.entity.Product;
 import com.shop.catalog.entity.ProductStatus;
 import com.shop.catalog.entity.StockAlert;
 import com.shop.catalog.exception.ProductNotFoundException;
+import com.shop.catalog.repository.BackInStockSubscriptionRepository;
 import com.shop.catalog.repository.ProductRepository;
 import com.shop.catalog.repository.StockAlertRepository;
+import com.shop.notification.service.NotificationService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -41,6 +43,8 @@ class ProductServiceImplTest {
 
     @Mock ProductRepository productRepository;
     @Mock StockAlertRepository stockAlertRepository;
+    @Mock BackInStockSubscriptionRepository subscriptionRepository;
+    @Mock NotificationService notificationService;
 
     ProductServiceImpl service;
 
@@ -48,7 +52,9 @@ class ProductServiceImplTest {
 
     @BeforeEach
     void setUp() {
-        service = new ProductServiceImpl(productRepository, stockAlertRepository);
+        service = new ProductServiceImpl(
+                productRepository, stockAlertRepository,
+                subscriptionRepository, notificationService);
     }
 
     private Product publishedProduct() {
@@ -264,5 +270,41 @@ class ProductServiceImplTest {
 
         assertThatThrownBy(() -> service.getPublishedProduct(PRODUCT_ID))
                 .isInstanceOf(ProductNotFoundException.class);
+    }
+
+    /** updateStock must notify back-in-stock subscribers when quantity goes from 0 to positive. */
+    @Test
+    void updateStock_notifiesSubscribers_whenProductRestocked() {
+        Product product = publishedProduct();
+        product.setQuantity(0); // start out of stock
+        given(productRepository.findById(PRODUCT_ID)).willReturn(Optional.of(product));
+        given(productRepository.save(any(Product.class))).willAnswer(inv -> inv.getArgument(0));
+        given(subscriptionRepository.findByProduct_Id(any()))
+                .willReturn(List.of()); // no subscribers — just verify the check is made
+
+        UpdateStockRequest req = new UpdateStockRequest();
+        req.setQuantity(5);
+        req.setStockAlertThreshold(2);
+
+        service.updateStock(PRODUCT_ID, req);
+
+        then(subscriptionRepository).should().findByProduct_Id(any());
+    }
+
+    /** updateStock must NOT notify subscribers when product was already in stock. */
+    @Test
+    void updateStock_doesNotNotifySubscribers_whenWasAlreadyInStock() {
+        Product product = publishedProduct(); // quantity = 10
+        given(productRepository.findById(PRODUCT_ID)).willReturn(Optional.of(product));
+        given(productRepository.save(any(Product.class))).willAnswer(inv -> inv.getArgument(0));
+
+        UpdateStockRequest req = new UpdateStockRequest();
+        req.setQuantity(20);
+        req.setStockAlertThreshold(5);
+
+        service.updateStock(PRODUCT_ID, req);
+
+        then(subscriptionRepository).should(org.mockito.Mockito.never())
+                .findByProduct_Id(any());
     }
 }

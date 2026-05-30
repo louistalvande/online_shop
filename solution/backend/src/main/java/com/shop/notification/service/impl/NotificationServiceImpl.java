@@ -260,6 +260,25 @@ public class NotificationServiceImpl implements NotificationService {
     /** {@inheritDoc} */
     @Async
     @Override
+    public void sendBackInStockEmail(String toEmail, String productName, Locale locale) {
+        if (!sendGridConfigured) {
+            log.info("[EMAIL] Back-in-stock alert for {} — product: {}", toEmail, productName);
+            return;
+        }
+        String subject = messageSource.getMessage(
+                "email.back.in.stock.subject",
+                new Object[]{productName},
+                locale);
+        String htmlBody = messageSource.getMessage(
+                "email.back.in.stock.body.html",
+                new Object[]{productName},
+                locale);
+        sendEmail(toEmail, subject, htmlBody);
+    }
+
+    /** {@inheritDoc} */
+    @Async
+    @Override
     public void sendPasswordResetEmail(String toEmail, String resetLink, Locale locale) {
         if (!sendGridConfigured) {
             log.info("[EMAIL] Password reset link for {} → {}", toEmail, resetLink);

@@ -568,7 +568,9 @@ include::diagrams/ihm/ihm-pa-catalogue.puml[]
 
 ==== Détail produit
 
-Page de détail d'un produit (FS-B03 / FS-B04). Affiche le prix (TTC), la disponibilité issue du stock fusionné dans `Produit`, et un sélecteur de quantité. L'ajout au panier est bloqué si le stock est à zéro.
+Page de détail d'un produit (FS-B03 / FS-B04 / FS-B14). Affiche le prix (TTC), la disponibilité issue du stock fusionné dans `Produit`, et un sélecteur de quantité. L'ajout au panier est bloqué si le stock est à zéro.
+
+Lorsque le stock est à zéro et que l'acheteur est authentifié, un bouton **« M'alerter quand disponible »** est affiché sous le bouton « Indisponible » (FS-B14 / BES-ACH-015). Ce bouton appelle `POST /api/profile/stock-subscriptions` et bascule ensuite en **« Alerte activée ✓ »** permettant l'annulation. Un acheteur non connecté est invité à se connecter avant de s'abonner.
 
 .Maquette filaire : Portail Acheteur — Détail produit
 [plantuml, ihm-pa-detail-produit, svg]
@@ -664,7 +666,7 @@ include::diagrams/ihm/ihm-pa-annulation-virement.puml[]
 
 ==== Mon compte
 
-Gestion du profil acheteur (FS-B02 / FS-B11). Réunit sur quatre onglets : informations personnelles, carnet d'adresses de livraison, sécurité, et accès aux commandes. La mise à jour de l'email est soumise à validation d'unicité côté Service Compte. L'onglet « Informations personnelles » inclut un champ `Langue` (liste déroulante `Français` / `English` / `Español`) permettant à l'acheteur de configurer la langue de ses emails de notification (CS-10 / COp-08).
+Gestion du profil acheteur (FS-B02 / FS-B11 / FS-B14). Réunit sur **cinq onglets** : informations personnelles, carnet d'adresses de livraison, sécurité, accès aux commandes et **Mes alertes**. La mise à jour de l'email est soumise à validation d'unicité côté Service Compte. L'onglet « Informations personnelles » inclut un champ `Langue` (liste déroulante `Français` / `English` / `Español`) permettant à l'acheteur de configurer la langue de ses emails de notification (CS-10 / COp-08).
 
 L'onglet « Mes adresses » (FS-B11 / US-PRF-03) expose le CRUD complet du carnet d'adresses de livraison via les endpoints `/api/profile/addresses`. L'adresse par défaut est présélectionnée automatiquement à l'étape 1 du tunnel d'achat. La suppression est logique (`supprimé = true`) pour préserver l'intégrité référentielle des commandes passées ; elle est bloquée si l'adresse est la dernière active du compte.
 
@@ -689,6 +691,24 @@ Endpoints REST exposés (Service Compte — FS-B11) :
 | `PATCH /api/profile/addresses/{id}/default`
 | Définit l'adresse comme adresse par défaut ; désactive l'ancienne adresse par défaut.
 |===
+
+Endpoints REST exposés pour les alertes de remise en stock (Service Catalogue — FS-B14 / US-SHP-03) :
+
+[cols="2,4", options="header"]
+|===
+| Méthode + Route | Description
+
+| `POST /api/profile/stock-subscriptions`
+| Crée un abonnement pour l'acheteur authentifié. Corps : `{ productId }`. Retourne `409 PRODUCT_IN_STOCK` si le produit est en stock ; `409 ALREADY_SUBSCRIBED` si l'abonnement existe déjà.
+
+| `DELETE /api/profile/stock-subscriptions/{productId}`
+| Annule l'abonnement actif pour le produit donné. Retourne `404` si aucun abonnement n'existe.
+
+| `GET /api/profile/stock-subscriptions`
+| Retourne la liste des abonnements actifs de l'acheteur (produits indisponibles surveillés), triés du plus récent au plus ancien.
+|===
+
+NOTE: Lorsque le vendeur remet un produit en stock (`quantity : 0 → N`), le backend notifie tous les abonnés par email (dans leur langue de préférence — CS-10) et **supprime** immédiatement les abonnements correspondants. L'acheteur peut se réabonner si le produit repart en rupture.
 
 .Maquette filaire : Portail Acheteur — Mon compte (onglet informations personnelles)
 [plantuml, ihm-pa-mon-compte, svg]

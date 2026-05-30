@@ -22,9 +22,12 @@ import com.shop.auth.exception.TooManyLoginAttemptsException;
 import com.shop.cart.exception.CartItemNotFoundException;
 import com.shop.cart.exception.ProductOutOfStockException;
 import com.shop.carrier.exception.CarrierNotFoundException;
+import com.shop.catalog.exception.AlreadySubscribedException;
 import com.shop.catalog.exception.CsvHeaderInvalidException;
 import com.shop.catalog.exception.ProductArchivedConflictException;
+import com.shop.catalog.exception.ProductInStockException;
 import com.shop.catalog.exception.ProductNotFoundException;
+import com.shop.catalog.exception.StockSubscriptionNotFoundException;
 import com.shop.catalog.exception.UnsupportedProductImageTypeException;
 import com.shop.order.exception.CarrierNotAvailableException;
 import com.shop.order.exception.EmptyCartException;
@@ -545,6 +548,51 @@ public class GlobalExceptionHandler {
         String message = messageSource.getMessage("error.mfa.code.invalid", null, locale);
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                 .body(Map.of("error", "INVALID_MFA_CODE", "message", message));
+    }
+
+    /**
+     * Handles an attempt to subscribe when a subscription already exists — returns HTTP 409 (US-SHP-03).
+     *
+     * @param ex     the exception
+     * @param locale the request locale
+     * @return a 409 response with a localised error body
+     */
+    @ExceptionHandler(AlreadySubscribedException.class)
+    public ResponseEntity<Map<String, String>> handleAlreadySubscribed(
+            AlreadySubscribedException ex, Locale locale) {
+        String message = messageSource.getMessage("error.subscription.already.exists", null, locale);
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(Map.of("error", "ALREADY_SUBSCRIBED", "message", message));
+    }
+
+    /**
+     * Handles an attempt to subscribe to a product that is in stock — returns HTTP 409 (US-SHP-03).
+     *
+     * @param ex     the exception
+     * @param locale the request locale
+     * @return a 409 response with a localised error body
+     */
+    @ExceptionHandler(ProductInStockException.class)
+    public ResponseEntity<Map<String, String>> handleProductInStock(
+            ProductInStockException ex, Locale locale) {
+        String message = messageSource.getMessage("error.subscription.product.in.stock", null, locale);
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(Map.of("error", "PRODUCT_IN_STOCK", "message", message));
+    }
+
+    /**
+     * Handles cancellation of a subscription that does not exist — returns HTTP 404 (US-SHP-03).
+     *
+     * @param ex     the exception
+     * @param locale the request locale
+     * @return a 404 response with a localised error body
+     */
+    @ExceptionHandler(StockSubscriptionNotFoundException.class)
+    public ResponseEntity<Map<String, String>> handleStockSubscriptionNotFound(
+            StockSubscriptionNotFoundException ex, Locale locale) {
+        String message = messageSource.getMessage("error.subscription.not.found", null, locale);
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(Map.of("error", "SUBSCRIPTION_NOT_FOUND", "message", message));
     }
 
     /**

@@ -12,6 +12,20 @@ The full ARCADIA specification lives in `../architecture/`. Read it before gener
 
 If what is asked is missing or in opposition to the specification, suggest to update it before generating code.
 
+### Modification order
+
+Every feature or change must cascade through the architecture levels in this order before touching source code:
+
+1. `exigences.adoc` — add or update the operational need (BES-*)
+2. `oa.adoc` — update operational constraints (COp-*), capabilities (CAP-*), use-case diagram and activity table
+3. `sa.adoc` — add or update system functions (FS-*), constraints (CS-*), class model
+4. `la.adoc` — update logical components, allocated functions, data model
+5. `pa.adoc` — update physical descriptions, UI screens, REST endpoint tables
+6. `us.adoc` — add or update user stories (US-*) and traceability matrix
+7. **Solution source code** — implement backend, frontend, i18n, migrations, tests
+
+Never skip a level. If a level does not change for a given feature, note it explicitly before moving on.
+
 ---
 
 ## Tech stack
@@ -128,7 +142,7 @@ Each SPA communicates exclusively with the backend REST API. The IHM wireframes 
 
 ## Internationalisation (i18n)
 
-All three SPAs must support **French (fr) and English (en)**. French is the default locale.
+All three SPAs must support **French (fr) Spanish (es) and English (en)**. French is the default locale.
 
 ### Frontend
 

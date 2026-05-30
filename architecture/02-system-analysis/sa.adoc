@@ -321,6 +321,7 @@ Les fonctions système (FS) sont dérivées des cas d'utilisation opérationnels
 | FS-B11 | Gérer le carnet d'adresses de livraison de l'acheteur : ajouter, modifier, supprimer des adresses et définir une adresse par défaut | UC_B_ACC
 | FS-B12 | Permettre à l'acheteur de soumettre une demande d'annulation depuis son espace commandes pour une commande en état `expédiée`, en saisissant un message expliquant la situation au vendeur ; la commande passe en état `demande_annulation` et le vendeur est notifié | UC_B7
 | FS-B13 | Collecter le consentement marketing de l'acheteur à l'inscription (case opt-in non pré-cochée) et permettre sa modification depuis l'espace compte ; horodater chaque changement de statut | UC_B_MKTG
+| FS-B14 | Permettre à un acheteur authentifié de s'abonner à une alerte de remise en stock pour un produit indisponible (`quantity == 0`) ; envoyer automatiquement un email dans la langue de préférence du compte dès que le stock redevient positif ; permettre à l'acheteur de consulter et d'annuler ses abonnements actifs depuis son espace compte (BES-ACH-015 / CS-10) | UC_B1
 |===
 
 === Interfaces externes

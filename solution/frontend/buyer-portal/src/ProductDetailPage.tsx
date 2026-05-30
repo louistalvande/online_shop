@@ -4,6 +4,7 @@ import { AppShell, Button, LangToggle, CartIcon, UserMenu, Snackbar } from '@wor
 import { fetchProduct, type BuyerProduct } from './api/catalogApi'
 import { addToCart } from './api/cartApi'
 import { getSession, logout, type BuyerSession } from './api/authApi'
+import { subscribeToRestock, unsubscribeFromRestock, listSubscriptions } from './api/stockSubscriptionApi'
 import LoginModal from './LoginModal'
 import { useCartCount } from './hooks/useCartCount'
 
@@ -28,11 +29,20 @@ export default function ProductDetailPage({ productId }: Props) {
   const [snackbar, setSnackbar] = useState<{ message: string; variant: 'success' | 'error' } | null>(null)
   const [currentPhoto, setCurrentPhoto] = useState(0)
   const [quantity, setQuantity] = useState(1)
+  const [subscribed, setSubscribed] = useState(false)
+  const [subscribing, setSubscribing] = useState(false)
   const cartCount = useCartCount()
 
   useEffect(() => {
     fetchProduct(productId)
-      .then(setProduct)
+      .then(p => {
+        setProduct(p)
+        if (p.outOfStock && session) {
+          listSubscriptions()
+            .then(subs => setSubscribed(subs.some(s => s.productId === productId)))
+            .catch(() => {})
+        }
+      })
       .catch(() => setError(true))
       .finally(() => setLoading(false))
   }, [productId])
@@ -172,9 +182,66 @@ export default function ProductDetailPage({ productId }: Props) {
                 </div>
 
                 {product.outOfStock ? (
-                  <Button variant="secondary" disabled>
-                    {t('catalog.outOfStock')}
-                  </Button>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                    <Button variant="secondary" disabled>
+                      {t('catalog.outOfStock')}
+                    </Button>
+                    {!session ? (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => { setPendingAdd(true); setShowLogin(true) }}
+                      >
+                        {t('stock.notify.subscribe')}
+                      </Button>
+                    ) : subscribed ? (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        disabled={subscribing}
+                        onClick={async () => {
+                          setSubscribing(true)
+                          try {
+                            await unsubscribeFromRestock(productId)
+                            setSubscribed(false)
+                            setSnackbar({ message: t('stock.notify.removed'), variant: 'success' })
+                          } catch {
+                            setSnackbar({ message: t('stock.notify.error'), variant: 'error' })
+                          } finally {
+                            setSubscribing(false)
+                          }
+                        }}
+                      >
+                        {subscribing ? '…' : t('stock.notify.subscribed')}
+                      </Button>
+                    ) : (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        disabled={subscribing}
+                        onClick={async () => {
+                          setSubscribing(true)
+                          try {
+                            await subscribeToRestock(productId)
+                            setSubscribed(true)
+                            setSnackbar({ message: t('stock.notify.success'), variant: 'success' })
+                          } catch (err: unknown) {
+                            const code = (err as { code?: string }).code
+                            const msg = code === 'ALREADY_SUBSCRIBED'
+                              ? t('stock.notify.alreadySubscribed')
+                              : code === 'PRODUCT_IN_STOCK'
+                                ? t('stock.notify.productInStock')
+                                : t('stock.notify.error')
+                            setSnackbar({ message: msg, variant: 'error' })
+                          } finally {
+                            setSubscribing(false)
+                          }
+                        }}
+                      >
+                        {subscribing ? '…' : t('stock.notify.subscribe')}
+                      </Button>
+                    )}
+                  </div>
                 ) : (
                   <div className="add-to-cart-row">
                     <div className="qty-stepper">

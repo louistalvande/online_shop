@@ -106,7 +106,7 @@ Les capacités expriment ce que la boutique doit être en mesure d'accomplir pou
 
 | CAP-003
 | Expérience d'achat
-| Parcourir le catalogue, gérer le panier, sélectionner une adresse du carnet, choisir le mode de livraison et passer commande
+| Parcourir le catalogue, gérer le panier, sélectionner une adresse du carnet, choisir le mode de livraison et passer commande ; s'abonner à une alerte email de remise en stock pour les produits indisponibles
 | Acheteur
 
 | CAP-004
@@ -290,6 +290,7 @@ rectangle "Application e-commerce" {
   }
   package "Navigation et panier" {
     usecase (Parcourir le catalogue) as UC_B1
+    usecase (S'abonner à une\nalerte de remise en stock) as UC_B8
     usecase (Gérer le panier) as UC_B2
     usecase (Sauvegarder / restaurer\nle panier) as UC_B2B
   }
@@ -311,6 +312,7 @@ Buyer --> UC_B_AUTH
 Buyer --> UC_B_ACC
 Buyer --> UC_B_ADDR
 Buyer --> UC_B1
+Buyer --> UC_B8
 Buyer --> UC_B2
 Buyer --> UC_B2B
 Buyer --> UC_B3
@@ -322,6 +324,7 @@ Buyer --> UC_B7
 
 UC_B_ACC ..> UC_B_AUTH : <<include>>
 UC_B_ADDR ..> UC_B_AUTH : <<include>>
+UC_B8 ..> UC_B_AUTH : <<include>>
 UC_B2B ..> UC_B_AUTH : <<include>>
 UC_B3 ..> UC_B_AUTH : <<include>>
 UC_B4B ..> UC_B_AUTH : <<include>>
@@ -629,6 +632,10 @@ NOTE: Le diagramme de séquence détaillant les échanges entre acteurs et syst�
 | UC_B7
 | Demander une annulation après expédition
 | Depuis son espace commandes, basculer une commande en état « expédiée » vers « demande d'annulation » en saisissant un message expliquant la situation au vendeur. Le vendeur peut alors accepter sans condition de renvoi (remboursement immédiat), accepter avec condition de renvoi (le colis doit être retourné avant remboursement), ou refuser la demande.
+
+| UC_B8
+| S'abonner à une alerte de remise en stock
+| Depuis la fiche d'un produit indisponible (`quantity == 0`), s'abonner à une notification email déclenchée automatiquement lorsque le vendeur remet le produit en stock ; gérer et annuler ses abonnements actifs depuis l'espace compte (BES-ACH-015 / COp-08)
 
 | UC_B_MKTG
 | Gérer son consentement marketing
