@@ -1,3 +1,5 @@
+name: shop
+
 services:
   db:
     image: postgres:16
@@ -42,13 +44,47 @@ services:
       redis:
         condition: service_started
 
-  frontend:
+  buyer-portal:
     build:
       context: ./frontend
       dockerfile: Dockerfile.dev
+      args:
+        NGINX_CONF: buyer-portal/nginx.dev.conf
     ports:
-      - "80:80"       # Nginx → buyer.localhost / vendor.localhost / admin.localhost
+      - "5173:80"     # http://buyer.localhost:5173
       - "2223:22"     # VS Code Remote SSH
+    environment:
+      API_TARGET: http://backend:8080
+    volumes:
+      - ./frontend:/workspace
+    depends_on:
+      - backend
+
+  vendor-backoffice:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.dev
+      args:
+        NGINX_CONF: vendor-backoffice/nginx.dev.conf
+    ports:
+      - "5174:80"     # http://vendor.localhost:5174
+      - "2224:22"     # VS Code Remote SSH
+    environment:
+      API_TARGET: http://backend:8080
+    volumes:
+      - ./frontend:/workspace
+    depends_on:
+      - backend
+
+  admin-console:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.dev
+      args:
+        NGINX_CONF: admin-console/nginx.dev.conf
+    ports:
+      - "5175:80"     # http://admin.localhost:5175
+      - "2225:22"     # VS Code Remote SSH
     environment:
       API_TARGET: http://backend:8080
     volumes:

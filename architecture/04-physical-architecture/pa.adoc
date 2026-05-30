@@ -26,7 +26,7 @@ NOTE: Les choix technologiques retenus ci-dessous sont des recommandations archi
 
 | CPA-01
 | Déploiement conteneurisé
-| Chaque composant déployable est encapsulé dans un conteneur Docker. L'orchestration locale utilise Docker Compose (développement) et Kubernetes (production).
+| Chaque composant déployable est encapsulé dans un conteneur Docker. L'orchestration locale utilise Docker Compose (développement) et Kubernetes (production). En développement, chaque SPA dispose de son propre conteneur (`shop-buyer-portal`, `shop-vendor-backoffice`, `shop-admin-console`) pour permettre une connexion VS Code Remote SSH indépendante par application (CPA-06).
 
 | CPA-02
 | HTTPS obligatoire
@@ -203,7 +203,7 @@ NOTE: Les choix technologiques retenus ci-dessous sont des recommandations archi
 
 | — (reverse proxy)
 | Nginx
-| Terminaison TLS (CPA-02), service des SPA statiques, proxy vers API, rate limiting
+| *Développement* : un conteneur Nginx par SPA (`shop-buyer-portal` :5173, `shop-vendor-backoffice` :5174, `shop-admin-console` :5175) embarqué avec un Dockerfile partagé (`frontend/Dockerfile.dev`, arg `NGINX_CONF`) ; chaque instance proxy son Vite dev server interne (:5173) et relaie `/api` vers le backend. L'en-tête `Host` est réécrit en `localhost` pour lever le contrôle d'hôte de Vite (CPA-09). *Production* : un seul conteneur Nginx assure la terminaison TLS (CPA-02), sert les bundles SPA statiques compilés et proxy l'API REST ; rate limiting activé.
 
 | — (conteneurisation)
 | Docker / Docker Compose / Kubernetes
@@ -234,11 +234,19 @@ skinparam databaseBackgroundColor #FFF8E7
 skinparam databaseBorderColor #F0A500
 skinparam defaultFontSize 10
 
-package "Conteneur : Nginx" {
+package "Conteneur : shop-buyer-portal\n(Nginx + Vite)" {
   [front-acheteur\n(React SPA)] as FrontB
+}
+
+package "Conteneur : shop-vendor-backoffice\n(Nginx + Vite)" {
   [front-vendeur\n(React SPA)] as FrontV
+}
+
+package "Conteneur : shop-admin-console\n(Nginx + Vite)" {
   [front-admin\n(React SPA)] as FrontA
 }
+
+note "En production : les trois SPA sont\nservies sous forme de bundles statiques\npar un seul conteneur Nginx." as NoteNginxProd
 
 package "Conteneur : API Spring Boot" {
   package "Composants métier" {
@@ -937,17 +945,17 @@ include::diagrams/ihm/ihm-admin-form-transporteur.puml[]
 
 | Portail Acheteur
 | front-acheteur
-| Conteneur Nginx
+| Conteneur `shop-buyer-portal` (dev, port 5173) / Nginx (prod)
 | React 18 / TypeScript / Vite
 
 | Back-office Vendeur
 | front-vendeur
-| Conteneur Nginx
+| Conteneur `shop-vendor-backoffice` (dev, port 5174) / Nginx (prod)
 | React 18 / TypeScript / Vite
 
 | Console Administrateur
 | front-admin
-| Conteneur Nginx
+| Conteneur `shop-admin-console` (dev, port 5175) / Nginx (prod)
 | React 18 / TypeScript / Vite
 
 | Service Compte

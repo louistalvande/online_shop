@@ -18,10 +18,14 @@ tags:
   description: Platform maintenance mode management
 - name: Vendor Announcements
   description: CRUD and reordering of vendor announcements
+- name: Vendor — Shop Config
+  description: Global shop theme management (FS-V16)
 - name: Profile
   description: "Self-service profile management (US-PRF-01, US-PRF-02)"
 - name: Public
   description: Reference data for checkout (no authentication required)
+- name: Shop Theme
+  description: Public shop theme — no authentication required (FS-V16)
 - name: Admin — Countries
   description: Eurozone country reference list
 - name: Vendor — Catalog
@@ -450,6 +454,32 @@ paths:
             '*/*':
               schema:
                 $ref: "#/components/schemas/OrderResponse"
+  /api/vendor/orders/{orderId}/prepare:
+    post:
+      tags:
+      - Vendor Orders
+      summary: Mark order as in preparation (US-VND-01)
+      operationId: prepare
+      parameters:
+      - name: orderId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "409":
+          description: Order not in AWAITING_PROCESSING state
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/OrderResponse"
+        "200":
+          description: Order marked as in preparation
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/OrderResponse"
   /api/vendor/orders/{orderId}/confirm-wire:
     post:
       tags:
@@ -861,6 +891,94 @@ paths:
             '*/*':
               schema:
                 $ref: "#/components/schemas/OrderResponse"
+  /api/me/logo:
+    post:
+      tags:
+      - Profile
+      summary: Upload vendor branding logo (US-PRF-01)
+      operationId: uploadLogo
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              required:
+              - file
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+      responses:
+        "400":
+          description: Unsupported image type
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/VendorLogoUploadResponse"
+        "200":
+          description: Logo uploaded and profile updated
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/VendorLogoUploadResponse"
+        "401":
+          description: Not authenticated
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/VendorLogoUploadResponse"
+    delete:
+      tags:
+      - Profile
+      summary: Delete vendor branding logo (FS-V16)
+      operationId: deleteLogo
+      responses:
+        "204":
+          description: Logo deleted
+  /api/me/banner:
+    post:
+      tags:
+      - Profile
+      summary: Upload vendor hero banner (FS-V16)
+      operationId: uploadBanner
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              required:
+              - file
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+      responses:
+        "200":
+          description: Banner uploaded
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/VendorBannerUploadResponse"
+        "400":
+          description: Unsupported image type
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/VendorBannerUploadResponse"
+        "401":
+          description: Not authenticated
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/VendorBannerUploadResponse"
+    delete:
+      tags:
+      - Profile
+      summary: Delete vendor hero banner (FS-V16)
+      operationId: deleteBanner
+      responses:
+        "204":
+          description: Banner deleted
   /api/cart/items:
     post:
       tags:
@@ -1192,6 +1310,31 @@ paths:
             '*/*':
               schema:
                 $ref: "#/components/schemas/AccountResponse"
+  /api/vendor/shop/theme:
+    patch:
+      tags:
+      - Vendor — Shop Config
+      summary: Update shop accent colour (FS-V16)
+      operationId: updateTheme
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateShopThemeRequest"
+        required: true
+      responses:
+        "200":
+          description: Theme updated
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ShopThemeResponse"
+        "400":
+          description: Invalid hex colour
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ShopThemeResponse"
   /api/vendor/products/{id}/stock:
     patch:
       tags:
@@ -1884,6 +2027,36 @@ paths:
               schema:
                 type: string
                 format: byte
+  /api/vendor/products/distinct-types:
+    get:
+      tags:
+      - Vendor — Catalog
+      summary: List distinct product types for autocompletion
+      operationId: listDistinctTypes
+      responses:
+        "200":
+          description: Distinct types returned
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  type: string
+  /api/vendor/products/distinct-themes:
+    get:
+      tags:
+      - Vendor — Catalog
+      summary: List distinct product themes for autocompletion
+      operationId: listDistinctThemes
+      responses:
+        "200":
+          description: Distinct themes returned
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  type: string
   /api/vendor/orders:
     get:
       tags:
@@ -1940,6 +2113,19 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/StockAlertResponse"
+  /api/public/theme:
+    get:
+      tags:
+      - Shop Theme
+      summary: Get shop theme colours (FS-V16)
+      operationId: getTheme
+      responses:
+        "200":
+          description: Theme returned
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ShopThemeResponse"
   /api/public/maintenance:
     get:
       tags:
@@ -2038,6 +2224,11 @@ paths:
       operationId: browseProducts
       parameters:
       - name: category
+        in: query
+        required: false
+        schema:
+          type: string
+      - name: theme
         in: query
         required: false
         schema:
@@ -2154,8 +2345,14 @@ components:
           maxLength: 100
           minLength: 0
           type: string
-          description: Product category
-          example: Aquarelle
+          description: "Product type (poster, carte, affiche…)"
+          example: Poster
+        theme:
+          maxLength: 100
+          minLength: 0
+          type: string
+          description: "Product theme or occasion (paysage, naissance, vacances…)"
+          example: Paysage
         quantity:
           minimum: 0
           type: integer
@@ -2192,7 +2389,10 @@ components:
           description: Pre-tax unit price in euros
         category:
           type: string
-          description: Product category
+          description: "Product type (poster, carte, affiche…)"
+        theme:
+          type: string
+          description: "Product theme or occasion (paysage, naissance…)"
         quantity:
           type: integer
           description: Current available quantity in stock
@@ -2405,8 +2605,14 @@ components:
           maxLength: 100
           minLength: 0
           type: string
-          description: Product category
-          example: Aquarelle
+          description: "Product type (poster, carte, affiche…)"
+          example: Poster
+        theme:
+          maxLength: 100
+          minLength: 0
+          type: string
+          description: "Product theme or occasion (paysage, naissance, vacances…)"
+          example: Paysage
         quantity:
           minimum: 0
           type: integer
@@ -2733,6 +2939,18 @@ components:
           description: Buyer IBAN for wire transfer refund — required when the order
             was paid by WIRE_TRANSFER
           example: FR7630006000011234567890189
+    VendorLogoUploadResponse:
+      type: object
+      properties:
+        logoUrl:
+          type: string
+          description: Public URL of the uploaded vendor logo
+    VendorBannerUploadResponse:
+      type: object
+      properties:
+        bannerUrl:
+          type: string
+          description: Public URL of the uploaded vendor hero banner
     AddToCartRequest:
       required:
       - productId
@@ -3084,6 +3302,30 @@ components:
           type: string
           description: Creation timestamp
           format: date-time
+    UpdateShopThemeRequest:
+      required:
+      - accentColor
+      type: object
+      properties:
+        accentColor:
+          pattern: "^#[0-9a-fA-F]{6}$"
+          type: string
+          description: "New shop accent colour — 6-digit CSS hex (e.g. #4e8b82)"
+    ShopThemeResponse:
+      type: object
+      properties:
+        accentColor:
+          type: string
+          description: CSS hex accent colour for --accent; never null — defaults to
+            the platform value
+        logoUrl:
+          type: string
+          description: Public URL of the vendor logo file; null if no logo has been
+            uploaded
+        bannerUrl:
+          type: string
+          description: Public URL of the vendor hero banner; null if no banner has
+            been uploaded
     UpdateStockRequest:
       required:
       - quantity
@@ -3427,7 +3669,10 @@ components:
           description: All-inclusive price in euros (priceExclTax × 1.20)
         category:
           type: string
-          description: Product category
+          description: "Product type (poster, carte, affiche…)"
+        theme:
+          type: string
+          description: "Product theme or occasion (paysage, naissance…)"
         photoUrls:
           type: array
           description: Ordered list of photo URLs
@@ -3446,8 +3691,6 @@ components:
         totalPages:
           type: integer
           format: int32
-        pageable:
-          $ref: "#/components/schemas/PageableObject"
         first:
           type: boolean
         last:
@@ -3469,19 +3712,13 @@ components:
         numberOfElements:
           type: integer
           format: int32
+        pageable:
+          $ref: "#/components/schemas/PageableObject"
         empty:
           type: boolean
     PageableObject:
       type: object
       properties:
-        paged:
-          type: boolean
-        pageNumber:
-          type: integer
-          format: int32
-        pageSize:
-          type: integer
-          format: int32
         offset:
           type: integer
           format: int64
@@ -3489,8 +3726,16 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/SortObject"
+        pageSize:
+          type: integer
+          format: int32
+        paged:
+          type: boolean
         unpaged:
           type: boolean
+        pageNumber:
+          type: integer
+          format: int32
     SortObject:
       type: object
       properties:

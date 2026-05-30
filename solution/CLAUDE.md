@@ -151,6 +151,8 @@ All three SPAs must support **French (fr) and English (en)**. French is the defa
 
 In dev mode each service runs in its own Docker container with an SSH server, so VS Code can connect to it via **Remote - SSH** and edit, build, and run code directly inside the container.
 
+Each SPA has its own container: `buyer-portal`, `vendor-backoffice`, `admin-console`. The `./frontend` directory is bind-mounted at `/workspace` in all three so the shared `@workspace/theme` package remains resolvable by npm workspaces.
+
 ### Dev Dockerfiles
 
 Each service has a `Dockerfile.dev` alongside its regular `Dockerfile`.
@@ -167,60 +169,42 @@ EXPOSE 22 8080
 CMD ["/usr/sbin/sshd", "-D"]
 ```
 
-**`frontend/Dockerfile.dev`** (shared by all three apps)
+**`frontend/Dockerfile.dev`** (shared by all three SPA containers)
+
+Takes a build arg `NGINX_CONF` pointing to the per-SPA nginx config relative to the `./frontend` build context.
+
 ```dockerfile
 FROM node:20
+ARG NGINX_CONF
 RUN apt-get update && apt-get install -y openssh-server nginx \
     && mkdir /var/run/sshd \
     && echo 'root:dev' | chpasswd \
     && sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config
-COPY nginx.dev.conf /etc/nginx/nginx.conf
+COPY ${NGINX_CONF} /etc/nginx/nginx.conf
 WORKDIR /workspace
 EXPOSE 22 80
-# start nginx and sshd
-CMD nginx && /usr/sbin/sshd -D
+CMD sh -c "nginx && exec /usr/sbin/sshd -D"
 ```
 
-**`frontend/nginx.dev.conf`**
+**`frontend/<spa>/nginx.dev.conf`** (one per SPA — only the server_name differs)
 
-Nginx acts as the single entry point on port 80 and proxies each subdomain to its Vite dev server. WebSocket connections (used by Vite HMR) are forwarded as well.
+Each SPA container runs a single Nginx that proxies to its own Vite dev server on port 5173. WebSocket connections (used by Vite HMR) are forwarded as well. The `/api` location proxies API calls directly to the backend container.
 
 ```nginx
 events {}
 
 http {
-  # buyer.localhost → Vite :5173
   server {
     listen 80;
-    server_name buyer.localhost;
+    server_name <spa>.localhost _;
+
+    location /api {
+      proxy_pass http://backend:8080;
+      proxy_http_version 1.1;
+      proxy_set_header Host $host;
+    }
     location / {
       proxy_pass http://localhost:5173;
-      proxy_http_version 1.1;
-      proxy_set_header Upgrade $http_upgrade;
-      proxy_set_header Connection "upgrade";
-      proxy_set_header Host $host;
-    }
-  }
-
-  # vendor.localhost → Vite :5174
-  server {
-    listen 80;
-    server_name vendor.localhost;
-    location / {
-      proxy_pass http://localhost:5174;
-      proxy_http_version 1.1;
-      proxy_set_header Upgrade $http_upgrade;
-      proxy_set_header Connection "upgrade";
-      proxy_set_header Host $host;
-    }
-  }
-
-  # admin.localhost → Vite :5175
-  server {
-    listen 80;
-    server_name admin.localhost;
-    location / {
-      proxy_pass http://localhost:5175;
       proxy_http_version 1.1;
       proxy_set_header Upgrade $http_upgrade;
       proxy_set_header Connection "upgrade";
@@ -235,6 +219,8 @@ http {
 Source directories are bind-mounted into `/workspace` so edits made inside the container are reflected on the host (and vice versa).
 
 ```yaml
+name: shop
+
 services:
   db:
     image: postgres:16
@@ -263,15 +249,47 @@ services:
       - db
       - redis
 
-  frontend:
+  buyer-portal:
     build:
       context: ./frontend
       dockerfile: Dockerfile.dev
+      args:
+        NGINX_CONF: buyer-portal/nginx.dev.conf
     ports:
-      - "80:80"       # Nginx → buyer.localhost / vendor.localhost / admin.localhost
+      - "5173:80"     # http://buyer.localhost:5173
       - "2223:22"     # SSH
     volumes:
       - ./frontend:/workspace
+    depends_on:
+      - backend
+
+  vendor-backoffice:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.dev
+      args:
+        NGINX_CONF: vendor-backoffice/nginx.dev.conf
+    ports:
+      - "5174:80"     # http://vendor.localhost:5174
+      - "2224:22"     # SSH
+    volumes:
+      - ./frontend:/workspace
+    depends_on:
+      - backend
+
+  admin-console:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.dev
+      args:
+        NGINX_CONF: admin-console/nginx.dev.conf
+    ports:
+      - "5175:80"     # http://admin.localhost:5175
+      - "2225:22"     # SSH
+    volumes:
+      - ./frontend:/workspace
+    depends_on:
+      - backend
 ```
 
 ### VS Code SSH config (`~/.ssh/config`)
@@ -283,9 +301,21 @@ Host shop-backend
   User root
   StrictHostKeyChecking no
 
-Host shop-frontend
+Host shop-buyer-portal
   HostName localhost
   Port 2223
+  User root
+  StrictHostKeyChecking no
+
+Host shop-vendor-backoffice
+  HostName localhost
+  Port 2224
+  User root
+  StrictHostKeyChecking no
+
+Host shop-admin-console
+  HostName localhost
+  Port 2225
   User root
   StrictHostKeyChecking no
 ```
@@ -296,20 +326,22 @@ Host shop-frontend
 # Start all dev containers
 docker compose -f docker-compose.dev.yml up --build -d
 
-# In VS Code: Remote-SSH → Connect to Host → shop-backend  or  shop-frontend
+# In VS Code: Remote-SSH → Connect to Host → shop-backend / shop-buyer-portal / shop-vendor-backoffice / shop-admin-console
 # Open /workspace — source is live-mounted from the host
 
 # Inside backend container — build and run
 ./mvnw spring-boot:run          # Spring Boot DevTools watches for class changes
 
-# Inside frontend container — start each Vite server in its own terminal
+# Inside each SPA container — install deps and start Vite (Nginx already running on :80)
 cd /workspace/buyer-portal      && npm install && npm run dev -- --host --port 5173
-cd /workspace/vendor-backoffice && npm install && npm run dev -- --host --port 5174
-cd /workspace/admin-console     && npm install && npm run dev -- --host --port 5175
-# Nginx (already running) proxies the three apps:
-#   http://buyer.localhost  → :5173
-#   http://vendor.localhost → :5174
-#   http://admin.localhost  → :5175
+# (vendor-backoffice and admin-console: same command, run inside their own container)
+
+# Access each app via its host port:
+#   http://localhost:5173  (buyer-portal)
+#   http://localhost:5174  (vendor-backoffice)
+#   http://localhost:5175  (admin-console)
+# Or via subdomain if /etc/hosts maps *.localhost:
+#   http://buyer.localhost:5173 / http://vendor.localhost:5174 / http://admin.localhost:5175
 ```
 
 ---

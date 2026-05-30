@@ -1,3 +1,5 @@
+name: shop
+
 services:
   db:
     image: postgres:16
