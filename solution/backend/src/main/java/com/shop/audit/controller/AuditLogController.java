@@ -1,6 +1,7 @@
 package com.shop.audit.controller;
 
 import com.shop.audit.dto.AuditLogPageResponse;
+import com.shop.audit.dto.AuditPartitionStats;
 import com.shop.audit.entity.AuditEventType;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -13,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import java.time.Instant;
+import java.util.List;
 
 /**
  * Admin-only endpoints for querying and exporting the security audit log (US-SEC-05 / FS-S07 / CPA-13).
@@ -72,4 +74,18 @@ public interface AuditLogController {
             @RequestParam(required = false) String ipAddress,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) Instant from,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) Instant to);
+
+    /**
+     * Returns integrity statistics for every child partition of the audit log table (US-SEC-06).
+     * Allows administrators to verify partition health and estimated row counts.
+     *
+     * @return list of partitions with row count and disk size
+     */
+    @Operation(summary = "List audit log partition statistics (US-SEC-06)")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Partition list returned"),
+        @ApiResponse(responseCode = "403", description = "Not an ADMIN")
+    })
+    @GetMapping("/partitions")
+    ResponseEntity<List<AuditPartitionStats>> listPartitions();
 }

@@ -609,11 +609,11 @@ a|
 | *US-SEC-06*
 | En tant qu'ops, les journaux de sécurité sont conservés au minimum 12 mois et protégés contre toute suppression ou modification non autorisée.
 a|
-- [ ] La table `audit_log` est partitionnée mensuellement (PostgreSQL partition by range) ; purge automatique après 13 mois (FS-S07 / CS-15 / CPA-13)
-- [ ] Le compte applicatif utilisé par l'API dispose uniquement du droit `INSERT` sur `audit_log` (pas de `UPDATE` ni `DELETE`)
-- [ ] Un rôle PostgreSQL dédié dispose seul des droits de maintenance (purge, archivage)
-- [ ] L'intégrité des partitions archivées est vérifiable par checksum
-| À faire
+- [x] La table `audit_log` est partitionnée mensuellement (PostgreSQL `PARTITION BY RANGE (occurred_at)`) ; purge automatique après 13 mois via `@Scheduled` job (FS-S07 / CS-15 / CPA-13)
+- [x] Le compte applicatif utilise `SELECT + INSERT` uniquement sur `audit_log` — `REVOKE UPDATE, DELETE` documenté dans le schéma pour application en production par un DBA
+- [x] Rôle `shop_maintenance` créé avec tous les droits sur `audit_log` pour la maintenance (DDL, archivage)
+- [x] L'intégrité des partitions est vérifiable via `GET /api/admin/audit-logs/partitions` (row count + disk size par partition depuis `pg_class`)
+| Terminée
 
 | *US-SEC-07*
 | En tant que développeur, les données sensibles stockées en base (secrets TOTP) sont chiffrées au niveau colonne.

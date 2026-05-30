@@ -2,7 +2,9 @@ package com.shop.audit.controller.impl;
 
 import com.shop.audit.controller.AuditLogController;
 import com.shop.audit.dto.AuditLogPageResponse;
+import com.shop.audit.dto.AuditPartitionStats;
 import com.shop.audit.entity.AuditEventType;
+import com.shop.audit.service.AuditLogMaintenanceService;
 import com.shop.audit.service.AuditLogService;
 import org.springframework.http.ContentDisposition;
 import org.springframework.http.HttpHeaders;
@@ -11,16 +13,23 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.time.Instant;
+import java.util.List;
 
 /** Default implementation of {@link AuditLogController}. */
 @RestController
 public class AuditLogControllerImpl implements AuditLogController {
 
     private final AuditLogService auditLogService;
+    private final AuditLogMaintenanceService maintenanceService;
 
-    /** @param auditLogService the audit log business-logic service */
-    public AuditLogControllerImpl(AuditLogService auditLogService) {
-        this.auditLogService = auditLogService;
+    /**
+     * @param auditLogService    the audit log query and export service
+     * @param maintenanceService the partition stats service
+     */
+    public AuditLogControllerImpl(AuditLogService auditLogService,
+                                   AuditLogMaintenanceService maintenanceService) {
+        this.auditLogService    = auditLogService;
+        this.maintenanceService = maintenanceService;
     }
 
     /** {@inheritDoc} */
@@ -44,5 +53,11 @@ public class AuditLogControllerImpl implements AuditLogController {
         headers.setContentDisposition(
                 ContentDisposition.attachment().filename("audit-log.csv").build());
         return ResponseEntity.ok().headers(headers).body(csv);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public ResponseEntity<List<AuditPartitionStats>> listPartitions() {
+        return ResponseEntity.ok(maintenanceService.listPartitionStats());
     }
 }
