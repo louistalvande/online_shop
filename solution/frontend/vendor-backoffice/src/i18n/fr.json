@@ -248,6 +248,11 @@
 
   "nav.reports": "Rapports",
   "reports.title": "Rapports de ventes",
+  "reports.mailing.title": "Liste mailing",
+  "reports.mailing.description": "Exporte la liste des acheteurs actifs ayant accepté de recevoir vos emails commerciaux.",
+  "reports.mailing.export": "Exporter la liste mailing",
+  "reports.mailing.exporting": "Export en cours…",
+  "reports.mailing.error": "Erreur lors de l'export de la liste mailing.",
   "reports.period": "Période",
   "reports.category": "Catégorie",
   "reports.categoryPlaceholder": "Toutes",

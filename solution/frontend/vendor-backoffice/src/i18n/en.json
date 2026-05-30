@@ -248,6 +248,11 @@
 
   "nav.reports": "Reports",
   "reports.title": "Sales Reports",
+  "reports.mailing.title": "Mailing list",
+  "reports.mailing.description": "Export the list of active buyers who have opted in to receive your commercial emails.",
+  "reports.mailing.export": "Export mailing list",
+  "reports.mailing.exporting": "Exporting…",
+  "reports.mailing.error": "Failed to export the mailing list.",
   "reports.period": "Period",
   "reports.category": "Category",
   "reports.categoryPlaceholder": "All",

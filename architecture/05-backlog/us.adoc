@@ -185,11 +185,11 @@ a|
 | *US-PRF-05*
 | En tant que vendeur, je peux exporter au format CSV la liste des acheteurs ayant donné leur consentement marketing, afin de l'importer dans mon outil de mailing.
 a|
-- [ ] Bouton « Exporter la liste mailing » dans le back-office vendeur
-- [ ] Le fichier CSV contient : email, prénom, nom des acheteurs avec `marketing_consent = true`
-- [ ] Seuls les comptes actifs et consentants sont inclus
-- [ ] L'export est journalisé (date, nombre de contacts exportés)
-| À faire
+- [x] Bouton « Exporter la liste mailing » dans le back-office vendeur
+- [x] Le fichier CSV contient : email, prénom, nom des acheteurs avec `marketing_consent = true`
+- [x] Seuls les comptes actifs et consentants sont inclus
+- [x] L'export est journalisé (date, nombre de contacts exportés)
+| Terminée
 
 |===
 

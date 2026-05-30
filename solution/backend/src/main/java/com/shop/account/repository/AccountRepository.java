@@ -45,4 +45,14 @@ public interface AccountRepository extends JpaRepository<Account, UUID> {
      * @return all accounts holding that role
      */
     List<Account> findAllByRole(AccountRole role);
+
+    /**
+     * Returns all accounts with the given role and status where marketing consent is active.
+     * Used to build the mailing list CSV export (US-PRF-05 / RGPD-CONS-004).
+     *
+     * @param role   the role to filter by (typically BUYER)
+     * @param status the lifecycle status to filter by (typically ACTIVE)
+     * @return accounts that have opted in to marketing emails
+     */
+    List<Account> findByRoleAndStatusAndMarketingConsentTrue(AccountRole role, AccountStatus status);
 }
