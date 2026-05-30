@@ -3,10 +3,12 @@ package com.shop;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.scheduling.annotation.EnableAsync;
+import org.springframework.scheduling.annotation.EnableScheduling;
 
 /** Entry point of the Shop API. */
 @SpringBootApplication
 @EnableAsync
+@EnableScheduling
 public class ShopApplication {
 
     /**

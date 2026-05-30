@@ -8,7 +8,10 @@ import CarrierDeleteModal from './components/CarrierDeleteModal'
 import UserDetailModal from './components/UserDetailModal'
 import MaintenanceModeCard from './components/MaintenanceModeCard'
 import { logout } from './api/authApi'
-import { listAccounts, type AccountResponse } from './api/accountApi'
+import {
+  listAccounts, revokePasswords, listRevokedAccounts,
+  type AccountResponse, type RevokedAccountResponse, type AccountRole,
+} from './api/accountApi'
 import { listCarriers, deactivateCarrier, activateCarrier, type CarrierResponse } from './api/carrierApi'
 
 interface Props {
@@ -29,6 +32,14 @@ export default function DashboardPage({ onUnauthorized }: Props) {
   const [editCarrier, setEditCarrier] = useState<CarrierResponse | null>(null)
   const [deleteCarrierTarget, setDeleteCarrierTarget] = useState<CarrierResponse | null>(null)
   const [snackbar, setSnackbar] = useState<string | null>(null)
+
+  // Password revocation state (US-SEC-04)
+  const [revokedAccounts, setRevokedAccounts] = useState<RevokedAccountResponse[]>([])
+  const [showRevokeModal, setShowRevokeModal] = useState(false)
+  const [revokeRole, setRevokeRole] = useState<AccountRole | 'ADMIN' | ''>('')
+  const [revokeEmails, setRevokeEmails] = useState('')
+  const [revoking, setRevoking] = useState(false)
+  const [revokeError, setRevokeError] = useState<string | null>(null)
 
   function showSnackbar(message: string) {
     setSnackbar(message)
@@ -51,9 +62,39 @@ export default function DashboardPage({ onUnauthorized }: Props) {
     }
   }
 
+  async function fetchRevokedAccounts() {
+    try { setRevokedAccounts(await listRevokedAccounts()) } catch { /* keep current list */ }
+  }
+
+  async function handleRevoke() {
+    setRevokeError(null)
+    const emails = revokeEmails.split(/[\s,]+/).map(e => e.trim()).filter(Boolean)
+    if (!revokeRole && emails.length === 0) {
+      setRevokeError(t('revoke.error.noTarget'))
+      return
+    }
+    setRevoking(true)
+    try {
+      await revokePasswords({
+        role: revokeRole ? (revokeRole as AccountRole) : undefined,
+        emails: emails.length ? emails : undefined,
+      })
+      setShowRevokeModal(false)
+      setRevokeRole('')
+      setRevokeEmails('')
+      fetchRevokedAccounts()
+      showSnackbar(t('revoke.success'))
+    } catch {
+      setRevokeError(t('revoke.error.generic'))
+    } finally {
+      setRevoking(false)
+    }
+  }
+
   useEffect(() => {
     fetchAccounts()
     fetchCarriers()
+    fetchRevokedAccounts()
   }, [])
 
   const activeAdminCount = accounts.filter(a => a.role === 'ADMIN' && a.status === 'ACTIVE').length
@@ -306,7 +347,101 @@ export default function DashboardPage({ onUnauthorized }: Props) {
             </tbody>
           </table>
         </Card>
+
+        {/* ── Password revocation (US-SEC-04) ─────────────────────────────── */}
+        <div style={{ marginTop: 48 }} id="security">
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
+            <h2 style={{ fontFamily: 'var(--font-serif)', fontSize: 22, fontWeight: 700 }}>
+              {t('revoke.section.title')}
+            </h2>
+            <Button size="sm" onClick={() => setShowRevokeModal(true)}>{t('revoke.action')}</Button>
+          </div>
+
+          {revokedAccounts.length === 0 ? (
+            <p style={{ color: 'var(--text-muted)', fontSize: 14 }}>{t('revoke.empty')}</p>
+          ) : (
+            <Card>
+              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 14 }}>
+                <thead>
+                  <tr style={{ borderBottom: '1px solid var(--border)' }}>
+                    {[t('users.name'), t('users.email'), t('users.role'), t('users.status'), t('revoke.col.revokedAt'), t('revoke.col.hours')].map((h, i) => (
+                      <th key={i} style={{ padding: '12px 16px', textAlign: 'left', fontWeight: 600, color: 'var(--text-muted)', fontSize: 12 }}>{h}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {revokedAccounts.map(a => (
+                    <tr key={a.id} style={{ borderBottom: '1px solid var(--border)' }}>
+                      <td style={{ padding: '14px 16px', fontWeight: 600 }}>{a.firstName} {a.lastName}</td>
+                      <td style={{ padding: '14px 16px', color: 'var(--text-muted)' }}>{a.email}</td>
+                      <td style={{ padding: '14px 16px' }}>{t(`users.role.${a.role}`)}</td>
+                      <td style={{ padding: '14px 16px' }}>
+                        <span style={{
+                          fontSize: 12, fontWeight: 600, padding: '3px 8px', borderRadius: 4,
+                          background: a.status === 'ACTIVE' ? '#dcfce7' : '#fef9c3',
+                          color: a.status === 'ACTIVE' ? '#16a34a' : '#d97706',
+                        }}>
+                          {t(`users.status.${a.status}`)}
+                        </span>
+                      </td>
+                      <td style={{ padding: '14px 16px', color: 'var(--text-muted)' }}>
+                        {a.revokedAt ? new Date(a.revokedAt).toLocaleString() : '—'}
+                      </td>
+                      <td style={{ padding: '14px 16px', fontWeight: a.hoursSinceRevocation >= 20 ? 700 : 400, color: a.hoursSinceRevocation >= 20 ? '#c62828' : 'inherit' }}>
+                        {a.hoursSinceRevocation}h
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </Card>
+          )}
+        </div>
       </div>
+
+      {/* ── Revoke passwords modal ─────────────────────────────────────────── */}
+      {showRevokeModal && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.45)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}>
+          <div style={{ background: '#fff', borderRadius: 8, padding: '28px 32px', minWidth: 420, maxWidth: 520 }}>
+            <h2 style={{ margin: '0 0 16px', fontSize: 18, fontWeight: 700 }}>{t('revoke.modal.title')}</h2>
+            <p style={{ color: 'var(--text-muted)', fontSize: 14, margin: '0 0 20px' }}>{t('revoke.modal.description')}</p>
+
+            <label style={{ display: 'block', fontSize: 13, fontWeight: 600, marginBottom: 6 }}>{t('revoke.modal.roleLabel')}</label>
+            <select
+              value={revokeRole}
+              onChange={e => setRevokeRole(e.target.value as AccountRole | 'ADMIN' | '')}
+              style={{ width: '100%', padding: '8px 10px', borderRadius: 4, border: '1px solid #ccc', marginBottom: 16, fontSize: 14 }}
+            >
+              <option value="">{t('revoke.modal.roleNone')}</option>
+              <option value="BUYER">{t('users.role.BUYER')}</option>
+              <option value="VENDOR">{t('users.role.VENDOR')}</option>
+              <option value="ADMIN">{t('users.role.ADMIN')}</option>
+            </select>
+
+            <label style={{ display: 'block', fontSize: 13, fontWeight: 600, marginBottom: 6 }}>{t('revoke.modal.emailsLabel')}</label>
+            <textarea
+              value={revokeEmails}
+              onChange={e => setRevokeEmails(e.target.value)}
+              placeholder={t('revoke.modal.emailsPlaceholder')}
+              rows={3}
+              style={{ width: '100%', padding: '8px 10px', borderRadius: 4, border: '1px solid #ccc', fontSize: 14, resize: 'vertical', boxSizing: 'border-box' }}
+            />
+
+            {revokeError && (
+              <p style={{ color: '#c62828', fontSize: 13, margin: '8px 0 0' }}>{revokeError}</p>
+            )}
+
+            <div style={{ display: 'flex', gap: 12, justifyContent: 'flex-end', marginTop: 24 }}>
+              <Button variant="ghost" size="sm" onClick={() => { setShowRevokeModal(false); setRevokeError(null) }}>
+                {t('revoke.modal.cancel')}
+              </Button>
+              <Button size="sm" onClick={handleRevoke} disabled={revoking}>
+                {revoking ? t('revoke.modal.revoking') : t('revoke.modal.confirm')}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   )
 }

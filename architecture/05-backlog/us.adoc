@@ -590,11 +590,11 @@ a|
 | *US-SEC-04*
 | En tant qu'administrateur, je peux révoquer les mots de passe d'un groupe d'utilisateurs suspects et les comptes non renouvelés dans les 24 h sont désactivés automatiquement.
 a|
-- [ ] Endpoint d'administration `POST /admin/accounts/revoke-passwords` permettant de marquer un ensemble de comptes (par rôle ou liste d'emails) avec `password_revoked = true` (FS-S11 / CS-18 / CPA-17)
-- [ ] Les utilisateurs concernés reçoivent un email les invitant à réinitialiser leur mot de passe immédiatement
-- [ ] Un job planifié (ex. `@Scheduled`, toutes les heures) désactive automatiquement les comptes dont le mot de passe n'a pas été renouvelé 24 h après la révocation (`statut = suspendu`)
-- [ ] L'administrateur dispose d'une vue listant les comptes en état « révoqué en attente de renouvellement » avec leur ancienneté
-| À faire
+- [x] Endpoint d'administration `POST /api/admin/accounts/revoke-passwords` permettant de marquer un ensemble de comptes (par rôle ou liste d'emails) avec `password_revoked = true` (FS-S11 / CS-18 / CPA-17)
+- [x] Les utilisateurs concernés reçoivent un email les invitant à réinitialiser leur mot de passe immédiatement
+- [x] Un job `@Scheduled` toutes les heures désactive automatiquement les comptes dont le mot de passe n'a pas été renouvelé 24 h après la révocation (`statut = SUSPENDED`)
+- [x] L'administrateur dispose d'une vue listant les comptes en état « révoqué en attente de renouvellement » avec leur ancienneté
+| Terminée
 
 | *US-SEC-05*
 | En tant qu'administrateur, je peux consulter et filtrer les journaux d'audit de sécurité depuis la console d'administration.

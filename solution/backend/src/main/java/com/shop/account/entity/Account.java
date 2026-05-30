@@ -197,4 +197,19 @@ public class Account {
     public void setMarketingConsentUpdatedAt(OffsetDateTime marketingConsentUpdatedAt) {
         this.marketingConsentUpdatedAt = marketingConsentUpdatedAt;
     }
+
+    /**
+     * Timestamp of the last administrative password revocation (US-SEC-04 / SEC-PWD-005 / CPA-17).
+     * {@code null} if the password has never been revoked.
+     */
+    @Column(name = "password_revoked_at")
+    private OffsetDateTime passwordRevokedAt;
+
+    /** @return the timestamp of the last administrative password revocation, or {@code null} */
+    public OffsetDateTime getPasswordRevokedAt() { return passwordRevokedAt; }
+
+    /** @param passwordRevokedAt the revocation timestamp to record */
+    public void setPasswordRevokedAt(OffsetDateTime passwordRevokedAt) {
+        this.passwordRevokedAt = passwordRevokedAt;
+    }
 }

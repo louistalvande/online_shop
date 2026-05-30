@@ -55,4 +55,23 @@ public interface AccountRepository extends JpaRepository<Account, UUID> {
      * @return accounts that have opted in to marketing emails
      */
     List<Account> findByRoleAndStatusAndMarketingConsentTrue(AccountRole role, AccountStatus status);
+
+    /**
+     * Returns all accounts whose password has been revoked and whose status is not DELETED.
+     * Used by the admin view and the auto-suspension job (US-SEC-04 / FS-S11).
+     *
+     * @param status the status to exclude (DELETED)
+     * @return revoked accounts awaiting password renewal
+     */
+    List<Account> findByPasswordRevokedTrueAndStatusNot(AccountStatus status);
+
+    /**
+     * Returns all accounts of the given role whose status is not the given value.
+     * Used to target all active members of a role for bulk password revocation (US-SEC-04).
+     *
+     * @param role   the role to filter by
+     * @param status the status to exclude (DELETED)
+     * @return active accounts holding that role
+     */
+    List<Account> findByRoleAndStatusNot(AccountRole role, AccountStatus status);
 }

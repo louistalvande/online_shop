@@ -3,6 +3,8 @@ package com.shop.account.controller.impl;
 import com.shop.account.controller.AccountController;
 import com.shop.account.dto.AccountResponse;
 import com.shop.account.dto.CreateAccountRequest;
+import com.shop.account.dto.RevokePasswordsRequest;
+import com.shop.account.dto.RevokedAccountResponse;
 import com.shop.account.dto.UpdateAccountRequest;
 import com.shop.account.service.AccountService;
 import org.springframework.http.ResponseEntity;
@@ -74,5 +76,18 @@ public class AccountControllerImpl implements AccountController {
     public ResponseEntity<Void> deleteAccount(UUID id) {
         accountService.deleteAccount(id);
         return ResponseEntity.noContent().build();
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public ResponseEntity<Void> revokePasswords(RevokePasswordsRequest request) {
+        accountService.revokePasswords(request);
+        return ResponseEntity.noContent().build();
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public ResponseEntity<List<RevokedAccountResponse>> listRevokedAccounts() {
+        return ResponseEntity.ok(accountService.listRevokedPending());
     }
 }

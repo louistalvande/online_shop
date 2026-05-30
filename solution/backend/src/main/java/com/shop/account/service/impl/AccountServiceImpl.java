@@ -3,6 +3,8 @@ package com.shop.account.service.impl;
 import com.shop.account.dto.AccountResponse;
 import com.shop.account.dto.CreateAccountRequest;
 import com.shop.account.dto.ProfileResponse;
+import com.shop.account.dto.RevokePasswordsRequest;
+import com.shop.account.dto.RevokedAccountResponse;
 import com.shop.account.dto.UpdateAccountRequest;
 import com.shop.account.dto.UpdateProfileRequest;
 import com.shop.account.entity.Account;
@@ -17,13 +19,17 @@ import com.shop.account.repository.AccountRepository;
 import com.shop.account.repository.ActivationTokenRepository;
 import com.shop.account.service.AccountService;
 import com.shop.notification.service.NotificationService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
@@ -33,12 +39,15 @@ import java.util.UUID;
 @Transactional
 public class AccountServiceImpl implements AccountService {
 
+    private static final Logger log = LoggerFactory.getLogger(AccountServiceImpl.class);
+
     private final AccountRepository accountRepository;
     private final ActivationTokenRepository activationTokenRepository;
     private final NotificationService notificationService;
     private final PasswordEncoder passwordEncoder;
     private final String activationBaseUrl;
     private final int activationExpiryHours;
+    private final String passwordResetBaseUrl;
 
     /**
      * @param accountRepository         account data access
@@ -47,6 +56,7 @@ public class AccountServiceImpl implements AccountService {
      * @param passwordEncoder           BCrypt encoder for password change
      * @param activationBaseUrl         base URL for the activation link
      * @param activationExpiryHours     token TTL in hours (CS-07)
+     * @param passwordResetBaseUrl      base URL for password-reset links (US-SEC-04)
      */
     public AccountServiceImpl(
             AccountRepository accountRepository,
@@ -54,11 +64,13 @@ public class AccountServiceImpl implements AccountService {
             NotificationService notificationService,
             PasswordEncoder passwordEncoder,
             @Value("${app.activation-base-url}") String activationBaseUrl,
-            @Value("${app.activation-expiry-hours}") int activationExpiryHours) {
+            @Value("${app.activation-expiry-hours}") int activationExpiryHours,
+            @Value("${app.password-reset-base-url}") String passwordResetBaseUrl) {
         this.accountRepository = accountRepository;
         this.activationTokenRepository = activationTokenRepository;
         this.notificationService = notificationService;
         this.passwordEncoder = passwordEncoder;
+        this.passwordResetBaseUrl = passwordResetBaseUrl;
         this.activationBaseUrl = activationBaseUrl;
         this.activationExpiryHours = activationExpiryHours;
     }
@@ -221,5 +233,75 @@ public class AccountServiceImpl implements AccountService {
         String link = activationBaseUrl + "/activate?token=" + token.getToken();
         notificationService.sendActivationEmail(account.getEmail(), link,
                 Locale.forLanguageTag(account.getLanguage().name().toLowerCase()));
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void revokePasswords(RevokePasswordsRequest request) {
+        List<Account> targets = new ArrayList<>();
+
+        if (request.getRole() != null) {
+            targets.addAll(accountRepository.findByRoleAndStatusNot(
+                    request.getRole(), AccountStatus.DELETED));
+        }
+
+        if (request.getEmails() != null) {
+            for (String email : request.getEmails()) {
+                accountRepository.findByEmail(email).ifPresent(a -> {
+                    if (a.getStatus() != AccountStatus.DELETED && !targets.contains(a)) {
+                        targets.add(a);
+                    }
+                });
+            }
+        }
+
+        OffsetDateTime now = OffsetDateTime.now();
+        for (Account account : targets) {
+            account.setPasswordRevoked(true);
+            account.setPasswordRevokedAt(now);
+            accountRepository.save(account);
+
+            String resetLink = passwordResetBaseUrl + "/reset-password?token=pending";
+            notificationService.sendPasswordRevokedEmail(
+                    account.getEmail(),
+                    resetLink,
+                    Locale.forLanguageTag(account.getLanguage().name().toLowerCase()));
+        }
+        log.info("[SEC-04] Revoked passwords for {} accounts", targets.size());
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    @Transactional(readOnly = true)
+    public List<RevokedAccountResponse> listRevokedPending() {
+        return accountRepository.findByPasswordRevokedTrueAndStatusNot(AccountStatus.DELETED)
+                .stream()
+                .map(RevokedAccountResponse::from)
+                .sorted((a, b) -> b.getRevokedAt().compareTo(a.getRevokedAt()))
+                .toList();
+    }
+
+    /**
+     * Suspends accounts that have not renewed their revoked password within 24 hours.
+     * Runs every hour (US-SEC-04 / FS-S11 / CPA-17).
+     */
+    @Scheduled(fixedRateString = "PT1H")
+    @Transactional
+    public void suspendStallyRevokedAccounts() {
+        OffsetDateTime threshold = OffsetDateTime.now().minusHours(24);
+        List<Account> overdue = accountRepository.findByPasswordRevokedTrueAndStatusNot(AccountStatus.DELETED)
+                .stream()
+                .filter(a -> a.getStatus() == AccountStatus.ACTIVE)
+                .filter(a -> a.getPasswordRevokedAt() != null
+                          && a.getPasswordRevokedAt().isBefore(threshold))
+                .toList();
+
+        for (Account account : overdue) {
+            account.setStatus(AccountStatus.SUSPENDED);
+            accountRepository.save(account);
+        }
+        if (!overdue.isEmpty()) {
+            log.info("[SEC-04] Auto-suspended {} accounts with unrenewed revoked passwords", overdue.size());
+        }
     }
 }

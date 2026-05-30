@@ -134,4 +134,14 @@ public interface NotificationService {
      */
     void sendVendorNewOrderEmail(String toEmail, OrderResponse order, Locale locale);
 
+    /**
+     * Notifies an account holder that their password has been administratively revoked and they
+     * must reset it immediately (US-SEC-04 / FS-S11 / CPA-17).
+     *
+     * @param toEmail   the account's email address
+     * @param resetLink the password-reset URL to include in the email
+     * @param locale    the locale used to select the email language
+     */
+    void sendPasswordRevokedEmail(String toEmail, String resetLink, Locale locale);
+
 }

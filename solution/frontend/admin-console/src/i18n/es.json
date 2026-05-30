@@ -149,5 +149,22 @@
   "maintenance.status.active": "En mantenimiento",
   "maintenance.status.inactive": "Operativo",
   "maintenance.snackbar.enabled": "Modo mantenimiento activado.",
-  "maintenance.snackbar.disabled": "Modo mantenimiento desactivado."
+  "maintenance.snackbar.disabled": "Modo mantenimiento desactivado.",
+  "revoke.section.title": "Seguridad — Revocación de contraseñas",
+  "revoke.action": "Revocar contraseñas",
+  "revoke.empty": "Ninguna cuenta pendiente de renovación de contraseña.",
+  "revoke.col.revokedAt": "Revocado el",
+  "revoke.col.hours": "Antigüedad",
+  "revoke.success": "Contraseñas revocadas. Se han enviado los correos de notificación.",
+  "revoke.error.noTarget": "Seleccione un rol o introduzca al menos una dirección de correo.",
+  "revoke.error.generic": "Ha ocurrido un error. Por favor, inténtelo de nuevo.",
+  "revoke.modal.title": "Revocar contraseñas",
+  "revoke.modal.description": "Las cuentas afectadas recibirán un correo pidiéndoles que restablezcan su contraseña en 24 horas. Las que no lo hagan serán suspendidas automáticamente.",
+  "revoke.modal.roleLabel": "Por rol (opcional)",
+  "revoke.modal.roleNone": "— Sin rol —",
+  "revoke.modal.emailsLabel": "Por direcciones de correo (opcional)",
+  "revoke.modal.emailsPlaceholder": "correo1@ejemplo.com, correo2@ejemplo.com",
+  "revoke.modal.cancel": "Cancelar",
+  "revoke.modal.confirm": "Revocar",
+  "revoke.modal.revoking": "Revocando…"
 }

@@ -292,6 +292,22 @@ public class NotificationServiceImpl implements NotificationService {
         sendEmail(toEmail, subject, htmlBody);
     }
 
+    /** {@inheritDoc} */
+    @Async
+    @Override
+    public void sendPasswordRevokedEmail(String toEmail, String resetLink, Locale locale) {
+        if (!sendGridConfigured) {
+            log.info("[EMAIL] Password revoked — reset link for {} → {}", toEmail, resetLink);
+            return;
+        }
+        String subject = messageSource.getMessage("email.password.revoked.subject", null, locale);
+        String htmlBody = messageSource.getMessage(
+                "email.password.revoked.body.html",
+                new Object[]{resetLink},
+                locale);
+        sendEmail(toEmail, subject, htmlBody);
+    }
+
     /**
      * Sends an HTML email via SendGrid and logs a warning on failure.
      *
