@@ -17,7 +17,8 @@ CREATE TABLE accounts (
     -- SEC-PWD-005 (CPA-17): flag for immediate revocation
     password_revoked     BOOLEAN      NOT NULL DEFAULT FALSE,
     -- SEC-AUTH-007/008 (CPA-15): TOTP MFA for VENDOR and ADMIN
-    totp_secret          VARCHAR(64),
+    -- Column stores AES-256-GCM encrypted value: Base64(IV[12] || ciphertext) ≈ 72 chars (US-SEC-07)
+    totp_secret          VARCHAR(255),
     totp_enabled         BOOLEAN      NOT NULL DEFAULT FALSE,
     -- RGPD-CONS-001/002/003/004 (Art. 6 §1a, Art. 7): opt-in marketing consent with audit timestamp
     marketing_consent            BOOLEAN      NOT NULL DEFAULT FALSE,

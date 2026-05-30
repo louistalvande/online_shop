@@ -69,8 +69,13 @@ public class Account {
     @Column(name = "password_revoked", nullable = false)
     private boolean passwordRevoked = false;
 
-    /** Base32-encoded TOTP shared secret — {@code null} until MFA is configured (SEC-AUTH-007 / CPA-15). */
-    @Column(name = "totp_secret", length = 64)
+    /**
+     * Base32-encoded TOTP shared secret — {@code null} until MFA is configured (SEC-AUTH-007 / CPA-15).
+     * Stored encrypted in the database via AES-256-GCM (US-SEC-07 / FS-S08 / CPA-14..CPA-15).
+     * The column is sized to hold the Base64(IV + ciphertext) output, which is larger than the plaintext.
+     */
+    @Convert(converter = TotpSecretConverter.class)
+    @Column(name = "totp_secret", length = 255)
     private String totpSecret;
 
     /** Whether TOTP MFA has been confirmed and is active for this account (SEC-AUTH-007 / CPA-15). */
