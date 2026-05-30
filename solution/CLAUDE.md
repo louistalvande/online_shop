@@ -128,7 +128,7 @@ Each SPA communicates exclusively with the backend REST API. The IHM wireframes 
 
 ## Internationalisation (i18n)
 
-All three SPAs must support **French (fr) and English (en)**. French is the default locale.
+All three SPAs must support **French (fr) Spanish (es) and English (en)**. French is the default locale.
 
 ### Frontend
 

@@ -309,6 +309,19 @@ a|
 - [x] Message « aucun résultat » avec option de réinitialisation des filtres
 | Terminée
 
+| *US-SHP-03*
+| En tant qu'acheteur authentifié, je peux m'abonner à une alerte email pour un produit indisponible et être notifié dès qu'il est de nouveau en stock.
+a|
+- [ ] Bouton « M'alerter quand disponible » visible uniquement sur les produits avec `quantity == 0`
+- [ ] L'acheteur non connecté est invité à se connecter avant de pouvoir s'abonner
+- [ ] Impossible de s'abonner si le produit est déjà en stock (erreur explicite)
+- [ ] Impossible de s'abonner deux fois au même produit (erreur explicite)
+- [ ] L'acheteur reçoit un email dans sa langue de préférence (FR / EN / ES) dès que le vendeur remet le produit en stock
+- [ ] L'abonnement est automatiquement marqué « notifié » après l'envoi de l'email
+- [ ] Onglet « Mes alertes » dans l'espace compte : liste des abonnements actifs, possibilité d'en annuler
+- [ ] La suppression de l'abonnement retire l'alerte sans envoyer d'email
+| À faire
+
 |===
 
 == Panier
@@ -627,6 +640,7 @@ a|
 | FS-B11 | Gérer le carnet d'adresses de livraison | US-PRF-03
 | FS-B13 | Collecter et gérer le consentement marketing | US-PRF-04
 | FS-B03 | Afficher et filtrer le catalogue | US-SHP-01, US-SHP-02
+| FS-B14 | Alerte de remise en stock | US-SHP-03
 | FS-B04 | Gérer le panier | US-CRT-01
 | FS-B05 | Persister et restaurer le panier | US-CRT-02
 | FS-B06 | Orchestrer le tunnel d'achat | US-ORD-01, US-ORD-02

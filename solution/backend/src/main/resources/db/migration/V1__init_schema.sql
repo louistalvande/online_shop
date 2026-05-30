@@ -310,3 +310,18 @@ CREATE INDEX idx_announcements_vendor_id  ON announcements (vendor_id);
 CREATE INDEX idx_announcements_active     ON announcements (active);
 
 
+-- Buyer back-in-stock alert subscriptions (US-SHP-03 / FS-B14).
+-- One active subscription per (buyer, product) pair; notified = true once the email is sent.
+
+CREATE TABLE back_in_stock_subscriptions (
+    id          UUID      PRIMARY KEY DEFAULT gen_random_uuid(),
+    buyer_id    UUID      NOT NULL REFERENCES accounts(id) ON DELETE CASCADE,
+    product_id  UUID      NOT NULL REFERENCES products(id) ON DELETE CASCADE,
+    created_at  TIMESTAMP NOT NULL DEFAULT NOW(),
+    CONSTRAINT uq_back_in_stock_buyer_product UNIQUE (buyer_id, product_id)
+);
+
+CREATE INDEX idx_back_in_stock_product ON back_in_stock_subscriptions (product_id);
+CREATE INDEX idx_back_in_stock_buyer   ON back_in_stock_subscriptions (buyer_id);
+
+

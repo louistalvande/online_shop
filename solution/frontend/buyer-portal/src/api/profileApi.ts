@@ -6,7 +6,7 @@ export interface ProfileData {
   firstName: string
   lastName: string
   phone: string | null
-  language: 'FR' | 'EN'
+  language: 'FR' | 'EN' | 'ES'
   role: string
 }
 
@@ -14,7 +14,7 @@ export interface UpdateProfilePayload {
   firstName?: string
   lastName?: string
   phone?: string
-  language?: 'FR' | 'EN'
+  language?: 'FR' | 'EN' | 'ES'
   currentPassword?: string
   newPassword?: string
   confirmPassword?: string

@@ -2,8 +2,10 @@ package com.shop.catalog.service.impl;
 
 import com.shop.catalog.dto.CsvImportResponse;
 import com.shop.catalog.exception.CsvHeaderInvalidException;
+import com.shop.catalog.repository.BackInStockSubscriptionRepository;
 import com.shop.catalog.repository.ProductRepository;
 import com.shop.catalog.repository.StockAlertRepository;
+import com.shop.notification.service.NotificationService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -21,6 +23,8 @@ class ProductServiceImplCsvTest {
 
     @Mock ProductRepository productRepository;
     @Mock StockAlertRepository stockAlertRepository;
+    @Mock BackInStockSubscriptionRepository subscriptionRepository;
+    @Mock NotificationService notificationService;
 
     ProductServiceImpl service;
 
@@ -28,7 +32,9 @@ class ProductServiceImplCsvTest {
 
     @BeforeEach
     void setUp() {
-        service = new ProductServiceImpl(productRepository, stockAlertRepository);
+        service = new ProductServiceImpl(
+                productRepository, stockAlertRepository,
+                subscriptionRepository, notificationService);
     }
 
     @Test

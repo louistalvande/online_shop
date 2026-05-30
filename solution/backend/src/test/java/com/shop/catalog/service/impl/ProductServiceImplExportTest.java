@@ -2,8 +2,10 @@ package com.shop.catalog.service.impl;
 
 import com.shop.catalog.entity.Product;
 import com.shop.catalog.entity.ProductStatus;
+import com.shop.catalog.repository.BackInStockSubscriptionRepository;
 import com.shop.catalog.repository.ProductRepository;
 import com.shop.catalog.repository.StockAlertRepository;
+import com.shop.notification.service.NotificationService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -23,12 +25,16 @@ class ProductServiceImplExportTest {
 
     @Mock ProductRepository productRepository;
     @Mock StockAlertRepository stockAlertRepository;
+    @Mock BackInStockSubscriptionRepository subscriptionRepository;
+    @Mock NotificationService notificationService;
 
     ProductServiceImpl service;
 
     @BeforeEach
     void setUp() {
-        service = new ProductServiceImpl(productRepository, stockAlertRepository);
+        service = new ProductServiceImpl(
+                productRepository, stockAlertRepository,
+                subscriptionRepository, notificationService);
     }
 
     private Product buildProduct(String name, String description, BigDecimal price,

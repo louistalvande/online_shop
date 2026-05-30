@@ -218,6 +218,10 @@ NOTE: L'administrateur n'a pas accès aux données personnelles des comptes (nom
 | BES-ACH-014
 | L'acheteur a besoin que les annonces défilantes affichées sur la page d'accueil respectent l'orientation naturelle de chaque image (portrait affiché en format réduit centré, paysage affiché en pleine largeur), afin de garantir une expérience visuelle optimale sans distorsion.
 | UC_V9, Activités acheteur
+
+| BES-ACH-015
+| L'acheteur a besoin d'être alerté par email lorsqu'un produit actuellement indisponible redevient en stock, afin de pouvoir l'acheter sans avoir à surveiller régulièrement la boutique. L'abonnement à l'alerte doit être possible depuis la fiche produit, et consultable ou annulable depuis son espace compte.
+| UC_B1, Activités acheteur
 |===
 
 ---
@@ -297,6 +301,7 @@ Le tableau ci-dessous relie chaque besoin opérationnel aux activités et cas d'
 | BES-ACH-012 | Acheteur | UC_B7 — Demander une annulation après expédition
 | BES-ACH-013 | Acheteur | UC_B_ACC — Gérer le carnet d'adresses de livraison
 | BES-ACH-014 | Acheteur | UC_V9 — Affichage des annonces adapté à l'orientation des images
+| BES-ACH-015 | Acheteur | UC_B1 — S'abonner à une alerte de remise en stock
 |===
 
 ---

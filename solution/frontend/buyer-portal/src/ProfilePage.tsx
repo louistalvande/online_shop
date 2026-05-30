@@ -15,8 +15,9 @@ import {
   type CreateDeliveryAddressPayload,
 } from './api/profileApi'
 import { listCountries, type CountryData } from './api/orderApi'
+import { listSubscriptions, unsubscribeFromRestock, type StockSubscription } from './api/stockSubscriptionApi'
 
-type Tab = 'profile' | 'addresses' | 'security'
+type Tab = 'profile' | 'addresses' | 'security' | 'alerts'
 
 interface AddressFormState {
   label: string
@@ -44,7 +45,11 @@ export default function ProfilePage() {
   const [firstName, setFirstName] = useState('')
   const [lastName, setLastName] = useState('')
   const [phone, setPhone] = useState('')
-  const [language, setLanguage] = useState<'FR' | 'EN'>('FR')
+  const [language, setLanguage] = useState<'FR' | 'EN' | 'ES'>('FR')
+
+  // Alerts tab
+  const [subscriptions, setSubscriptions] = useState<StockSubscription[]>([])
+  const [alertsLoading, setAlertsLoading] = useState(false)
 
   // Security tab
   const [currentPassword, setCurrentPassword] = useState('')
@@ -83,6 +88,15 @@ export default function ProfilePage() {
     if (activeTab !== 'addresses') return
     if (countries.length === 0) listCountries().then(setCountries).catch(() => {})
     loadAddresses()
+  }, [activeTab])
+
+  useEffect(() => {
+    if (activeTab !== 'alerts') return
+    setAlertsLoading(true)
+    listSubscriptions()
+      .then(setSubscriptions)
+      .catch(() => setErrorMsg(t('stock.notify.error')))
+      .finally(() => setAlertsLoading(false))
   }, [activeTab])
 
   function loadAddresses() {
@@ -245,6 +259,12 @@ export default function ProfilePage() {
           >
             {t('profile.tab.security')}
           </button>
+          <button
+            className={`profile-tab${activeTab === 'alerts' ? ' profile-tab--active' : ''}`}
+            onClick={() => { setActiveTab('alerts'); clearMessages() }}
+          >
+            {t('stock.notify.tab')}
+          </button>
         </div>
 
         {successMsg && <div role="status" className="profile-alert-success">{successMsg}</div>}
@@ -276,9 +296,10 @@ export default function ProfilePage() {
 
             <div className="profile-field">
               <label htmlFor="language" className="profile-label">{t('profile.language')}</label>
-              <select id="language" className="profile-input" value={language} onChange={e => setLanguage(e.target.value as 'FR' | 'EN')}>
+              <select id="language" className="profile-input" value={language} onChange={e => setLanguage(e.target.value as 'FR' | 'EN' | 'ES')}>
                 <option value="FR">{t('profile.language.fr')}</option>
                 <option value="EN">{t('profile.language.en')}</option>
+                <option value="ES">{t('profile.language.es')}</option>
               </select>
             </div>
 
@@ -430,6 +451,65 @@ export default function ProfilePage() {
               <Button type="submit" disabled={saving}>{saving ? t('profile.saving') : t('profile.security.submit')}</Button>
             </div>
           </form>
+        )}
+
+        {/* ─── ALERTS TAB ─── */}
+        {activeTab === 'alerts' && (
+          <div className="profile-addresses">
+            {alertsLoading ? (
+              <p className="profile-loading">{t('profile.loading')}</p>
+            ) : subscriptions.length === 0 ? (
+              <p style={{ color: 'var(--text-muted)', marginTop: 16 }}>{t('stock.notify.empty')}</p>
+            ) : (
+              <table className="profile-addr-table" style={{ width: '100%', borderCollapse: 'collapse', marginTop: 16 }}>
+                <thead>
+                  <tr>
+                    <th className="profile-addr-th">{t('stock.notify.col.product')}</th>
+                    <th className="profile-addr-th">{t('stock.notify.col.price')}</th>
+                    <th className="profile-addr-th">{t('stock.notify.col.since')}</th>
+                    <th className="profile-addr-th">{t('stock.notify.col.actions')}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {subscriptions.map(sub => (
+                    <tr key={sub.id}>
+                      <td className="profile-addr-td" style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                        {sub.photoUrl && (
+                          <img src={sub.photoUrl} alt="" style={{ width: 40, height: 40, objectFit: 'cover', borderRadius: 4, flexShrink: 0 }} />
+                        )}
+                        <a href={`/products/${sub.productId}`} style={{ color: 'var(--accent)', textDecoration: 'none' }}>
+                          {sub.productName}
+                        </a>
+                      </td>
+                      <td className="profile-addr-td">
+                        {sub.priceTTC.toLocaleString(i18n.language === 'fr' ? 'fr-FR' : 'en-GB', { style: 'currency', currency: 'EUR' })}
+                      </td>
+                      <td className="profile-addr-td">
+                        {new Date(sub.createdAt).toLocaleDateString(i18n.language)}
+                      </td>
+                      <td className="profile-addr-td">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={async () => {
+                            try {
+                              await unsubscribeFromRestock(sub.productId)
+                              setSubscriptions(prev => prev.filter(s => s.id !== sub.id))
+                              setSuccessMsg(t('stock.notify.removed'))
+                            } catch {
+                              setErrorMsg(t('stock.notify.error'))
+                            }
+                          }}
+                        >
+                          {t('stock.notify.remove')}
+                        </Button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+          </div>
         )}
       </div>
   )

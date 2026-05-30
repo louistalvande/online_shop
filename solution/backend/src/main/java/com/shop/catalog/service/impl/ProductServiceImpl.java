@@ -13,13 +13,16 @@ import com.shop.catalog.dto.UpdateStockRequest;
 import com.shop.catalog.entity.Product;
 import com.shop.catalog.entity.ProductPhoto;
 import com.shop.catalog.entity.ProductStatus;
+import com.shop.catalog.entity.BackInStockSubscription;
 import com.shop.catalog.entity.StockAlert;
 import com.shop.catalog.exception.CsvHeaderInvalidException;
 import com.shop.catalog.exception.ProductNotFoundException;
+import com.shop.catalog.repository.BackInStockSubscriptionRepository;
 import com.shop.catalog.repository.ProductRepository;
 import com.shop.catalog.repository.ProductSpecifications;
 import com.shop.catalog.repository.StockAlertRepository;
 import com.shop.catalog.service.ProductService;
+import com.shop.notification.service.NotificationService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -30,6 +33,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.UUID;
 
 /** {@link ProductService} implementation. */
@@ -39,17 +43,25 @@ public class ProductServiceImpl implements ProductService {
 
     private final ProductRepository productRepository;
     private final StockAlertRepository stockAlertRepository;
+    private final BackInStockSubscriptionRepository subscriptionRepository;
+    private final NotificationService notificationService;
 
     /**
-     * Constructs the service with its required repositories.
+     * Constructs the service with its required repositories and notification service.
      *
-     * @param productRepository    the product JPA repository
-     * @param stockAlertRepository the stock alert JPA repository
+     * @param productRepository      the product JPA repository
+     * @param stockAlertRepository   the vendor stock alert JPA repository
+     * @param subscriptionRepository the buyer back-in-stock subscription repository
+     * @param notificationService    the email notification service
      */
     public ProductServiceImpl(ProductRepository productRepository,
-                               StockAlertRepository stockAlertRepository) {
+                               StockAlertRepository stockAlertRepository,
+                               BackInStockSubscriptionRepository subscriptionRepository,
+                               NotificationService notificationService) {
         this.productRepository = productRepository;
         this.stockAlertRepository = stockAlertRepository;
+        this.subscriptionRepository = subscriptionRepository;
+        this.notificationService = notificationService;
     }
 
     /** {@inheritDoc} */
@@ -96,6 +108,8 @@ public class ProductServiceImpl implements ProductService {
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new ProductNotFoundException(productId));
 
+        int previousQuantity = product.getQuantity();
+
         product.setName(request.getName());
         product.setDescription(request.getDescription());
         product.setPriceExclTax(request.getPriceExclTax());
@@ -109,6 +123,9 @@ public class ProductServiceImpl implements ProductService {
 
         Product saved = productRepository.save(product);
         raiseAlertIfNeeded(saved);
+        if (previousQuantity == 0 && saved.getQuantity() > 0) {
+            notifyRestockSubscribers(saved);
+        }
         return ProductResponse.from(saved);
     }
 
@@ -128,11 +145,16 @@ public class ProductServiceImpl implements ProductService {
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new ProductNotFoundException(productId));
 
+        int previousQuantity = product.getQuantity();
+
         product.setQuantity(request.getQuantity());
         product.setStockAlertThreshold(request.getStockAlertThreshold());
 
         Product saved = productRepository.save(product);
         raiseAlertIfNeeded(saved);
+        if (previousQuantity == 0 && saved.getQuantity() > 0) {
+            notifyRestockSubscribers(saved);
+        }
         return ProductResponse.from(saved);
     }
 
@@ -147,10 +169,14 @@ public class ProductServiceImpl implements ProductService {
             try {
                 Product product = productRepository.findById(item.getProductId())
                         .orElseThrow(() -> new ProductNotFoundException(item.getProductId()));
+                int previousQuantity = product.getQuantity();
                 product.setQuantity(item.getQuantity());
                 product.setStockAlertThreshold(item.getStockAlertThreshold());
                 Product saved = productRepository.save(product);
                 raiseAlertIfNeeded(saved);
+                if (previousQuantity == 0 && saved.getQuantity() > 0) {
+                    notifyRestockSubscribers(saved);
+                }
                 results.add(BulkStockUpdateResponse.StockUpdateResult.updated(
                         item.getProductId(), ProductResponse.from(saved)));
                 totalUpdated++;
@@ -418,6 +444,23 @@ public class ProductServiceImpl implements ProductService {
         }
         fields.add(current.toString().strip());
         return fields;
+    }
+
+    /**
+     * Sends a back-in-stock email to all buyers who subscribed to alerts for this product,
+     * then marks each subscription as notified so the email is sent only once (US-SHP-03).
+     *
+     * @param product the product that just became available
+     */
+    private void notifyRestockSubscribers(Product product) {
+        List<BackInStockSubscription> pending =
+                subscriptionRepository.findByProduct_Id(product.getId());
+        for (BackInStockSubscription sub : pending) {
+            Locale locale = Locale.forLanguageTag(sub.getBuyer().getLanguage().name().toLowerCase());
+            notificationService.sendBackInStockEmail(
+                    sub.getBuyer().getEmail(), product.getName(), locale);
+            subscriptionRepository.delete(sub);
+        }
     }
 
     /**
