@@ -53,6 +53,8 @@ jwt:
   cookie-secure: ${JWT_COOKIE_SECURE:false}
 
 app:
+  # Comma-separated list of browser origins allowed to make credentialed cross-origin requests (US-SEC-02 / CPA-12)
+  allowed-origins: ${APP_ALLOWED_ORIGINS:http://localhost:5173,http://localhost:5174,http://localhost:5175,http://buyer.localhost,http://vendor.localhost,http://admin.localhost}
   activation-base-url: ${APP_ACTIVATION_BASE_URL:http://localhost:5073}
   activation-expiry-hours: 24
   password-reset-base-url: ${APP_PASSWORD_RESET_BASE_URL:http://localhost:5073}

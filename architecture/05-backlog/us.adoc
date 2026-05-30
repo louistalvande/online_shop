@@ -572,10 +572,10 @@ a|
 | *US-SEC-02*
 | En tant que développeur, les requêtes d'état sont protégées contre les attaques CSRF et les cookies de session portent les attributs de sécurité requis.
 a|
-- [ ] La configuration Nginx (`nginx.conf` production) applique `SameSite=Strict` sur les `Set-Cookie` (FS-S05 / CS-14 / CPA-12)
-- [ ] Les cookies de session portent les attributs `Secure`, `HttpOnly` et `SameSite=Strict`
-- [ ] Tout appel cross-origin non autorisé sur un endpoint d'état est rejeté avec `403 Forbidden`
-| À faire
+- [x] La configuration Nginx (`nginx.conf` production) applique `SameSite=Strict` sur les `Set-Cookie` (FS-S05 / CS-14 / CPA-12)
+- [x] Les cookies de session portent les attributs `Secure`, `HttpOnly` et `SameSite=Strict`
+- [x] Tout appel cross-origin non autorisé sur un endpoint d'état est rejeté avec `403 Forbidden`
+| Terminée
 
 | *US-SEC-03*
 | En tant qu'ops, toutes les communications avec la plateforme sont chiffrées en TLS 1.2 minimum avec redirection automatique HTTP → HTTPS.
