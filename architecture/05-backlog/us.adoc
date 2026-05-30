@@ -618,11 +618,11 @@ a|
 | *US-SEC-07*
 | En tant que développeur, les données sensibles stockées en base (secrets TOTP) sont chiffrées au niveau colonne.
 a|
-- [ ] La colonne `totp_secret` de la table `account` est chiffrée via `pgcrypto` (AES-256-GCM) ou un `AttributeConverter` JPA utilisant une clé AES externe (FS-S08 / CS-16 / CPA-14..CPA-15)
-- [ ] La clé de chiffrement est injectée par variable d'environnement (jamais en dur dans le code)
-- [ ] Les empreintes de mots de passe (`password_hash` BCrypt) ne nécessitent pas de chiffrement supplémentaire
-- [ ] Aucune clé de chiffrement ne figure dans les logs, les réponses API ou les migrations Flyway
-| À faire
+- [x] La colonne `totp_secret` est chiffrée via un `AttributeConverter` JPA AES-256-GCM avec IV aléatoire (FS-S08 / CS-16 / CPA-14..CPA-15) — classe `TotpSecretConverter`
+- [x] La clé AES-256 est injectée par `${TOTP_ENCRYPTION_KEY}` (jamais en dur ; valeur de dev dans application.yml, remplacée en prod)
+- [x] `password_hash` BCrypt inchangé — ne nécessite pas de chiffrement supplémentaire
+- [x] La clé ne figure ni dans les logs, ni dans les réponses API, ni dans les migrations Flyway
+| Terminée
 
 |===
 
