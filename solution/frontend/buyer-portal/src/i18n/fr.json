@@ -92,6 +92,7 @@
   "profile.language": "Langue de notification",
   "profile.language.fr": "Français",
   "profile.language.en": "English",
+  "profile.language.es": "Español",
   "profile.addresses.title": "Mes adresses de livraison",
   "profile.addresses.empty": "Aucune adresse enregistrée.",
   "profile.addresses.add": "+ Ajouter une adresse",

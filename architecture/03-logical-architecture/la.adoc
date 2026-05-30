@@ -658,7 +658,7 @@ package "Entités métier (SA)" #F0F8FF {
     + motDePasseHaché : String
     + rôle : Enum {admin, vendeur, acheteur}
     + statut : Enum {en_attente, actif, suspendu, supprimé}
-    + langue : Enum {fr, en}
+    + langue : Enum {fr, en, es}
     + dateCreation : DateTime
     + consentementMarketing : Boolean
     + dateConsentementMarketing : DateTime

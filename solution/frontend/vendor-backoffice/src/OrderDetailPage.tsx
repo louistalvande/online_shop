@@ -74,7 +74,7 @@ export default function OrderDetailPage({ orderId }: Props) {
 
   const shellActions = (
     <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-      <LangToggle lang={i18n.language} onToggle={() => i18n.changeLanguage(i18n.language === 'fr' ? 'en' : 'fr')} />
+      <LangToggle lang={i18n.language} onToggle={() => i18n.changeLanguage(({ fr: 'en', en: 'es', es: 'fr' } as Record<string, string>)[i18n.language] ?? 'fr')} />
       <Button variant="ghost" size="sm" onClick={() => { logout(); window.location.href = import.meta.env.BASE_URL }}>
         {t('nav.logout')}
       </Button>

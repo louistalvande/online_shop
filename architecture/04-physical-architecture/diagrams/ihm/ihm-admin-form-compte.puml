@@ -2,6 +2,7 @@
 ' Composant PA : front-admin (Console Administrateur)
 ' Fonctions allouées : Service Compte — FS-A01 (créer un compte)
 ' Conforme à US-ADM-01 : pas de mot de passe saisi, activation par email (CS-07)
+' Langue : liste déroulante Français (défaut) / English / Español (CS-10 / COp-08)
 salt
 
 {+

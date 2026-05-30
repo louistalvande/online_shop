@@ -80,6 +80,10 @@ Les contraintes suivantes sont issues du contexte d'usage réel des acteurs et s
 | COp-07
 | Consentement explicite pour les communications marketing
 | L'acheteur doit donner un consentement libre, éclairé et non pré-coché pour recevoir des emails à finalité commerciale (campagnes, promotions). Ce consentement est indépendant de l'inscription et peut être retiré à tout moment sans impact sur l'accès à la boutique. _(RGPD Art. 6 §1a, Art. 7 — RGPD-CONS-001..004)_
+
+| COp-08
+| Interface multilingue (FR / EN / ES)
+| Les trois interfaces utilisateur (portail acheteur, espace vendeur, console d'administration) sont disponibles en **français** (langue par défaut), en **anglais** et en **espagnol**. Chaque compte dispose d'une préférence de langue de notification indépendante de la langue de navigation. La sélection de langue est accessible depuis toutes les pages via un sélecteur visible dans l'en-tête. _(CS-10 / FS-A06)_
 |===
 
 === Capacités opérationnelles

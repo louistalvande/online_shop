@@ -7,5 +7,8 @@ public enum AccountLanguage {
     FR,
 
     /** English. */
-    EN
+    EN,
+
+    /** Spanish. */
+    ES
 }

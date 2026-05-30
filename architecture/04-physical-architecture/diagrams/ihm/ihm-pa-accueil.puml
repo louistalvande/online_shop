@@ -4,7 +4,7 @@
 salt
 {+
   ' ── Header ──────────────────────────────────────────
-  [Logo]  Catalogue de dessins  |  [FR/EN]  [Mon compte]  [Panier (3)]
+  [Logo]  Catalogue de dessins  |  [FR/EN/ES]  [Mon compte]  [Panier (3)]
   ==
   ' ── Bannière hero (image configurable, FS-V16) ──────
   {+

@@ -245,6 +245,10 @@ Les contraintes suivantes s'imposent indépendamment des acteurs et de toute dé
 | COp-04
 | Activation de compte par email
 | Le compte d'un acheteur n'est accessible qu'après activation via un lien reçu par email suite à l'inscription.
+
+| COp-08
+| Interface multilingue (FR / EN / ES)
+| Les trois interfaces utilisateur (portail acheteur, espace vendeur, console d'administration) sont disponibles en **français** (langue par défaut), en **anglais** et en **espagnol**. Chaque compte dispose d'une préférence de langue de notification indépendante de la langue de navigation. La sélection de langue est accessible depuis toutes les pages via un sélecteur visible dans l'en-tête. _(CS-10 / FS-A06)_
 |===
 
 ---

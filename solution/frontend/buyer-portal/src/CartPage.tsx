@@ -63,7 +63,7 @@ export default function CartPage() {
     <div className="header-actions">
       <LangToggle
         lang={i18n.language}
-        onToggle={() => i18n.changeLanguage(i18n.language === 'fr' ? 'en' : 'fr')}
+        onToggle={() => i18n.changeLanguage(({ fr: 'en', en: 'es', es: 'fr' } as Record<string, string>)[i18n.language] ?? 'fr')}
       />
       {session ? (
         <UserMenu

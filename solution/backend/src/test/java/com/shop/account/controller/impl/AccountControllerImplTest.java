@@ -17,6 +17,8 @@ import org.springframework.context.MessageSource;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
+import org.springframework.http.MediaType;
+
 import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
@@ -75,13 +77,17 @@ class AccountControllerImplTest {
     }
 
     private AccountResponse buildResponse(AccountStatus status) {
+        return buildResponse(status, AccountLanguage.FR);
+    }
+
+    private AccountResponse buildResponse(AccountStatus status, AccountLanguage language) {
         com.shop.account.entity.Account a = new com.shop.account.entity.Account();
         a.setEmail("bob@example.com");
         a.setFirstName("Bob");
         a.setLastName("Doe");
         a.setRole(AccountRole.BUYER);
         a.setStatus(status);
-        a.setLanguage(AccountLanguage.FR);
+        a.setLanguage(language);
         return AccountResponse.from(a);
     }
 
@@ -153,5 +159,34 @@ class AccountControllerImplTest {
 
         mvc.perform(patch("/api/admin/accounts/{id}/reactivate", id))
                 .andExpect(status().isNotFound());
+    }
+
+    /** POST / returns 201 and exposes language=ES in the response body. */
+    @Test
+    void createAccount_returns201_withLanguageEs() throws Exception {
+        given(accountService.createAccount(any())).willReturn(buildResponse(AccountStatus.PENDING, AccountLanguage.ES));
+
+        mvc.perform(post("/api/admin/accounts")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"email\":\"es@example.com\",\"firstName\":\"Carlos\",\"lastName\":\"García\",\"role\":\"BUYER\",\"language\":\"ES\"}"))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.language").value("ES"));
+
+        then(accountService).should().createAccount(any());
+    }
+
+    /** PATCH /{id} returns 200 and exposes language=ES in the response body. */
+    @Test
+    void updateAccount_returns200_withLanguageEs() throws Exception {
+        UUID id = UUID.randomUUID();
+        given(accountService.updateAccount(eq(id), any())).willReturn(buildResponse(AccountStatus.ACTIVE, AccountLanguage.ES));
+
+        mvc.perform(patch("/api/admin/accounts/{id}", id)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"language\":\"ES\"}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.language").value("ES"));
+
+        then(accountService).should().updateAccount(eq(id), any());
     }
 }
