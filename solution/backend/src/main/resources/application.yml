@@ -47,7 +47,10 @@ management:
 
 jwt:
   secret: ${JWT_SECRET:7Dir87ACMLA5aa9lDTydDPuoodj2VSCrBysALKDiDQA=}
-  expiration-ms: 600000
+  # 30 minutes — sliding window enforced by JwtFilter (US-SEC-01 / FS-S03)
+  expiration-ms: 1800000
+  cookie-name: jwt
+  cookie-secure: ${JWT_COOKIE_SECURE:false}
 
 app:
   activation-base-url: ${APP_ACTIVATION_BASE_URL:http://localhost:5073}

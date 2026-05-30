@@ -186,7 +186,7 @@ public class AuthServiceImpl implements AuthService {
             loginAttemptService.recordSuccess(email);
             String token = jwtUtil.generateToken(account.getEmail(), account.getRole().name());
             auditLogService.log(AuditEventType.LOGIN_SUCCESS, email, "First login — no password set yet");
-            return new AuthResponse(token, account.getEmail(), true);
+            return new AuthResponse(token, account.getEmail(), account.getRole().name(), true);
         }
 
         if (!passwordEncoder.matches(request.getPassword(), account.getPasswordHash())) {
@@ -200,7 +200,7 @@ public class AuthServiceImpl implements AuthService {
             loginAttemptService.recordSuccess(email);
             String token = jwtUtil.generateToken(account.getEmail(), account.getRole().name());
             auditLogService.log(AuditEventType.LOGIN_SUCCESS, email, "Revoked password — must change");
-            return new AuthResponse(token, account.getEmail(), true);
+            return new AuthResponse(token, account.getEmail(), account.getRole().name(), true);
         }
 
         // Password expiry check (SEC-PWD-003/004 / CPA-17)
@@ -209,7 +209,7 @@ public class AuthServiceImpl implements AuthService {
             loginAttemptService.recordSuccess(email);
             String token = jwtUtil.generateToken(account.getEmail(), account.getRole().name());
             auditLogService.log(AuditEventType.LOGIN_SUCCESS, email, "Expired password — must change");
-            return new AuthResponse(token, account.getEmail(), true);
+            return new AuthResponse(token, account.getEmail(), account.getRole().name(), true);
         }
 
         loginAttemptService.recordSuccess(email);
@@ -223,12 +223,12 @@ public class AuthServiceImpl implements AuthService {
                     MFA_TOKEN_TTL_SECONDS,
                     TimeUnit.SECONDS);
             auditLogService.log(AuditEventType.LOGIN_SUCCESS, email, "Password OK — MFA required");
-            return new AuthResponse(null, account.getEmail(), false, true, mfaToken);
+            return new AuthResponse(null, account.getEmail(), account.getRole().name(), false, true, mfaToken);
         }
 
         auditLogService.log(AuditEventType.LOGIN_SUCCESS, email, null);
         String token = jwtUtil.generateToken(account.getEmail(), account.getRole().name());
-        return new AuthResponse(token, account.getEmail(), account.isMustChangePassword());
+        return new AuthResponse(token, account.getEmail(), account.getRole().name(), account.isMustChangePassword());
     }
 
     /** {@inheritDoc} */
@@ -370,7 +370,7 @@ public class AuthServiceImpl implements AuthService {
         redisTemplate.delete(redisKey);
         auditLogService.log(AuditEventType.MFA_LOGIN_SUCCESS, email, null);
         String token = jwtUtil.generateToken(account.getEmail(), account.getRole().name());
-        return new AuthResponse(token, account.getEmail(), false);
+        return new AuthResponse(token, account.getEmail(), account.getRole().name(), false);
     }
 
     /**

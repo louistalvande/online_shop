@@ -76,6 +76,7 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.POST, "/api/auth/forgot-password").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/auth/reset-password").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/auth/mfa/verify").permitAll()
+                .requestMatchers(HttpMethod.POST, "/api/auth/logout").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/auth/setup-password").authenticated()
                 .requestMatchers(HttpMethod.POST, "/api/auth/mfa/setup/init").authenticated()
                 .requestMatchers(HttpMethod.POST, "/api/auth/mfa/setup/confirm").authenticated()

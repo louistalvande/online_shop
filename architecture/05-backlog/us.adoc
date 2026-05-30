@@ -312,15 +312,15 @@ a|
 | *US-SHP-03*
 | En tant qu'acheteur authentifié, je peux m'abonner à une alerte email pour un produit indisponible et être notifié dès qu'il est de nouveau en stock.
 a|
-- [ ] Bouton « M'alerter quand disponible » visible uniquement sur les produits avec `quantity == 0`
-- [ ] L'acheteur non connecté est invité à se connecter avant de pouvoir s'abonner
-- [ ] Impossible de s'abonner si le produit est déjà en stock (erreur explicite)
-- [ ] Impossible de s'abonner deux fois au même produit (erreur explicite)
-- [ ] L'acheteur reçoit un email dans sa langue de préférence (FR / EN / ES) dès que le vendeur remet le produit en stock
-- [ ] L'abonnement est automatiquement marqué « notifié » après l'envoi de l'email
-- [ ] Onglet « Mes alertes » dans l'espace compte : liste des abonnements actifs, possibilité d'en annuler
-- [ ] La suppression de l'abonnement retire l'alerte sans envoyer d'email
-| À faire
+- [x] Bouton « M'alerter quand disponible » visible uniquement sur les produits avec `quantity == 0`
+- [x] L'acheteur non connecté est invité à se connecter avant de pouvoir s'abonner
+- [x] Impossible de s'abonner si le produit est déjà en stock (erreur explicite)
+- [x] Impossible de s'abonner deux fois au même produit (erreur explicite)
+- [x] L'acheteur reçoit un email dans sa langue de préférence (FR / EN / ES) dès que le vendeur remet le produit en stock
+- [x] L'abonnement est supprimé automatiquement après l'envoi de l'email (implémenté par suppression plutôt que flag — comportement équivalent)
+- [x] Onglet « Mes alertes » dans l'espace compte : liste des abonnements actifs, possibilité d'en annuler
+- [x] La suppression de l'abonnement retire l'alerte sans envoyer d'email
+| Terminée
 
 |===
 
@@ -537,18 +537,18 @@ _Fonctions ARCADIA : FS-V11 — UCSA-15 — LA : Service Annonce / Back-office V
 | *US-ANN-01*
 | En tant que vendeur, je peux créer, modifier, réordonner et supprimer des annonces défilantes affichées sur la page d'accueil de la boutique.
 a|
-- [ ] Formulaire de création : type de contenu (texte / image / les deux), champ texte (max 500 caractères), URL d'image optionnelle, lien de redirection optionnel, ordre d'affichage (FS-V11)
-- [ ] Les champs obligatoires varient selon le type : texte seul → champ texte requis ; image seule → image requise ; mixte → les deux requis
-- [ ] Lorsqu'une URL d'image est saisie, l'application détecte automatiquement l'orientation de l'image (portrait si hauteur ≥ largeur, paysage si largeur > hauteur) et l'affiche sous forme de badge avant enregistrement
-- [ ] L'orientation détectée est transmise au serveur et stockée avec l'annonce ; le vendeur voit l'orientation dans la liste du back-office
-- [ ] Le carrousel de la page d'accueil adapte la mise en page selon l'orientation : images paysage en pleine largeur, images portrait en format réduit centré
-- [ ] Les annonces actives sont affichées dans le carrousel de la page d'accueil par ordre croissant
-- [ ] Un clic sur une annonce avec lien redirige l'internaute vers ce lien
-- [ ] Le vendeur peut modifier une annonce existante depuis la liste du back-office
-- [ ] Le vendeur peut réordonner les annonces (boutons ↑ / ↓)
-- [ ] La suppression est immédiate et retire l'annonce du carrousel
-- [ ] Si aucune annonce n'est définie, le carrousel est masqué sur la page d'accueil
-| À faire
+- [x] Formulaire de création : type de contenu (texte / image / les deux), champ texte (max 500 caractères), URL d'image optionnelle, lien de redirection optionnel, ordre d'affichage (FS-V11)
+- [x] Les champs obligatoires varient selon le type : texte seul → champ texte requis ; image seule → image requise ; mixte → les deux requis
+- [x] Lorsqu'une URL d'image est saisie, l'application détecte automatiquement l'orientation de l'image (portrait si hauteur ≥ largeur, paysage si largeur > hauteur) et l'affiche sous forme de badge avant enregistrement
+- [x] L'orientation détectée est transmise au serveur et stockée avec l'annonce ; le vendeur voit l'orientation dans la liste du back-office
+- [x] Le carrousel de la page d'accueil adapte la mise en page selon l'orientation : images paysage en pleine largeur, images portrait en format réduit centré
+- [x] Les annonces actives sont affichées dans le carrousel de la page d'accueil par ordre croissant
+- [x] Un clic sur une annonce avec lien redirige l'internaute vers ce lien
+- [x] Le vendeur peut modifier une annonce existante depuis la liste du back-office
+- [x] Le vendeur peut réordonner les annonces (boutons ↑ / ↓)
+- [x] La suppression est immédiate et retire l'annonce du carrousel
+- [x] Si aucune annonce n'est définie, le carrousel est masqué sur la page d'accueil
+| Terminée
 
 |===
 
@@ -563,11 +563,11 @@ _Fonctions ARCADIA : FS-S01..S13 — Contraintes SA : CS-11..CS-21 — Contraint
 | *US-SEC-01*
 | En tant qu'utilisateur, ma session expire après 30 minutes d'inactivité et ma déconnexion révoque mon jeton côté serveur.
 a|
-- [ ] Le jeton JWT est stocké dans un cookie `HttpOnly; Secure; SameSite=Strict` (plus de `localStorage`) (FS-S03 / CS-13)
-- [ ] La durée de vie du jeton est de 30 minutes glissants ; chaque requête active réinitialise le compteur
-- [ ] Une déconnexion explicite (bouton « Se déconnecter ») inscrit le jeton dans la liste noire Redis et retourne une réponse `401` à toute requête ultérieure avec ce jeton
-- [ ] Un jeton expiré ou révoqué retourne `401 Unauthorized` sur tous les endpoints protégés
-| À faire
+- [x] Le jeton JWT est stocké dans un cookie `HttpOnly; Secure; SameSite=Strict` (plus de `localStorage`) (FS-S03 / CS-13)
+- [x] La durée de vie du jeton est de 30 minutes glissants ; chaque requête active réinitialise le compteur
+- [x] Une déconnexion explicite (bouton « Se déconnecter ») inscrit le jeton dans la liste noire Redis et retourne une réponse `401` à toute requête ultérieure avec ce jeton
+- [x] Un jeton expiré ou révoqué retourne `401 Unauthorized` sur tous les endpoints protégés
+| Terminée
 
 | *US-SEC-02*
 | En tant que développeur, les requêtes d'état sont protégées contre les attaques CSRF et les cookies de session portent les attributs de sécurité requis.
