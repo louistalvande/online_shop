@@ -24,7 +24,7 @@ export default function Header({ session, onLogout, onSettings, children }: Prop
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
           <LangToggle
             lang={i18n.language}
-            onToggle={() => i18n.changeLanguage(i18n.language === 'fr' ? 'en' : 'fr')}
+            onToggle={() => i18n.changeLanguage(({ fr: 'en', en: 'es', es: 'fr' } as Record<string, string>)[i18n.language] ?? 'fr')}
           />
           <UserMenu
             label={t('nav.account')}

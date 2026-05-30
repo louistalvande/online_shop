@@ -92,6 +92,7 @@
   "profile.language": "Notification language",
   "profile.language.fr": "Français",
   "profile.language.en": "English",
+  "profile.language.es": "Español",
   "profile.addresses.title": "My delivery addresses",
   "profile.addresses.empty": "No saved addresses.",
   "profile.addresses.add": "+ Add address",

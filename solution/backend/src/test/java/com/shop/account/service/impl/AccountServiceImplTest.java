@@ -278,6 +278,38 @@ class AccountServiceImplTest {
         assertThat(profile.getPhone()).isNull();
     }
 
+    /** updateProfile must persist the language when changed to ES. */
+    @Test
+    void updateProfile_languageEs_updatesLanguage() {
+        Account account = activeAccount(); // starts with AccountLanguage.FR
+        given(accountRepository.findByEmail(EMAIL)).willReturn(Optional.of(account));
+        given(accountRepository.save(any())).willAnswer(inv -> inv.getArgument(0));
+
+        UpdateProfileRequest req = new UpdateProfileRequest();
+        req.setLanguage(AccountLanguage.ES);
+
+        ProfileResponse result = service.updateProfile(EMAIL, req);
+
+        assertThat(result.getLanguage()).isEqualTo(AccountLanguage.ES);
+        then(accountRepository).should().save(account);
+    }
+
+    /** updateProfile must not change language when the field is omitted. */
+    @Test
+    void updateProfile_nullLanguage_keepsExistingLanguage() {
+        Account account = activeAccount(); // starts with AccountLanguage.FR
+        given(accountRepository.findByEmail(EMAIL)).willReturn(Optional.of(account));
+        given(accountRepository.save(any())).willAnswer(inv -> inv.getArgument(0));
+
+        UpdateProfileRequest req = new UpdateProfileRequest();
+        req.setFirstName("Bob");
+        // language not set → null
+
+        ProfileResponse result = service.updateProfile(EMAIL, req);
+
+        assertThat(result.getLanguage()).isEqualTo(AccountLanguage.FR);
+    }
+
     /** updateProfile for an admin must ignore phone update. */
     @Test
     void updateProfile_adminAccount_ignoresPhone() {
