@@ -10,6 +10,7 @@ export interface RegisterPayload {
   lastName: string
   email: string
   password: string
+  marketingConsent: boolean
 }
 
 export interface LoginResult {

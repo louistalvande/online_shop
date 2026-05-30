@@ -18,7 +18,10 @@ CREATE TABLE accounts (
     password_revoked     BOOLEAN      NOT NULL DEFAULT FALSE,
     -- SEC-AUTH-007/008 (CPA-15): TOTP MFA for VENDOR and ADMIN
     totp_secret          VARCHAR(64),
-    totp_enabled         BOOLEAN      NOT NULL DEFAULT FALSE
+    totp_enabled         BOOLEAN      NOT NULL DEFAULT FALSE,
+    -- RGPD-CONS-001/002/003/004 (Art. 6 §1a, Art. 7): opt-in marketing consent with audit timestamp
+    marketing_consent            BOOLEAN      NOT NULL DEFAULT FALSE,
+    marketing_consent_updated_at TIMESTAMPTZ
 );
 
 -- Admin password expires in 2 years (SEC-PWD-004 / CPA-17)

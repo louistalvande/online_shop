@@ -23,6 +23,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
@@ -180,6 +181,11 @@ public class AccountServiceImpl implements AccountService {
 
         if (!isAdmin && request.getPhone() != null) {
             account.setPhone(request.getPhone());
+        }
+
+        if (!isAdmin && request.getMarketingConsent() != null) {
+            account.setMarketingConsent(request.getMarketingConsent());
+            account.setMarketingConsentUpdatedAt(OffsetDateTime.now());
         }
 
         if (request.getCurrentPassword() != null && request.getNewPassword() != null) {

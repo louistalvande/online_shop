@@ -46,6 +46,7 @@ export default function ProfilePage() {
   const [lastName, setLastName] = useState('')
   const [phone, setPhone] = useState('')
   const [language, setLanguage] = useState<'FR' | 'EN' | 'ES'>('FR')
+  const [marketingConsent, setMarketingConsent] = useState(false)
 
   // Alerts tab
   const [subscriptions, setSubscriptions] = useState<StockSubscription[]>([])
@@ -80,6 +81,7 @@ export default function ProfilePage() {
         setLastName(p.lastName)
         setPhone(p.phone ?? '')
         setLanguage(p.language)
+        setMarketingConsent(p.marketingConsent)
       })
       .catch(() => setLoadError(true))
   }, [])
@@ -114,7 +116,7 @@ export default function ProfilePage() {
     clearMessages()
     setSaving(true)
     try {
-      const updated = await updateProfile({ firstName, lastName, phone: phone || undefined, language })
+      const updated = await updateProfile({ firstName, lastName, phone: phone || undefined, language, marketingConsent })
       setProfile(updated)
       setSuccessMsg(t('profile.success'))
     } catch {
@@ -301,6 +303,18 @@ export default function ProfilePage() {
                 <option value="EN">{t('profile.language.en')}</option>
                 <option value="ES">{t('profile.language.es')}</option>
               </select>
+            </div>
+
+            <div className="profile-field">
+              <label className="profile-checkbox-label">
+                <input
+                  type="checkbox"
+                  checked={marketingConsent}
+                  onChange={e => setMarketingConsent(e.target.checked)}
+                />
+                {' '}{t('profile.marketingConsent')}
+              </label>
+              <p className="profile-hint">{t('profile.marketingConsent.hint')}</p>
             </div>
 
             <div className="profile-actions">

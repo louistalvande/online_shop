@@ -121,6 +121,10 @@ public class AuthServiceImpl implements AuthService {
         account.setRole(AccountRole.BUYER);
         account.setStatus(AccountStatus.PENDING);
         // BUYER accounts have no password expiry (SEC-PWD-003 / CPA-17)
+        account.setMarketingConsent(request.isMarketingConsent());
+        if (request.isMarketingConsent()) {
+            account.setMarketingConsentUpdatedAt(OffsetDateTime.now());
+        }
         accountRepository.save(account);
 
         accountServiceImpl.issueActivationToken(account);

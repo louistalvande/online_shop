@@ -176,11 +176,11 @@ a|
 | *US-PRF-04*
 | En tant qu'acheteur, je peux choisir à l'inscription et modifier depuis mon compte si j'accepte de recevoir des emails commerciaux du vendeur.
 a|
-- [ ] Case à cocher opt-in non pré-cochée dans le formulaire d'inscription, libellé : « J'accepte de recevoir des offres et actualités commerciales »
-- [ ] Même case disponible dans l'onglet « Mon compte » (état actuel pré-rempli)
-- [ ] Modification enregistrée immédiatement avec horodatage
-- [ ] Le retrait du consentement n'affecte pas l'accès à la boutique ni les emails transactionnels
-| À faire
+- [x] Case à cocher opt-in non pré-cochée dans le formulaire d'inscription, libellé : « J'accepte de recevoir des offres et actualités commerciales »
+- [x] Même case disponible dans l'onglet « Mon compte » (état actuel pré-rempli)
+- [x] Modification enregistrée immédiatement avec horodatage
+- [x] Le retrait du consentement n'affecte pas l'accès à la boutique ni les emails transactionnels
+| Terminée
 
 | *US-PRF-05*
 | En tant que vendeur, je peux exporter au format CSV la liste des acheteurs ayant donné leur consentement marketing, afin de l'importer dans mon outil de mailing.

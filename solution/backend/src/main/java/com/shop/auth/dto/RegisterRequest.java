@@ -33,6 +33,12 @@ public class RegisterRequest {
     @NotBlank
     private String lastName;
 
+    /**
+     * Marketing email opt-in — must default to {@code false} and must never be pre-checked in the form (RGPD-CONS-001).
+     */
+    @Schema(description = "Marketing email opt-in — false by default, must not be pre-checked")
+    private boolean marketingConsent = false;
+
     /** @return the email */
     public String getEmail() { return email; }
 
@@ -56,4 +62,10 @@ public class RegisterRequest {
 
     /** @param lastName the last name to set */
     public void setLastName(String lastName) { this.lastName = lastName; }
+
+    /** @return {@code true} if the buyer has opted in to marketing emails at registration */
+    public boolean isMarketingConsent() { return marketingConsent; }
+
+    /** @param marketingConsent the marketing consent value */
+    public void setMarketingConsent(boolean marketingConsent) { this.marketingConsent = marketingConsent; }
 }

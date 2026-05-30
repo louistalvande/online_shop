@@ -169,4 +169,32 @@ public class Account {
 
     /** @param totpEnabled whether TOTP MFA is active */
     public void setTotpEnabled(boolean totpEnabled) { this.totpEnabled = totpEnabled; }
+
+    /**
+     * Whether the buyer has opted in to commercial marketing emails (RGPD-CONS-001 / Art. 6 §1a).
+     * Always {@code false} by default; must never be pre-checked in any form.
+     */
+    @Column(name = "marketing_consent", nullable = false)
+    private boolean marketingConsent = false;
+
+    /**
+     * Timestamp of the last change to {@link #marketingConsent} (RGPD-CONS-002 / Art. 7).
+     * {@code null} until the buyer explicitly modifies the consent for the first time.
+     */
+    @Column(name = "marketing_consent_updated_at")
+    private OffsetDateTime marketingConsentUpdatedAt;
+
+    /** @return {@code true} if the buyer has opted in to marketing emails */
+    public boolean isMarketingConsent() { return marketingConsent; }
+
+    /** @param marketingConsent whether the buyer consents to marketing emails */
+    public void setMarketingConsent(boolean marketingConsent) { this.marketingConsent = marketingConsent; }
+
+    /** @return the timestamp of the last consent change, or {@code null} if never changed */
+    public OffsetDateTime getMarketingConsentUpdatedAt() { return marketingConsentUpdatedAt; }
+
+    /** @param marketingConsentUpdatedAt the timestamp to record */
+    public void setMarketingConsentUpdatedAt(OffsetDateTime marketingConsentUpdatedAt) {
+        this.marketingConsentUpdatedAt = marketingConsentUpdatedAt;
+    }
 }
