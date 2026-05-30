@@ -599,12 +599,12 @@ a|
 | *US-SEC-05*
 | En tant qu'administrateur, je peux consulter et filtrer les journaux d'audit de sécurité depuis la console d'administration.
 a|
-- [ ] Section « Journaux d'audit » accessible depuis la console admin uniquement (rôle ADMIN — FS-S07 / CS-15 / CPA-13)
-- [ ] Affichage paginé : horodatage UTC, type d'événement, identifiant utilisateur, adresse IP, détails
-- [ ] Filtres par type d'événement (connexion, échec auth, action admin, transaction…), période, utilisateur, IP
-- [ ] Export CSV des journaux filtrés téléchargeable depuis le navigateur
-- [ ] Tout accès depuis un compte non-ADMIN retourne `403 Forbidden`
-| À faire
+- [x] Section « Journaux d'audit » accessible depuis la console admin uniquement (rôle ADMIN — FS-S07 / CS-15 / CPA-13)
+- [x] Affichage paginé : horodatage UTC, type d'événement, identifiant utilisateur, adresse IP, détails
+- [x] Filtres par type d'événement, période (from/to), utilisateur (substring), IP (exacte)
+- [x] Export CSV des journaux filtrés téléchargeable depuis le navigateur
+- [x] Tout accès depuis un compte non-ADMIN retourne `403 Forbidden`
+| Terminée
 
 | *US-SEC-06*
 | En tant qu'ops, les journaux de sécurité sont conservés au minimum 12 mois et protégés contre toute suppression ou modification non autorisée.

@@ -12,6 +12,10 @@ import {
   listAccounts, revokePasswords, listRevokedAccounts,
   type AccountResponse, type RevokedAccountResponse, type AccountRole,
 } from './api/accountApi'
+import {
+  queryAuditLogs, exportAuditLogCsv,
+  type AuditLogPage, type AuditLogFilter, type AuditEventType,
+} from './api/auditLogApi'
 import { listCarriers, deactivateCarrier, activateCarrier, type CarrierResponse } from './api/carrierApi'
 
 interface Props {
@@ -32,6 +36,12 @@ export default function DashboardPage({ onUnauthorized }: Props) {
   const [editCarrier, setEditCarrier] = useState<CarrierResponse | null>(null)
   const [deleteCarrierTarget, setDeleteCarrierTarget] = useState<CarrierResponse | null>(null)
   const [snackbar, setSnackbar] = useState<string | null>(null)
+
+  // Audit log state (US-SEC-05)
+  const [auditPage, setAuditPage] = useState<AuditLogPage | null>(null)
+  const [auditFilter, setAuditFilter] = useState<AuditLogFilter>({ page: 0, size: 20 })
+  const [auditLoading, setAuditLoading] = useState(false)
+  const [auditExporting, setAuditExporting] = useState(false)
 
   // Password revocation state (US-SEC-04)
   const [revokedAccounts, setRevokedAccounts] = useState<RevokedAccountResponse[]>([])
@@ -60,6 +70,11 @@ export default function DashboardPage({ onUnauthorized }: Props) {
         onUnauthorized()
       }
     }
+  }
+
+  async function fetchAuditLogs(filter: AuditLogFilter) {
+    setAuditLoading(true)
+    try { setAuditPage(await queryAuditLogs(filter)) } catch { /* keep */ } finally { setAuditLoading(false) }
   }
 
   async function fetchRevokedAccounts() {
@@ -95,6 +110,7 @@ export default function DashboardPage({ onUnauthorized }: Props) {
     fetchAccounts()
     fetchCarriers()
     fetchRevokedAccounts()
+    fetchAuditLogs(auditFilter)
   }, [])
 
   const activeAdminCount = accounts.filter(a => a.role === 'ADMIN' && a.status === 'ACTIVE').length
@@ -395,6 +411,122 @@ export default function DashboardPage({ onUnauthorized }: Props) {
                 </tbody>
               </table>
             </Card>
+          )}
+        </div>
+      </div>
+
+        {/* ── Audit log (US-SEC-05) ─────────────────────────────────────────── */}
+        <div style={{ marginTop: 48 }} id="audit">
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
+            <h2 style={{ fontFamily: 'var(--font-serif)', fontSize: 22, fontWeight: 700 }}>
+              {t('audit.section.title')}
+            </h2>
+            <button
+              onClick={async () => { setAuditExporting(true); try { await exportAuditLogCsv(auditFilter) } catch { showSnackbar(t('snackbar.error')) } finally { setAuditExporting(false) } }}
+              disabled={auditExporting}
+              style={{ padding: '6px 14px', borderRadius: 4, border: '1px solid var(--accent)', background: '#fff', color: 'var(--accent)', cursor: 'pointer', fontWeight: 500, fontSize: 13 }}
+            >
+              {auditExporting ? t('audit.exporting') : t('audit.exportCsv')}
+            </button>
+          </div>
+
+          {/* Filters */}
+          <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', marginBottom: 16 }}>
+            <select
+              value={auditFilter.eventType ?? ''}
+              onChange={e => { const f = { ...auditFilter, eventType: (e.target.value as AuditEventType) || undefined, page: 0 }; setAuditFilter(f); fetchAuditLogs(f) }}
+              style={{ padding: '6px 10px', borderRadius: 4, border: '1px solid #ccc', fontSize: 13 }}
+            >
+              <option value="">{t('audit.filter.eventType.all')}</option>
+              {['LOGIN_SUCCESS','LOGIN_FAILURE','ACCOUNT_LOCKED','REGISTRATION','ACCOUNT_ACTIVATED',
+                'PASSWORD_CHANGED','ACCOUNT_SUSPENDED','ACCOUNT_REACTIVATED','ACCOUNT_DELETED',
+                'ACCOUNT_CREATED','RESEND_ACTIVATION','PASSWORD_RESET_REQUESTED','PASSWORD_RESET',
+                'MFA_ENABLED','MFA_LOGIN_SUCCESS','MFA_LOGIN_FAILURE','PASSWORD_REVOKED','MARKETING_CONSENT_EXPORT'
+              ].map(et => <option key={et} value={et}>{et}</option>)}
+            </select>
+            <input
+              placeholder={t('audit.filter.email')}
+              value={auditFilter.email ?? ''}
+              onChange={e => setAuditFilter(f => ({ ...f, email: e.target.value || undefined, page: 0 }))}
+              onKeyDown={e => e.key === 'Enter' && fetchAuditLogs(auditFilter)}
+              style={{ padding: '6px 10px', borderRadius: 4, border: '1px solid #ccc', fontSize: 13, minWidth: 200 }}
+            />
+            <input
+              placeholder={t('audit.filter.ip')}
+              value={auditFilter.ipAddress ?? ''}
+              onChange={e => setAuditFilter(f => ({ ...f, ipAddress: e.target.value || undefined, page: 0 }))}
+              onKeyDown={e => e.key === 'Enter' && fetchAuditLogs(auditFilter)}
+              style={{ padding: '6px 10px', borderRadius: 4, border: '1px solid #ccc', fontSize: 13, width: 140 }}
+            />
+            <input type="datetime-local"
+              value={auditFilter.from ? auditFilter.from.slice(0, 16) : ''}
+              onChange={e => setAuditFilter(f => ({ ...f, from: e.target.value ? e.target.value + ':00Z' : undefined, page: 0 }))}
+              style={{ padding: '6px 10px', borderRadius: 4, border: '1px solid #ccc', fontSize: 13 }}
+            />
+            <input type="datetime-local"
+              value={auditFilter.to ? auditFilter.to.slice(0, 16) : ''}
+              onChange={e => setAuditFilter(f => ({ ...f, to: e.target.value ? e.target.value + ':00Z' : undefined, page: 0 }))}
+              style={{ padding: '6px 10px', borderRadius: 4, border: '1px solid #ccc', fontSize: 13 }}
+            />
+            <button
+              onClick={() => fetchAuditLogs(auditFilter)}
+              style={{ padding: '6px 14px', borderRadius: 4, border: 'none', background: 'var(--accent)', color: '#fff', cursor: 'pointer', fontSize: 13 }}
+            >
+              {t('audit.filter.apply')}
+            </button>
+          </div>
+
+          {auditLoading ? (
+            <p style={{ color: 'var(--text-muted)', fontSize: 14 }}>{t('audit.loading')}</p>
+          ) : auditPage && auditPage.content.length > 0 ? (
+            <>
+              <Card>
+                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
+                  <thead>
+                    <tr style={{ borderBottom: '1px solid var(--border)' }}>
+                      {[t('audit.col.timestamp'), t('audit.col.eventType'), t('audit.col.email'), t('audit.col.ip'), t('audit.col.details')].map((h, i) => (
+                        <th key={i} style={{ padding: '10px 14px', textAlign: 'left', fontWeight: 600, color: 'var(--text-muted)', fontSize: 12 }}>{h}</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {auditPage.content.map(entry => (
+                      <tr key={entry.id} style={{ borderBottom: '1px solid var(--border)' }}>
+                        <td style={{ padding: '10px 14px', color: 'var(--text-muted)', whiteSpace: 'nowrap' }}>
+                          {new Date(entry.occurredAt).toISOString().replace('T', ' ').slice(0, 19)} UTC
+                        </td>
+                        <td style={{ padding: '10px 14px', fontWeight: 600, fontSize: 12 }}>{entry.eventType}</td>
+                        <td style={{ padding: '10px 14px', color: 'var(--text-muted)' }}>{entry.email ?? '—'}</td>
+                        <td style={{ padding: '10px 14px', color: 'var(--text-muted)', fontFamily: 'monospace' }}>{entry.ipAddress ?? '—'}</td>
+                        <td style={{ padding: '10px 14px', color: 'var(--text-muted)', fontSize: 12 }}>{entry.details ?? ''}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </Card>
+              {/* Pagination */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginTop: 12, fontSize: 13 }}>
+                <button
+                  disabled={(auditFilter.page ?? 0) === 0}
+                  onClick={() => { const f = { ...auditFilter, page: (auditFilter.page ?? 0) - 1 }; setAuditFilter(f); fetchAuditLogs(f) }}
+                  style={{ padding: '4px 12px', borderRadius: 4, border: '1px solid #ccc', cursor: 'pointer', background: '#fff' }}
+                >
+                  ← {t('audit.pagination.prev')}
+                </button>
+                <span style={{ color: 'var(--text-muted)' }}>
+                  {t('audit.pagination.info', { page: (auditFilter.page ?? 0) + 1, total: auditPage.totalPages, count: auditPage.totalElements })}
+                </span>
+                <button
+                  disabled={(auditFilter.page ?? 0) + 1 >= auditPage.totalPages}
+                  onClick={() => { const f = { ...auditFilter, page: (auditFilter.page ?? 0) + 1 }; setAuditFilter(f); fetchAuditLogs(f) }}
+                  style={{ padding: '4px 12px', borderRadius: 4, border: '1px solid #ccc', cursor: 'pointer', background: '#fff' }}
+                >
+                  {t('audit.pagination.next')} →
+                </button>
+              </div>
+            </>
+          ) : (
+            <p style={{ color: 'var(--text-muted)', fontSize: 14 }}>{t('audit.empty')}</p>
           )}
         </div>
       </div>
