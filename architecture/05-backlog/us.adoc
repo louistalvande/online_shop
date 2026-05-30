@@ -580,12 +580,12 @@ a|
 | *US-SEC-03*
 | En tant qu'ops, toutes les communications avec la plateforme sont chiffrées en TLS 1.2 minimum avec redirection automatique HTTP → HTTPS.
 a|
-- [ ] Nginx (`nginx.conf` production) configuré en HTTPS sur le port 443, redirection 301 HTTP → HTTPS (FS-S06 / CS-13 / CPA-09)
-- [ ] Protocoles autorisés : TLS 1.2 et TLS 1.3 uniquement (`ssl_protocols TLSv1.2 TLSv1.3`)
-- [ ] SSLv3, TLS 1.0 et TLS 1.1 explicitement désactivés (`ssl_protocols` sans ces versions)
-- [ ] Certificat TLS émis par une CA reconnue (ex. Let's Encrypt), valide et renouvelé automatiquement (Certbot ou équivalent)
-- [ ] En-tête `Strict-Transport-Security` présent sur toutes les réponses (HSTS, max-age ≥ 1 an)
-| À faire
+- [x] Nginx (`nginx.conf` production) configuré en HTTPS sur le port 443, redirection 301 HTTP → HTTPS (FS-S06 / CS-13 / CPA-09)
+- [x] Protocoles autorisés : TLS 1.2 et TLS 1.3 uniquement (`ssl_protocols TLSv1.2 TLSv1.3`)
+- [x] SSLv3, TLS 1.0 et TLS 1.1 explicitement désactivés (`ssl_protocols` sans ces versions)
+- [x] Certificat TLS émis par une CA reconnue (Let's Encrypt), renouvelé automatiquement via service Certbot dans docker-compose.yml
+- [x] En-tête `Strict-Transport-Security` présent sur toutes les réponses (HSTS, max-age=31536000 + preload)
+| Terminée
 
 | *US-SEC-04*
 | En tant qu'administrateur, je peux révoquer les mots de passe d'un groupe d'utilisateurs suspects et les comptes non renouvelés dans les 24 h sont désactivés automatiquement.
