@@ -5,7 +5,7 @@ import { API_URL, getAdminToken, createActiveVendorViaApi, getVendorToken } from
 // The encryption is transparent — these tests verify the system works end-to-end, proving
 // that encryption and decryption are both correct (a broken key or wrong IV would fail TOTP login).
 
-const VENDOR_PASSWORD = 'VendorPass123!';
+const VENDOR_PASSWORD = 'Sec07Vendor$ecret9!';
 
 test.describe('US-SEC-07 — TOTP secret column encryption', () => {
 

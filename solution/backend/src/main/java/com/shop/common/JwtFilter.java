@@ -58,14 +58,24 @@ public class JwtFilter extends OncePerRequestFilter {
             @NonNull HttpServletResponse response,
             @NonNull FilterChain filterChain) throws ServletException, IOException {
 
-        String token = cookieUtil.extractFromCookie(request);
-        boolean fromCookie = token != null;
+        // Bearer takes explicit precedence: API clients that set Authorization header should not
+        // trigger cookie rotation (which would blacklist the token they just received from login).
+        String bearerToken = null;
+        String header = request.getHeader("Authorization");
+        if (header != null && header.startsWith("Bearer ")) {
+            bearerToken = header.substring(7);
+        }
 
-        if (token == null) {
-            String header = request.getHeader("Authorization");
-            if (header != null && header.startsWith("Bearer ")) {
-                token = header.substring(7);
-            }
+        String cookieToken = cookieUtil.extractFromCookie(request);
+
+        String token;
+        boolean fromCookie;
+        if (bearerToken != null) {
+            token = bearerToken;
+            fromCookie = false;
+        } else {
+            token = cookieToken;
+            fromCookie = token != null;
         }
 
         if (token != null && jwtUtil.isValid(token) && !blacklistService.isBlacklisted(token)) {
@@ -77,13 +87,16 @@ public class JwtFilter extends OncePerRequestFilter {
                     List.of(new SimpleGrantedAuthority("ROLE_" + role)));
             SecurityContextHolder.getContext().setAuthentication(auth);
 
-            // Sliding window: rotate the cookie on every browser-authenticated request.
+            // Sliding window: rotate the cookie only when less than half the token lifetime remains.
+            // Rotating on every request causes concurrent browser requests to race and blacklist each other.
             if (fromCookie) {
                 long remainingMs = jwtUtil.extractExpiration(token).getTime() - System.currentTimeMillis();
-                blacklistService.blacklist(token, remainingMs);
-
-                String newToken = jwtUtil.generateToken(email, role);
-                cookieUtil.setJwtCookie(response, newToken);
+                long halfLifeMs  = jwtUtil.getExpirationMs() / 2;
+                if (remainingMs < halfLifeMs) {
+                    blacklistService.blacklist(token, remainingMs);
+                    String newToken = jwtUtil.generateToken(email, role);
+                    cookieUtil.setJwtCookie(response, newToken);
+                }
             }
         }
 

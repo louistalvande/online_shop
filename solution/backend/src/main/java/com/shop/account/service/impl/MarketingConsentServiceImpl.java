@@ -33,6 +33,7 @@ public class MarketingConsentServiceImpl implements MarketingConsentService {
 
     /** {@inheritDoc} */
     @Override
+    @Transactional
     public byte[] exportMailingListCsv(String vendorEmail) {
         List<Account> consenting = accountRepository
                 .findByRoleAndStatusAndMarketingConsentTrue(AccountRole.BUYER, AccountStatus.ACTIVE);

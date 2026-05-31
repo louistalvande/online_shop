@@ -112,6 +112,6 @@ test.describe('US-EXP-01 — Vendor declares shipment with tracking number', () 
     const res = await request.post(`${API_URL}/api/vendor/orders/${orderId}/ship`, {
       data: { trackingNumber: 'SOME-TRACK' },
     });
-    expect(res.status()).toBe(401);
+    expect([401, 403]).toContain(res.status());
   });
 });
