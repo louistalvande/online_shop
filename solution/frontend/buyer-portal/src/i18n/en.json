@@ -264,7 +264,7 @@
   "orders.cancel.wireRefundInProgress": "Wire refund in progress",
   "orders.cancel.ibanUsed": "Refund IBAN",
   "orders.psc.title": "Request cancellation",
-  "orders.psc.description": "Your order has been shipped. You may request cancellation by providing a reason. The vendor will make a decision.",
+  "orders.psc.description": "You may request cancellation of this order. The vendor will need to approve your request.",
   "orders.psc.reasonLabel": "Cancellation reason",
   "orders.psc.reasonPlaceholder": "Describe the reason for your cancellation request…",
   "orders.psc.ibanLabel": "Your IBAN for refund",

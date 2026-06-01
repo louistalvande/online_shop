@@ -262,7 +262,7 @@
   "orders.cancel.wireRefundInProgress": "Reembolso por transferencia en curso",
   "orders.cancel.ibanUsed": "IBAN de reembolso",
   "orders.psc.title": "Solicitar la cancelación",
-  "orders.psc.description": "Su pedido ha sido enviado. Puede solicitar la cancelación indicando un motivo. El vendedor tomará una decisión.",
+  "orders.psc.description": "Puede solicitar la cancelación de este pedido. El vendedor deberá aprobar su solicitud.",
   "orders.psc.reasonLabel": "Motivo de la cancelación",
   "orders.psc.reasonPlaceholder": "Describa el motivo de su solicitud de cancelación…",
   "orders.psc.ibanLabel": "Su IBAN para el reembolso",

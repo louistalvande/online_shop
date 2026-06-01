@@ -141,6 +141,21 @@ test.describe('US-CAN-01 — Buyer cancels order before shipment', () => {
     expect(res.status()).toBe(409);
   });
 
+  test('IN_PREPARATION order — cancel returns 409', async ({ request }) => {
+    const orderId = await addToCartAndCheckoutCard(request);
+
+    // Vendor marks order as in preparation
+    await request.post(`${API_URL}/api/vendor/orders/${orderId}/prepare`, {
+      headers: { Authorization: `Bearer ${vendorToken}` },
+    });
+
+    const res = await request.post(`${API_URL}/api/orders/${orderId}/cancel`, {
+      headers: { Authorization: `Bearer ${buyerToken}`, 'Content-Type': 'application/json' },
+      data: {},
+    });
+    expect(res.status()).toBe(409);
+  });
+
   test('unauthenticated request — returns 401', async ({ request }) => {
     const res = await request.post(`${API_URL}/api/orders/${crypto.randomUUID()}/cancel`, {
       headers: { 'Content-Type': 'application/json' },

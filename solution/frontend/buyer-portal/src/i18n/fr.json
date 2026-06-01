@@ -264,7 +264,7 @@
   "orders.cancel.wireRefundInProgress": "Remboursement par virement en cours",
   "orders.cancel.ibanUsed": "IBAN de remboursement",
   "orders.psc.title": "Demander l'annulation",
-  "orders.psc.description": "Votre commande a été expédiée. Vous pouvez demander l'annulation en fournissant un motif. Le vendeur prendra une décision.",
+  "orders.psc.description": "Vous pouvez demander l'annulation de cette commande. Le vendeur devra approuver votre demande.",
   "orders.psc.reasonLabel": "Motif de l'annulation",
   "orders.psc.reasonPlaceholder": "Décrivez la raison de votre demande d'annulation…",
   "orders.psc.ibanLabel": "Votre IBAN pour le remboursement",

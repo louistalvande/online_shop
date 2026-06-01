@@ -1,20 +1,17 @@
-@startsalt
+@startuml ihm-pa-suivi-commande
+salt
 ' Composant PA : front-acheteur (Portail Acheteur)
 ' Fonctions allouées : Service Expédition — FS-B08, FS-C01 (CS-05)
 ' IFS-05 : lien sortant vers le site de suivi du transporteur (pas d'API système)
-title Portail Acheteur — Suivi de commande
+' Règle annulation simple (US-CAN-01) : AWAITING_PROCESSING uniquement
+' Règle annulation soumise à approbation vendeur (US-CAN-06) : IN_PREPARATION ou SHIPPED
+title Portail Acheteur — Suivi de commande (en attente de traitement)
 
 {+
   == Commande CMD-2025-0042
-  Statut    | Expédiée le 13/01/2025
+  Statut    | En attente de traitement
   Transporteur | La Poste — Colissimo
   --
-  == Suivi du colis
-  Numéro de suivi : 2A26257849123
-  [Suivre mon colis sur le site La Poste]
-  --
-  Livraison estimée : 15-17 janvier 2025
-  ==
   == Détail de la commande
   {#
     Produit              | Qté | Prix unit.
@@ -27,7 +24,7 @@ title Portail Acheteur — Suivi de commande
   [Annuler la commande]
   ==
   {
-    <i>Un problème avec votre commande ? Contactez notre support.
+    <i>Un problème avec votre commande ? Contactez notre support par email.
   }
 }
-@endsalt
+@enduml
