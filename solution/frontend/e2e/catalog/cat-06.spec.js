@@ -48,13 +48,13 @@ test.describe('US-CAT-06 — Import CSV products', () => {
 
     // Report should appear with 2 created, 0 errors
     await expect(page.getByText('2 produit(s) créé(s), 0 erreur(s).')).toBeVisible();
-    await expect(page.getByText('Aquarelle forêt')).toBeVisible();
-    await expect(page.getByText('Huile sur toile')).toBeVisible();
+    await expect(page.getByText('Aquarelle forêt').first()).toBeVisible();
+    await expect(page.getByText('Huile sur toile').first()).toBeVisible();
 
     // Close modal — products should appear in the list
     await page.getByRole('button', { name: 'Fermer' }).click();
     await expect(page.getByRole('heading', { name: 'Importer des produits via CSV' })).not.toBeVisible();
-    await expect(page.getByText('Aquarelle forêt')).toBeVisible();
+    await expect(page.getByText('Aquarelle forêt').first()).toBeVisible();
   });
 
   test('partial import — valid rows created, invalid rows show error', async ({ page }) => {

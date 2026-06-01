@@ -48,7 +48,7 @@ test.describe('US-SHP-01 — Browse catalog', () => {
     // "Ajouter" button present for in-stock product
     const cards = page.locator('[class*="card"], [data-testid="card"]').filter({ hasText: 'Crayon portrait' });
     if (await cards.count() > 0) {
-      await expect(cards.first().getByRole('button')).toBeVisible();
+      await expect(cards.first().getByRole('button', { name: /ajouter/i })).toBeVisible();
     }
   });
 

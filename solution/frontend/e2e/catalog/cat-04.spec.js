@@ -9,14 +9,16 @@ import {
 test.describe('US-CAT-04 — Stock management', () => {
 
   test('product list shows quantity and threshold columns', async ({ page }) => {
-    const email = `cat04-${Date.now()}@shop-test.example`;
+    const ts = Date.now();
+    const email = `cat04-${ts}@shop-test.example`;
     const password = 'sHp-E2e!Vnd-X9pZ';
+    const productName = `Encre de chine ${ts}`;
 
     await createActiveVendorViaApi(page, email, password);
     const token = await getVendorToken(page, email, password);
 
     await createProductViaApi(page, token, {
-      name: 'Encre de chine',
+      name: productName,
       priceExclTax: 14.50,
       quantity: 8,
       stockAlertThreshold: 3,
@@ -30,7 +32,7 @@ test.describe('US-CAT-04 — Stock management', () => {
     // Stock and threshold columns visible
     await expect(page.getByRole('columnheader', { name: 'Qté' })).toBeVisible();
     await expect(page.getByRole('columnheader', { name: 'Seuil' })).toBeVisible();
-    const productRow = page.locator('tr').filter({ hasText: 'Encre de chine' });
+    const productRow = page.locator('tr').filter({ hasText: productName }).first();
     await expect(productRow.getByText('8')).toBeVisible();
     await expect(productRow.getByText('OK')).toBeVisible();
   });
@@ -54,7 +56,7 @@ test.describe('US-CAT-04 — Stock management', () => {
     await page.reload();
     await page.getByRole('link', { name: 'Catalogue' }).click();
 
-    await expect(page.getByText('Rupture')).toBeVisible();
+    await expect(page.getByText('Rupture').first()).toBeVisible();
   });
 
   test('product with quantity below threshold shows "Stock bas" badge', async ({ page }) => {
@@ -76,7 +78,7 @@ test.describe('US-CAT-04 — Stock management', () => {
     await page.reload();
     await page.getByRole('link', { name: 'Catalogue' }).click();
 
-    await expect(page.getByText('Stock bas', { exact: true })).toBeVisible();
+    await expect(page.getByText('Stock bas', { exact: true }).first()).toBeVisible();
   });
 
   test('stock update via API is reflected in product list', async ({ page }) => {
@@ -104,7 +106,7 @@ test.describe('US-CAT-04 — Stock management', () => {
     await page.reload();
     await page.getByRole('link', { name: 'Catalogue' }).click();
 
-    await expect(page.getByRole('cell', { name: '20' })).toBeVisible();
+    await expect(page.getByRole('cell', { name: '20' }).first()).toBeVisible();
   });
 
 });

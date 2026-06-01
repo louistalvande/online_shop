@@ -7,21 +7,22 @@ test.describe('US-CAT-08 — Bulk stock update', () => {
   let email, password, token, productA, productB;
 
   test.beforeEach(async ({ page }) => {
-    email = `cat08-${Date.now()}@shop-test.example`;
+    const ts = Date.now();
+    email = `cat08-${ts}@shop-test.example`;
     password = 'sHp-E2e!Vnd-X9pZ';
 
     await createActiveVendorViaApi(page, email, password);
     token = await getVendorToken(page, email, password);
 
     productA = await createProductViaApi(page, token, {
-      name: 'Produit Stock A',
+      name: `Produit Stock A ${ts}`,
       priceExclTax: 25.00,
       quantity: 10,
       stockAlertThreshold: 3,
       photoUrls: [],
     });
     productB = await createProductViaApi(page, token, {
-      name: 'Produit Stock B',
+      name: `Produit Stock B ${ts}`,
       priceExclTax: 30.00,
       quantity: 5,
       stockAlertThreshold: 2,
@@ -35,8 +36,8 @@ test.describe('US-CAT-08 — Bulk stock update', () => {
   });
 
   test('nominal — edits quantities for two products, save button appears, table refreshes', async ({ page }) => {
-    const rowA = page.locator('tr').filter({ hasText: 'Produit Stock A' });
-    const rowB = page.locator('tr').filter({ hasText: 'Produit Stock B' });
+    const rowA = page.locator('tr').filter({ hasText: productA.name }).first();
+    const rowB = page.locator('tr').filter({ hasText: productB.name }).first();
 
     // Save button should not be visible yet
     await expect(page.getByRole('button', { name: 'Enregistrer les modifications' })).not.toBeVisible();
@@ -64,7 +65,7 @@ test.describe('US-CAT-08 — Bulk stock update', () => {
   });
 
   test('nominal — stock alert raised when quantity drops below threshold', async ({ page }) => {
-    const rowA = page.locator('tr').filter({ hasText: 'Produit Stock A' });
+    const rowA = page.locator('tr').filter({ hasText: productA.name }).first();
 
     // Set quantity to 2 — below threshold of 3
     await rowA.locator('input[type="number"]').first().fill('2');
@@ -73,11 +74,11 @@ test.describe('US-CAT-08 — Bulk stock update', () => {
     await expect(page.getByText('1 stock(s) mis à jour.')).toBeVisible();
     // Alert panel should appear for Produit Stock A
     await expect(page.getByText('Alertes stock')).toBeVisible();
-    await expect(page.locator('strong').filter({ hasText: 'Produit Stock A' })).toBeVisible();
+    await expect(page.locator('strong').filter({ hasText: productA.name }).first()).toBeVisible();
   });
 
   test('cancel — discard changes resets inputs to original values', async ({ page }) => {
-    const rowA = page.locator('tr').filter({ hasText: 'Produit Stock A' });
+    const rowA = page.locator('tr').filter({ hasText: productA.name }).first();
     const qtyInput = rowA.locator('input[type="number"]').first();
 
     await qtyInput.fill('99');
@@ -92,7 +93,7 @@ test.describe('US-CAT-08 — Bulk stock update', () => {
   });
 
   test('nominal — modifying value back to original removes it from pending changes', async ({ page }) => {
-    const rowA = page.locator('tr').filter({ hasText: 'Produit Stock A' });
+    const rowA = page.locator('tr').filter({ hasText: productA.name }).first();
     const qtyInput = rowA.locator('input[type="number"]').first();
 
     await qtyInput.fill('20');

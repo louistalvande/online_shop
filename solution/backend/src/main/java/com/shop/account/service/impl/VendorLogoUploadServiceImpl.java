@@ -75,7 +75,13 @@ public class VendorLogoUploadServiceImpl implements VendorLogoUploadService {
                     throw new UnsupportedLogoImageTypeException(contentType);
                 }
             } else {
-                BufferedImage img = ImageIO.read(destination.toFile());
+                BufferedImage img;
+                try {
+                    img = ImageIO.read(destination.toFile());
+                } catch (IOException e) {
+                    Files.deleteIfExists(destination);
+                    throw new UnsupportedLogoImageTypeException(contentType);
+                }
                 if (img == null) {
                     Files.deleteIfExists(destination);
                     throw new UnsupportedLogoImageTypeException(contentType);
