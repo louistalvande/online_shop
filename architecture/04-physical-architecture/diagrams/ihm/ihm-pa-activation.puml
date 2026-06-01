@@ -16,7 +16,7 @@ salt
   Confirmer le mot de passe * | "                     "
   --
   {
-    <i>Minimum 8 caractères.
+    <i>Minimum 12 caractères — majuscule, chiffre et caractère spécial requis.
   }
   --
   [Activer mon compte]

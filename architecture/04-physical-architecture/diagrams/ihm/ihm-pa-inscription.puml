@@ -11,6 +11,10 @@ title Portail Acheteur — Inscription
   Mot de passe    | "                    "
   Confirmer       | "                    "
   --
+  {
+    <i>Minimum 12 caractères — majuscule, chiffre et caractère spécial requis.
+  }
+  --
   [Créer mon compte]
   ==
   Après inscription, vous recevrez un email

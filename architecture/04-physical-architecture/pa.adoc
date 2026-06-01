@@ -54,7 +54,7 @@ NOTE: Les choix technologiques retenus ci-dessous sont des recommandations archi
 
 | CPA-08
 | Implémentation de la TokenAuthentification (CS-08)
-| Les jetons sont signés avec HMAC-SHA-256 (JJWT), ont une validité de 24 h et sont transmis dans l'en-tête `Authorization: Bearer`. Les mots de passe sont hachés avec BCrypt (coût 10). La clé de signature est injectée par variable d'environnement (`JWT_SECRET`). Les jetons révoqués sont inscrits dans Redis (CPA-04).
+| Les jetons sont signés avec HMAC-SHA-256 (JJWT), ont une validité de 24 h et sont transmis dans l'en-tête `Authorization: Bearer`. Les mots de passe sont hachés avec BCrypt (coût 12 — voir CPA-10). La clé de signature est injectée par variable d'environnement (`JWT_SECRET`). Les jetons révoqués sont inscrits dans Redis (CPA-04).
 
 | CPA-09
 | TLS et en-têtes de sécurité HTTP (CS-13 / SEC-TLS-001..003)
