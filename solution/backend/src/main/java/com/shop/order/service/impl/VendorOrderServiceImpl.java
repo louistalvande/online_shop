@@ -57,7 +57,7 @@ public class VendorOrderServiceImpl implements VendorOrderService {
     public List<OrderResponse> getVendorOrders() {
         return orderRepository.findAllByOrderByCreatedAtDesc()
                 .stream()
-                .map(OrderResponse::from)
+                .map(this::buildResponse)
                 .toList();
     }
 
@@ -65,9 +65,9 @@ public class VendorOrderServiceImpl implements VendorOrderService {
     @Override
     @Transactional(readOnly = true)
     public OrderResponse getVendorOrder(UUID orderId) {
-        return orderRepository.findById(orderId)
-                .map(OrderResponse::from)
+        Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new OrderNotFoundException(orderId));
+        return buildResponse(order);
     }
 
     /** {@inheritDoc} */
@@ -82,7 +82,7 @@ public class VendorOrderServiceImpl implements VendorOrderService {
 
         order.setStatus(OrderStatus.AWAITING_PROCESSING);
         Order saved = orderRepository.save(order);
-        OrderResponse response = OrderResponse.from(saved);
+        OrderResponse response = buildResponse(saved);
 
         String buyerEmail = accountRepository.findById(saved.getBuyerId())
                 .map(a -> a.getEmail()).orElse("");
@@ -104,7 +104,7 @@ public class VendorOrderServiceImpl implements VendorOrderService {
         restoreStock(order);
         order.setStatus(OrderStatus.CANCELLED);
         Order saved = orderRepository.save(order);
-        OrderResponse response = OrderResponse.from(saved);
+        OrderResponse response = buildResponse(saved);
 
         String buyerEmail = accountRepository.findById(saved.getBuyerId())
                 .map(a -> a.getEmail()).orElse("");
@@ -125,7 +125,7 @@ public class VendorOrderServiceImpl implements VendorOrderService {
 
         order.setStatus(OrderStatus.IN_PREPARATION);
         Order saved = orderRepository.save(order);
-        OrderResponse response = OrderResponse.from(saved);
+        OrderResponse response = buildResponse(saved);
 
         String buyerEmail = accountRepository.findById(saved.getBuyerId())
                 .map(a -> a.getEmail()).orElse("");
@@ -148,7 +148,7 @@ public class VendorOrderServiceImpl implements VendorOrderService {
         order.setTrackingNumber(trackingNumber);
         order.setStatus(OrderStatus.SHIPPED);
         Order saved = orderRepository.save(order);
-        OrderResponse response = OrderResponse.from(saved);
+        OrderResponse response = buildResponse(saved);
 
         String buyerEmail = accountRepository.findById(saved.getBuyerId())
                 .map(a -> a.getEmail()).orElse("");
@@ -180,7 +180,7 @@ public class VendorOrderServiceImpl implements VendorOrderService {
 
         order.setStatus(OrderStatus.PENDING_RETURN);
         Order saved = orderRepository.save(order);
-        OrderResponse response = OrderResponse.from(saved);
+        OrderResponse response = buildResponse(saved);
 
         String buyerEmail = accountRepository.findById(saved.getBuyerId())
                 .map(a -> a.getEmail()).orElse("");
@@ -211,7 +211,7 @@ public class VendorOrderServiceImpl implements VendorOrderService {
         }
 
         Order saved = orderRepository.save(order);
-        OrderResponse response = OrderResponse.from(saved);
+        OrderResponse response = buildResponse(saved);
 
         String buyerEmail = accountRepository.findById(saved.getBuyerId())
                 .map(a -> a.getEmail()).orElse("");
@@ -248,7 +248,7 @@ public class VendorOrderServiceImpl implements VendorOrderService {
         }
 
         Order saved = orderRepository.save(order);
-        OrderResponse response = OrderResponse.from(saved);
+        OrderResponse response = buildResponse(saved);
 
         String buyerEmail = accountRepository.findById(saved.getBuyerId())
                 .map(a -> a.getEmail()).orElse("");
@@ -269,7 +269,7 @@ public class VendorOrderServiceImpl implements VendorOrderService {
 
         order.setStatus(OrderStatus.CANCELLED);
         Order saved = orderRepository.save(order);
-        OrderResponse response = OrderResponse.from(saved);
+        OrderResponse response = buildResponse(saved);
 
         String buyerEmail = accountRepository.findById(saved.getBuyerId())
                 .map(a -> a.getEmail()).orElse("");
@@ -290,13 +290,25 @@ public class VendorOrderServiceImpl implements VendorOrderService {
 
         order.setStatus(OrderStatus.SHIPPED);
         Order saved = orderRepository.save(order);
-        OrderResponse response = OrderResponse.from(saved);
+        OrderResponse response = buildResponse(saved);
 
         String buyerEmail = accountRepository.findById(saved.getBuyerId())
                 .map(a -> a.getEmail()).orElse("");
         notificationService.sendCancellationRefusedEmail(buyerEmail, response, locale);
 
         return response;
+    }
+
+    /**
+     * Builds an {@link OrderResponse} enriched with the buyer's name fetched from the account table.
+     *
+     * @param order the saved order entity
+     * @return response with buyer name included
+     */
+    private OrderResponse buildResponse(Order order) {
+        return accountRepository.findById(order.getBuyerId())
+                .map(a -> OrderResponse.from(order, a.getFirstName(), a.getLastName(), a.getEmail()))
+                .orElseGet(() -> OrderResponse.from(order));
     }
 
     /**

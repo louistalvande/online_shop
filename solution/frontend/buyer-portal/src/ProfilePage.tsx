@@ -21,6 +21,7 @@ type Tab = 'profile' | 'addresses' | 'security' | 'alerts'
 
 interface AddressFormState {
   label: string
+  recipientName: string
   addressLine: string
   city: string
   postalCode: string
@@ -29,7 +30,7 @@ interface AddressFormState {
 }
 
 const EMPTY_FORM: AddressFormState = {
-  label: '', addressLine: '', city: '', postalCode: '', countryCode: '', makeDefault: false,
+  label: '', recipientName: '', addressLine: '', city: '', postalCode: '', countryCode: '', makeDefault: false,
 }
 
 export default function ProfilePage() {
@@ -154,6 +155,7 @@ export default function ProfilePage() {
     setEditingId(addr.id)
     setAddrForm({
       label: addr.label,
+      recipientName: addr.recipientName,
       addressLine: addr.addressLine,
       city: addr.city,
       postalCode: addr.postalCode,
@@ -390,6 +392,11 @@ export default function ProfilePage() {
                       <label htmlFor="addrLabel" className="profile-label">{t('profile.addresses.form.label')}</label>
                       <input id="addrLabel" className="profile-input" value={addrForm.label} maxLength={100} required
                         onChange={e => setAddrForm(f => ({ ...f, label: e.target.value }))} />
+                    </div>
+                    <div className="profile-field">
+                      <label htmlFor="addrRecipient" className="profile-label">{t('profile.addresses.form.recipientName')}</label>
+                      <input id="addrRecipient" className="profile-input" value={addrForm.recipientName} maxLength={100} required
+                        onChange={e => setAddrForm(f => ({ ...f, recipientName: e.target.value }))} />
                     </div>
                     <div className="profile-field">
                       <label htmlFor="addrLine" className="profile-label">{t('profile.addresses.form.line')}</label>

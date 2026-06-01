@@ -23,7 +23,7 @@ export default defineConfig({
     },
     {
       name: 'buyer-portal',
-      testMatch: ['registration/**/*.spec.js', 'profile/prf-01.spec.js', 'profile/prf-04.spec.js', 'shop/**/*.spec.js', 'i18n/**/*.spec.js'],
+      testMatch: ['registration/**/*.spec.js', 'profile/prf-01.spec.js', 'profile/prf-03.spec.js', 'profile/prf-04.spec.js', 'shop/**/*.spec.js', 'i18n/**/*.spec.js'],
       use: {
         ...devices['Desktop Chrome'],
         baseURL: process.env.BUYER_URL ?? 'http://buyer.localhost',

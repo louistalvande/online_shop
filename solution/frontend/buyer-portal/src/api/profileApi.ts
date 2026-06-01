@@ -26,6 +26,7 @@ export interface UpdateProfilePayload {
 export interface DeliveryAddressData {
   id: string
   label: string
+  recipientName: string
   addressLine: string
   city: string
   postalCode: string
@@ -35,6 +36,7 @@ export interface DeliveryAddressData {
 
 export interface CreateDeliveryAddressPayload {
   label: string
+  recipientName: string
   addressLine: string
   city: string
   postalCode: string

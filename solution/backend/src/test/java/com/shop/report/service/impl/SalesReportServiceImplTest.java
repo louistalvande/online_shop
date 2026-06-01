@@ -28,7 +28,8 @@ class SalesReportServiceImplTest {
     SalesReportServiceImpl service;
 
     private static final String VENDOR_EMAIL = "vendor@test.com";
-    private static final String PERIOD = "2025-01";
+    private static final String START_DATE = "2025-01-01";
+    private static final String END_DATE   = "2025-01-31";
 
     private static final SalesMetrics ZERO_METRICS =
             new SalesMetrics(BigDecimal.ZERO, 0, BigDecimal.ZERO, BigDecimal.ZERO);
@@ -50,9 +51,10 @@ class SalesReportServiceImplTest {
         given(salesReportRepository.findTopProducts(any(LocalDateTime.class),
                 any(LocalDateTime.class), isNull(), eq(10))).willReturn(products);
 
-        SalesReportResponse result = service.getSalesReport(VENDOR_EMAIL, PERIOD, null);
+        SalesReportResponse result = service.getSalesReport(VENDOR_EMAIL, START_DATE, END_DATE, null);
 
-        assertThat(result.period()).isEqualTo(PERIOD);
+        assertThat(result.startDate()).isEqualTo(START_DATE);
+        assertThat(result.endDate()).isEqualTo(END_DATE);
         assertThat(result.category()).isNull();
         assertThat(result.metrics().orderCount()).isEqualTo(5);
         assertThat(result.metrics().revenue()).isEqualByComparingTo("100.00");
@@ -70,7 +72,7 @@ class SalesReportServiceImplTest {
         given(salesReportRepository.findTopProducts(any(LocalDateTime.class),
                 any(LocalDateTime.class), eq("PAINTING"), eq(10))).willReturn(List.of());
 
-        SalesReportResponse result = service.getSalesReport(VENDOR_EMAIL, PERIOD, "PAINTING");
+        SalesReportResponse result = service.getSalesReport(VENDOR_EMAIL, START_DATE, END_DATE, "PAINTING");
 
         assertThat(result.category()).isEqualTo("PAINTING");
         assertThat(result.metrics().orderCount()).isEqualTo(2);
@@ -83,7 +85,7 @@ class SalesReportServiceImplTest {
         given(salesReportRepository.findTopProducts(any(), any(), isNull(), anyInt()))
                 .willReturn(List.of());
 
-        SalesReportResponse result = service.getSalesReport(VENDOR_EMAIL, PERIOD, null);
+        SalesReportResponse result = service.getSalesReport(VENDOR_EMAIL, START_DATE, END_DATE, null);
 
         assertThat(result.metrics().orderCount()).isZero();
         assertThat(result.metrics().revenue()).isEqualByComparingTo(BigDecimal.ZERO);
@@ -92,13 +94,13 @@ class SalesReportServiceImplTest {
 
     @Test
     void getSalesReport_invalidPeriod_throwsInvalidPeriodException() {
-        assertThatThrownBy(() -> service.getSalesReport(VENDOR_EMAIL, "invalid", null))
+        assertThatThrownBy(() -> service.getSalesReport(VENDOR_EMAIL, "invalid", END_DATE, null))
                 .isInstanceOf(InvalidPeriodException.class);
     }
 
     @Test
     void getSalesReport_partialPeriod_throwsInvalidPeriodException() {
-        assertThatThrownBy(() -> service.getSalesReport(VENDOR_EMAIL, "2025", null))
+        assertThatThrownBy(() -> service.getSalesReport(VENDOR_EMAIL, "2025", END_DATE, null))
                 .isInstanceOf(InvalidPeriodException.class);
     }
 
@@ -115,10 +117,11 @@ class SalesReportServiceImplTest {
         given(salesReportRepository.findTopProducts(any(), any(), isNull(), anyInt()))
                 .willReturn(products);
 
-        String csv = service.exportSalesCsv(VENDOR_EMAIL, PERIOD, null);
+        String csv = service.exportSalesCsv(VENDOR_EMAIL, START_DATE, END_DATE, null);
 
         assertThat(csv).contains("Sales Report");
-        assertThat(csv).contains("Period," + PERIOD);
+        assertThat(csv).contains("Start Date," + START_DATE);
+        assertThat(csv).contains("End Date," + END_DATE);
         assertThat(csv).contains("Revenue,200.00");
         assertThat(csv).contains("Order Count,4");
         assertThat(csv).contains("Cancellation Rate (%),10.00");
@@ -137,7 +140,7 @@ class SalesReportServiceImplTest {
         given(salesReportRepository.findTopProducts(any(), any(), eq("JEWELRY"), anyInt()))
                 .willReturn(List.of());
 
-        String csv = service.exportSalesCsv(VENDOR_EMAIL, PERIOD, "JEWELRY");
+        String csv = service.exportSalesCsv(VENDOR_EMAIL, START_DATE, END_DATE, "JEWELRY");
 
         assertThat(csv).contains("Category,JEWELRY");
     }

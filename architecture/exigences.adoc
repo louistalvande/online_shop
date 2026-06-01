@@ -212,7 +212,7 @@ NOTE: L'administrateur n'a pas accès aux données personnelles des comptes (nom
 | UC_B7, Activités acheteur
 
 | BES-ACH-013
-| L'acheteur a besoin de gérer un carnet d'adresses de livraison : ajouter plusieurs adresses, les modifier, les supprimer et en désigner une par défaut, afin de sélectionner rapidement une adresse existante lors du passage d'une commande.
+| L'acheteur a besoin de gérer un carnet d'adresses de livraison : ajouter plusieurs adresses, les modifier, les supprimer et en désigner une par défaut, afin de sélectionner rapidement une adresse existante lors du passage d'une commande. Chaque adresse comporte un nom de destinataire qui peut différer du nom du compte acheteur (ex. livraison à un tiers ou envoi en cadeau).
 | UC_B_ACC, Activités acheteur
 
 | BES-ACH-014
@@ -515,7 +515,7 @@ Les exigences suivantes découlent du Règlement Général sur la Protection des
 | Identifiant | Exigence | Article RGPD
 
 | RGPD-MIN-001
-| Seules les données strictement nécessaires à l'exécution du service doivent être collectées : identité (nom, prénom), email, adresse de livraison dans la zone euro, préférence de langue, historique de commandes. Aucune donnée non justifiée par une finalité explicite ne doit être stockée.
+| Seules les données strictement nécessaires à l'exécution du service doivent être collectées : identité (nom, prénom), email, adresse de livraison dans la zone euro (incluant le nom du destinataire, qui peut différer du nom du compte), préférence de langue, historique de commandes. Aucune donnée non justifiée par une finalité explicite ne doit être stockée.
 | Art. 5 §1c
 
 | RGPD-MIN-002

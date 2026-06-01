@@ -29,13 +29,13 @@ test.describe('US-ORD-02 — Carrier selection', () => {
     buyerToken = await getBuyerToken(p, BUYER_EMAIL, BUYER_PASSWORD);
 
     const frAddress = await createAddressViaApi(p, buyerToken, {
-      label: 'Home FR', addressLine: '1 rue Test', city: 'Paris',
+      label: 'Home FR', recipientName: 'Test Recipient', addressLine: '1 rue Test', city: 'Paris',
       postalCode: '75001', countryCode: 'FR', makeDefault: true,
     });
     addressId = frAddress.id;
 
     const deAddress = await createAddressViaApi(p, buyerToken, {
-      label: 'Home DE', addressLine: '1 Teststrasse', city: 'Berlin',
+      label: 'Home DE', recipientName: 'Test Recipient', addressLine: '1 Teststrasse', city: 'Berlin',
       postalCode: '10115', countryCode: 'DE', makeDefault: false,
     });
     deAddressId = deAddress.id;

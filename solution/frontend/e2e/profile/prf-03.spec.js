@@ -40,7 +40,7 @@ test.describe('US-PRF-03 — Buyer address book', () => {
     const res = await request.post(`${API_URL}/api/profile/addresses`, {
       headers: { Authorization: `Bearer ${buyerToken}` },
       data: {
-        label: 'Home', addressLine: '1 rue de la Paix', city: 'Paris',
+        label: 'Home', recipientName: 'Marie Dupont', addressLine: '1 rue de la Paix', city: 'Paris',
         postalCode: '75001', countryCode: 'FR', makeDefault: false,
       },
     });
@@ -63,7 +63,7 @@ test.describe('US-PRF-03 — Buyer address book', () => {
     const res = await request.post(`${API_URL}/api/profile/addresses`, {
       headers: { Authorization: `Bearer ${token}` },
       data: {
-        label: 'Work', addressLine: '10 avenue Test', city: 'Lyon',
+        label: 'Work', recipientName: 'Jean Martin', addressLine: '10 avenue Test', city: 'Lyon',
         postalCode: '69001', countryCode: 'FR', makeDefault: false,
       },
     });
@@ -80,7 +80,7 @@ test.describe('US-PRF-03 — Buyer address book', () => {
 
     // First address (auto-default)
     const first = await createAddressViaApi(p, token, {
-      label: 'First', addressLine: '1 rue Test', city: 'Paris',
+      label: 'First', recipientName: 'Test Recipient', addressLine: '1 rue Test', city: 'Paris',
       postalCode: '75001', countryCode: 'FR', makeDefault: false,
     });
     expect(first.default).toBe(true);
@@ -89,7 +89,7 @@ test.describe('US-PRF-03 — Buyer address book', () => {
     await request.post(`${API_URL}/api/profile/addresses`, {
       headers: { Authorization: `Bearer ${token}` },
       data: {
-        label: 'Second', addressLine: '2 rue Test', city: 'Paris',
+        label: 'Second', recipientName: 'Test Recipient', addressLine: '2 rue Test', city: 'Paris',
         postalCode: '75002', countryCode: 'FR', makeDefault: true,
       },
     });
@@ -109,7 +109,7 @@ test.describe('US-PRF-03 — Buyer address book', () => {
     const res = await request.post(`${API_URL}/api/profile/addresses`, {
       headers: { Authorization: `Bearer ${buyerToken}` },
       data: {
-        label: 'US Home', addressLine: '1 Main St', city: 'New York',
+        label: 'US Home', recipientName: 'John Doe', addressLine: '1 Main St', city: 'New York',
         postalCode: '10001', countryCode: 'US', makeDefault: false,
       },
     });
@@ -119,7 +119,7 @@ test.describe('US-PRF-03 — Buyer address book', () => {
   test('POST unauthenticated returns 401', async ({ request }) => {
     const res = await request.post(`${API_URL}/api/profile/addresses`, {
       data: {
-        label: 'Home', addressLine: '1 rue Test', city: 'Paris',
+        label: 'Home', recipientName: 'Test Recipient', addressLine: '1 rue Test', city: 'Paris',
         postalCode: '75001', countryCode: 'FR', makeDefault: false,
       },
     });
@@ -135,14 +135,14 @@ test.describe('US-PRF-03 — Buyer address book', () => {
     const token = await getBuyerToken(p, email, BUYER_PASSWORD);
 
     const address = await createAddressViaApi(p, token, {
-      label: 'Old Label', addressLine: '1 rue Test', city: 'Paris',
+      label: 'Old Label', recipientName: 'Test Recipient', addressLine: '1 rue Test', city: 'Paris',
       postalCode: '75001', countryCode: 'FR', makeDefault: false,
     });
 
     const res = await request.put(`${API_URL}/api/profile/addresses/${address.id}`, {
       headers: { Authorization: `Bearer ${token}` },
       data: {
-        label: 'New Label', addressLine: '1 rue Test', city: 'Marseille',
+        label: 'New Label', recipientName: 'Test Recipient', addressLine: '1 rue Test', city: 'Marseille',
         postalCode: '13001', countryCode: 'FR', makeDefault: false,
       },
     });
@@ -159,11 +159,11 @@ test.describe('US-PRF-03 — Buyer address book', () => {
     const token = await getBuyerToken(p, email, BUYER_PASSWORD);
 
     const first = await createAddressViaApi(p, token, {
-      label: 'First', addressLine: '1 rue Test', city: 'Paris',
+      label: 'First', recipientName: 'Test Recipient', addressLine: '1 rue Test', city: 'Paris',
       postalCode: '75001', countryCode: 'FR', makeDefault: false,
     });
     const second = await createAddressViaApi(p, token, {
-      label: 'Second', addressLine: '2 rue Test', city: 'Lyon',
+      label: 'Second', recipientName: 'Test Recipient', addressLine: '2 rue Test', city: 'Lyon',
       postalCode: '69001', countryCode: 'FR', makeDefault: false,
     });
 
@@ -171,7 +171,7 @@ test.describe('US-PRF-03 — Buyer address book', () => {
     const res = await request.put(`${API_URL}/api/profile/addresses/${second.id}`, {
       headers: { Authorization: `Bearer ${token}` },
       data: {
-        label: 'Second', addressLine: '2 rue Test', city: 'Lyon',
+        label: 'Second', recipientName: 'Test Recipient', addressLine: '2 rue Test', city: 'Lyon',
         postalCode: '69001', countryCode: 'FR', makeDefault: true,
       },
     });
@@ -184,7 +184,7 @@ test.describe('US-PRF-03 — Buyer address book', () => {
     const res = await request.put(`${API_URL}/api/profile/addresses/${crypto.randomUUID()}`, {
       headers: { Authorization: `Bearer ${buyerToken}` },
       data: {
-        label: 'X', addressLine: '1 rue X', city: 'Paris',
+        label: 'X', recipientName: 'Test Recipient', addressLine: '1 rue X', city: 'Paris',
         postalCode: '75001', countryCode: 'FR', makeDefault: false,
       },
     });
@@ -200,11 +200,11 @@ test.describe('US-PRF-03 — Buyer address book', () => {
     const token = await getBuyerToken(p, email, BUYER_PASSWORD);
 
     const first = await createAddressViaApi(p, token, {
-      label: 'First', addressLine: '1 rue Test', city: 'Paris',
+      label: 'First', recipientName: 'Test Recipient', addressLine: '1 rue Test', city: 'Paris',
       postalCode: '75001', countryCode: 'FR', makeDefault: false,
     });
     const second = await createAddressViaApi(p, token, {
-      label: 'Second', addressLine: '2 rue Test', city: 'Lyon',
+      label: 'Second', recipientName: 'Test Recipient', addressLine: '2 rue Test', city: 'Lyon',
       postalCode: '69001', countryCode: 'FR', makeDefault: false,
     });
 
@@ -241,11 +241,11 @@ test.describe('US-PRF-03 — Buyer address book', () => {
     const token = await getBuyerToken(p, email, BUYER_PASSWORD);
 
     const first = await createAddressViaApi(p, token, {
-      label: 'Keep', addressLine: '1 rue Test', city: 'Paris',
+      label: 'Keep', recipientName: 'Test Recipient', addressLine: '1 rue Test', city: 'Paris',
       postalCode: '75001', countryCode: 'FR', makeDefault: false,
     });
     const second = await createAddressViaApi(p, token, {
-      label: 'Delete Me', addressLine: '2 rue Test', city: 'Lyon',
+      label: 'Delete Me', recipientName: 'Test Recipient', addressLine: '2 rue Test', city: 'Lyon',
       postalCode: '69001', countryCode: 'FR', makeDefault: false,
     });
 
@@ -269,7 +269,7 @@ test.describe('US-PRF-03 — Buyer address book', () => {
     const token = await getBuyerToken(p, email, BUYER_PASSWORD);
 
     const address = await createAddressViaApi(p, token, {
-      label: 'Only', addressLine: '1 rue Test', city: 'Paris',
+      label: 'Only', recipientName: 'Test Recipient', addressLine: '1 rue Test', city: 'Paris',
       postalCode: '75001', countryCode: 'FR', makeDefault: false,
     });
 
@@ -319,7 +319,7 @@ test.describe('US-PRF-03 — Buyer address book', () => {
     const token = await getBuyerToken(p, email, BUYER_PASSWORD);
 
     const address = await createAddressViaApi(p, token, {
-      label: 'Checkout Address', addressLine: '5 rue de Rivoli', city: 'Paris',
+      label: 'Checkout Address', recipientName: 'Test Recipient', addressLine: '5 rue de Rivoli', city: 'Paris',
       postalCode: '75001', countryCode: 'FR', makeDefault: true,
     });
 

@@ -113,6 +113,7 @@
   "profile.addresses.form.title.add": "Nueva dirección",
   "profile.addresses.form.title.edit": "Editar dirección",
   "profile.addresses.form.label": "Etiqueta (p. ej. Domicilio)",
+  "profile.addresses.form.recipientName": "Nombre del destinatario",
   "profile.addresses.form.line": "Dirección",
   "profile.addresses.form.city": "Ciudad",
   "profile.addresses.form.postalCode": "Código postal",

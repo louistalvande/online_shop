@@ -51,16 +51,18 @@ class SalesReportControllerImplTest {
     void getSalesReport_returns200WithBody() throws Exception {
         SalesMetrics metrics = new SalesMetrics(
                 new BigDecimal("100.00"), 3, new BigDecimal("33.33"), BigDecimal.ZERO);
-        SalesReportResponse report = new SalesReportResponse("2025-01", null, metrics, List.of());
+        SalesReportResponse report = new SalesReportResponse("2025-01-01", "2025-01-31", null, metrics, List.of());
 
-        given(salesReportService.getSalesReport(eq(VENDOR_EMAIL), eq("2025-01"), isNull()))
+        given(salesReportService.getSalesReport(eq(VENDOR_EMAIL), eq("2025-01-01"), eq("2025-01-31"), isNull()))
                 .willReturn(report);
 
         mvc.perform(get("/api/vendor/reports/sales")
                         .principal(vendorPrincipal)
-                        .param("period", "2025-01"))
+                        .param("startDate", "2025-01-01")
+                        .param("endDate", "2025-01-31"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.period").value("2025-01"))
+                .andExpect(jsonPath("$.startDate").value("2025-01-01"))
+                .andExpect(jsonPath("$.endDate").value("2025-01-31"))
                 .andExpect(jsonPath("$.metrics.orderCount").value(3))
                 .andExpect(jsonPath("$.metrics.revenue").value(100.00))
                 .andExpect(jsonPath("$.topSellingProducts").isArray());
@@ -70,14 +72,15 @@ class SalesReportControllerImplTest {
     void getSalesReport_withCategory_passesParamToService() throws Exception {
         SalesMetrics metrics = new SalesMetrics(
                 new BigDecimal("50.00"), 1, new BigDecimal("50.00"), BigDecimal.ZERO);
-        SalesReportResponse report = new SalesReportResponse("2025-01", "PAINTING", metrics, List.of());
+        SalesReportResponse report = new SalesReportResponse("2025-01-01", "2025-01-31", "PAINTING", metrics, List.of());
 
-        given(salesReportService.getSalesReport(eq(VENDOR_EMAIL), eq("2025-01"), eq("PAINTING")))
+        given(salesReportService.getSalesReport(eq(VENDOR_EMAIL), eq("2025-01-01"), eq("2025-01-31"), eq("PAINTING")))
                 .willReturn(report);
 
         mvc.perform(get("/api/vendor/reports/sales")
                         .principal(vendorPrincipal)
-                        .param("period", "2025-01")
+                        .param("startDate", "2025-01-01")
+                        .param("endDate", "2025-01-31")
                         .param("category", "PAINTING"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.category").value("PAINTING"));
@@ -85,29 +88,31 @@ class SalesReportControllerImplTest {
 
     @Test
     void getSalesReport_invalidPeriod_returns400() throws Exception {
-        given(salesReportService.getSalesReport(eq(VENDOR_EMAIL), eq("bad"), isNull()))
+        given(salesReportService.getSalesReport(eq(VENDOR_EMAIL), eq("bad"), eq("2025-01-31"), isNull()))
                 .willThrow(new InvalidPeriodException("bad"));
         given(messageSource.getMessage(eq("error.report.invalid.period"), any(), any(Locale.class)))
                 .willReturn("Invalid period format");
 
         mvc.perform(get("/api/vendor/reports/sales")
                         .principal(vendorPrincipal)
-                        .param("period", "bad"))
+                        .param("startDate", "bad")
+                        .param("endDate", "2025-01-31"))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.error").value("INVALID_PERIOD"));
     }
 
     @Test
     void exportSalesCsv_returns200WithCsvContentType() throws Exception {
-        given(salesReportService.exportSalesCsv(eq(VENDOR_EMAIL), eq("2025-01"), isNull()))
-                .willReturn("Sales Report\nPeriod,2025-01\n\nKey Metrics\nRevenue,100.00\n");
+        given(salesReportService.exportSalesCsv(eq(VENDOR_EMAIL), eq("2025-01-01"), eq("2025-01-31"), isNull()))
+                .willReturn("Sales Report\nStart Date,2025-01-01\nEnd Date,2025-01-31\n\nKey Metrics\nRevenue,100.00\n");
 
         mvc.perform(get("/api/vendor/reports/sales/export")
                         .principal(vendorPrincipal)
-                        .param("period", "2025-01"))
+                        .param("startDate", "2025-01-01")
+                        .param("endDate", "2025-01-31"))
                 .andExpect(status().isOk())
                 .andExpect(header().string("Content-Type", containsString("text/csv")))
-                .andExpect(header().string("Content-Disposition", containsString("sales-report-2025-01.csv")))
+                .andExpect(header().string("Content-Disposition", containsString("sales-report-2025-01-01-2025-01-31.csv")))
                 .andExpect(content().string(containsString("Sales Report")));
     }
 }

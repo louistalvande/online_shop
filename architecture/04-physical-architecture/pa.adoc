@@ -680,10 +680,10 @@ Endpoints REST exposés (Service Compte — FS-B11) :
 | Retourne la liste des adresses actives (`supprimé = false`) de l'acheteur authentifié.
 
 | `POST /api/profile/addresses`
-| Crée une nouvelle adresse. Corps : `{ label, addressLine, city, postalCode, countryCode }`. Pays restreint à la zone euro (CS-04).
+| Crée une nouvelle adresse. Corps : `{ label, recipientName, addressLine, city, postalCode, countryCode }`. `recipientName` peut différer du nom du compte acheteur. Pays restreint à la zone euro (CS-04).
 
 | `PUT /api/profile/addresses/{id}`
-| Met à jour tous les champs d'une adresse existante.
+| Met à jour tous les champs d'une adresse existante (`label`, `recipientName`, `addressLine`, `city`, `postalCode`, `countryCode`).
 
 | `DELETE /api/profile/addresses/{id}`
 | Suppression logique (`supprimé = true`). Retourne `409` si c'est la dernière adresse active du compte.

@@ -151,6 +151,7 @@ public class DeliveryAddressServiceImpl implements DeliveryAddressService {
 
     private void populateFields(DeliveryAddress address, DeliveryAddressRequest request) {
         address.setLabel(request.getLabel());
+        address.setRecipientName(request.getRecipientName());
         address.setAddressLine(request.getAddressLine());
         address.setCity(request.getCity());
         address.setPostalCode(request.getPostalCode());

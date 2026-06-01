@@ -28,9 +28,13 @@ export interface OrderData {
   id: string
   orderNumber: string
   buyerId: string
+  buyerFirstName: string
+  buyerLastName: string
+  buyerEmail: string
   carrierId: string
   carrierName: string
   carrierTrackingUrl: string
+  deliveryRecipientName: string
   deliveryAddressLine: string
   deliveryCity: string
   deliveryPostalCode: string

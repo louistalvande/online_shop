@@ -16,10 +16,14 @@ public class OrderResponse {
     @Schema(description = "Order UUID") private UUID id;
     @Schema(description = "Human-readable order number") private String orderNumber;
     @Schema(description = "Buyer account UUID") private UUID buyerId;
+    @Schema(description = "Buyer first name") private String buyerFirstName;
+    @Schema(description = "Buyer last name") private String buyerLastName;
+    @Schema(description = "Buyer email address") private String buyerEmail;
     @Schema(description = "Carrier UUID") private UUID carrierId;
     @Schema(description = "Carrier name snapshot") private String carrierName;
     @Schema(description = "Carrier tracking URL snapshot") private String carrierTrackingUrl;
     @Schema(description = "Delivery address UUID") private UUID deliveryAddressId;
+    @Schema(description = "Name of the parcel recipient") private String deliveryRecipientName;
     @Schema(description = "Delivery street address") private String deliveryAddressLine;
     @Schema(description = "Delivery city") private String deliveryCity;
     @Schema(description = "Delivery postal code") private String deliveryPostalCode;
@@ -37,7 +41,23 @@ public class OrderResponse {
     private OrderResponse() {}
 
     /**
-     * Builds a response from an {@link Order} entity.
+     * Builds a response from an {@link Order} entity, including the buyer's name.
+     *
+     * @param order     the order entity
+     * @param firstName buyer first name resolved from the account
+     * @param lastName  buyer last name resolved from the account
+     * @return the populated response DTO
+     */
+    public static OrderResponse from(Order order, String firstName, String lastName, String email) {
+        OrderResponse r = from(order);
+        r.buyerFirstName = firstName;
+        r.buyerLastName = lastName;
+        r.buyerEmail = email;
+        return r;
+    }
+
+    /**
+     * Builds a response from an {@link Order} entity without buyer name fields.
      *
      * @param order the order entity
      * @return the populated response DTO
@@ -52,6 +72,7 @@ public class OrderResponse {
         r.carrierTrackingUrl = order.getCarrierTrackingUrl();
         if (order.getDeliveryAddress() != null) {
             r.deliveryAddressId = order.getDeliveryAddress().getId();
+            r.deliveryRecipientName = order.getDeliveryAddress().getRecipientName();
             r.deliveryAddressLine = order.getDeliveryAddress().getAddressLine();
             r.deliveryCity = order.getDeliveryAddress().getCity();
             r.deliveryPostalCode = order.getDeliveryAddress().getPostalCode();
@@ -75,6 +96,12 @@ public class OrderResponse {
     public String getOrderNumber() { return orderNumber; }
     /** @return the buyer account UUID */
     public UUID getBuyerId() { return buyerId; }
+    /** @return the buyer first name */
+    public String getBuyerFirstName() { return buyerFirstName; }
+    /** @return the buyer last name */
+    public String getBuyerLastName() { return buyerLastName; }
+    /** @return the buyer email address */
+    public String getBuyerEmail() { return buyerEmail; }
     /** @return the carrier UUID */
     public UUID getCarrierId() { return carrierId; }
     /** @return the carrier name */
@@ -83,6 +110,8 @@ public class OrderResponse {
     public String getCarrierTrackingUrl() { return carrierTrackingUrl; }
     /** @return the delivery address UUID */
     public UUID getDeliveryAddressId() { return deliveryAddressId; }
+    /** @return the parcel recipient name */
+    public String getDeliveryRecipientName() { return deliveryRecipientName; }
     /** @return the delivery address */
     public String getDeliveryAddressLine() { return deliveryAddressLine; }
     /** @return the delivery city */

@@ -13,6 +13,11 @@ public class DeliveryAddressRequest {
     @Size(max = 100)
     private String label;
 
+    @Schema(description = "Name of the parcel recipient — may differ from the buyer's account name")
+    @NotBlank
+    @Size(max = 100)
+    private String recipientName;
+
     @Schema(description = "Street address line")
     @NotBlank
     @Size(max = 255)
@@ -40,6 +45,11 @@ public class DeliveryAddressRequest {
     public String getLabel() { return label; }
     /** @param label the address label */
     public void setLabel(String label) { this.label = label; }
+
+    /** @return the recipient name */
+    public String getRecipientName() { return recipientName; }
+    /** @param recipientName the recipient name */
+    public void setRecipientName(String recipientName) { this.recipientName = recipientName; }
 
     /** @return the street address line */
     public String getAddressLine() { return addressLine; }

@@ -1,4 +1,5 @@
-@startsalt
+@startuml ihm-pa-adresse-form
+salt
 ' Composant PA : front-acheteur (Portail Acheteur)
 ' Fonctions allouées : Service Compte — FS-B11 (US-PRF-03)
 ' Endpoints : POST /api/profile/addresses, PUT /api/profile/addresses/{id}
@@ -8,6 +9,7 @@ title Portail Acheteur — Ajouter / Modifier une adresse
 {+
   == Nouvelle adresse
   Libellé (ex. Domicile)   | "                    "
+  Nom du destinataire      | "                    "
   Adresse                  | "                    "
   Ville                    | "                    "
   Code postal              | "                    "
@@ -17,4 +19,4 @@ title Portail Acheteur — Ajouter / Modifier une adresse
   --
   [Annuler]   [Enregistrer]
 }
-@endsalt
+@enduml

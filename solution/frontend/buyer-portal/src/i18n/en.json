@@ -113,6 +113,7 @@
   "profile.addresses.form.title.add": "New address",
   "profile.addresses.form.title.edit": "Edit address",
   "profile.addresses.form.label": "Label (e.g. Home)",
+  "profile.addresses.form.recipientName": "Recipient name",
   "profile.addresses.form.line": "Address",
   "profile.addresses.form.city": "City",
   "profile.addresses.form.postalCode": "Postal code",
