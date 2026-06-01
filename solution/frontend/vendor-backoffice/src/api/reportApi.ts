@@ -15,25 +15,27 @@ export interface TopProduct {
 }
 
 export interface SalesReportResponse {
-  period: string
+  startDate: string
+  endDate: string
   category: string | null
   metrics: SalesMetrics
   topSellingProducts: TopProduct[]
 }
 
 export async function getSalesReport(
-  period: string,
+  startDate: string,
+  endDate: string,
   category?: string,
 ): Promise<SalesReportResponse> {
-  const params = new URLSearchParams({ period })
+  const params = new URLSearchParams({ startDate, endDate })
   if (category) params.set('category', category)
   const res = await authedFetch(`/api/vendor/reports/sales?${params}`)
   if (!res.ok) throw new Error(`${res.status}`)
   return res.json()
 }
 
-export async function exportSalesCsv(period: string, category?: string): Promise<void> {
-  const params = new URLSearchParams({ period })
+export async function exportSalesCsv(startDate: string, endDate: string, category?: string): Promise<void> {
+  const params = new URLSearchParams({ startDate, endDate })
   if (category) params.set('category', category)
   const res = await authedFetch(`/api/vendor/reports/sales/export?${params}`)
   if (!res.ok) throw new Error(`${res.status}`)
@@ -41,7 +43,7 @@ export async function exportSalesCsv(period: string, category?: string): Promise
   const url = URL.createObjectURL(blob)
   const a = document.createElement('a')
   a.href = url
-  a.download = `sales-report-${period}.csv`
+  a.download = `sales-report-${startDate}-${endDate}.csv`
   a.click()
   URL.revokeObjectURL(url)
 }

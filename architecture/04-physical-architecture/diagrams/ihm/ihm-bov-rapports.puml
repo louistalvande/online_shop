@@ -1,11 +1,12 @@
-@startsalt
+@startuml ihm-bov-rapports
+salt
 ' Composant PA : front-vendeur (Back-office Vendeur)
 ' Fonctions allouées : Service Rapport — FS-V07 (agrégats JPQL, statistiques de ventes)
 title Back-office Vendeur — Rapports de ventes
 
 {+
   == Rapports de ventes
-  Période | ^Janvier 2025^  | [Appliquer]
+  Du | "2025-01-01" | Au | "2025-01-31" | [Appliquer]
   --
   {
     {+
@@ -39,4 +40,4 @@ title Back-office Vendeur — Rapports de ventes
   ==
   [Exporter en CSV]
 }
-@endsalt
+@enduml
