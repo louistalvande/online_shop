@@ -44,7 +44,7 @@ test.describe('US-SHP-02 — Filter and search catalog', () => {
     await expect(page.getByText('Aquarelle montagne').first()).toBeVisible();
 
     // Fill category filter
-    await page.getByLabel('Catégorie').fill('Aquarelle');
+    await page.getByLabel('Type de produit').fill('Aquarelle');
     await page.waitForTimeout(600); // debounce
 
     await expect(page.getByText('Aquarelle montagne').first()).toBeVisible();

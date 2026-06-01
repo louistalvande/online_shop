@@ -8,6 +8,8 @@ export interface ProfileData {
   phone: string | null
   language: 'FR' | 'EN' | 'ES'
   role: string
+  marketingConsent: boolean
+  marketingConsentUpdatedAt: string | null
 }
 
 export interface UpdateProfilePayload {
@@ -18,6 +20,7 @@ export interface UpdateProfilePayload {
   currentPassword?: string
   newPassword?: string
   confirmPassword?: string
+  marketingConsent?: boolean
 }
 
 export interface DeliveryAddressData {

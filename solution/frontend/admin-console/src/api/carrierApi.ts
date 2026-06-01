@@ -1,4 +1,4 @@
-import { getSession } from './authApi'
+import { authedFetch } from './authApi'
 
 const BASE = '/api/admin/carriers'
 
@@ -23,21 +23,16 @@ export interface UpdateCarrierPayload {
   supportedCountries: string[]
 }
 
-function authHeader(): HeadersInit {
-  const session = getSession()
-  return session ? { Authorization: `Bearer ${session.token}` } : {}
-}
-
 export async function listCarriers(): Promise<CarrierResponse[]> {
-  const res = await fetch(BASE, { headers: authHeader() })
+  const res = await authedFetch(BASE)
   if (!res.ok) throw new Error('Failed to fetch carriers')
   return res.json()
 }
 
 export async function createCarrier(payload: CreateCarrierPayload): Promise<CarrierResponse> {
-  const res = await fetch(BASE, {
+  const res = await authedFetch(BASE, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json', ...authHeader() },
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload),
   })
   if (!res.ok) throw new Error('Failed to create carrier')
@@ -45,9 +40,9 @@ export async function createCarrier(payload: CreateCarrierPayload): Promise<Carr
 }
 
 export async function updateCarrier(id: string, payload: UpdateCarrierPayload): Promise<CarrierResponse> {
-  const res = await fetch(`${BASE}/${id}`, {
+  const res = await authedFetch(`${BASE}/${id}`, {
     method: 'PATCH',
-    headers: { 'Content-Type': 'application/json', ...authHeader() },
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload),
   })
   if (!res.ok) throw new Error('Failed to update carrier')
@@ -55,27 +50,18 @@ export async function updateCarrier(id: string, payload: UpdateCarrierPayload): 
 }
 
 export async function deactivateCarrier(id: string): Promise<CarrierResponse> {
-  const res = await fetch(`${BASE}/${id}/deactivate`, {
-    method: 'PATCH',
-    headers: authHeader(),
-  })
+  const res = await authedFetch(`${BASE}/${id}/deactivate`, { method: 'PATCH' })
   if (!res.ok) throw new Error('Failed to deactivate carrier')
   return res.json()
 }
 
 export async function activateCarrier(id: string): Promise<CarrierResponse> {
-  const res = await fetch(`${BASE}/${id}/activate`, {
-    method: 'PATCH',
-    headers: authHeader(),
-  })
+  const res = await authedFetch(`${BASE}/${id}/activate`, { method: 'PATCH' })
   if (!res.ok) throw new Error('Failed to activate carrier')
   return res.json()
 }
 
 export async function deleteCarrier(id: string): Promise<void> {
-  const res = await fetch(`${BASE}/${id}`, {
-    method: 'DELETE',
-    headers: authHeader(),
-  })
+  const res = await authedFetch(`${BASE}/${id}`, { method: 'DELETE' })
   if (!res.ok) throw new Error('Failed to delete carrier')
 }

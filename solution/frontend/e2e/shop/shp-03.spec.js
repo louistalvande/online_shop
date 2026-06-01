@@ -215,6 +215,7 @@ test.describe('US-SHP-03 — Alertes de remise en stock', () => {
   });
 
   test('API — unauthenticated request returns 401', async ({ page }) => {
+    await page.context().clearCookies({ name: 'jwt' });
     const res = await page.request.get(`${API_URL}/api/profile/stock-subscriptions`);
     expect([401, 403]).toContain(res.status());
   });

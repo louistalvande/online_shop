@@ -6,9 +6,9 @@ import { createActiveVendorViaApi, getVendorToken, injectVendorSession, API_URL 
 const VENDOR_EMAIL    = `vendor-vi-${Date.now()}@shop.test`;
 const VENDOR_PASSWORD = 'VndVI!Secure-2026';
 
-// Minimal 1×1 white PNG — valid image accepted by the backend.
+// Minimal 1×1 white PNG — generated via Python zlib/struct, valid for Java ImageIO.
 const PNG_1X1 = Buffer.from(
-  'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAIAAACQd1PeAAAADklEQVQI12P4z8BQDwADhQGAWjR9awAAAABJRU5ErkJggg==',
+  'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAIAAACQd1PeAAAADElEQVR4nGP4//8/AAX+Av4N70a4AAAAAElFTkSuQmCC',
   'base64'
 );
 
@@ -16,8 +16,15 @@ const LOGO_FILE   = { name: 'logo.png',   mimeType: 'image/png', buffer: PNG_1X1
 const BANNER_FILE = { name: 'banner.png', mimeType: 'image/png', buffer: PNG_1X1 };
 const TEXT_FILE   = { name: 'bad.txt',    mimeType: 'text/plain', buffer: Buffer.from('not an image') };
 
-async function navigateToVisualIdentity(page) {
+async function loginAsVendor(page) {
   await page.goto('/vendor/');
+  await page.getByLabel('Adresse email').fill(VENDOR_EMAIL);
+  await page.getByLabel('Mot de passe').fill(VENDOR_PASSWORD);
+  await page.getByRole('button', { name: 'Se connecter' }).click();
+  await expect(page.getByRole('heading', { name: 'Tableau de bord' })).toBeVisible({ timeout: 10000 });
+}
+
+async function navigateToVisualIdentity(page) {
   await page.getByText('Identité visuelle').click();
   await expect(page.getByRole('heading', { name: 'Identité visuelle', level: 1 })).toBeVisible();
 }
@@ -50,7 +57,7 @@ test.describe('UCSA-16 — Visual identity', () => {
   });
 
   test.beforeEach(async ({ page }) => {
-    await injectVendorSession(page, VENDOR_EMAIL, vendorToken);
+    await loginAsVendor(page);
     await navigateToVisualIdentity(page);
   });
 

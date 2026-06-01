@@ -53,7 +53,8 @@ class AccountServiceImplTest {
                 notificationService,
                 passwordEncoder,
                 "http://localhost",
-                24);
+                24,
+                "http://localhost");
     }
 
     private Account activeAccount() {

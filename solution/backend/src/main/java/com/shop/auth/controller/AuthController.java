@@ -5,6 +5,8 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -13,7 +15,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 
 import java.security.Principal;
 
-/** Shared authentication endpoints for all actors (admin, vendor, buyer). */
+/** Shared authentication endpoints for all actors (admin, vendor, buyer) (US-SEC-01 / FS-S03). */
 @Tag(name = "Auth", description = "Authentication — shared across all actors")
 @RequestMapping("/api/auth")
 public interface AuthController {
@@ -38,14 +40,14 @@ public interface AuthController {
     @PostMapping("/activate")
     ResponseEntity<Void> activate(@Valid @RequestBody ActivateAccountRequest request);
 
-    @Operation(summary = "Login — returns a signed JWT or an MFA challenge")
+    @Operation(summary = "Login — returns a signed JWT or an MFA challenge; also sets an HttpOnly cookie (US-SEC-01)")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Credentials valid — JWT issued or MFA required"),
         @ApiResponse(responseCode = "401", description = "Invalid credentials or account not active"),
         @ApiResponse(responseCode = "429", description = "Too many failed attempts")
     })
     @PostMapping("/login")
-    ResponseEntity<AuthResponse> login(@Valid @RequestBody LoginRequest request);
+    ResponseEntity<AuthResponse> login(@Valid @RequestBody LoginRequest request, HttpServletResponse response);
 
     @Operation(summary = "Resend activation link to a PENDING account (US-REG-03)")
     @ApiResponses({
@@ -105,5 +107,19 @@ public interface AuthController {
         @ApiResponse(responseCode = "401", description = "Invalid or expired MFA token or code")
     })
     @PostMapping("/mfa/verify")
-    ResponseEntity<AuthResponse> verifyMfa(@Valid @RequestBody MfaVerifyRequest request);
+    ResponseEntity<AuthResponse> verifyMfa(@Valid @RequestBody MfaVerifyRequest request,
+                                            HttpServletResponse response);
+
+    /**
+     * Logs the user out: blacklists the current JWT in Redis and clears the HttpOnly cookie (US-SEC-01).
+     * Accepts the token from either the {@code jwt} cookie or the {@code Authorization} header.
+     *
+     * @param request  the incoming request containing the token
+     * @param response the response on which the cookie is cleared
+     * @return 204 No Content
+     */
+    @Operation(summary = "Explicit logout — revokes the JWT and clears the session cookie (US-SEC-01)")
+    @ApiResponse(responseCode = "204", description = "Logged out — cookie cleared and token blacklisted")
+    @PostMapping("/logout")
+    ResponseEntity<Void> logout(HttpServletRequest request, HttpServletResponse response);
 }

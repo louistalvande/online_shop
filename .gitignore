@@ -8,7 +8,7 @@ solution/frontend/vendor-backoffice/node_modules/*
 solution/frontend/vendor-backoffice/dist/*
 solution/backend/target/*
 solution/frontend/node_modules/*
-.claude/*
+.claude/settings.json
 solution/frontend/e2e/node_modules/*
 solution/frontend/e2e/test-results/*
 solution/backend/uploads/products/*

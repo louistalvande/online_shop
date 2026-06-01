@@ -69,8 +69,13 @@ public class Account {
     @Column(name = "password_revoked", nullable = false)
     private boolean passwordRevoked = false;
 
-    /** Base32-encoded TOTP shared secret — {@code null} until MFA is configured (SEC-AUTH-007 / CPA-15). */
-    @Column(name = "totp_secret", length = 64)
+    /**
+     * Base32-encoded TOTP shared secret — {@code null} until MFA is configured (SEC-AUTH-007 / CPA-15).
+     * Stored encrypted in the database via AES-256-GCM (US-SEC-07 / FS-S08 / CPA-14..CPA-15).
+     * The column is sized to hold the Base64(IV + ciphertext) output, which is larger than the plaintext.
+     */
+    @Convert(converter = TotpSecretConverter.class)
+    @Column(name = "totp_secret", length = 255)
     private String totpSecret;
 
     /** Whether TOTP MFA has been confirmed and is active for this account (SEC-AUTH-007 / CPA-15). */
@@ -169,4 +174,47 @@ public class Account {
 
     /** @param totpEnabled whether TOTP MFA is active */
     public void setTotpEnabled(boolean totpEnabled) { this.totpEnabled = totpEnabled; }
+
+    /**
+     * Whether the buyer has opted in to commercial marketing emails (RGPD-CONS-001 / Art. 6 §1a).
+     * Always {@code false} by default; must never be pre-checked in any form.
+     */
+    @Column(name = "marketing_consent", nullable = false)
+    private boolean marketingConsent = false;
+
+    /**
+     * Timestamp of the last change to {@link #marketingConsent} (RGPD-CONS-002 / Art. 7).
+     * {@code null} until the buyer explicitly modifies the consent for the first time.
+     */
+    @Column(name = "marketing_consent_updated_at")
+    private OffsetDateTime marketingConsentUpdatedAt;
+
+    /** @return {@code true} if the buyer has opted in to marketing emails */
+    public boolean isMarketingConsent() { return marketingConsent; }
+
+    /** @param marketingConsent whether the buyer consents to marketing emails */
+    public void setMarketingConsent(boolean marketingConsent) { this.marketingConsent = marketingConsent; }
+
+    /** @return the timestamp of the last consent change, or {@code null} if never changed */
+    public OffsetDateTime getMarketingConsentUpdatedAt() { return marketingConsentUpdatedAt; }
+
+    /** @param marketingConsentUpdatedAt the timestamp to record */
+    public void setMarketingConsentUpdatedAt(OffsetDateTime marketingConsentUpdatedAt) {
+        this.marketingConsentUpdatedAt = marketingConsentUpdatedAt;
+    }
+
+    /**
+     * Timestamp of the last administrative password revocation (US-SEC-04 / SEC-PWD-005 / CPA-17).
+     * {@code null} if the password has never been revoked.
+     */
+    @Column(name = "password_revoked_at")
+    private OffsetDateTime passwordRevokedAt;
+
+    /** @return the timestamp of the last administrative password revocation, or {@code null} */
+    public OffsetDateTime getPasswordRevokedAt() { return passwordRevokedAt; }
+
+    /** @param passwordRevokedAt the revocation timestamp to record */
+    public void setPasswordRevokedAt(OffsetDateTime passwordRevokedAt) {
+        this.passwordRevokedAt = passwordRevokedAt;
+    }
 }

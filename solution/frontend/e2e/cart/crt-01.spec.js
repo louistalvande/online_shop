@@ -112,6 +112,7 @@ test.describe('US-CRT-01 — Cart management', () => {
   });
 
   test('error — unauthenticated request to cart returns 403', async ({ page }) => {
+    await page.context().clearCookies({ name: 'jwt' });
     const res = await page.request.get('/api/cart');
     expect([401, 403]).toContain(res.status());
   });

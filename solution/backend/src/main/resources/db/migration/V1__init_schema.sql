@@ -17,8 +17,14 @@ CREATE TABLE accounts (
     -- SEC-PWD-005 (CPA-17): flag for immediate revocation
     password_revoked     BOOLEAN      NOT NULL DEFAULT FALSE,
     -- SEC-AUTH-007/008 (CPA-15): TOTP MFA for VENDOR and ADMIN
-    totp_secret          VARCHAR(64),
-    totp_enabled         BOOLEAN      NOT NULL DEFAULT FALSE
+    -- Column stores AES-256-GCM encrypted value: Base64(IV[12] || ciphertext) ≈ 72 chars (US-SEC-07)
+    totp_secret          VARCHAR(255),
+    totp_enabled         BOOLEAN      NOT NULL DEFAULT FALSE,
+    -- RGPD-CONS-001/002/003/004 (Art. 6 §1a, Art. 7): opt-in marketing consent with audit timestamp
+    marketing_consent            BOOLEAN      NOT NULL DEFAULT FALSE,
+    marketing_consent_updated_at TIMESTAMPTZ,
+    -- SEC-PWD-005 (CPA-17): timestamp of the last administrative password revocation
+    password_revoked_at          TIMESTAMPTZ
 );
 
 -- Admin password expires in 2 years (SEC-PWD-004 / CPA-17)
@@ -137,16 +143,71 @@ INSERT INTO carrier_countries (carrier_id, country_code)
 SELECT id, 'FR' FROM carriers WHERE name = 'La Poste';
 
 
--- Security audit log (CS-15 / SEC-LOG-001 / CPA-13)
+-- Security audit log — monthly range-partitioned for 13-month retention (US-SEC-06 / CS-15 / SEC-LOG-001 / CPA-13)
+--
+-- PARTITION KEY: occurred_at must be included in the PRIMARY KEY (PostgreSQL requirement).
+-- The JPA @Id maps to `id` only; INSERT operations work correctly because Hibernate calls
+-- persist() (not merge/find-by-id) for new entities.
+--
+-- PRODUCTION HARDENING (run as superuser after first deploy):
+--   REVOKE UPDATE, DELETE ON audit_log FROM shop;   -- restrict app user to SELECT + INSERT only
+--   CREATE ROLE shop_maintenance;
+--   GRANT ALL ON audit_log TO shop_maintenance;      -- maintenance role for purge/archival
+--   ALTER TABLE audit_log OWNER TO shop_maintenance; -- transfer ownership for partition DDL
+
 CREATE TABLE audit_log (
-    id          BIGSERIAL    PRIMARY KEY,
+    id          BIGINT       GENERATED ALWAYS AS IDENTITY,
     event_type  VARCHAR(50)  NOT NULL,
     email       VARCHAR(255),
     ip_address  VARCHAR(45),
     details     TEXT,
-    occurred_at TIMESTAMPTZ  NOT NULL DEFAULT NOW()
-);
+    occurred_at TIMESTAMPTZ  NOT NULL DEFAULT NOW(),
+    PRIMARY KEY (id, occurred_at)
+) PARTITION BY RANGE (occurred_at);
 
+-- DEFAULT partition catches any data outside the named monthly partitions
+CREATE TABLE audit_log_default PARTITION OF audit_log DEFAULT;
+
+-- Monthly partitions 2025-01 → 2027-12 (covers 13-month retention window + 18 months ahead)
+-- The maintenance @Scheduled job creates partitions for 2028+ and drops those older than 13 months
+CREATE TABLE audit_log_2025_01 PARTITION OF audit_log FOR VALUES FROM ('2025-01-01') TO ('2025-02-01');
+CREATE TABLE audit_log_2025_02 PARTITION OF audit_log FOR VALUES FROM ('2025-02-01') TO ('2025-03-01');
+CREATE TABLE audit_log_2025_03 PARTITION OF audit_log FOR VALUES FROM ('2025-03-01') TO ('2025-04-01');
+CREATE TABLE audit_log_2025_04 PARTITION OF audit_log FOR VALUES FROM ('2025-04-01') TO ('2025-05-01');
+CREATE TABLE audit_log_2025_05 PARTITION OF audit_log FOR VALUES FROM ('2025-05-01') TO ('2025-06-01');
+CREATE TABLE audit_log_2025_06 PARTITION OF audit_log FOR VALUES FROM ('2025-06-01') TO ('2025-07-01');
+CREATE TABLE audit_log_2025_07 PARTITION OF audit_log FOR VALUES FROM ('2025-07-01') TO ('2025-08-01');
+CREATE TABLE audit_log_2025_08 PARTITION OF audit_log FOR VALUES FROM ('2025-08-01') TO ('2025-09-01');
+CREATE TABLE audit_log_2025_09 PARTITION OF audit_log FOR VALUES FROM ('2025-09-01') TO ('2025-10-01');
+CREATE TABLE audit_log_2025_10 PARTITION OF audit_log FOR VALUES FROM ('2025-10-01') TO ('2025-11-01');
+CREATE TABLE audit_log_2025_11 PARTITION OF audit_log FOR VALUES FROM ('2025-11-01') TO ('2025-12-01');
+CREATE TABLE audit_log_2025_12 PARTITION OF audit_log FOR VALUES FROM ('2025-12-01') TO ('2026-01-01');
+CREATE TABLE audit_log_2026_01 PARTITION OF audit_log FOR VALUES FROM ('2026-01-01') TO ('2026-02-01');
+CREATE TABLE audit_log_2026_02 PARTITION OF audit_log FOR VALUES FROM ('2026-02-01') TO ('2026-03-01');
+CREATE TABLE audit_log_2026_03 PARTITION OF audit_log FOR VALUES FROM ('2026-03-01') TO ('2026-04-01');
+CREATE TABLE audit_log_2026_04 PARTITION OF audit_log FOR VALUES FROM ('2026-04-01') TO ('2026-05-01');
+CREATE TABLE audit_log_2026_05 PARTITION OF audit_log FOR VALUES FROM ('2026-05-01') TO ('2026-06-01');
+CREATE TABLE audit_log_2026_06 PARTITION OF audit_log FOR VALUES FROM ('2026-06-01') TO ('2026-07-01');
+CREATE TABLE audit_log_2026_07 PARTITION OF audit_log FOR VALUES FROM ('2026-07-01') TO ('2026-08-01');
+CREATE TABLE audit_log_2026_08 PARTITION OF audit_log FOR VALUES FROM ('2026-08-01') TO ('2026-09-01');
+CREATE TABLE audit_log_2026_09 PARTITION OF audit_log FOR VALUES FROM ('2026-09-01') TO ('2026-10-01');
+CREATE TABLE audit_log_2026_10 PARTITION OF audit_log FOR VALUES FROM ('2026-10-01') TO ('2026-11-01');
+CREATE TABLE audit_log_2026_11 PARTITION OF audit_log FOR VALUES FROM ('2026-11-01') TO ('2026-12-01');
+CREATE TABLE audit_log_2026_12 PARTITION OF audit_log FOR VALUES FROM ('2026-12-01') TO ('2027-01-01');
+CREATE TABLE audit_log_2027_01 PARTITION OF audit_log FOR VALUES FROM ('2027-01-01') TO ('2027-02-01');
+CREATE TABLE audit_log_2027_02 PARTITION OF audit_log FOR VALUES FROM ('2027-02-01') TO ('2027-03-01');
+CREATE TABLE audit_log_2027_03 PARTITION OF audit_log FOR VALUES FROM ('2027-03-01') TO ('2027-04-01');
+CREATE TABLE audit_log_2027_04 PARTITION OF audit_log FOR VALUES FROM ('2027-04-01') TO ('2027-05-01');
+CREATE TABLE audit_log_2027_05 PARTITION OF audit_log FOR VALUES FROM ('2027-05-01') TO ('2027-06-01');
+CREATE TABLE audit_log_2027_06 PARTITION OF audit_log FOR VALUES FROM ('2027-06-01') TO ('2027-07-01');
+CREATE TABLE audit_log_2027_07 PARTITION OF audit_log FOR VALUES FROM ('2027-07-01') TO ('2027-08-01');
+CREATE TABLE audit_log_2027_08 PARTITION OF audit_log FOR VALUES FROM ('2027-08-01') TO ('2027-09-01');
+CREATE TABLE audit_log_2027_09 PARTITION OF audit_log FOR VALUES FROM ('2027-09-01') TO ('2027-10-01');
+CREATE TABLE audit_log_2027_10 PARTITION OF audit_log FOR VALUES FROM ('2027-10-01') TO ('2027-11-01');
+CREATE TABLE audit_log_2027_11 PARTITION OF audit_log FOR VALUES FROM ('2027-11-01') TO ('2027-12-01');
+CREATE TABLE audit_log_2027_12 PARTITION OF audit_log FOR VALUES FROM ('2027-12-01') TO ('2028-01-01');
+
+-- Indexes on parent propagate automatically to each partition (PostgreSQL 11+)
 CREATE INDEX idx_audit_log_email       ON audit_log (email);
 CREATE INDEX idx_audit_log_event_type  ON audit_log (event_type);
 CREATE INDEX idx_audit_log_occurred_at ON audit_log (occurred_at);

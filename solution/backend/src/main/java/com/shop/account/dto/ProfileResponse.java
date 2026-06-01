@@ -6,6 +6,7 @@ import com.shop.account.entity.AccountRole;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.UUID;
 
 /** Read-only representation of the authenticated user's own profile (US-PRF-01, US-PRF-02). */
@@ -19,6 +20,8 @@ public class ProfileResponse {
     @Schema(description = "Preferred notification language") private AccountLanguage language;
     @Schema(description = "Account role") private AccountRole role;
     @Schema(description = "Account creation timestamp") private LocalDateTime createdAt;
+    @Schema(description = "Whether the buyer has opted in to commercial marketing emails (RGPD-CONS-001)") private boolean marketingConsent;
+    @Schema(description = "Timestamp of the last marketing consent change — null if never changed (RGPD-CONS-002)") private OffsetDateTime marketingConsentUpdatedAt;
 
     /**
      * Creates a {@link ProfileResponse} from an {@link Account} entity.
@@ -29,14 +32,16 @@ public class ProfileResponse {
      */
     public static ProfileResponse from(Account account) {
         ProfileResponse r = new ProfileResponse();
-        r.id        = account.getId();
-        r.email     = account.getEmail();
-        r.firstName = account.getFirstName();
-        r.lastName  = account.getLastName();
-        r.phone     = account.getPhone();
-        r.language  = account.getLanguage();
-        r.role      = account.getRole();
-        r.createdAt = account.getCreatedAt();
+        r.id                         = account.getId();
+        r.email                      = account.getEmail();
+        r.firstName                  = account.getFirstName();
+        r.lastName                   = account.getLastName();
+        r.phone                      = account.getPhone();
+        r.language                   = account.getLanguage();
+        r.role                       = account.getRole();
+        r.createdAt                  = account.getCreatedAt();
+        r.marketingConsent           = account.isMarketingConsent();
+        r.marketingConsentUpdatedAt  = account.getMarketingConsentUpdatedAt();
         return r;
     }
 
@@ -82,5 +87,11 @@ public class ProfileResponse {
 
     /** @return the creation timestamp */
     public LocalDateTime getCreatedAt() { return createdAt; }
+
+    /** @return {@code true} if the buyer has opted in to marketing emails */
+    public boolean isMarketingConsent() { return marketingConsent; }
+
+    /** @return the timestamp of the last consent change, or {@code null} if never changed */
+    public OffsetDateTime getMarketingConsentUpdatedAt() { return marketingConsentUpdatedAt; }
 
 }

@@ -22,10 +22,18 @@ RUN npm ci
 COPY frontend/admin-console/ ./
 RUN npm run build
 
-# Final stage: Nginx serves all three apps
+# Final stage: Nginx serves all three apps over HTTPS (US-SEC-03 / FS-S06)
 FROM nginx:alpine
-COPY nginx/nginx.conf /etc/nginx/nginx.conf
-COPY --from=buyer-build /app/dist  /usr/share/nginx/html/buyer
+
+# gettext provides envsubst for NGINX_DOMAIN substitution at startup
+RUN apk add --no-cache gettext
+
+COPY nginx/nginx.conf /etc/nginx/nginx.conf.template
+COPY --from=buyer-build  /app/dist /usr/share/nginx/html/buyer
 COPY --from=vendor-build /app/dist /usr/share/nginx/html/vendor
-COPY --from=admin-build /app/dist  /usr/share/nginx/html/admin
-EXPOSE 80
+COPY --from=admin-build  /app/dist /usr/share/nginx/html/admin
+
+EXPOSE 80 443
+
+# Substitute ${NGINX_DOMAIN} at startup and launch Nginx
+CMD ["/bin/sh", "-c", "envsubst '${NGINX_DOMAIN}' < /etc/nginx/nginx.conf.template > /etc/nginx/nginx.conf && nginx -g 'daemon off;'"]

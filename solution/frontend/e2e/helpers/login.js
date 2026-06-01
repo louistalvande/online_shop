@@ -160,17 +160,28 @@ export async function getVendorToken(page, email, password) {
 }
 
 /**
- * Injects a vendor session into localStorage so tests can skip the UI login step.
+ * Injects a vendor session by setting the JWT as a cookie and storing the email in localStorage.
+ * Replaces the old localStorage-only approach (US-SEC-01).
  *
  * @param {object} page      Playwright Page
  * @param {string} email     vendor email
- * @param {string} token     vendor JWT
+ * @param {string} token     vendor JWT (stored as HttpOnly-equivalent cookie)
  */
 export async function injectVendorSession(page, email, token) {
+  const baseUrl = new URL(process.env.VENDOR_URL ?? 'http://vendor.localhost');
+  await page.context().addCookies([{
+    name: 'jwt',
+    value: token,
+    domain: baseUrl.hostname,
+    path: '/',
+    httpOnly: true,
+    secure: baseUrl.protocol === 'https:',
+    sameSite: 'Strict',
+  }]);
   await page.goto('/');
-  await page.evaluate(({ email, token }) => {
-    localStorage.setItem('vendor_session', JSON.stringify({ email, token }));
-  }, { email, token });
+  await page.evaluate((email) => {
+    localStorage.setItem('vendor_session', JSON.stringify({ email }));
+  }, email);
 }
 
 /**
@@ -189,17 +200,28 @@ export async function getBuyerToken(page, email, password) {
 }
 
 /**
- * Injects a buyer session into localStorage so tests can skip the UI login step.
+ * Injects a buyer session by setting the JWT as a cookie and storing the email in localStorage.
+ * Replaces the old localStorage-only approach (US-SEC-01).
  *
  * @param {object} page   Playwright Page
  * @param {string} email  buyer email
- * @param {string} token  buyer JWT
+ * @param {string} token  buyer JWT (stored as HttpOnly-equivalent cookie)
  */
 export async function injectBuyerSession(page, email, token) {
+  const baseUrl = new URL(process.env.BUYER_URL ?? 'http://buyer.localhost');
+  await page.context().addCookies([{
+    name: 'jwt',
+    value: token,
+    domain: baseUrl.hostname,
+    path: '/',
+    httpOnly: true,
+    secure: baseUrl.protocol === 'https:',
+    sameSite: 'Strict',
+  }]);
   await page.goto('/');
-  await page.evaluate(({ email, token }) => {
-    localStorage.setItem('buyer_session', JSON.stringify({ email, token }));
-  }, { email, token });
+  await page.evaluate((email) => {
+    localStorage.setItem('buyer_session', JSON.stringify({ email }));
+  }, email);
 }
 
 /**

@@ -2,6 +2,8 @@ package com.shop.account.controller;
 
 import com.shop.account.dto.AccountResponse;
 import com.shop.account.dto.CreateAccountRequest;
+import com.shop.account.dto.RevokePasswordsRequest;
+import com.shop.account.dto.RevokedAccountResponse;
 import com.shop.account.dto.UpdateAccountRequest;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -107,4 +109,26 @@ public interface AccountController {
     @ApiResponse(responseCode = "404", description = "Account not found")
     @DeleteMapping("/{id}")
     ResponseEntity<Void> deleteAccount(@PathVariable UUID id);
+
+    /**
+     * Marks accounts (by role, by explicit email list, or both) with {@code password_revoked = true},
+     * sends a notification email to each, and starts the 24-hour renewal clock (US-SEC-04 / FS-S11).
+     *
+     * @param request the revocation criteria
+     * @return HTTP 204 No Content
+     */
+    @Operation(summary = "Bulk-revoke passwords (US-SEC-04) — sends reset emails and starts 24 h suspension clock")
+    @ApiResponse(responseCode = "204", description = "Passwords revoked and notification emails sent")
+    @PostMapping("/revoke-passwords")
+    ResponseEntity<Void> revokePasswords(@RequestBody RevokePasswordsRequest request);
+
+    /**
+     * Returns all accounts whose password has been revoked and who have not yet renewed it (US-SEC-04).
+     *
+     * @return list of revoked accounts with their age
+     */
+    @Operation(summary = "List accounts with revoked password awaiting renewal (US-SEC-04)")
+    @ApiResponse(responseCode = "200", description = "List returned")
+    @GetMapping("/revoked")
+    ResponseEntity<List<RevokedAccountResponse>> listRevokedAccounts();
 }

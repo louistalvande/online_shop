@@ -8,7 +8,14 @@ import CarrierDeleteModal from './components/CarrierDeleteModal'
 import UserDetailModal from './components/UserDetailModal'
 import MaintenanceModeCard from './components/MaintenanceModeCard'
 import { logout } from './api/authApi'
-import { listAccounts, type AccountResponse } from './api/accountApi'
+import {
+  listAccounts, revokePasswords, listRevokedAccounts,
+  type AccountResponse, type RevokedAccountResponse, type AccountRole,
+} from './api/accountApi'
+import {
+  queryAuditLogs, exportAuditLogCsv,
+  type AuditLogPage, type AuditLogFilter, type AuditEventType,
+} from './api/auditLogApi'
 import { listCarriers, deactivateCarrier, activateCarrier, type CarrierResponse } from './api/carrierApi'
 
 interface Props {
@@ -29,6 +36,20 @@ export default function DashboardPage({ onUnauthorized }: Props) {
   const [editCarrier, setEditCarrier] = useState<CarrierResponse | null>(null)
   const [deleteCarrierTarget, setDeleteCarrierTarget] = useState<CarrierResponse | null>(null)
   const [snackbar, setSnackbar] = useState<string | null>(null)
+
+  // Audit log state (US-SEC-05)
+  const [auditPage, setAuditPage] = useState<AuditLogPage | null>(null)
+  const [auditFilter, setAuditFilter] = useState<AuditLogFilter>({ page: 0, size: 20 })
+  const [auditLoading, setAuditLoading] = useState(false)
+  const [auditExporting, setAuditExporting] = useState(false)
+
+  // Password revocation state (US-SEC-04)
+  const [revokedAccounts, setRevokedAccounts] = useState<RevokedAccountResponse[]>([])
+  const [showRevokeModal, setShowRevokeModal] = useState(false)
+  const [revokeRole, setRevokeRole] = useState<AccountRole | 'ADMIN' | ''>('')
+  const [revokeEmails, setRevokeEmails] = useState('')
+  const [revoking, setRevoking] = useState(false)
+  const [revokeError, setRevokeError] = useState<string | null>(null)
 
   function showSnackbar(message: string) {
     setSnackbar(message)
@@ -51,9 +72,45 @@ export default function DashboardPage({ onUnauthorized }: Props) {
     }
   }
 
+  async function fetchAuditLogs(filter: AuditLogFilter) {
+    setAuditLoading(true)
+    try { setAuditPage(await queryAuditLogs(filter)) } catch { /* keep */ } finally { setAuditLoading(false) }
+  }
+
+  async function fetchRevokedAccounts() {
+    try { setRevokedAccounts(await listRevokedAccounts()) } catch { /* keep current list */ }
+  }
+
+  async function handleRevoke() {
+    setRevokeError(null)
+    const emails = revokeEmails.split(/[\s,]+/).map(e => e.trim()).filter(Boolean)
+    if (!revokeRole && emails.length === 0) {
+      setRevokeError(t('revoke.error.noTarget'))
+      return
+    }
+    setRevoking(true)
+    try {
+      await revokePasswords({
+        role: revokeRole ? (revokeRole as AccountRole) : undefined,
+        emails: emails.length ? emails : undefined,
+      })
+      setShowRevokeModal(false)
+      setRevokeRole('')
+      setRevokeEmails('')
+      fetchRevokedAccounts()
+      showSnackbar(t('revoke.success'))
+    } catch {
+      setRevokeError(t('revoke.error.generic'))
+    } finally {
+      setRevoking(false)
+    }
+  }
+
   useEffect(() => {
     fetchAccounts()
     fetchCarriers()
+    fetchRevokedAccounts()
+    fetchAuditLogs(auditFilter)
   }, [])
 
   const activeAdminCount = accounts.filter(a => a.role === 'ADMIN' && a.status === 'ACTIVE').length
@@ -306,7 +363,217 @@ export default function DashboardPage({ onUnauthorized }: Props) {
             </tbody>
           </table>
         </Card>
+
+        {/* ── Password revocation (US-SEC-04) ─────────────────────────────── */}
+        <div style={{ marginTop: 48 }} id="security">
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
+            <h2 style={{ fontFamily: 'var(--font-serif)', fontSize: 22, fontWeight: 700 }}>
+              {t('revoke.section.title')}
+            </h2>
+            <Button size="sm" onClick={() => setShowRevokeModal(true)}>{t('revoke.action')}</Button>
+          </div>
+
+          {revokedAccounts.length === 0 ? (
+            <p style={{ color: 'var(--text-muted)', fontSize: 14 }}>{t('revoke.empty')}</p>
+          ) : (
+            <Card>
+              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 14 }}>
+                <thead>
+                  <tr style={{ borderBottom: '1px solid var(--border)' }}>
+                    {[t('users.name'), t('users.email'), t('users.role'), t('users.status'), t('revoke.col.revokedAt'), t('revoke.col.hours')].map((h, i) => (
+                      <th key={i} style={{ padding: '12px 16px', textAlign: 'left', fontWeight: 600, color: 'var(--text-muted)', fontSize: 12 }}>{h}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {revokedAccounts.map(a => (
+                    <tr key={a.id} style={{ borderBottom: '1px solid var(--border)' }}>
+                      <td style={{ padding: '14px 16px', fontWeight: 600 }}>{a.firstName} {a.lastName}</td>
+                      <td style={{ padding: '14px 16px', color: 'var(--text-muted)' }}>{a.email}</td>
+                      <td style={{ padding: '14px 16px' }}>{t(`users.role.${a.role}`)}</td>
+                      <td style={{ padding: '14px 16px' }}>
+                        <span style={{
+                          fontSize: 12, fontWeight: 600, padding: '3px 8px', borderRadius: 4,
+                          background: a.status === 'ACTIVE' ? '#dcfce7' : '#fef9c3',
+                          color: a.status === 'ACTIVE' ? '#16a34a' : '#d97706',
+                        }}>
+                          {t(`users.status.${a.status}`)}
+                        </span>
+                      </td>
+                      <td style={{ padding: '14px 16px', color: 'var(--text-muted)' }}>
+                        {a.revokedAt ? new Date(a.revokedAt).toLocaleString() : '—'}
+                      </td>
+                      <td style={{ padding: '14px 16px', fontWeight: a.hoursSinceRevocation >= 20 ? 700 : 400, color: a.hoursSinceRevocation >= 20 ? '#c62828' : 'inherit' }}>
+                        {a.hoursSinceRevocation}h
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </Card>
+          )}
+        </div>
       </div>
+
+        {/* ── Audit log (US-SEC-05) ─────────────────────────────────────────── */}
+        <div style={{ marginTop: 48 }} id="audit">
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
+            <h2 style={{ fontFamily: 'var(--font-serif)', fontSize: 22, fontWeight: 700 }}>
+              {t('audit.section.title')}
+            </h2>
+            <button
+              onClick={async () => { setAuditExporting(true); try { await exportAuditLogCsv(auditFilter) } catch { showSnackbar(t('snackbar.error')) } finally { setAuditExporting(false) } }}
+              disabled={auditExporting}
+              style={{ padding: '6px 14px', borderRadius: 4, border: '1px solid var(--accent)', background: '#fff', color: 'var(--accent)', cursor: 'pointer', fontWeight: 500, fontSize: 13 }}
+            >
+              {auditExporting ? t('audit.exporting') : t('audit.exportCsv')}
+            </button>
+          </div>
+
+          {/* Filters */}
+          <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', marginBottom: 16 }}>
+            <select
+              value={auditFilter.eventType ?? ''}
+              onChange={e => { const f = { ...auditFilter, eventType: (e.target.value as AuditEventType) || undefined, page: 0 }; setAuditFilter(f); fetchAuditLogs(f) }}
+              style={{ padding: '6px 10px', borderRadius: 4, border: '1px solid #ccc', fontSize: 13 }}
+            >
+              <option value="">{t('audit.filter.eventType.all')}</option>
+              {['LOGIN_SUCCESS','LOGIN_FAILURE','ACCOUNT_LOCKED','REGISTRATION','ACCOUNT_ACTIVATED',
+                'PASSWORD_CHANGED','ACCOUNT_SUSPENDED','ACCOUNT_REACTIVATED','ACCOUNT_DELETED',
+                'ACCOUNT_CREATED','RESEND_ACTIVATION','PASSWORD_RESET_REQUESTED','PASSWORD_RESET',
+                'MFA_ENABLED','MFA_LOGIN_SUCCESS','MFA_LOGIN_FAILURE','PASSWORD_REVOKED','MARKETING_CONSENT_EXPORT'
+              ].map(et => <option key={et} value={et}>{et}</option>)}
+            </select>
+            <input
+              placeholder={t('audit.filter.email')}
+              value={auditFilter.email ?? ''}
+              onChange={e => setAuditFilter(f => ({ ...f, email: e.target.value || undefined, page: 0 }))}
+              onKeyDown={e => e.key === 'Enter' && fetchAuditLogs(auditFilter)}
+              style={{ padding: '6px 10px', borderRadius: 4, border: '1px solid #ccc', fontSize: 13, minWidth: 200 }}
+            />
+            <input
+              placeholder={t('audit.filter.ip')}
+              value={auditFilter.ipAddress ?? ''}
+              onChange={e => setAuditFilter(f => ({ ...f, ipAddress: e.target.value || undefined, page: 0 }))}
+              onKeyDown={e => e.key === 'Enter' && fetchAuditLogs(auditFilter)}
+              style={{ padding: '6px 10px', borderRadius: 4, border: '1px solid #ccc', fontSize: 13, width: 140 }}
+            />
+            <input type="datetime-local"
+              value={auditFilter.from ? auditFilter.from.slice(0, 16) : ''}
+              onChange={e => setAuditFilter(f => ({ ...f, from: e.target.value ? e.target.value + ':00Z' : undefined, page: 0 }))}
+              style={{ padding: '6px 10px', borderRadius: 4, border: '1px solid #ccc', fontSize: 13 }}
+            />
+            <input type="datetime-local"
+              value={auditFilter.to ? auditFilter.to.slice(0, 16) : ''}
+              onChange={e => setAuditFilter(f => ({ ...f, to: e.target.value ? e.target.value + ':00Z' : undefined, page: 0 }))}
+              style={{ padding: '6px 10px', borderRadius: 4, border: '1px solid #ccc', fontSize: 13 }}
+            />
+            <button
+              onClick={() => fetchAuditLogs(auditFilter)}
+              style={{ padding: '6px 14px', borderRadius: 4, border: 'none', background: 'var(--accent)', color: '#fff', cursor: 'pointer', fontSize: 13 }}
+            >
+              {t('audit.filter.apply')}
+            </button>
+          </div>
+
+          {auditLoading ? (
+            <p style={{ color: 'var(--text-muted)', fontSize: 14 }}>{t('audit.loading')}</p>
+          ) : auditPage && auditPage.content.length > 0 ? (
+            <>
+              <Card>
+                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
+                  <thead>
+                    <tr style={{ borderBottom: '1px solid var(--border)' }}>
+                      {[t('audit.col.timestamp'), t('audit.col.eventType'), t('audit.col.email'), t('audit.col.ip'), t('audit.col.details')].map((h, i) => (
+                        <th key={i} style={{ padding: '10px 14px', textAlign: 'left', fontWeight: 600, color: 'var(--text-muted)', fontSize: 12 }}>{h}</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {auditPage.content.map(entry => (
+                      <tr key={entry.id} style={{ borderBottom: '1px solid var(--border)' }}>
+                        <td style={{ padding: '10px 14px', color: 'var(--text-muted)', whiteSpace: 'nowrap' }}>
+                          {new Date(entry.occurredAt).toISOString().replace('T', ' ').slice(0, 19)} UTC
+                        </td>
+                        <td style={{ padding: '10px 14px', fontWeight: 600, fontSize: 12 }}>{entry.eventType}</td>
+                        <td style={{ padding: '10px 14px', color: 'var(--text-muted)' }}>{entry.email ?? '—'}</td>
+                        <td style={{ padding: '10px 14px', color: 'var(--text-muted)', fontFamily: 'monospace' }}>{entry.ipAddress ?? '—'}</td>
+                        <td style={{ padding: '10px 14px', color: 'var(--text-muted)', fontSize: 12 }}>{entry.details ?? ''}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </Card>
+              {/* Pagination */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginTop: 12, fontSize: 13 }}>
+                <button
+                  disabled={(auditFilter.page ?? 0) === 0}
+                  onClick={() => { const f = { ...auditFilter, page: (auditFilter.page ?? 0) - 1 }; setAuditFilter(f); fetchAuditLogs(f) }}
+                  style={{ padding: '4px 12px', borderRadius: 4, border: '1px solid #ccc', cursor: 'pointer', background: '#fff' }}
+                >
+                  ← {t('audit.pagination.prev')}
+                </button>
+                <span style={{ color: 'var(--text-muted)' }}>
+                  {t('audit.pagination.info', { page: (auditFilter.page ?? 0) + 1, total: auditPage.totalPages, count: auditPage.totalElements })}
+                </span>
+                <button
+                  disabled={(auditFilter.page ?? 0) + 1 >= auditPage.totalPages}
+                  onClick={() => { const f = { ...auditFilter, page: (auditFilter.page ?? 0) + 1 }; setAuditFilter(f); fetchAuditLogs(f) }}
+                  style={{ padding: '4px 12px', borderRadius: 4, border: '1px solid #ccc', cursor: 'pointer', background: '#fff' }}
+                >
+                  {t('audit.pagination.next')} →
+                </button>
+              </div>
+            </>
+          ) : (
+            <p style={{ color: 'var(--text-muted)', fontSize: 14 }}>{t('audit.empty')}</p>
+          )}
+        </div>
+      </div>
+
+      {/* ── Revoke passwords modal ─────────────────────────────────────────── */}
+      {showRevokeModal && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.45)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}>
+          <div style={{ background: '#fff', borderRadius: 8, padding: '28px 32px', minWidth: 420, maxWidth: 520 }}>
+            <h2 style={{ margin: '0 0 16px', fontSize: 18, fontWeight: 700 }}>{t('revoke.modal.title')}</h2>
+            <p style={{ color: 'var(--text-muted)', fontSize: 14, margin: '0 0 20px' }}>{t('revoke.modal.description')}</p>
+
+            <label style={{ display: 'block', fontSize: 13, fontWeight: 600, marginBottom: 6 }}>{t('revoke.modal.roleLabel')}</label>
+            <select
+              value={revokeRole}
+              onChange={e => setRevokeRole(e.target.value as AccountRole | 'ADMIN' | '')}
+              style={{ width: '100%', padding: '8px 10px', borderRadius: 4, border: '1px solid #ccc', marginBottom: 16, fontSize: 14 }}
+            >
+              <option value="">{t('revoke.modal.roleNone')}</option>
+              <option value="BUYER">{t('users.role.BUYER')}</option>
+              <option value="VENDOR">{t('users.role.VENDOR')}</option>
+              <option value="ADMIN">{t('users.role.ADMIN')}</option>
+            </select>
+
+            <label style={{ display: 'block', fontSize: 13, fontWeight: 600, marginBottom: 6 }}>{t('revoke.modal.emailsLabel')}</label>
+            <textarea
+              value={revokeEmails}
+              onChange={e => setRevokeEmails(e.target.value)}
+              placeholder={t('revoke.modal.emailsPlaceholder')}
+              rows={3}
+              style={{ width: '100%', padding: '8px 10px', borderRadius: 4, border: '1px solid #ccc', fontSize: 14, resize: 'vertical', boxSizing: 'border-box' }}
+            />
+
+            {revokeError && (
+              <p style={{ color: '#c62828', fontSize: 13, margin: '8px 0 0' }}>{revokeError}</p>
+            )}
+
+            <div style={{ display: 'flex', gap: 12, justifyContent: 'flex-end', marginTop: 24 }}>
+              <Button variant="ghost" size="sm" onClick={() => { setShowRevokeModal(false); setRevokeError(null) }}>
+                {t('revoke.modal.cancel')}
+              </Button>
+              <Button size="sm" onClick={handleRevoke} disabled={revoking}>
+                {revoking ? t('revoke.modal.revoking') : t('revoke.modal.confirm')}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   )
 }

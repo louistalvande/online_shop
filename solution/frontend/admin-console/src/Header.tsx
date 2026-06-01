@@ -16,9 +16,11 @@ export default function Header({ session, onLogout, onSettings, children }: Prop
     <AppShell
       appName={t('app.name')}
       navLinks={[
-        { label: t('nav.overview'), href: '#' },
-        { label: t('nav.users'), href: '#users' },
-        { label: t('nav.carriers'), href: '#carriers' },
+        { label: t('nav.overview'),  href: '#' },
+        { label: t('nav.users'),     href: '#users' },
+        { label: t('nav.carriers'),  href: '#carriers' },
+        { label: t('nav.security'),  href: '#security' },
+        { label: t('nav.auditLog'),  href: '#audit' },
       ]}
       actions={
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>

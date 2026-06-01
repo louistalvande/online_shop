@@ -2,7 +2,6 @@ const SESSION_KEY = 'buyer_session'
 
 export interface BuyerSession {
   email: string
-  token: string
 }
 
 export interface RegisterPayload {
@@ -10,6 +9,7 @@ export interface RegisterPayload {
   lastName: string
   email: string
   password: string
+  marketingConsent: boolean
 }
 
 export interface LoginResult {
@@ -20,19 +20,10 @@ export interface LoginResult {
   requiresPasswordSetup?: boolean
 }
 
-function decodeJwtRole(token: string | null | undefined): string | null {
-  if (!token) return null
-  try {
-    const payload = token.split('.')[1]
-    return JSON.parse(atob(payload.replace(/-/g, '+').replace(/_/g, '/'))).role ?? null
-  } catch {
-    return null
-  }
-}
-
 export async function register(payload: RegisterPayload): Promise<void> {
   const res = await fetch('/api/auth/register', {
     method: 'POST',
+    credentials: 'include',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload),
   })
@@ -48,6 +39,7 @@ export async function activate(token: string, password?: string, confirmPassword
 
   const res = await fetch('/api/auth/activate', {
     method: 'POST',
+    credentials: 'include',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(body),
   })
@@ -66,6 +58,7 @@ export async function activate(token: string, password?: string, confirmPassword
 export async function login(email: string, password: string): Promise<LoginResult> {
   const res = await fetch('/api/auth/login', {
     method: 'POST',
+    credentials: 'include',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ email, password }),
   })
@@ -77,11 +70,11 @@ export async function login(email: string, password: string): Promise<LoginResul
   if (data.requiresMfa) {
     return { requiresMfa: true, mfaToken: data.mfaToken, email: data.email }
   }
-  if (decodeJwtRole(data.token) !== 'BUYER') {
+  if (data.role !== 'BUYER') {
     throw Object.assign(new Error('Access restricted to buyers'), { code: 'UNAUTHORIZED' })
   }
 
-  const session: BuyerSession = { email: data.email, token: data.token }
+  const session: BuyerSession = { email: data.email }
   localStorage.setItem(SESSION_KEY, JSON.stringify(session))
   return { session, requiresPasswordSetup: data.requiresPasswordSetup }
 }
@@ -89,6 +82,7 @@ export async function login(email: string, password: string): Promise<LoginResul
 export async function verifyMfa(mfaToken: string, code: string): Promise<BuyerSession> {
   const res = await fetch('/api/auth/mfa/verify', {
     method: 'POST',
+    credentials: 'include',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ mfaToken, code }),
   })
@@ -96,12 +90,13 @@ export async function verifyMfa(mfaToken: string, code: string): Promise<BuyerSe
   if (!res.ok) throw new Error('MFA verification failed')
 
   const data = await res.json()
-  const session: BuyerSession = { email: data.email, token: data.token }
+  const session: BuyerSession = { email: data.email }
   localStorage.setItem(SESSION_KEY, JSON.stringify(session))
   return session
 }
 
-export function logout(): void {
+export async function logout(): Promise<void> {
+  await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' }).catch(() => {})
   localStorage.removeItem(SESSION_KEY)
 }
 
@@ -110,19 +105,15 @@ export function getSession(): BuyerSession | null {
   return raw ? JSON.parse(raw) : null
 }
 
-/** fetch wrapper that injects the Bearer token and redirects to /login on 401. */
+/** fetch wrapper that uses the HttpOnly cookie; redirects to /login on 401. */
 export async function authedFetch(url: string, init: RequestInit = {}): Promise<Response> {
-  const session = getSession()
-  if (!session) {
+  if (!getSession()) {
     window.location.href = '/login'
     throw new Error('NOT_AUTHENTICATED')
   }
-  const res = await fetch(url, {
-    ...init,
-    headers: { Authorization: `Bearer ${session.token}`, ...init.headers },
-  })
+  const res = await fetch(url, { ...init, credentials: 'include' })
   if (res.status === 401) {
-    logout()
+    localStorage.removeItem(SESSION_KEY)
     window.location.href = '/login'
     throw new Error('SESSION_EXPIRED')
   }
@@ -132,6 +123,7 @@ export async function authedFetch(url: string, init: RequestInit = {}): Promise<
 export async function resendActivation(email: string): Promise<void> {
   const res = await fetch('/api/auth/resend-activation', {
     method: 'POST',
+    credentials: 'include',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ email }),
   })
@@ -141,6 +133,7 @@ export async function resendActivation(email: string): Promise<void> {
 export async function forgotPassword(email: string): Promise<void> {
   const res = await fetch('/api/auth/forgot-password', {
     method: 'POST',
+    credentials: 'include',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ email }),
   })
@@ -150,6 +143,7 @@ export async function forgotPassword(email: string): Promise<void> {
 export async function resetPassword(token: string, newPassword: string): Promise<void> {
   const res = await fetch('/api/auth/reset-password', {
     method: 'POST',
+    credentials: 'include',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ token, newPassword }),
   })

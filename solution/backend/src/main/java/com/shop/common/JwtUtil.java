@@ -83,6 +83,25 @@ public class JwtUtil {
         }
     }
 
+    /**
+     * Returns the expiration timestamp of the given token.
+     *
+     * @param token the JWT string
+     * @return the expiration {@link Date}
+     */
+    public Date extractExpiration(String token) {
+        return parseClaims(token).getExpiration();
+    }
+
+    /**
+     * Returns the configured token validity duration in milliseconds.
+     *
+     * @return token TTL in ms
+     */
+    public long getExpirationMs() {
+        return expirationMs;
+    }
+
     private Claims parseClaims(String token) {
         return Jwts.parser()
                 .verifyWith(key)

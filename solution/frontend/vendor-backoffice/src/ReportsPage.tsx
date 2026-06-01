@@ -1,6 +1,6 @@
 import { useState, type ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
-import { getSalesReport, exportSalesCsv, type SalesReportResponse } from './api/reportApi'
+import { getSalesReport, exportSalesCsv, exportMailingListCsv, type SalesReportResponse } from './api/reportApi'
 
 function currentPeriod(): string {
   const now = new Date()
@@ -27,6 +27,8 @@ export default function ReportsPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [exporting, setExporting] = useState(false)
+  const [exportingMailing, setExportingMailing] = useState(false)
+  const [mailingError, setMailingError] = useState<string | null>(null)
 
   async function handleApply() {
     setLoading(true)
@@ -52,9 +54,49 @@ export default function ReportsPage() {
     }
   }
 
+  async function handleExportMailing() {
+    setExportingMailing(true)
+    setMailingError(null)
+    try {
+      await exportMailingListCsv()
+    } catch {
+      setMailingError(t('reports.mailing.error'))
+    } finally {
+      setExportingMailing(false)
+    }
+  }
+
   return (
     <div style={{ padding: '2rem', maxWidth: 900, margin: '0 auto' }}>
       <h1 style={{ marginBottom: '1.5rem' }}>{t('reports.title')}</h1>
+
+      {/* Mailing list export — US-PRF-05 */}
+      <section style={{
+        border: '1px solid #e0e0e0', borderRadius: 8, padding: '1.25rem 1.5rem',
+        marginBottom: '2rem', background: '#fff',
+      }}>
+        <h2 style={{ margin: '0 0 0.5rem', fontSize: '1rem', fontWeight: 600 }}>
+          {t('reports.mailing.title')}
+        </h2>
+        <p style={{ margin: '0 0 1rem', color: '#555', fontSize: '0.9rem' }}>
+          {t('reports.mailing.description')}
+        </p>
+        {mailingError && (
+          <div style={{ color: '#c62828', background: '#ffebee', padding: '0.6rem 0.9rem', borderRadius: 4, marginBottom: '0.75rem', fontSize: '0.9rem' }}>
+            {mailingError}
+          </div>
+        )}
+        <button
+          onClick={handleExportMailing}
+          disabled={exportingMailing}
+          style={{
+            padding: '0.45rem 1.2rem', borderRadius: 4, border: 'none',
+            background: '#1a73e8', color: '#fff', cursor: 'pointer', fontWeight: 500,
+          }}
+        >
+          {exportingMailing ? t('reports.mailing.exporting') : t('reports.mailing.export')}
+        </button>
+      </section>
 
       {/* Filters */}
       <div style={{ display: 'flex', gap: '1rem', alignItems: 'flex-end', marginBottom: '1.5rem', flexWrap: 'wrap' }}>

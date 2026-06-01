@@ -45,3 +45,16 @@ export async function exportSalesCsv(period: string, category?: string): Promise
   a.click()
   URL.revokeObjectURL(url)
 }
+
+/** Downloads the marketing mailing list CSV (active buyers with marketing consent). */
+export async function exportMailingListCsv(): Promise<void> {
+  const res = await authedFetch('/api/vendor/marketing-consent/export')
+  if (!res.ok) throw new Error(`${res.status}`)
+  const blob = await res.blob()
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = 'mailing-list.csv'
+  a.click()
+  URL.revokeObjectURL(url)
+}

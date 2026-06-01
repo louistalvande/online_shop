@@ -1,7 +1,7 @@
 package com.shop.common;
 
-import com.shop.common.MaintenanceFilter;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -14,27 +14,46 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.header.writers.ReferrerPolicyHeaderWriter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+
+import java.util.List;
 
 /**
  * Security configuration — stateless JWT authentication with ANSSI-compliant hardening.
- * BCrypt cost 12 (CPA-10), security headers (CPA-09), role-based access control (CS-08).
+ * BCrypt cost 12 (CPA-10), security headers (CPA-09), CORS restriction (US-SEC-02 / FS-S05 / CPA-12),
+ * role-based access control (CS-08).
  */
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
 
+    private final List<String> allowedOrigins;
+
+    /**
+     * @param allowedOrigins comma-separated list of frontend origins permitted to make credentialed
+     *                       cross-origin requests (US-SEC-02 / CPA-12)
+     */
+    public SecurityConfig(
+            @Value("${app.allowed-origins:http://localhost:5173,http://localhost:5174,http://localhost:5175,http://buyer.localhost,http://vendor.localhost,http://admin.localhost}") String allowedOrigins) {
+        this.allowedOrigins = List.of(allowedOrigins.split(","));
+    }
+
     /**
      * Configures the security filter chain.
      *
      * <ul>
-     *   <li>CSRF disabled — stateless JWT API; CSRF covered by {@code SameSite=Strict} at Nginx level (CPA-12).</li>
+     *   <li>CORS — only the configured frontend origins are allowed; OPTIONS preflight returns 403 for unknown origins (US-SEC-02 / CPA-12).</li>
+     *   <li>CSRF disabled — mitigated by {@code SameSite=Strict} cookies (US-SEC-01 / CPA-12).</li>
      *   <li>Security response headers applied on every response (CPA-09 / SEC-TLS-001..003).</li>
      *   <li>Session stateless — no server-side session state.</li>
      *   <li>Role-based access: ADMIN, VENDOR, or public.</li>
      * </ul>
      *
-     * @param http      the HttpSecurity to configure
-     * @param jwtFilter the filter that validates Bearer tokens
+     * @param http               the HttpSecurity to configure
+     * @param jwtFilter          the filter that validates JWT tokens
+     * @param maintenanceFilter  the filter that blocks non-admin traffic during maintenance
      * @return the configured SecurityFilterChain
      * @throws Exception if configuration fails
      */
@@ -42,6 +61,7 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http, JwtFilter jwtFilter,
                                            MaintenanceFilter maintenanceFilter) throws Exception {
         http
+            .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             .csrf(AbstractHttpConfigurer::disable)
             .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .headers(headers -> headers
@@ -76,6 +96,7 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.POST, "/api/auth/forgot-password").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/auth/reset-password").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/auth/mfa/verify").permitAll()
+                .requestMatchers(HttpMethod.POST, "/api/auth/logout").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/auth/setup-password").authenticated()
                 .requestMatchers(HttpMethod.POST, "/api/auth/mfa/setup/init").authenticated()
                 .requestMatchers(HttpMethod.POST, "/api/auth/mfa/setup/confirm").authenticated()
@@ -102,8 +123,8 @@ public class SecurityConfig {
                 .anyRequest().authenticated()
             )
             .exceptionHandling(eh -> eh
-                .authenticationEntryPoint((req, res, ex) ->
-                        res.sendError(HttpServletResponse.SC_UNAUTHORIZED)))
+                .authenticationEntryPoint((req, res, ex) -> res.setStatus(HttpServletResponse.SC_UNAUTHORIZED))
+                .accessDeniedHandler((req, res, ex) -> res.setStatus(HttpServletResponse.SC_FORBIDDEN)))
             // JWT runs first so the security context is populated before MaintenanceFilter checks the role
             .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
             .addFilterAfter(maintenanceFilter, JwtFilter.class);
@@ -111,8 +132,27 @@ public class SecurityConfig {
     }
 
     /**
+     * CORS policy: credentials allowed only from the configured frontend origins (US-SEC-02 / FS-S05 / CPA-12).
+     * Preflight (OPTIONS) requests from any other origin receive a {@code 403 Forbidden} response.
+     *
+     * @return the CORS configuration source
+     */
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration config = new CorsConfiguration();
+        config.setAllowedOrigins(allowedOrigins);
+        config.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
+        config.setAllowedHeaders(List.of("Content-Type", "Authorization"));
+        config.setAllowCredentials(true);
+        config.setMaxAge(3600L);
+
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/api/**", config);
+        return source;
+    }
+
+    /**
      * BCrypt password encoder with cost factor 12, compliant with CPA-10 / SEC-AUTH-002.
-     * Upgraded from cost 10 to strengthen resistance against brute-force cracking.
      *
      * @return the BCrypt encoder
      */

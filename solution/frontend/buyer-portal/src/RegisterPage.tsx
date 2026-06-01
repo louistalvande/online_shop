@@ -10,6 +10,7 @@ export default function RegisterPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
+  const [marketingConsent, setMarketingConsent] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)
   const [loading, setLoading] = useState(false)
@@ -23,7 +24,7 @@ export default function RegisterPage() {
     setError(null)
     setLoading(true)
     try {
-      await register({ firstName, lastName, email, password })
+      await register({ firstName, lastName, email, password, marketingConsent })
       setSuccess(true)
     } catch (err: unknown) {
       const code = err instanceof Error ? (err as { code?: string }).code : undefined
@@ -63,6 +64,14 @@ export default function RegisterPage() {
               <label className="form-field">
                 {t('register.confirmPassword')}
                 <input className="form-input" type="password" required value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} />
+              </label>
+              <label className="form-field register-consent-label">
+                <input
+                  type="checkbox"
+                  checked={marketingConsent}
+                  onChange={e => setMarketingConsent(e.target.checked)}
+                />
+                {' '}{t('register.marketingConsent')}
               </label>
               <p className="register-activation-note">{t('register.activationNote')}</p>
               <Button type="submit" className="btn-full" disabled={loading}>

@@ -3,6 +3,8 @@ package com.shop.account.service;
 import com.shop.account.dto.AccountResponse;
 import com.shop.account.dto.CreateAccountRequest;
 import com.shop.account.dto.ProfileResponse;
+import com.shop.account.dto.RevokePasswordsRequest;
+import com.shop.account.dto.RevokedAccountResponse;
 import com.shop.account.dto.UpdateAccountRequest;
 import com.shop.account.dto.UpdateProfileRequest;
 import com.shop.account.exception.AccountNotFoundException;
@@ -105,5 +107,22 @@ public interface AccountService {
      * @throws WrongCurrentPasswordException if the current password does not match
      */
     ProfileResponse updateProfile(String email, UpdateProfileRequest request);
+
+    /**
+     * Marks accounts as password-revoked, stamps the revocation timestamp, and sends
+     * a notification email to each affected account (US-SEC-04 / FS-S11 / CPA-17).
+     * Targets are selected by role, explicit email list, or both.
+     *
+     * @param request the revocation criteria
+     */
+    void revokePasswords(RevokePasswordsRequest request);
+
+    /**
+     * Returns accounts whose password has been revoked and who have not yet renewed it
+     * (status not DELETED), sorted by revocation timestamp descending (US-SEC-04).
+     *
+     * @return revoked accounts awaiting password renewal
+     */
+    List<RevokedAccountResponse> listRevokedPending();
 
 }

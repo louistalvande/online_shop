@@ -29,15 +29,15 @@ test.describe('US-CAT-01 — Create product', () => {
     await page.getByLabel('Prix HT (€)').fill('29.90');
     await page.getByLabel('Quantité disponible').fill('10');
     await page.getByLabel('Seuil d\'alerte stock').fill('3');
-    await page.getByLabel('Catégorie').fill('Aquarelle');
+    await page.getByLabel('Type de produit').fill('Aquarelle');
 
     // Submit
     await page.getByRole('button', { name: 'Enregistrer' }).click();
 
     // Modal closed, product appears in table
     await expect(page.getByRole('heading', { name: 'Ajouter un produit' })).not.toBeVisible();
-    await expect(page.getByText('Aquarelle forêt')).toBeVisible();
-    await expect(page.getByText('Publié')).toBeVisible();
+    await expect(page.getByText('Aquarelle forêt').first()).toBeVisible();
+    await expect(page.getByText('Publié').first()).toBeVisible();
   });
 
   test('error — name blank shows validation error', async ({ page }) => {

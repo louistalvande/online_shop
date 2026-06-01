@@ -29,6 +29,8 @@ public class UpdateProfileRequest {
 
     @Schema(description = "New password confirmation — must match newPassword") private String confirmPassword;
 
+    @Schema(description = "Marketing email opt-in — omit to leave unchanged (RGPD-CONS-001)") private Boolean marketingConsent;
+
     /** @return the given name, or {@code null} if unchanged */
     public String getFirstName() { return firstName; }
 
@@ -70,4 +72,10 @@ public class UpdateProfileRequest {
 
     /** @param confirmPassword the new password confirmation */
     public void setConfirmPassword(String confirmPassword) { this.confirmPassword = confirmPassword; }
+
+    /** @return the marketing consent opt-in value, or {@code null} if left unchanged */
+    public Boolean getMarketingConsent() { return marketingConsent; }
+
+    /** @param marketingConsent the marketing consent value to set */
+    public void setMarketingConsent(Boolean marketingConsent) { this.marketingConsent = marketingConsent; }
 }

@@ -76,7 +76,13 @@ public class VendorBannerUploadServiceImpl implements VendorBannerUploadService 
                     throw new UnsupportedBannerImageTypeException(contentType);
                 }
             } else {
-                BufferedImage img = ImageIO.read(destination.toFile());
+                BufferedImage img;
+                try {
+                    img = ImageIO.read(destination.toFile());
+                } catch (IOException e) {
+                    Files.deleteIfExists(destination);
+                    throw new UnsupportedBannerImageTypeException(contentType);
+                }
                 if (img == null) {
                     Files.deleteIfExists(destination);
                     throw new UnsupportedBannerImageTypeException(contentType);

@@ -8,14 +8,16 @@ import {
 test.describe('US-CAT-03 — Archive product', () => {
 
   test('nominal — archive removes product from default list, visible when toggle enabled', async ({ page }) => {
-    const email = `cat03-${Date.now()}@shop-test.example`;
+    const ts = Date.now();
+    const email = `cat03-${ts}@shop-test.example`;
     const password = 'sHp-E2e!Vnd-X9pZ';
+    const productName = `Pastel à archiver ${ts}`;
 
     await createActiveVendorViaApi(page, email, password);
     const token = await getVendorToken(page, email, password);
 
     await createProductViaApi(page, token, {
-      name: 'Pastel à archiver',
+      name: productName,
       priceExclTax: 19.00,
       quantity: 3,
       stockAlertThreshold: 0,
@@ -26,31 +28,34 @@ test.describe('US-CAT-03 — Archive product', () => {
     await page.reload();
     await page.getByRole('link', { name: 'Catalogue' }).click();
 
-    await expect(page.getByText('Pastel à archiver')).toBeVisible();
+    await expect(page.getByText(productName).first()).toBeVisible();
 
     // Click archive, confirm dialog
     page.on('dialog', dialog => dialog.accept());
-    const row = page.getByText('Pastel à archiver').locator('..').locator('..');
+    const row = page.getByText(productName).first().locator('..').locator('..');
     await row.getByRole('button', { name: 'Archiver' }).click();
 
     // Product disappears from default (published-only) view
-    await expect(page.getByText('Pastel à archiver')).not.toBeVisible();
+    await expect(page.getByText(productName)).not.toBeVisible();
 
     // Enable "show archived" toggle
     await page.getByLabel('Afficher les produits archivés').check();
-    await expect(page.getByText('Pastel à archiver')).toBeVisible();
-    await expect(page.getByText('Archivé', { exact: true })).toBeVisible();
+    const archivedProductRow = page.getByText(productName).first().locator('..').locator('..');
+    await expect(archivedProductRow).toBeVisible();
+    await expect(archivedProductRow.getByText('Archivé', { exact: true })).toBeVisible();
   });
 
   test('archived product has no Archive button', async ({ page }) => {
-    const email = `cat03b-${Date.now()}@shop-test.example`;
+    const ts2 = Date.now();
+    const email = `cat03b-${ts2}@shop-test.example`;
     const password = 'sHp-E2e!Vnd-X9pZ';
+    const productName2 = `Produit à archiver ${ts2}`;
 
     await createActiveVendorViaApi(page, email, password);
     const token = await getVendorToken(page, email, password);
 
     await createProductViaApi(page, token, {
-      name: 'Produit à archiver',
+      name: productName2,
       priceExclTax: 12.00,
       quantity: 1,
       stockAlertThreshold: 0,
@@ -62,13 +67,13 @@ test.describe('US-CAT-03 — Archive product', () => {
     await page.getByRole('link', { name: 'Catalogue' }).click();
 
     page.on('dialog', dialog => dialog.accept());
-    const row = page.getByText('Produit à archiver').locator('..').locator('..');
-    await row.getByRole('button', { name: 'Archiver' }).click();
+    const row2 = page.getByText(productName2).first().locator('..').locator('..');
+    await row2.getByRole('button', { name: 'Archiver' }).click();
 
     await page.getByLabel('Afficher les produits archivés').check();
 
     // Archived row has no Archive button
-    const archivedRow = page.getByText('Produit à archiver').locator('..').locator('..');
+    const archivedRow = page.getByText(productName2).first().locator('..').locator('..');
     await expect(archivedRow.getByRole('button', { name: 'Archiver' })).not.toBeVisible();
   });
 

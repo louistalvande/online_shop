@@ -67,7 +67,7 @@ test.describe('US-ORD-01 — Delivery address validation', () => {
 
   test('accepts valid Eurozone country code', async ({ request }) => {
     // Add a product to cart first
-    const products = await (await request.get(`${API_URL}/api/products`)).json();
+    const products = await (await request.get(`${API_URL}/api/buyer/products`)).json();
     const product = products.content?.[0] ?? products[0];
     if (!product) test.skip();
 

@@ -14,25 +14,39 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
 import java.util.List;
 
-/** Validates the JWT Bearer token on every request and populates the security context. */
+/**
+ * Validates the JWT on every request and populates the security context.
+ *
+ * <p>Token resolution order (US-SEC-01 / FS-S03):
+ * <ol>
+ *   <li>HttpOnly cookie named {@code jwt} — used by browser clients.</li>
+ *   <li>{@code Authorization: Bearer} header — accepted for API clients and E2E test runners.</li>
+ * </ol>
+ *
+ * <p>On every valid cookie-based request the token is rotated: a fresh 30-minute cookie is issued
+ * and the previous token is immediately blacklisted in Redis (sliding-window session).
+ */
 @Component
 public class JwtFilter extends OncePerRequestFilter {
 
     private final JwtUtil jwtUtil;
+    private final CookieUtil cookieUtil;
+    private final TokenBlacklistService blacklistService;
 
     /**
-     * Constructs the filter with the JWT utility.
-     *
-     * @param jwtUtil utility for token parsing and validation
+     * @param jwtUtil          JWT generation and validation
+     * @param cookieUtil       cookie read/write helpers
+     * @param blacklistService Redis-backed token revocation
      */
-    public JwtFilter(JwtUtil jwtUtil) {
-        this.jwtUtil = jwtUtil;
+    public JwtFilter(JwtUtil jwtUtil, CookieUtil cookieUtil,
+                     TokenBlacklistService blacklistService) {
+        this.jwtUtil          = jwtUtil;
+        this.cookieUtil       = cookieUtil;
+        this.blacklistService = blacklistService;
     }
 
     /**
-     * Extracts and validates the Bearer token from the Authorization header.
-     * On success, sets a {@link UsernamePasswordAuthenticationToken} in the security context
-     * so downstream filters and controllers see an authenticated principal.
+     * Resolves, validates, and rotates the JWT; populates the Spring Security context.
      *
      * @param request     the incoming HTTP request
      * @param response    the HTTP response
@@ -44,20 +58,48 @@ public class JwtFilter extends OncePerRequestFilter {
             @NonNull HttpServletResponse response,
             @NonNull FilterChain filterChain) throws ServletException, IOException {
 
+        // Bearer takes explicit precedence: API clients that set Authorization header should not
+        // trigger cookie rotation (which would blacklist the token they just received from login).
+        String bearerToken = null;
         String header = request.getHeader("Authorization");
         if (header != null && header.startsWith("Bearer ")) {
-            String token = header.substring(7);
-            if (jwtUtil.isValid(token)) {
-                String email = jwtUtil.extractEmail(token);
-                String role = jwtUtil.extractRole(token);
-                var auth = new UsernamePasswordAuthenticationToken(
-                        email,
-                        null,
-                        List.of(new SimpleGrantedAuthority("ROLE_" + role))
-                );
-                SecurityContextHolder.getContext().setAuthentication(auth);
+            bearerToken = header.substring(7);
+        }
+
+        String cookieToken = cookieUtil.extractFromCookie(request);
+
+        String token;
+        boolean fromCookie;
+        if (bearerToken != null) {
+            token = bearerToken;
+            fromCookie = false;
+        } else {
+            token = cookieToken;
+            fromCookie = token != null;
+        }
+
+        if (token != null && jwtUtil.isValid(token) && !blacklistService.isBlacklisted(token)) {
+            String email = jwtUtil.extractEmail(token);
+            String role  = jwtUtil.extractRole(token);
+
+            var auth = new UsernamePasswordAuthenticationToken(
+                    email, null,
+                    List.of(new SimpleGrantedAuthority("ROLE_" + role)));
+            SecurityContextHolder.getContext().setAuthentication(auth);
+
+            // Sliding window: rotate the cookie only when less than half the token lifetime remains.
+            // Rotating on every request causes concurrent browser requests to race and blacklist each other.
+            if (fromCookie) {
+                long remainingMs = jwtUtil.extractExpiration(token).getTime() - System.currentTimeMillis();
+                long halfLifeMs  = jwtUtil.getExpirationMs() / 2;
+                if (remainingMs < halfLifeMs) {
+                    blacklistService.blacklist(token, remainingMs);
+                    String newToken = jwtUtil.generateToken(email, role);
+                    cookieUtil.setJwtCookie(response, newToken);
+                }
             }
         }
+
         filterChain.doFilter(request, response);
     }
 }
