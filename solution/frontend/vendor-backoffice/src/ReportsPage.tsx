@@ -2,9 +2,13 @@ import { useState, type ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
 import { getSalesReport, exportSalesCsv, exportMailingListCsv, type SalesReportResponse } from './api/reportApi'
 
-function currentPeriod(): string {
+function today(): string {
+  return new Date().toISOString().slice(0, 10)
+}
+
+function firstDayOfMonth(): string {
   const now = new Date()
-  return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`
+  return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-01`
 }
 
 function formatCurrency(value: number): string {
@@ -21,7 +25,8 @@ function formatPercent(value: number): string {
 
 export default function ReportsPage() {
   const { t } = useTranslation()
-  const [period, setPeriod] = useState(currentPeriod())
+  const [startDate, setStartDate] = useState(firstDayOfMonth())
+  const [endDate, setEndDate] = useState(today())
   const [category, setCategory] = useState('')
   const [report, setReport] = useState<SalesReportResponse | null>(null)
   const [loading, setLoading] = useState(false)
@@ -34,7 +39,7 @@ export default function ReportsPage() {
     setLoading(true)
     setError(null)
     try {
-      const data = await getSalesReport(period, category || undefined)
+      const data = await getSalesReport(startDate, endDate, category || undefined)
       setReport(data)
     } catch {
       setError(t('reports.error.load'))
@@ -46,7 +51,7 @@ export default function ReportsPage() {
   async function handleExport() {
     setExporting(true)
     try {
-      await exportSalesCsv(period, category || undefined)
+      await exportSalesCsv(startDate, endDate, category || undefined)
     } catch {
       setError(t('reports.error.export'))
     } finally {
@@ -102,12 +107,23 @@ export default function ReportsPage() {
       <div style={{ display: 'flex', gap: '1rem', alignItems: 'flex-end', marginBottom: '1.5rem', flexWrap: 'wrap' }}>
         <div>
           <label style={{ display: 'block', fontSize: '0.85rem', marginBottom: 4 }}>
-            {t('reports.period')}
+            {t('reports.startDate')}
           </label>
           <input
-            type="month"
-            value={period}
-            onChange={e => setPeriod(e.target.value)}
+            type="date"
+            value={startDate}
+            onChange={e => setStartDate(e.target.value)}
+            style={{ padding: '0.4rem 0.6rem', borderRadius: 4, border: '1px solid #ccc' }}
+          />
+        </div>
+        <div>
+          <label style={{ display: 'block', fontSize: '0.85rem', marginBottom: 4 }}>
+            {t('reports.endDate')}
+          </label>
+          <input
+            type="date"
+            value={endDate}
+            onChange={e => setEndDate(e.target.value)}
             style={{ padding: '0.4rem 0.6rem', borderRadius: 4, border: '1px solid #ccc' }}
           />
         </div>

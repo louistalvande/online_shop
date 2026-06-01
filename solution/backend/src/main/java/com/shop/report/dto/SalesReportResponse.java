@@ -6,8 +6,11 @@ import java.util.List;
 /** Full vendor sales report for a given period (US-RPT-01). */
 public record SalesReportResponse(
 
-        @Schema(description = "The reporting period in YYYY-MM format.")
-        String period,
+        @Schema(description = "Start of the reporting period in YYYY-MM-DD format.")
+        String startDate,
+
+        @Schema(description = "End of the reporting period in YYYY-MM-DD format (inclusive).")
+        String endDate,
 
         @Schema(description = "Optional product category filter applied to this report; null means all categories.")
         String category,

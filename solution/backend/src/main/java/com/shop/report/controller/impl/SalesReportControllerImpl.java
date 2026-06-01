@@ -27,22 +27,22 @@ public class SalesReportControllerImpl implements SalesReportController {
     /** {@inheritDoc} */
     @Override
     public ResponseEntity<SalesReportResponse> getSalesReport(
-            Principal principal, String period, String category) {
+            Principal principal, String startDate, String endDate, String category) {
         SalesReportResponse report = salesReportService.getSalesReport(
-                principal.getName(), period, category);
+                principal.getName(), startDate, endDate, category);
         return ResponseEntity.ok(report);
     }
 
     /** {@inheritDoc} */
     @Override
     public ResponseEntity<String> exportSalesCsv(
-            Principal principal, String period, String category) {
-        String csv = salesReportService.exportSalesCsv(principal.getName(), period, category);
+            Principal principal, String startDate, String endDate, String category) {
+        String csv = salesReportService.exportSalesCsv(principal.getName(), startDate, endDate, category);
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.parseMediaType("text/csv; charset=UTF-8"));
         headers.setContentDisposition(
                 ContentDisposition.attachment()
-                        .filename("sales-report-" + period + ".csv")
+                        .filename("sales-report-" + startDate + "-" + endDate + ".csv")
                         .build());
         return ResponseEntity.ok().headers(headers).body(csv);
     }

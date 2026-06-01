@@ -1,14 +1,11 @@
-@startsalt
+@startuml ihm-bov-detail-commande
 ' Composant PA : front-vendeur (Back-office Vendeur)
 ' Fonctions allouées : Service Commande — FS-V04 (traitement commande), FS-V08 (annulation)
-title Back-office Vendeur — Détail d'une commande
+' Données acheteur visibles : prénom, nom, email — vendeur = gestionnaire du site (data controller)
+salt
 
 {+
   == Commande CMD-2025-0042 — En attente
-  --
-  == Acheteur
-  Marie Dupont — marie.dupont@email.com
-  12 rue des Lilas, 75011 Paris, France
   --
   == Paiement
   Mode : Carte bancaire | Statut : Autorisé
@@ -23,9 +20,12 @@ title Back-office Vendeur — Détail d'une commande
   Livraison : 5,90 €  |  **Total TTC : 373,10 €**
   --
   == Livraison
+  Acheteur : **Marie Dupont** — marie.dupont@email.com
+  Destinataire : **Jean Martin**
+  12 rue des Lilas, 75011 Paris, France
   Mode : La Poste — Colissimo
   --
   [Marquer en préparation]   [Déclarer l'expédition]
   [Traiter une annulation]
 }
-@endsalt
+@enduml

@@ -104,7 +104,7 @@ export default function OrderDetailPage({ orderId }: Props) {
             )}
 
             {/* Post-shipment cancellation request — US-CAN-06 */}
-            {order.status === 'SHIPPED' && (
+            {(order.status === 'SHIPPED' || order.status === 'IN_PREPARATION') && (
               <section className="order-detail-cancel">
                 <h2>{t('orders.psc.title')}</h2>
                 <p>{t('orders.psc.description')}</p>
@@ -171,7 +171,7 @@ export default function OrderDetailPage({ orderId }: Props) {
             )}
 
             {/* Cancel section — US-CAN-01 */}
-            {(order.status === 'AWAITING_PROCESSING' || order.status === 'IN_PREPARATION') && (
+            {order.status === 'AWAITING_PROCESSING' && (
               <section className="order-detail-cancel">
                 <h2>{t('orders.cancel.title')}</h2>
                 <p>{t('orders.cancel.description')}</p>
@@ -221,6 +221,10 @@ export default function OrderDetailPage({ orderId }: Props) {
                 {order.buyerIban && <p>{t('orders.cancel.ibanUsed')}: <code>{order.buyerIban}</code></p>}
               </section>
             )}
+
+            <section className="order-detail-support">
+              <p>{t('orders.support.message')}</p>
+            </section>
 
             <section>
               <h2>{t('orders.detail.lines')}</h2>

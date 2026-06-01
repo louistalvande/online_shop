@@ -9,8 +9,8 @@ import com.shop.report.service.SalesReportService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.YearMonth;
 import java.time.format.DateTimeParseException;
 import java.util.List;
 
@@ -30,28 +30,28 @@ public class SalesReportServiceImpl implements SalesReportService {
 
     /** {@inheritDoc} */
     @Override
-    public SalesReportResponse getSalesReport(String vendorEmail, String period, String category) {
-        YearMonth ym = parsePeriod(period);
-        LocalDateTime from = ym.atDay(1).atStartOfDay();
-        LocalDateTime to = ym.plusMonths(1).atDay(1).atStartOfDay();
+    public SalesReportResponse getSalesReport(String vendorEmail, String startDate, String endDate, String category) {
+        LocalDateTime from = parseDate(startDate).atStartOfDay();
+        LocalDateTime to = parseDate(endDate).plusDays(1).atStartOfDay();
 
         SalesMetrics metrics = salesReportRepository.computeMetrics(from, to, category);
         List<TopProduct> top = salesReportRepository.findTopProducts(from, to, category, 10);
 
-        return new SalesReportResponse(period, category, metrics, top);
+        return new SalesReportResponse(startDate, endDate, category, metrics, top);
     }
 
     /** {@inheritDoc} */
     @Override
-    public String exportSalesCsv(String vendorEmail, String period, String category) {
-        SalesReportResponse report = getSalesReport(vendorEmail, period, category);
+    public String exportSalesCsv(String vendorEmail, String startDate, String endDate, String category) {
+        SalesReportResponse report = getSalesReport(vendorEmail, startDate, endDate, category);
         return buildCsv(report);
     }
 
     private String buildCsv(SalesReportResponse report) {
         StringBuilder sb = new StringBuilder();
         sb.append("Sales Report\n");
-        sb.append("Period,").append(report.period()).append("\n");
+        sb.append("Start Date,").append(report.startDate()).append("\n");
+        sb.append("End Date,").append(report.endDate()).append("\n");
         if (report.category() != null) {
             sb.append("Category,").append(escapeCsv(report.category())).append("\n");
         }
@@ -83,11 +83,11 @@ public class SalesReportServiceImpl implements SalesReportService {
         return value;
     }
 
-    private YearMonth parsePeriod(String period) {
+    private LocalDate parseDate(String date) {
         try {
-            return YearMonth.parse(period);
+            return LocalDate.parse(date);
         } catch (DateTimeParseException e) {
-            throw new InvalidPeriodException(period);
+            throw new InvalidPeriodException(date);
         }
     }
 }

@@ -21,7 +21,8 @@ test.describe('US-RPT-01 — Vendor sales report', () => {
   let carrierId;
   let productId;
   let addressId;
-  const period = new Date().toISOString().slice(0, 7); // current YYYY-MM
+  const startDate = new Date().toISOString().slice(0, 7) + '-01'; // first day of current month
+  const endDate = new Date().toISOString().slice(0, 10);          // today
 
   test.beforeAll(async ({ request }) => {
     const p = { request };
@@ -48,7 +49,7 @@ test.describe('US-RPT-01 — Vendor sales report', () => {
     buyerToken = await getBuyerToken(p, BUYER_EMAIL, BUYER_PASSWORD);
 
     const address = await createAddressViaApi(p, buyerToken, {
-      label: 'Home', addressLine: '1 rue Test', city: 'Paris',
+      label: 'Home', recipientName: 'Test Recipient', addressLine: '1 rue Test', city: 'Paris',
       postalCode: '75001', countryCode: 'FR', makeDefault: true,
     });
     addressId = address.id;
@@ -71,12 +72,13 @@ test.describe('US-RPT-01 — Vendor sales report', () => {
   test('nominal — vendor fetches sales report for current period', async ({ request }) => {
     const res = await request.get(`${API_URL}/api/vendor/reports/sales`, {
       headers: { Authorization: `Bearer ${vendorToken}` },
-      params: { period },
+      params: { startDate, endDate },
     });
 
     expect(res.status()).toBe(200);
     const body = await res.json();
-    expect(body.period).toBe(period);
+    expect(body.startDate).toBe(startDate);
+    expect(body.endDate).toBe(endDate);
     expect(body.metrics).toBeDefined();
     expect(body.metrics.orderCount).toBeGreaterThan(0);
     expect(Number(body.metrics.revenue)).toBeGreaterThan(0);
@@ -90,7 +92,7 @@ test.describe('US-RPT-01 — Vendor sales report', () => {
   test('with category filter — returns filtered data for matching category', async ({ request }) => {
     const res = await request.get(`${API_URL}/api/vendor/reports/sales`, {
       headers: { Authorization: `Bearer ${vendorToken}` },
-      params: { period, category: 'PAINTING' },
+      params: { startDate, endDate, category: 'PAINTING' },
     });
 
     expect(res.status()).toBe(200);
@@ -102,7 +104,7 @@ test.describe('US-RPT-01 — Vendor sales report', () => {
   test('with category filter — unmatched category returns zero metrics', async ({ request }) => {
     const res = await request.get(`${API_URL}/api/vendor/reports/sales`, {
       headers: { Authorization: `Bearer ${vendorToken}` },
-      params: { period, category: 'SCULPTURE' },
+      params: { startDate, endDate, category: 'SCULPTURE' },
     });
 
     expect(res.status()).toBe(200);
@@ -115,7 +117,7 @@ test.describe('US-RPT-01 — Vendor sales report', () => {
   test('no orders in period — returns zero metrics and empty products', async ({ request }) => {
     const res = await request.get(`${API_URL}/api/vendor/reports/sales`, {
       headers: { Authorization: `Bearer ${vendorToken}` },
-      params: { period: '2000-01' },
+      params: { startDate: '2000-01-01', endDate: '2000-01-31' },
     });
 
     expect(res.status()).toBe(200);
@@ -128,14 +130,14 @@ test.describe('US-RPT-01 — Vendor sales report', () => {
   test('CSV export — returns text/csv file with expected content', async ({ request }) => {
     const res = await request.get(`${API_URL}/api/vendor/reports/sales/export`, {
       headers: { Authorization: `Bearer ${vendorToken}` },
-      params: { period },
+      params: { startDate, endDate },
     });
 
     expect(res.status()).toBe(200);
     const contentType = res.headers()['content-type'];
     expect(contentType).toContain('text/csv');
     const contentDisposition = res.headers()['content-disposition'];
-    expect(contentDisposition).toContain('sales-report-' + period + '.csv');
+    expect(contentDisposition).toContain(`sales-report-${startDate}-${endDate}.csv`);
     const body = await res.text();
     expect(body).toContain('Sales Report');
     expect(body).toContain('Revenue');
@@ -146,7 +148,7 @@ test.describe('US-RPT-01 — Vendor sales report', () => {
   test('invalid period format — returns 400 INVALID_PERIOD', async ({ request }) => {
     const res = await request.get(`${API_URL}/api/vendor/reports/sales`, {
       headers: { Authorization: `Bearer ${vendorToken}` },
-      params: { period: 'january-2025' },
+      params: { startDate: 'january-2025', endDate: '2025-01-31' },
     });
 
     expect(res.status()).toBe(400);
@@ -156,7 +158,7 @@ test.describe('US-RPT-01 — Vendor sales report', () => {
 
   test('unauthenticated request — returns 401', async ({ request }) => {
     const res = await request.get(`${API_URL}/api/vendor/reports/sales`, {
-      params: { period },
+      params: { startDate, endDate },
     });
     expect(res.status()).toBe(401);
   });

@@ -21,8 +21,6 @@ export interface ProductPage {
 export interface CatalogFilters {
   category?: string
   theme?: string
-  maxPrice?: number
-  inStockOnly?: boolean
   search?: string
   page?: number
   size?: number
@@ -33,8 +31,6 @@ export async function fetchProducts(filters: CatalogFilters = {}): Promise<Produ
   const params = new URLSearchParams()
   if (filters.category) params.set('category', filters.category)
   if (filters.theme) params.set('theme', filters.theme)
-  if (filters.maxPrice != null) params.set('maxPrice', String(filters.maxPrice))
-  if (filters.inStockOnly) params.set('inStockOnly', 'true')
   if (filters.search) params.set('search', filters.search)
   params.set('page', String(filters.page ?? 0))
   params.set('size', String(filters.size ?? 20))

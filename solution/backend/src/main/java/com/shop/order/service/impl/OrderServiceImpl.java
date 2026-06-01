@@ -223,7 +223,6 @@ public class OrderServiceImpl implements com.shop.order.service.OrderService {
                 .orElseThrow(() -> new OrderNotFoundException(orderId));
 
         if (order.getStatus() != OrderStatus.AWAITING_PROCESSING
-                && order.getStatus() != OrderStatus.IN_PREPARATION
                 && order.getStatus() != OrderStatus.PAYMENT_PENDING_WIRE) {
             throw new InvalidOrderStateException(orderId, order.getStatus());
         }
@@ -260,7 +259,8 @@ public class OrderServiceImpl implements com.shop.order.service.OrderService {
         Order order = orderRepository.findByIdAndBuyerId(orderId, buyerId)
                 .orElseThrow(() -> new OrderNotFoundException(orderId));
 
-        if (order.getStatus() != OrderStatus.SHIPPED) {
+        if (order.getStatus() != OrderStatus.SHIPPED
+                && order.getStatus() != OrderStatus.IN_PREPARATION) {
             throw new InvalidOrderStateException(orderId, order.getStatus());
         }
 

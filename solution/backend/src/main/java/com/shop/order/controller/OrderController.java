@@ -95,7 +95,7 @@ public interface OrderController {
 
     /**
      * Cancels an order placed by the authenticated buyer (US-CAN-01).
-     * Valid when status is AWAITING_PROCESSING or IN_PREPARATION.
+     * Valid when status is AWAITING_PROCESSING only (not once in preparation).
      * Wire orders require a buyerIban for refund.
      *
      * @param orderId   the order UUID

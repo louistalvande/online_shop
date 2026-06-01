@@ -46,7 +46,7 @@ test.describe('US-EXP-02 — Buyer tracks shipment from order detail', () => {
     buyerToken = await getBuyerToken(p, BUYER_EMAIL, BUYER_PASSWORD);
 
     const address = await createAddressViaApi(p, buyerToken, {
-      label: 'Home', addressLine: '1 rue de la Paix', city: 'Paris',
+      label: 'Home', recipientName: 'Test Recipient', addressLine: '1 rue de la Paix', city: 'Paris',
       postalCode: '75001', countryCode: 'FR', makeDefault: true,
     });
     addressId = address.id;

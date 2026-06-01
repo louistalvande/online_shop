@@ -21,9 +21,10 @@ public interface SalesReportController {
      * Returns aggregated sales metrics and top products for the authenticated vendor.
      *
      * @param principal the authenticated vendor principal
-     * @param period    reporting period in YYYY-MM format (required)
+     * @param startDate start of the reporting period in YYYY-MM-DD format (required)
+     * @param endDate   end of the reporting period in YYYY-MM-DD format (required)
      * @param category  optional product category filter
-     * @return 200 with the sales report, 400 if period format is invalid
+     * @return 200 with the sales report, 400 if date format is invalid
      */
     @Operation(summary = "Get sales report for a period")
     @ApiResponses({
@@ -34,26 +35,29 @@ public interface SalesReportController {
     @GetMapping("/sales")
     ResponseEntity<SalesReportResponse> getSalesReport(
             Principal principal,
-            @RequestParam String period,
+            @RequestParam String startDate,
+            @RequestParam String endDate,
             @RequestParam(required = false) String category);
 
     /**
      * Exports the sales report as a downloadable CSV file.
      *
      * @param principal the authenticated vendor principal
-     * @param period    reporting period in YYYY-MM format (required)
+     * @param startDate start of the reporting period in YYYY-MM-DD format (required)
+     * @param endDate   end of the reporting period in YYYY-MM-DD format (required)
      * @param category  optional product category filter
-     * @return 200 with CSV content and attachment headers, 400 if period format is invalid
+     * @return 200 with CSV content and attachment headers, 400 if date format is invalid
      */
     @Operation(summary = "Export sales report as a CSV file")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "CSV file returned"),
-            @ApiResponse(responseCode = "400", description = "Invalid period format"),
+            @ApiResponse(responseCode = "400", description = "Invalid date format"),
             @ApiResponse(responseCode = "401", description = "Authentication required")
     })
     @GetMapping("/sales/export")
     ResponseEntity<String> exportSalesCsv(
             Principal principal,
-            @RequestParam String period,
+            @RequestParam String startDate,
+            @RequestParam String endDate,
             @RequestParam(required = false) String category);
 }

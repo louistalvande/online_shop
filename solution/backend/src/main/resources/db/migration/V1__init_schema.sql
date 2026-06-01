@@ -285,8 +285,9 @@ CREATE INDEX idx_cart_item_cart_id ON cart_item (cart_id);
 CREATE TABLE delivery_address (
     id           UUID         PRIMARY KEY DEFAULT gen_random_uuid(),
     account_id   UUID         NOT NULL REFERENCES accounts(id),
-    label        VARCHAR(100) NOT NULL,
-    address_line VARCHAR(255) NOT NULL,
+    label          VARCHAR(100) NOT NULL,
+    recipient_name VARCHAR(100) NOT NULL,
+    address_line   VARCHAR(255) NOT NULL,
     city         VARCHAR(100) NOT NULL,
     postal_code  VARCHAR(20)  NOT NULL,
     country_code VARCHAR(2)   NOT NULL REFERENCES countries(code),

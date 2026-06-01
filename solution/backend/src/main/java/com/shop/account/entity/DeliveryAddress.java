@@ -23,6 +23,10 @@ public class DeliveryAddress {
     @Column(nullable = false, length = 100)
     private String label;
 
+    /** Name of the person who will receive the parcel — may differ from the buyer's account name. */
+    @Column(name = "recipient_name", nullable = false, length = 100)
+    private String recipientName;
+
     /** Street address line. */
     @Column(name = "address_line", nullable = false, length = 255)
     private String addressLine;
@@ -85,6 +89,12 @@ public class DeliveryAddress {
 
     /** @param label the address label */
     public void setLabel(String label) { this.label = label; }
+
+    /** @return the recipient name for the parcel */
+    public String getRecipientName() { return recipientName; }
+
+    /** @param recipientName the recipient name for the parcel */
+    public void setRecipientName(String recipientName) { this.recipientName = recipientName; }
 
     /** @return the street address line */
     public String getAddressLine() { return addressLine; }

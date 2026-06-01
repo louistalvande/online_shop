@@ -668,6 +668,7 @@ package "Entités métier (SA)" #F0F8FF {
     + id : UUID
     + compte : CompteUtilisateur
     + libellé : String
+    + nomDestinataire : String
     + rue : String
     + ville : String
     + codePostal : String
@@ -679,6 +680,8 @@ package "Entités métier (SA)" #F0F8FF {
     FS-B11 / US-PRF-03
     `compte` est une référence directe à CompteUtilisateur
     (clé étrangère account_id en base).
+    `nomDestinataire` peut différer du nom du compte acheteur
+    (ex. livraison à un tiers ou cadeau).
     Suppression logique (supprimé = true) préservant
     l'intégrité référentielle des commandes passées.
     Une seule adresse par compte peut avoir estParDefaut = true.

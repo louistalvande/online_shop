@@ -599,7 +599,7 @@ NOTE: Le diagramme de séquence détaillant les échanges entre acteurs et syst�
 
 | UC_B_ADDR
 | Gérer son carnet d'adresses de livraison
-| Ajouter, modifier et supprimer des adresses de livraison ; définir une adresse par défaut présélectionnée au passage de commande
+| Ajouter, modifier et supprimer des adresses de livraison ; chaque adresse porte un nom de destinataire (pouvant différer du nom du compte acheteur, ex. livraison à un tiers) ; définir une adresse par défaut présélectionnée au passage de commande
 
 | UC_B1
 | Parcourir le catalogue

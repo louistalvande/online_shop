@@ -124,6 +124,8 @@ export default function OrderDetailPage({ orderId }: Props) {
 
             <section style={{ marginBottom: '1.5rem' }}>
               <h2>{t('orders.detail.delivery')}</h2>
+              <p><strong>{order.buyerFirstName} {order.buyerLastName}</strong> — {order.buyerEmail}</p>
+              <p><strong>{order.deliveryRecipientName}</strong></p>
               <p>{order.deliveryAddressLine}, {order.deliveryPostalCode} {order.deliveryCity} ({order.deliveryCountryCode})</p>
               <p><strong>{t('orders.detail.carrier')}:</strong> {order.carrierName}</p>
               {order.trackingNumber && (

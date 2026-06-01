@@ -94,6 +94,6 @@ public interface DeliveryAddressController {
         @ApiResponse(responseCode = "200", description = "Default updated"),
         @ApiResponse(responseCode = "404", description = "Address not found")
     })
-    @PatchMapping("/{addressId}/set-default")
+    @PatchMapping("/{addressId}/default")
     ResponseEntity<DeliveryAddressResponse> setDefault(Principal principal, @PathVariable UUID addressId);
 }

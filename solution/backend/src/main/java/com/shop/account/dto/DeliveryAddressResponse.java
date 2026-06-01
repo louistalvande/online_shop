@@ -10,6 +10,7 @@ public class DeliveryAddressResponse {
 
     @Schema(description = "Address UUID") private UUID id;
     @Schema(description = "Short label") private String label;
+    @Schema(description = "Name of the parcel recipient") private String recipientName;
     @Schema(description = "Street address line") private String addressLine;
     @Schema(description = "City") private String city;
     @Schema(description = "Postal code") private String postalCode;
@@ -28,6 +29,7 @@ public class DeliveryAddressResponse {
         DeliveryAddressResponse r = new DeliveryAddressResponse();
         r.id = address.getId();
         r.label = address.getLabel();
+        r.recipientName = address.getRecipientName();
         r.addressLine = address.getAddressLine();
         r.city = address.getCity();
         r.postalCode = address.getPostalCode();
@@ -40,6 +42,8 @@ public class DeliveryAddressResponse {
     public UUID getId() { return id; }
     /** @return the label */
     public String getLabel() { return label; }
+    /** @return the recipient name */
+    public String getRecipientName() { return recipientName; }
     /** @return the street address line */
     public String getAddressLine() { return addressLine; }
     /** @return the city */

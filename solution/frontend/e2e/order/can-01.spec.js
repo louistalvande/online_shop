@@ -47,7 +47,7 @@ test.describe('US-CAN-01 — Buyer cancels order before shipment', () => {
     buyerToken = await getBuyerToken(p, BUYER_EMAIL, BUYER_PASSWORD);
 
     const address = await createAddressViaApi(p, buyerToken, {
-      label: 'Home', addressLine: '1 rue Test', city: 'Paris',
+      label: 'Home', recipientName: 'Test Recipient', addressLine: '1 rue Test', city: 'Paris',
       postalCode: '75001', countryCode: 'FR', makeDefault: true,
     });
     addressId = address.id;
@@ -137,6 +137,21 @@ test.describe('US-CAN-01 — Buyer cancels order before shipment', () => {
     const res = await request.post(`${API_URL}/api/orders/${orderId}/cancel`, {
       headers: { Authorization: `Bearer ${buyerToken}`, 'Content-Type': 'application/json' },
       data: { buyerIban: 'FR7630006000011234567890189' },
+    });
+    expect(res.status()).toBe(409);
+  });
+
+  test('IN_PREPARATION order — cancel returns 409', async ({ request }) => {
+    const orderId = await addToCartAndCheckoutCard(request);
+
+    // Vendor marks order as in preparation
+    await request.post(`${API_URL}/api/vendor/orders/${orderId}/prepare`, {
+      headers: { Authorization: `Bearer ${vendorToken}` },
+    });
+
+    const res = await request.post(`${API_URL}/api/orders/${orderId}/cancel`, {
+      headers: { Authorization: `Bearer ${buyerToken}`, 'Content-Type': 'application/json' },
+      data: {},
     });
     expect(res.status()).toBe(409);
   });

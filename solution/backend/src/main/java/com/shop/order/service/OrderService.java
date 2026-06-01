@@ -56,7 +56,7 @@ public interface OrderService {
 
     /**
      * Records the buyer's post-shipment cancellation request (US-CAN-06).
-     * Valid only when the order status is {@code SHIPPED}.
+     * Valid when the order status is {@code IN_PREPARATION} or {@code SHIPPED}.
      * Transitions the order to {@code CANCELLATION_REQUESTED_AFTER_SHIPMENT},
      * stores the cancellation reason, and notifies the vendor by email.
      * For wire transfer orders, {@code buyerIban} must be provided for the eventual refund.
@@ -74,7 +74,7 @@ public interface OrderService {
 
     /**
      * Cancels an order placed by the buyer (US-CAN-01).
-     * Valid from {@code AWAITING_PROCESSING} or {@code IN_PREPARATION}.
+     * Valid from {@code AWAITING_PROCESSING} only (not once in preparation).
      * <ul>
      *   <li>CARD payment: triggers Stripe refund, transitions to {@code CANCELLED}.</li>
      *   <li>WIRE payment: requires {@code buyerIban}; transitions to {@code WIRE_REFUND_IN_PROGRESS}.</li>

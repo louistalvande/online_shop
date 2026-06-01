@@ -165,7 +165,7 @@ a|
 | En tant qu'acheteur authentifié, je peux gérer un carnet d'adresses de livraison : ajouter une nouvelle adresse, modifier ou supprimer une adresse existante, et en définir une comme adresse par défaut.
 a|
 - [x] Section « Mes adresses » accessible depuis l'espace compte
-- [x] Formulaire d'ajout : libellé (ex. « Domicile »), rue, ville, code postal, pays (zone euro uniquement — CS-04)
+- [x] Formulaire d'ajout : libellé (ex. « Domicile »), nom du destinataire (peut différer du nom du compte), rue, ville, code postal, pays (zone euro uniquement — CS-04)
 - [x] L'adresse par défaut est présélectionnée automatiquement au passage de commande
 - [x] Une seule adresse peut être marquée par défaut à la fois
 - [x] Suppression logique (soft-delete) bloquée si c'est la seule adresse active du carnet

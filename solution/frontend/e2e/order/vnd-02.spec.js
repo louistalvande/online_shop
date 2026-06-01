@@ -47,7 +47,7 @@ test.describe('US-VND-02 — Vendor wire transfer confirmation and rejection', (
     const buyerToken = await getBuyerToken(p, buyerEmail, BUYER_PASSWORD);
 
     const address = await createAddressViaApi(p, buyerToken, {
-      label: 'Home', addressLine: '1 rue Test', city: 'Lyon',
+      label: 'Home', recipientName: 'Test Recipient', addressLine: '1 rue Test', city: 'Lyon',
       postalCode: '69001', countryCode: 'FR', makeDefault: true,
     });
 
@@ -108,7 +108,7 @@ test.describe('US-VND-02 — Vendor wire transfer confirmation and rejection', (
     const buyerToken = await getBuyerToken(p, buyerEmail, BUYER_PASSWORD);
 
     const address = await createAddressViaApi(p, buyerToken, {
-      label: 'Home', addressLine: '2 rue Test', city: 'Paris',
+      label: 'Home', recipientName: 'Test Recipient', addressLine: '2 rue Test', city: 'Paris',
       postalCode: '75001', countryCode: 'FR', makeDefault: true,
     });
 

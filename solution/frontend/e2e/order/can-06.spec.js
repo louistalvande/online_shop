@@ -47,7 +47,7 @@ test.describe('US-CAN-06 — Buyer post-shipment cancellation request', () => {
     buyerToken = await getBuyerToken(p, BUYER_EMAIL, BUYER_PASSWORD);
 
     const address = await createAddressViaApi(p, buyerToken, {
-      label: 'Home', addressLine: '1 rue Test', city: 'Paris',
+      label: 'Home', recipientName: 'Test Recipient', addressLine: '1 rue Test', city: 'Paris',
       postalCode: '75001', countryCode: 'FR', makeDefault: true,
     });
     addressId = address.id;
@@ -138,7 +138,33 @@ test.describe('US-CAN-06 — Buyer post-shipment cancellation request', () => {
     expect(body.error).toBe('MISSING_BUYER_IBAN');
   });
 
-  test('request on non-shipped order returns 409', async ({ request }) => {
+  test('IN_PREPARATION order — request transitions to CANCELLATION_REQUESTED_AFTER_SHIPMENT', async ({ request }) => {
+    await request.post(`${API_URL}/api/cart/items`, {
+      headers: { Authorization: `Bearer ${buyerToken}`, 'Content-Type': 'application/json' },
+      data: { productId, quantity: 1 },
+    });
+    const initRes = await request.post(`${API_URL}/api/orders`, {
+      headers: { Authorization: `Bearer ${buyerToken}`, 'Content-Type': 'application/json' },
+      data: { addressId, carrierId, paymentMethod: 'CARD' },
+    });
+    const init = await initRes.json();
+    await request.post(`${API_URL}/api/orders/${init.orderId}/confirm-payment`, {
+      headers: { Authorization: `Bearer ${buyerToken}` },
+    });
+    await request.post(`${API_URL}/api/vendor/orders/${init.orderId}/prepare`, {
+      headers: { Authorization: `Bearer ${vendorToken}` },
+    });
+
+    const res = await request.post(`${API_URL}/api/orders/${init.orderId}/request-post-shipment-cancellation`, {
+      headers: { Authorization: `Bearer ${buyerToken}`, 'Content-Type': 'application/json' },
+      data: { reason: 'Changed my mind' },
+    });
+    expect(res.status()).toBe(200);
+    const body = await res.json();
+    expect(body.status).toBe('CANCELLATION_REQUESTED_AFTER_SHIPMENT');
+  });
+
+  test('AWAITING_PROCESSING order — request returns 409', async ({ request }) => {
     await request.post(`${API_URL}/api/cart/items`, {
       headers: { Authorization: `Bearer ${buyerToken}`, 'Content-Type': 'application/json' },
       data: { productId, quantity: 1 },

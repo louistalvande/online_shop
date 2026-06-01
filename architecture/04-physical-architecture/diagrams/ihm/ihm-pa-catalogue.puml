@@ -5,25 +5,62 @@ title Portail Acheteur — Catalogue produits
 
 {+
   {
-    "Rechercher un produit...    " | [Rechercher]
+    "Rechercher un produit...           " | [Rechercher]
   }
   --
   {
     {+
       == Filtres
-      Type de produit  | "               "
+      Catégorie        | "               "
       Thème / occasion | "               "
       --
       [Réinitialiser]
     }
     |
     {
-      {#
-        Produit                  | Prix    | Stock      | Action
-        Chaussures cuir brun     | 89,00 € | Disponible | [Ajouter]
-        Veste laine grise        | 149,00 €| Disponible | [Ajouter]
-        Sac à dos toile          | 59,00 € | Rupture    | [Indisponible]
-        Ceinture daim noir       | 34,00 € | Disponible | [Ajouter]
+      {
+        {+
+          [image]
+          Chaussures cuir brun
+          89,00 €
+          [-] 1 [+] [panier]
+        }
+        |
+        {+
+          [image]
+          Veste laine grise
+          149,00 €
+          [-] 1 [+] [panier]
+        }
+        |
+        {+
+          [image]
+          Sac à dos toile
+          59,00 €
+          [Indisponible]
+        }
+      }
+      {
+        {+
+          [image]
+          Ceinture daim noir
+          34,00 €
+          [-] 1 [+] [panier]
+        }
+        |
+        {+
+          [image]
+          Chapeau feutre beige
+          45,00 €
+          [-] 1 [+] [panier]
+        }
+        |
+        {+
+          [image]
+          Écharpe cachemire
+          79,00 €
+          [-] 1 [+] [panier]
+        }
       }
       --
       [< Précédent]  Page 1/4  [Suivant >]

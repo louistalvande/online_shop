@@ -46,7 +46,7 @@ test.describe('US-EXP-01 — Vendor declares shipment with tracking number', () 
     const buyerToken = await getBuyerToken(p, buyerEmail, BUYER_PASSWORD);
 
     const address = await createAddressViaApi(p, buyerToken, {
-      label: 'Home', addressLine: '1 rue Test', city: 'Paris',
+      label: 'Home', recipientName: 'Test Recipient', addressLine: '1 rue Test', city: 'Paris',
       postalCode: '75001', countryCode: 'FR', makeDefault: true,
     });
 

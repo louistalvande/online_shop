@@ -47,7 +47,7 @@ test.describe('US-ORD-01 — Delivery address validation', () => {
 
     // Create a saved FR delivery address
     const address = await createAddressViaApi(carrierPage, buyerToken, {
-      label: 'Home', addressLine: '1 rue de la Paix', city: 'Paris',
+      label: 'Home', recipientName: 'Test Recipient', addressLine: '1 rue de la Paix', city: 'Paris',
       postalCode: '75001', countryCode: 'FR', makeDefault: true,
     });
     addressId = address.id;
@@ -58,7 +58,7 @@ test.describe('US-ORD-01 — Delivery address validation', () => {
     const res = await request.post(`${API_URL}/api/profile/addresses`, {
       headers: { Authorization: `Bearer ${buyerToken}` },
       data: {
-        label: 'Test', addressLine: '1 Main St', city: 'New York',
+        label: 'Test', recipientName: 'Test Recipient', addressLine: '1 Main St', city: 'New York',
         postalCode: '10001', countryCode: 'US', makeDefault: false,
       },
     });
