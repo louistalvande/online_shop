@@ -24,6 +24,10 @@ title Portail Acheteur — Suivi de commande
   }
   Total TTC : 373,10 €
   ==
-  [Annuler la commande]   [Ouvrir une réclamation]
+  [Annuler la commande]
+  ==
+  {
+    <i>Un problème avec votre commande ? Contactez notre support.
+  }
 }
 @endsalt

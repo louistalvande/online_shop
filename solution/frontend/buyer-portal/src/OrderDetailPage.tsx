@@ -222,6 +222,10 @@ export default function OrderDetailPage({ orderId }: Props) {
               </section>
             )}
 
+            <section className="order-detail-support">
+              <p>{t('orders.support.message')}</p>
+            </section>
+
             <section>
               <h2>{t('orders.detail.lines')}</h2>
               <table className="order-detail-table">

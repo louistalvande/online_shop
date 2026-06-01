@@ -276,6 +276,7 @@
   "orders.psc.submit": "Request cancellation",
   "orders.psc.submitting": "Submitting…",
   "orders.psc.pendingVendorDecision": "Your cancellation request is awaiting the vendor's decision.",
+  "orders.support.message": "A problem with your order? Contact our support by email.",
   "maintenance.title": "Platform under maintenance",
   "maintenance.message": "Our platform is temporarily unavailable for maintenance. Please try again in a few moments.",
 

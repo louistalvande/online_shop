@@ -276,6 +276,7 @@
   "orders.psc.submit": "Demander l'annulation",
   "orders.psc.submitting": "Envoi…",
   "orders.psc.pendingVendorDecision": "Votre demande d'annulation est en attente de décision du vendeur.",
+  "orders.support.message": "Un problème avec votre commande ? Contactez notre support par email.",
   "maintenance.title": "Plateforme en maintenance",
   "maintenance.message": "Notre plateforme est temporairement indisponible pour maintenance. Nous vous invitons à réessayer dans quelques instants.",
 

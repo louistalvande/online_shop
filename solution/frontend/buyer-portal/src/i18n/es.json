@@ -274,6 +274,7 @@
   "orders.psc.submit": "Solicitar la cancelación",
   "orders.psc.submitting": "Enviando…",
   "orders.psc.pendingVendorDecision": "Su solicitud de cancelación está pendiente de decisión del vendedor.",
+  "orders.support.message": "¿Un problema con su pedido? Contacte con nuestro soporte por correo electrónico.",
   "maintenance.title": "Plataforma en mantenimiento",
   "maintenance.message": "Nuestra plataforma no está disponible temporalmente por mantenimiento. Le invitamos a intentarlo de nuevo en unos momentos.",
   "stock.notify.subscribe": "Avisarme cuando esté disponible",
