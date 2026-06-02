@@ -33,9 +33,11 @@ public class ShopConfigControllerImpl implements ShopConfigController {
     /** {@inheritDoc} */
     @Override
     public ResponseEntity<ShopThemeResponse> updateTheme(UpdateShopThemeRequest request) {
-        settingsService.setAccentColor(request.getAccentColor());
+        if (request.getAccentColor() != null) settingsService.setAccentColor(request.getAccentColor());
+        if (request.getBgColor()     != null) settingsService.setBgColor(request.getBgColor());
         return ResponseEntity.ok(new ShopThemeResponse(
-                request.getAccentColor(),
+                settingsService.getAccentColor(),
+                settingsService.getBgColor(),
                 vendorLogoUploadService.getPublicLogoUrl(),
                 vendorBannerUploadService.getPublicBannerUrl()
         ));

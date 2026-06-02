@@ -841,15 +841,19 @@ include::diagrams/ihm/ihm-bov-annonce-form.puml[]
 
 ==== Identité visuelle
 
-Personnalisation de l'identité visuelle de la boutique (FS-V16). La section « Identité visuelle » est accessible depuis l'onglet Profil du back-office vendeur. Elle regroupe trois sous-sections : logo, bannière hero et couleur d'accentuation.
+Personnalisation de l'identité visuelle de la boutique (FS-V16). La section « Identité visuelle » est accessible depuis l'onglet Profil du back-office vendeur. Elle regroupe quatre sous-sections : logo, bannière hero, couleur d'accentuation et couleur de fond.
 
 *Logo* — Image affichée dans l'en-tête des deux portails. Upload : `POST /api/me/logo` (multipart/form-data, champ `file`). Suppression : `DELETE /api/me/logo`. Le fichier est stocké sous le nom fixe `vendor-logo.png` dans `uploads/logos/` (configurable via `app.vendor-logo-upload-dir`) ; l'URL publique est dérivée du chemin et ne change jamais lors d'un remplacement. La suppression du fichier restaure l'icône par défaut dans les deux portails.
 
 *Bannière hero* — Image affichée en pleine largeur en section supérieure de la page d'accueil du portail acheteur, au-dessus du titre hero. Upload : `POST /api/me/banner` (multipart/form-data, champ `file`). Suppression : `DELETE /api/me/banner`. Le fichier est stocké sous le nom fixe `vendor-banner.{ext}` dans `uploads/banners/` (configurable via `app.vendor-banner-upload-dir`). La suppression masque la bannière et laisse s'afficher uniquement le titre et le sous-titre.
 
-*Couleur d'accentuation* — Couleur CSS (`--accent`) appliquée globalement à toute l'interface du portail acheteur. Mise à jour : `PATCH /api/vendor/shop/theme` avec `{ "accentColor": "#rrggbb" }`. La valeur est stockée dans `platform_settings` à la clé `shop_accent_color` (valeur par défaut `#4e8b82`). La couleur dérivée (`--accent-hover`) est calculée côté client.
+*Couleur d'accentuation* — Couleur CSS (`--accent`) appliquée globalement à toute l'interface du portail acheteur. La couleur dérivée (`--accent-hover`) est calculée côté client.
 
-L'API publique `GET /api/public/theme` retourne les trois champs `{ logoUrl, bannerUrl, accentColor }` aux deux portails au démarrage. Les images du carrousel restent gérées via la section Annonces défilantes (UCSA-15 / FS-V11).
+*Couleur de fond* — Couleur CSS (`--bg`) appliquée au fond de page du portail acheteur. Valeur par défaut : `#f2f6f5`, stockée dans `platform_settings` à la clé `shop_bg_color`.
+
+Les deux couleurs sont mises à jour via `PATCH /api/vendor/shop/theme` avec `{ "accentColor": "#rrggbb", "bgColor": "#rrggbb" }` (champs indépendants et optionnels — seuls les champs non nuls sont appliqués). Les valeurs par défaut sont `#4e8b82` pour l'accentuation et `#f2f6f5` pour le fond.
+
+L'API publique `GET /api/public/theme` retourne les quatre champs `{ logoUrl, bannerUrl, accentColor, bgColor }` aux deux portails au démarrage. Les images du carrousel restent gérées via la section Annonces défilantes (UCSA-15 / FS-V11).
 
 .Maquette filaire : Back-office Vendeur — Identité visuelle (logo, bannière, couleur)
 [plantuml, ihm-bov-logo, svg]

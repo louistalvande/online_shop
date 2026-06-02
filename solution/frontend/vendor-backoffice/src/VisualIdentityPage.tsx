@@ -17,6 +17,7 @@ export default function VisualIdentityPage({ onLogoChange }: Props) {
   const [logoUrl, setLogoUrl] = useState<string | null>(null)
   const [bannerUrl, setBannerUrl] = useState<string | null>(null)
   const [accentColor, setAccentColor] = useState('#4e8b82')
+  const [bgColor, setBgColor] = useState('#f2f6f5')
   const [uploadingLogo, setUploadingLogo] = useState(false)
   const [uploadingBanner, setUploadingBanner] = useState(false)
   const logoInputRef = useRef<HTMLInputElement>(null)
@@ -31,6 +32,7 @@ export default function VisualIdentityPage({ onLogoChange }: Props) {
         setLogoUrl(theme.logoUrl ?? null)
         setBannerUrl(theme.bannerUrl ?? null)
         setAccentColor(theme.accentColor ?? '#4e8b82')
+        setBgColor(theme.bgColor ?? '#f2f6f5')
       })
       .catch(() => {})
   }, [])
@@ -99,7 +101,7 @@ export default function VisualIdentityPage({ onLogoChange }: Props) {
   async function handleSaveColor() {
     setSavingColor(true)
     try {
-      await updateShopTheme({ accentColor })
+      await updateShopTheme({ accentColor, bgColor })
       flash(t('profile.theme.success'), 'success')
     } catch {
       flash(t('profile.error.generic'), 'error')
@@ -165,33 +167,64 @@ export default function VisualIdentityPage({ onLogoChange }: Props) {
         </div>
       </section>
 
-      {/* ── Couleur d'accentuation ── */}
+      {/* ── Couleurs de la boutique ── */}
       <section style={sectionStyle}>
         <h2 style={sectionHeadStyle}>{t('visual.section.color')}</h2>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap' }}>
-          <input
-            type="color"
-            value={accentColor}
-            onChange={e => setAccentColor(e.target.value)}
-            style={{ width: 44, height: 36, padding: 2, border: '1px solid var(--border)', borderRadius: 6, cursor: 'pointer', background: 'none' }}
-          />
-          <input
-            style={{ ...inputStyle, width: 110 }}
-            value={accentColor}
-            onChange={e => { if (/^#[0-9a-fA-F]{0,6}$/.test(e.target.value)) setAccentColor(e.target.value) }}
-            placeholder="#4e8b82"
-            maxLength={7}
-          />
-          {accentColor !== '#4e8b82' && (
-            <Button type="button" variant="ghost" size="sm" onClick={() => setAccentColor('#4e8b82')}>
-              {t('profile.theme.reset')}
-            </Button>
-          )}
-          <Button type="button" size="sm" disabled={savingColor} onClick={handleSaveColor}>
-            {savingColor ? t('profile.saving') : t('profile.save')}
-          </Button>
+
+        {/* Accent color row */}
+        <div style={{ marginBottom: 20 }}>
+          <p style={{ fontSize: 13, fontWeight: 600, marginBottom: 8, color: 'var(--text)' }}>{t('profile.theme.accentColor')}</p>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap' }}>
+            <input
+              type="color"
+              value={accentColor}
+              onChange={e => setAccentColor(e.target.value)}
+              style={{ width: 44, height: 36, padding: 2, border: '1px solid var(--border)', borderRadius: 6, cursor: 'pointer', background: 'none' }}
+            />
+            <input
+              style={{ ...inputStyle, width: 110 }}
+              value={accentColor}
+              onChange={e => { if (/^#[0-9a-fA-F]{0,6}$/.test(e.target.value)) setAccentColor(e.target.value) }}
+              placeholder="#4e8b82"
+              maxLength={7}
+            />
+            {accentColor !== '#4e8b82' && (
+              <Button type="button" variant="ghost" size="sm" onClick={() => setAccentColor('#4e8b82')}>
+                {t('profile.theme.reset')}
+              </Button>
+            )}
+          </div>
         </div>
-        <p style={{ fontSize: 13, color: 'var(--text-muted)', marginTop: 10 }}>{t('profile.theme.hint')}</p>
+
+        {/* Background color row */}
+        <div style={{ marginBottom: 20 }}>
+          <p style={{ fontSize: 13, fontWeight: 600, marginBottom: 8, color: 'var(--text)' }}>{t('profile.theme.bgColor')}</p>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap' }}>
+            <input
+              type="color"
+              value={bgColor}
+              onChange={e => setBgColor(e.target.value)}
+              style={{ width: 44, height: 36, padding: 2, border: '1px solid var(--border)', borderRadius: 6, cursor: 'pointer', background: 'none' }}
+            />
+            <input
+              style={{ ...inputStyle, width: 110 }}
+              value={bgColor}
+              onChange={e => { if (/^#[0-9a-fA-F]{0,6}$/.test(e.target.value)) setBgColor(e.target.value) }}
+              placeholder="#f2f6f5"
+              maxLength={7}
+            />
+            {bgColor !== '#f2f6f5' && (
+              <Button type="button" variant="ghost" size="sm" onClick={() => setBgColor('#f2f6f5')}>
+                {t('profile.theme.reset')}
+              </Button>
+            )}
+          </div>
+        </div>
+
+        <p style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 16 }}>{t('profile.theme.hint')}</p>
+        <Button type="button" size="sm" disabled={savingColor} onClick={handleSaveColor}>
+          {savingColor ? t('profile.saving') : t('profile.save')}
+        </Button>
       </section>
 
       {/* ── Bannière ── */}

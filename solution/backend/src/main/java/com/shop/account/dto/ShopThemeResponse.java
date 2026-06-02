@@ -8,6 +8,9 @@ public class ShopThemeResponse {
     @Schema(description = "CSS hex accent colour for --accent; never null — defaults to the platform value")
     private String accentColor;
 
+    @Schema(description = "CSS hex background colour for --bg; never null — defaults to the platform value")
+    private String bgColor;
+
     @Schema(description = "Public URL of the vendor logo file; null if no logo has been uploaded")
     private String logoUrl;
 
@@ -16,17 +19,22 @@ public class ShopThemeResponse {
 
     /**
      * @param accentColor the accent colour
+     * @param bgColor     the background colour
      * @param logoUrl     the logo URL, or {@code null} if none uploaded
      * @param bannerUrl   the hero banner URL, or {@code null} if none uploaded
      */
-    public ShopThemeResponse(String accentColor, String logoUrl, String bannerUrl) {
+    public ShopThemeResponse(String accentColor, String bgColor, String logoUrl, String bannerUrl) {
         this.accentColor = accentColor;
+        this.bgColor     = bgColor;
         this.logoUrl     = logoUrl;
         this.bannerUrl   = bannerUrl;
     }
 
     /** @return the accent colour */
     public String getAccentColor() { return accentColor; }
+
+    /** @return the background colour */
+    public String getBgColor() { return bgColor; }
 
     /** @return the logo URL, or {@code null} */
     public String getLogoUrl() { return logoUrl; }

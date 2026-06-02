@@ -41,4 +41,18 @@ public interface SettingsService {
      * @param accentColor the new CSS hex colour (e.g. {@code #4e8b82})
      */
     void setAccentColor(String accentColor);
+
+    /**
+     * Returns the current shop background colour (FS-V16).
+     *
+     * @return CSS hex colour string, defaults to {@code #f2f6f5}
+     */
+    String getBgColor();
+
+    /**
+     * Updates the shop background colour (FS-V16).
+     *
+     * @param bgColor the new CSS hex colour (e.g. {@code #f2f6f5})
+     */
+    void setBgColor(String bgColor);
 }

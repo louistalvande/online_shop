@@ -147,7 +147,7 @@ NOTE: L'administrateur n'a pas accès aux données personnelles des comptes (nom
 | UC_V2, Activités vendeur
 
 | BES-VND-015
-| Le vendeur a besoin de personnaliser l'identité visuelle de sa boutique en configurant l'ensemble de ses visuels. Chaque visuel peut être téléversé, remplacé ou supprimé ; la suppression restaure l'état par défaut. Toute modification est répercutée immédiatement sur le portail acheteur, sans interruption de service. Les visuels des annonces défilantes du carrousel sont gérés via `BES-VND-011`.
+| Le vendeur a besoin de personnaliser l'identité visuelle de sa boutique en configurant l'ensemble de ses visuels et de ses couleurs. Chaque visuel peut être téléversé, remplacé ou supprimé ; la suppression restaure l'état par défaut. Les couleurs (accentuation et fond) sont personnalisables via un sélecteur hexadécimal et réinitialisables à la valeur par défaut. Toute modification est répercutée immédiatement sur le portail acheteur, sans interruption de service. Les visuels des annonces défilantes du carrousel sont gérés via `BES-VND-011`.
 | UC_V11, Activités vendeur
 
 | BES-VND-016

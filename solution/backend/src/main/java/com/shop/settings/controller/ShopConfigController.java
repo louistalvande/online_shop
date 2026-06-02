@@ -17,12 +17,13 @@ import org.springframework.web.bind.annotation.RequestMapping;
 public interface ShopConfigController {
 
     /**
-     * Updates the shop accent colour and returns the full updated theme.
+     * Updates shop theme colours (accent and/or background) and returns the full updated theme.
+     * Fields are individually optional — only non-null values are applied.
      *
-     * @param request the new theme values
+     * @param request the new theme values (at least one field should be non-null)
      * @return 200 with the updated shop theme
      */
-    @Operation(summary = "Update shop accent colour (FS-V16)")
+    @Operation(summary = "Update shop theme colours (FS-V16)")
     @ApiResponse(responseCode = "200", description = "Theme updated")
     @ApiResponse(responseCode = "400", description = "Invalid hex colour")
     @PatchMapping

@@ -395,6 +395,32 @@ a|
 
 |===
 
+== Identité visuelle — Vendeur
+
+_Fonctions ARCADIA : FS-V16 — UCSA-16 — LA : Service Compte / Service Paramètres_
+
+[cols="1,3,4,1", options="header"]
+|===
+| ID | User story | Critères d'acceptation | Statut
+
+| *US-VIS-01*
+| En tant que vendeur, je peux personnaliser l'identité visuelle de ma boutique (logo, bannière hero, couleur d'accentuation et couleur de fond) depuis mon back-office.
+a|
+- [x] Upload logo (JPEG, PNG, WebP ≤ 5 Mo) via `POST /api/me/logo` ; logo affiché dans l'en-tête des deux portails
+- [x] Suppression logo via `DELETE /api/me/logo` ; icône par défaut restaurée
+- [x] Upload bannière hero (JPEG, PNG, WebP ≤ 5 Mo) via `POST /api/me/banner` ; bannière affichée en haut de la page d'accueil acheteur
+- [x] Suppression bannière via `DELETE /api/me/banner` ; section hero masquée
+- [x] Sélecteur + saisie hexadécimale pour la couleur d'accentuation (`--accent`) ; valeur persistée dans `platform_settings` (clé `shop_accent_color`, défaut `#4e8b82`)
+- [x] Sélecteur + saisie hexadécimale pour la couleur de fond (`--bg`) ; valeur persistée dans `platform_settings` (clé `shop_bg_color`, défaut `#f2f6f5`)
+- [x] Bouton « Réinitialiser » individuel pour chaque couleur ; restaure la valeur par défaut
+- [x] Un seul bouton « Enregistrer » sauvegarde les deux couleurs simultanément
+- [x] `GET /api/public/theme` retourne `{ logoUrl, bannerUrl, accentColor, bgColor }` ; le portail acheteur applique les variables CSS `--accent`, `--accent-hover` et `--bg` au démarrage
+- [x] Formats non supportés pour les images → message d'erreur ; image courante conservée
+- [x] Toute modification est répercutée immédiatement sans interruption de service
+| Terminée
+
+|===
+
 == Gestion des commandes — Vendeur
 
 _Fonctions ARCADIA : FS-V04, FS-V09 — UCSA-07, UCSA-13 — LA : Service Commande / Service Paiement_
@@ -656,7 +682,7 @@ a|
 | FS-V15 | Exporter la liste des acheteurs consentants (mailing) | US-PRF-05
 | FS-V03 | Gérer les stocks et alertes | US-CAT-04, US-CAT-05
 | FS-V14 | Mise à jour en masse des stocks | US-CAT-08
-| FS-V16 | Téléverser et stocker les images des produits | US-CAT-09
+| FS-V16 | Configurer l'identité visuelle (logo, bannière, couleurs) | US-VIS-01
 | FS-V04 | Traiter les commandes reçues | US-VND-01
 | FS-V05 | Déclarer l'expédition avec numéro de suivi | US-EXP-01
 | FS-V07 | Consulter les rapports de ventes | US-RPT-01

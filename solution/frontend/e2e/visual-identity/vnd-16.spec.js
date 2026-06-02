@@ -148,24 +148,65 @@ test.describe('UCSA-16 — Visual identity', () => {
   test('nominal — changes accent colour and saves successfully', async ({ page }) => {
     const hexInput = page.locator('input[placeholder="#4e8b82"]');
     await hexInput.fill('#c0392b');
-    await page.getByRole('button', { name: 'Enregistrer les modifications' }).click();
-    await expect(page.getByText('Couleur mise à jour.')).toBeVisible();
+    await page.getByRole('button', { name: 'Enregistrer' }).click();
+    await expect(page.getByText('Couleurs mises à jour.')).toBeVisible();
 
     // Restore default to avoid side-effects on other tests
     await hexInput.fill('#4e8b82');
-    await page.getByRole('button', { name: 'Enregistrer les modifications' }).click();
+    await page.getByRole('button', { name: 'Enregistrer' }).click();
+    await expect(page.getByText('Couleurs mises à jour.')).toBeVisible();
   });
 
   test('nominal — reset button restores default accent colour #4e8b82', async ({ page }) => {
     const hexInput = page.locator('input[placeholder="#4e8b82"]');
     // Set a non-default colour so the reset button appears
     await hexInput.fill('#123456');
-    await expect(page.getByRole('button', { name: 'Réinitialiser' })).toBeVisible();
+    const colorSection = page.locator('section').filter({ hasText: 'Couleurs de la boutique' });
+    await expect(colorSection.getByRole('button', { name: 'Réinitialiser' }).first()).toBeVisible();
 
-    await page.getByRole('button', { name: 'Réinitialiser' }).click();
+    await colorSection.getByRole('button', { name: 'Réinitialiser' }).first().click();
     await expect(hexInput).toHaveValue('#4e8b82');
-    // Reset button disappears when value equals default
-    await expect(page.getByRole('button', { name: 'Réinitialiser' })).not.toBeVisible();
+  });
+
+  // ── Background colour ─────────────────────────────────────────────────────
+
+  test('nominal — changes background colour and saves successfully', async ({ page }) => {
+    const hexInput = page.locator('input[placeholder="#f2f6f5"]');
+    await hexInput.fill('#ffffff');
+    await page.getByRole('button', { name: 'Enregistrer' }).click();
+    await expect(page.getByText('Couleurs mises à jour.')).toBeVisible();
+
+    // Restore default to avoid side-effects on other tests
+    await hexInput.fill('#f2f6f5');
+    await page.getByRole('button', { name: 'Enregistrer' }).click();
+    await expect(page.getByText('Couleurs mises à jour.')).toBeVisible();
+  });
+
+  test('nominal — bgColor persisted in public theme API after save', async ({ page }) => {
+    const hexInput = page.locator('input[placeholder="#f2f6f5"]');
+    await hexInput.fill('#e8f0fe');
+    await page.getByRole('button', { name: 'Enregistrer' }).click();
+    await expect(page.getByText('Couleurs mises à jour.')).toBeVisible();
+
+    const res = await page.request.get(`${API_URL}/api/public/theme`);
+    expect(res.ok()).toBeTruthy();
+    const theme = await res.json();
+    expect(theme.bgColor).toBe('#e8f0fe');
+
+    // Restore default
+    await hexInput.fill('#f2f6f5');
+    await page.getByRole('button', { name: 'Enregistrer' }).click();
+  });
+
+  test('nominal — reset button restores default background colour #f2f6f5', async ({ page }) => {
+    const hexInput = page.locator('input[placeholder="#f2f6f5"]');
+    await hexInput.fill('#abcdef');
+    const colorSection = page.locator('section').filter({ hasText: 'Couleurs de la boutique' });
+    // The bg reset button is the second Réinitialiser in the section
+    await expect(colorSection.getByRole('button', { name: 'Réinitialiser' }).last()).toBeVisible();
+
+    await colorSection.getByRole('button', { name: 'Réinitialiser' }).last().click();
+    await expect(hexInput).toHaveValue('#f2f6f5');
   });
 
   // ── Cross-portal visibility ───────────────────────────────────────────────
