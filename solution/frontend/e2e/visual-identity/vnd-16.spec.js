@@ -51,6 +51,13 @@ test.describe('UCSA-16 — Visual identity', () => {
     await page.close();
   });
 
+  test.afterEach(async ({ request }) => {
+    await request.patch(`${API_URL}/api/vendor/shop/theme`, {
+      headers: { Authorization: `Bearer ${vendorToken}` },
+      data: { accentColor: '#4e8b82', bgColor: '#f2f6f5' },
+    });
+  });
+
   test.afterAll(async ({ request }) => {
     await deleteLogoViaApi(vendorToken, request);
     await deleteBannerViaApi(vendorToken, request);
@@ -150,11 +157,6 @@ test.describe('UCSA-16 — Visual identity', () => {
     await hexInput.fill('#c0392b');
     await page.getByRole('button', { name: 'Enregistrer' }).click();
     await expect(page.getByText('Couleurs mises à jour.')).toBeVisible();
-
-    // Restore default to avoid side-effects on other tests
-    await hexInput.fill('#4e8b82');
-    await page.getByRole('button', { name: 'Enregistrer' }).click();
-    await expect(page.getByText('Couleurs mises à jour.')).toBeVisible();
   });
 
   test('nominal — reset button restores default accent colour #4e8b82', async ({ page }) => {
@@ -175,11 +177,6 @@ test.describe('UCSA-16 — Visual identity', () => {
     await hexInput.fill('#ffffff');
     await page.getByRole('button', { name: 'Enregistrer' }).click();
     await expect(page.getByText('Couleurs mises à jour.')).toBeVisible();
-
-    // Restore default to avoid side-effects on other tests
-    await hexInput.fill('#f2f6f5');
-    await page.getByRole('button', { name: 'Enregistrer' }).click();
-    await expect(page.getByText('Couleurs mises à jour.')).toBeVisible();
   });
 
   test('nominal — bgColor persisted in public theme API after save', async ({ page }) => {
@@ -192,10 +189,6 @@ test.describe('UCSA-16 — Visual identity', () => {
     expect(res.ok()).toBeTruthy();
     const theme = await res.json();
     expect(theme.bgColor).toBe('#e8f0fe');
-
-    // Restore default
-    await hexInput.fill('#f2f6f5');
-    await page.getByRole('button', { name: 'Enregistrer' }).click();
   });
 
   test('nominal — reset button restores default background colour #f2f6f5', async ({ page }) => {
