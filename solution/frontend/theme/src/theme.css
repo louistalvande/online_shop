@@ -117,19 +117,27 @@ button { cursor: pointer; font-family: inherit; }
 }
 
 /* ─── LangToggle ─── */
+.lang-menu { position: relative; }
 .lang-toggle {
-  background: none;
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 4px 10px;
-  font-size: 13px;
-  font-weight: 600;
-  cursor: pointer;
-  display: inline-flex;
+  display: flex;
   align-items: center;
   gap: 6px;
+  box-sizing: border-box;
+  height: 32px;
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 0 10px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
   color: var(--text);
   font-family: inherit;
+}
+.lang-toggle:hover { border-color: var(--accent); }
+.shell-header .lang-toggle {
+  border-color: rgba(255,255,255,0.4);
+  color: #fff;
 }
 
 /* ─── UserMenu ─── */
@@ -138,10 +146,12 @@ button { cursor: pointer; font-family: inherit; }
   display: flex;
   align-items: center;
   gap: 6px;
+  box-sizing: border-box;
+  height: 32px;
   background: none;
   border: 1px solid var(--border);
   border-radius: 6px;
-  padding: 6px 10px;
+  padding: 0 10px;
   font-size: 14px;
   font-weight: 500;
   color: var(--text);

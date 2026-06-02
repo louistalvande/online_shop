@@ -4,15 +4,18 @@ import { UserIcon } from './icons'
 interface UserMenuProps {
   label: string
   email?: string
-  settingsLabel: string
+  /** Login item shown when the user is unauthenticated (replaces settings/logout). */
+  loginLabel?: string
+  onLogin?: () => void
+  settingsLabel?: string
   ordersLabel?: string
-  logoutLabel: string
+  logoutLabel?: string
   onSettings?: () => void
   onOrders?: () => void
   onLogout?: () => void
 }
 
-export function UserMenu({ label, email, settingsLabel, ordersLabel, logoutLabel, onSettings, onOrders, onLogout }: UserMenuProps) {
+export function UserMenu({ label, email, loginLabel, onLogin, settingsLabel, ordersLabel, logoutLabel, onSettings, onOrders, onLogout }: UserMenuProps) {
   const [open, setOpen] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
 
@@ -26,25 +29,36 @@ export function UserMenu({ label, email, settingsLabel, ordersLabel, logoutLabel
 
   return (
     <div ref={ref} className="user-menu">
-      <button className="user-menu-trigger" onClick={() => setOpen(o => !o)}>
-        <UserIcon size={16} />
-        <span>{label}</span>
+      <button className="user-menu-trigger" onClick={() => setOpen(o => !o)} aria-label={label}>
+        <UserIcon size={18} />
         <span className="user-menu-caret">{open ? '▲' : '▼'}</span>
       </button>
       {open && (
         <div className="user-menu-dropdown">
-          {email && <div className="user-menu-email">{email}</div>}
-          <button className="user-menu-item" onClick={() => { onSettings?.(); setOpen(false) }}>
-            {settingsLabel}
-          </button>
-          {ordersLabel && (
-            <button className="user-menu-item" onClick={() => { onOrders?.(); setOpen(false) }}>
-              {ordersLabel}
+          {loginLabel ? (
+            <button className="user-menu-item" onClick={() => { onLogin?.(); setOpen(false) }}>
+              {loginLabel}
             </button>
+          ) : (
+            <>
+              {email && <div className="user-menu-email">{email}</div>}
+              {settingsLabel && (
+                <button className="user-menu-item" onClick={() => { onSettings?.(); setOpen(false) }}>
+                  {settingsLabel}
+                </button>
+              )}
+              {ordersLabel && (
+                <button className="user-menu-item" onClick={() => { onOrders?.(); setOpen(false) }}>
+                  {ordersLabel}
+                </button>
+              )}
+              {logoutLabel && (
+                <button className="user-menu-item" onClick={() => { onLogout?.(); setOpen(false) }}>
+                  {logoutLabel}
+                </button>
+              )}
+            </>
           )}
-          <button className="user-menu-item" onClick={() => { onLogout?.(); setOpen(false) }}>
-            {logoutLabel}
-          </button>
         </div>
       )}
     </div>

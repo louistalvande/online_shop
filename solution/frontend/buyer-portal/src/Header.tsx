@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next'
-import { AppShell, CartIcon, Button, LangToggle, UserMenu } from '@workspace/theme'
+import { AppShell, Button, CartIcon, LangToggle, UserMenu } from '@workspace/theme'
 import type { BuyerSession } from './api/authApi'
 import { useCartCount } from './hooks/useCartCount'
 
@@ -25,10 +25,7 @@ export default function Header({ session, onShowLogin, onLogout, children, logoU
       ]}
       actions={
         <div className="header-actions">
-          <LangToggle
-            lang={i18n.language}
-            onToggle={() => i18n.changeLanguage(({ fr: 'en', en: 'es', es: 'fr' } as Record<string, string>)[i18n.language] ?? 'fr')}
-          />
+          <LangToggle lang={i18n.language} onChange={lang => i18n.changeLanguage(lang)} />
           {session ? (
             <UserMenu
               label={t('nav.account')}
@@ -41,9 +38,11 @@ export default function Header({ session, onShowLogin, onLogout, children, logoU
               onLogout={onLogout}
             />
           ) : (
-            <Button variant="ghost" size="sm" onClick={onShowLogin}>
-              {t('nav.login')}
-            </Button>
+            <UserMenu
+              label={t('nav.account')}
+              loginLabel={t('nav.login')}
+              onLogin={onShowLogin}
+            />
           )}
           <Button variant="ghost" size="sm" className="cart-icon-btn" aria-label={t('nav.cart')} onClick={() => { window.location.href = '/cart' }}>
             <span className="cart-btn-wrapper">
