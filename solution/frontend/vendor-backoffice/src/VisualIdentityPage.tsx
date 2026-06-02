@@ -50,8 +50,9 @@ export default function VisualIdentityPage({ onLogoChange }: Props) {
       setLogoUrl(url)
       onLogoChange?.(url)
       flash(t('profile.logo.success'), 'success')
-    } catch {
-      flash(t('profile.logo.error'), 'error')
+    } catch (err: unknown) {
+      const serverMsg = (err as { serverMessage?: string })?.serverMessage
+      flash(serverMsg ?? t('profile.logo.error'), 'error')
     } finally {
       setUploadingLogo(false)
       e.target.value = ''
