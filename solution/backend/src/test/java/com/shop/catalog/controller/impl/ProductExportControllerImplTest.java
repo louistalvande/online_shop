@@ -45,7 +45,7 @@ class ProductExportControllerImplTest {
     @Test
     void exportProducts_returns200WithCsvContentType() throws Exception {
         given(productService.exportProductsCsv())
-                .willReturn("nom,description,prix,categorie,quantite,seuil_alerte,statut\n");
+                .willReturn("id,nom,description,prix,categorie,quantite,seuil_alerte,statut\n");
 
         mvc.perform(get("/api/vendor/products/export").principal(vendorPrincipal))
                 .andExpect(status().isOk())
@@ -55,7 +55,7 @@ class ProductExportControllerImplTest {
     @Test
     void exportProducts_contentDispositionHasDateStampedFilename() throws Exception {
         given(productService.exportProductsCsv())
-                .willReturn("nom,description,prix,categorie,quantite,seuil_alerte,statut\n");
+                .willReturn("id,nom,description,prix,categorie,quantite,seuil_alerte,statut\n");
 
         mvc.perform(get("/api/vendor/products/export").principal(vendorPrincipal))
                 .andExpect(status().isOk())
@@ -67,7 +67,7 @@ class ProductExportControllerImplTest {
     @Test
     void exportProducts_bodyStartsWithUtf8Bom() throws Exception {
         given(productService.exportProductsCsv())
-                .willReturn("nom,description,prix,categorie,quantite,seuil_alerte,statut\n");
+                .willReturn("id,nom,description,prix,categorie,quantite,seuil_alerte,statut\n");
 
         byte[] body = mvc.perform(get("/api/vendor/products/export").principal(vendorPrincipal))
                 .andExpect(status().isOk())
@@ -84,7 +84,7 @@ class ProductExportControllerImplTest {
     @Test
     void exportProducts_csvContentFollowsAfterBom() throws Exception {
         given(productService.exportProductsCsv())
-                .willReturn("nom,description,prix,categorie,quantite,seuil_alerte,statut\nProduit,,10.00,,0,0,PUBLISHED\n");
+                .willReturn("id,nom,description,prix,categorie,quantite,seuil_alerte,statut\nProduit,,10.00,,0,0,PUBLISHED\n");
 
         byte[] body = mvc.perform(get("/api/vendor/products/export").principal(vendorPrincipal))
                 .andExpect(status().isOk())
@@ -94,7 +94,7 @@ class ProductExportControllerImplTest {
 
         // Skip 3-byte BOM and decode
         String csv = new String(body, 3, body.length - 3, java.nio.charset.StandardCharsets.UTF_8);
-        assertThat(csv).startsWith("nom,description,");
+        assertThat(csv).startsWith("id,nom,description,");
         assertThat(csv).contains("Produit");
     }
 }

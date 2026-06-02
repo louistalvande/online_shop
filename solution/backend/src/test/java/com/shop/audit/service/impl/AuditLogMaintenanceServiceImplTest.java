@@ -9,6 +9,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.Collections;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -61,7 +62,7 @@ class AuditLogMaintenanceServiceImplTest {
     void listPartitionStats_mapsRowsToDto() {
         Object[] row = {"audit_log_2026_05", 42L, 8192L};
         given(entityManager.createNativeQuery(anyString())).willReturn(nativeQuery);
-        given(nativeQuery.getResultList()).willReturn(List.of(row));
+        given(nativeQuery.getResultList()).willReturn(Collections.singletonList(row));
 
         var stats = service.listPartitionStats();
 

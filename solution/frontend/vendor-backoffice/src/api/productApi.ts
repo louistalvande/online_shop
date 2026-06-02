@@ -69,7 +69,7 @@ export interface BulkStockUpdateResponse {
 
 export interface CsvImportRowResult {
   lineNumber: number
-  status: 'CREATED' | 'ERROR'
+  status: 'CREATED' | 'UPDATED' | 'ERROR'
   message: string | null
   product: Product | null
 }
@@ -77,6 +77,7 @@ export interface CsvImportRowResult {
 export interface CsvImportResponse {
   rows: CsvImportRowResult[]
   totalCreated: number
+  totalUpdated: number
   totalErrors: number
 }
 

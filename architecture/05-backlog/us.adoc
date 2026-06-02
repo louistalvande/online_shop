@@ -250,14 +250,15 @@ a|
 | Terminée
 
 | *US-CAT-06*
-| En tant que vendeur, je peux importer de nouveaux produits depuis un fichier CSV afin de créer plusieurs fiches en une seule opération.
+| En tant que vendeur, je peux importer des produits ou mettre à jour leur stock depuis un fichier CSV afin de créer ou réapprovisionner plusieurs fiches en une seule opération.
 a|
 - [x] Un bouton « Importer CSV » est disponible dans la section gestion du catalogue du back-office vendeur
-- [x] Le fichier CSV respecte un en-tête défini : `nom,description,prix,categorie,quantite,seuil_alerte` ; les colonnes obligatoires sont : `nom` et `prix`
-- [x] Chaque ligne du CSV crée un nouveau produit ; aucune mise à jour de produit existant n'est effectuée
+- [x] Le fichier CSV respecte un en-tête défini : `id,nom,description,prix,categorie,quantite,seuil_alerte` ; l'en-tête de l'export (avec colonne `statut` supplémentaire) est également accepté pour permettre le cycle export → réimport
+- [x] Si la colonne `id` est renseignée sur une ligne, seul le stock du produit existant est mis à jour (`quantite` et `seuil_alerte`) ; les autres champs sont ignorés
+- [x] Si la colonne `id` est vide, une nouvelle fiche produit est créée ; les colonnes obligatoires sont alors `nom` et `prix`
 - [x] Le système valide le format de l'en-tête avant traitement ; en cas d'en-tête invalide, l'import est rejeté en totalité
-- [x] Un rapport ligne par ligne est affiché après traitement : créé / erreur avec message explicite
-- [x] Les lignes valides sont importées même si d'autres lignes sont en erreur (import partiel)
+- [x] Un rapport ligne par ligne est affiché après traitement : créé / mis à jour / erreur avec message explicite
+- [x] Les lignes valides sont traitées même si d'autres lignes sont en erreur (import partiel)
 - [x] L'import est accessible uniquement aux comptes vendeur authentifiés (FS-V02 / CS-01)
 | Terminée
 
@@ -265,7 +266,7 @@ a|
 | En tant que vendeur, je peux exporter le catalogue produits partagé au format CSV afin de le consulter ou le réimporter ultérieurement.
 a|
 - [x] Un bouton « Exporter CSV » est disponible dans la section gestion du catalogue du back-office vendeur
-- [x] Le fichier généré contient toutes les fiches produits (publiées et archivées) avec les colonnes : `nom,description,prix,categorie,quantite,seuil_alerte,statut`
+- [x] Le fichier généré contient toutes les fiches produits (publiées et archivées) avec les colonnes : `id,nom,description,prix,categorie,quantite,seuil_alerte,statut` (la colonne `id` permet de réutiliser le fichier pour une mise à jour de stock via l'import CSV)
 - [x] Le fichier est téléchargé directement par le navigateur avec le nom `catalogue_export_YYYYMMDD.csv`
 - [x] L'encodage du fichier est UTF-8 avec BOM pour compatibilité tableur
 - [x] L'export est accessible uniquement aux comptes vendeur authentifiés (FS-V02 / CS-01)

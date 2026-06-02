@@ -792,11 +792,16 @@ include::diagrams/ihm/ihm-bov-catalogue.puml[]
 
 ==== Export CSV du catalogue
 
-Déclenchement d'un téléchargement navigateur du catalogue complet (FS-V13 / US-CAT-07). Un clic sur le bouton « Exporter CSV » appelle `GET /api/vendor/products/export` avec le JWT en en-tête `Authorization`. Le backend retourne un fichier `text/csv; charset=UTF-8` avec BOM UTF-8 (compatibilité tableur) et l'en-tête `Content-Disposition: attachment; filename="catalogue_export_YYYYMMDD.csv"`. Le frontend reçoit le blob, crée une URL objet et déclenche le téléchargement sans navigation. L'export inclut toutes les fiches (publiées et archivées) ; colonnes : `nom,description,prix,categorie,quantite,seuil_alerte,statut`.
+Déclenchement d'un téléchargement navigateur du catalogue complet (FS-V13 / US-CAT-07). Un clic sur le bouton « Exporter CSV » appelle `GET /api/vendor/products/export` avec le JWT en en-tête `Authorization`. Le backend retourne un fichier `text/csv; charset=UTF-8` avec BOM UTF-8 (compatibilité tableur) et l'en-tête `Content-Disposition: attachment; filename="catalogue_export_YYYYMMDD.csv"`. Le frontend reçoit le blob, crée une URL objet et déclenche le téléchargement sans navigation. L'export inclut toutes les fiches (publiées et archivées) ; colonnes : `id,nom,description,prix,categorie,quantite,seuil_alerte,statut`. La présence de la colonne `id` permet de réutiliser directement le fichier exporté pour une mise à jour de stock en masse via l'import CSV (US-CAT-06).
 
 ==== Import CSV de produits
 
-Modale d'import en masse de produits depuis un fichier CSV (FS-V12 / US-CAT-06). Le vendeur sélectionne un fichier `.csv` structuré selon l'en-tête `nom,description,prix,categorie,quantite,seuil_alerte`. L'import est partiel : les lignes valides sont créées même si d'autres sont en erreur. Un rapport ligne par ligne (statut `Créé` / `Erreur` + message) est affiché après traitement. L'endpoint backend est `POST /api/vendor/products/import` (`multipart/form-data`) ; il retourne HTTP 400 si l'en-tête CSV est invalide ou le fichier vide.
+Modale d'import en masse depuis un fichier CSV (FS-V12 / US-CAT-06). Le vendeur sélectionne un fichier `.csv` structuré selon l'en-tête `id,nom,description,prix,categorie,quantite,seuil_alerte`. L'en-tête de l'export (avec colonne `statut` supplémentaire) est également accepté pour permettre le cycle export → réimport. Deux comportements selon la présence de l'`id` :
+
+* **`id` vide** → création d'un nouveau produit (`nom` et `prix` obligatoires).
+* **`id` renseigné** → mise à jour du stock uniquement (`quantite` et `seuil_alerte`) sur le produit existant ; les autres champs sont ignorés.
+
+L'import est partiel : les lignes valides sont traitées même si d'autres sont en erreur. Un rapport ligne par ligne (statut `Créé` / `Mis à jour` / `Erreur` + message) est affiché après traitement. L'endpoint backend est `POST /api/vendor/products/import` (`multipart/form-data`) ; il retourne HTTP 400 si l'en-tête CSV est invalide ou le fichier vide.
 
 .Maquette filaire : Back-office Vendeur — Import CSV produits
 [plantuml, ihm-bov-csv-import, svg]

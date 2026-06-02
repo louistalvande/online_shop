@@ -532,7 +532,7 @@ NOTE: Le diagramme de séquence détaillant les échanges entre acteurs et syst�
 
 | UC_V1
 | Gérer le catalogue produits
-| Créer, modifier et supprimer les fiches produits (photos, descriptions, prix, catégories) ; importer en masse de nouveaux produits depuis un fichier CSV ; exporter le catalogue au format CSV
+| Créer, modifier et supprimer les fiches produits (photos, descriptions, prix, catégories) ; importer des produits depuis un fichier CSV (création de nouvelles fiches ou mise à jour du stock de produits existants) ; exporter le catalogue au format CSV
 
 | UC_V2
 | Gérer les stocks

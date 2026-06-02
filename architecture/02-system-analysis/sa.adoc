@@ -297,8 +297,8 @@ Les fonctions système (FS) sont dérivées des cas d'utilisation opérationnels
 | FS-V10 | Confirmer l'émission d'un virement inverse de remboursement vers l'acheteur à la suite d'une annulation de commande réglée par virement bancaire | UC_V7
 | FS-V11 | Créer, modifier, réordonner et supprimer les annonces défilantes affichées sur la page d'accueil ; chaque annonce comporte un contenu texte, une image ou les deux, et un lien de redirection optionnel au clic | UC_V9
 | FS-V16 | Configurer l'identité visuelle de la boutique : (1) téléverser et gérer le logo affiché dans l'en-tête des deux portails, (2) téléverser et gérer une bannière hero affichée en section supérieure de la page d'accueil du portail acheteur, (3) définir la couleur d'accentuation de l'interface ; la suppression d'une image restaure l'état par défaut ; toute modification est répercutée immédiatement sur le portail acheteur | UC_V11
-| FS-V12 | Importer en masse de nouveaux produits depuis un fichier CSV : validation du format, création des fiches produits, rapport d'erreurs ligne par ligne | UC_V1
-| FS-V13 | Exporter le catalogue produits au format CSV (toutes les fiches actives et archivées) | UC_V1
+| FS-V12 | Importer des produits depuis un fichier CSV : validation du format (`id,nom,description,prix,categorie,quantite,seuil_alerte`) ; si `id` vide → création d'une nouvelle fiche ; si `id` renseigné → mise à jour du stock uniquement (`quantite`, `seuil_alerte`) ; rapport ligne par ligne (Créé / Mis à jour / Erreur) | UC_V1
+| FS-V13 | Exporter le catalogue produits au format CSV (toutes les fiches actives et archivées) avec colonnes `id,nom,description,prix,categorie,quantite,seuil_alerte,statut` ; le fichier est réutilisable directement pour un import de mise à jour de stock (FS-V12) | UC_V1
 | FS-V15 | Exporter la liste des acheteurs ayant donné leur consentement marketing (`consentement_marketing = true`) au format CSV (email, prénom, nom), destiné à l'import dans un outil de mailing externe (CS-22 / RGPD-CONS-003) | UC_B_MKTG
 |===
 

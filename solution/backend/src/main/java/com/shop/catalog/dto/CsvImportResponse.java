@@ -13,6 +13,9 @@ public class CsvImportResponse {
     @Schema(description = "Total number of successfully created products")
     private final int totalCreated;
 
+    @Schema(description = "Total number of products whose stock was updated by id")
+    private final int totalUpdated;
+
     @Schema(description = "Total number of rows that failed to import")
     private final int totalErrors;
 
@@ -20,12 +23,14 @@ public class CsvImportResponse {
      * Constructs the import response.
      *
      * @param rows         per-row import results
-     * @param totalCreated number of successfully imported rows
+     * @param totalCreated number of successfully created rows
+     * @param totalUpdated number of successfully stock-updated rows
      * @param totalErrors  number of failed rows
      */
-    public CsvImportResponse(List<CsvImportRowResult> rows, int totalCreated, int totalErrors) {
+    public CsvImportResponse(List<CsvImportRowResult> rows, int totalCreated, int totalUpdated, int totalErrors) {
         this.rows = rows;
         this.totalCreated = totalCreated;
+        this.totalUpdated = totalUpdated;
         this.totalErrors = totalErrors;
     }
 
@@ -34,6 +39,9 @@ public class CsvImportResponse {
 
     /** @return number of successfully created products */
     public int getTotalCreated() { return totalCreated; }
+
+    /** @return number of products whose stock was updated by id */
+    public int getTotalUpdated() { return totalUpdated; }
 
     /** @return number of rows that failed to import */
     public int getTotalErrors() { return totalErrors; }

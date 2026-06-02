@@ -8,6 +8,8 @@ servers:
 tags:
 - name: Announcements
   description: Public carousel announcements for the buyer portal
+- name: Buyer — Stock subscriptions
+  description: Back-in-stock email alert subscriptions
 - name: Vendor Orders
   description: Vendor order management
 - name: Vendor Catalog
@@ -30,10 +32,14 @@ tags:
   description: Eurozone country reference list
 - name: Vendor — Catalog
   description: Product and stock management for vendors
+- name: Admin — Audit Log
+  description: Security audit log — admin access only (US-SEC-05)
 - name: Auth
   description: Authentication — shared across all actors
 - name: Admin — Carriers
   description: Carrier management for administrators
+- name: Marketing Consent
+  description: Vendor mailing list export (US-PRF-05)
 - name: Orders
   description: Buyer order lifecycle
 - name: Buyer — Cart
@@ -664,6 +670,51 @@ paths:
             '*/*':
               schema:
                 $ref: "#/components/schemas/ImageUploadResponse"
+  /api/profile/stock-subscriptions:
+    get:
+      tags:
+      - Buyer — Stock subscriptions
+      summary: List the buyer's active back-in-stock subscriptions
+      operationId: listSubscriptions
+      responses:
+        "200":
+          description: List returned
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/StockSubscriptionResponse"
+    post:
+      tags:
+      - Buyer — Stock subscriptions
+      summary: Subscribe to a back-in-stock alert for an out-of-stock product
+      operationId: subscribe
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/StockSubscriptionRequest"
+        required: true
+      responses:
+        "409":
+          description: Already subscribed or product is in stock
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/StockSubscriptionResponse"
+        "404":
+          description: Product not found
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/StockSubscriptionResponse"
+        "201":
+          description: Subscription created
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/StockSubscriptionResponse"
   /api/profile/addresses:
     get:
       tags:
@@ -1157,11 +1208,21 @@ paths:
           description: MFA activated
         "401":
           description: Invalid or expired TOTP code
+  /api/auth/logout:
+    post:
+      tags:
+      - Auth
+      summary: Explicit logout — revokes the JWT and clears the session cookie (US-SEC-01)
+      operationId: logout
+      responses:
+        "204":
+          description: Logged out — cookie cleared and token blacklisted
   /api/auth/login:
     post:
       tags:
       - Auth
-      summary: Login — returns a signed JWT or an MFA challenge
+      summary: Login — returns a signed JWT or an MFA challenge; also sets an HttpOnly
+        cookie (US-SEC-01)
       operationId: login
       requestBody:
         content:
@@ -1310,6 +1371,22 @@ paths:
             '*/*':
               schema:
                 $ref: "#/components/schemas/AccountResponse"
+  /api/admin/accounts/revoke-passwords:
+    post:
+      tags:
+      - Admin — Accounts
+      summary: Bulk-revoke passwords (US-SEC-04) — sends reset emails and starts 24
+        h suspension clock
+      operationId: revokePasswords
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RevokePasswordsRequest"
+        required: true
+      responses:
+        "204":
+          description: Passwords revoked and notification emails sent
   /api/vendor/shop/theme:
     patch:
       tags:
@@ -1496,7 +1573,7 @@ paths:
             '*/*':
               schema:
                 $ref: "#/components/schemas/StockAlertResponse"
-  /api/profile/addresses/{addressId}/set-default:
+  /api/profile/addresses/{addressId}/default:
     patch:
       tags:
       - Delivery Addresses
@@ -1948,7 +2025,12 @@ paths:
       summary: Get sales report for a period
       operationId: getSalesReport
       parameters:
-      - name: period
+      - name: startDate
+        in: query
+        required: true
+        schema:
+          type: string
+      - name: endDate
         in: query
         required: true
         schema:
@@ -1984,7 +2066,12 @@ paths:
       summary: Export sales report as a CSV file
       operationId: exportSalesCsv
       parameters:
-      - name: period
+      - name: startDate
+        in: query
+        required: true
+        schema:
+          type: string
+      - name: endDate
         in: query
         required: true
         schema:
@@ -1995,12 +2082,6 @@ paths:
         schema:
           type: string
       responses:
-        "400":
-          description: Invalid period format
-          content:
-            '*/*':
-              schema:
-                type: string
         "401":
           description: Authentication required
           content:
@@ -2009,6 +2090,12 @@ paths:
                 type: string
         "200":
           description: CSV file returned
+          content:
+            '*/*':
+              schema:
+                type: string
+        "400":
+          description: Invalid date format
           content:
             '*/*':
               schema:
@@ -2098,6 +2185,27 @@ paths:
             '*/*':
               schema:
                 $ref: "#/components/schemas/OrderResponse"
+  /api/vendor/marketing-consent/export:
+    get:
+      tags:
+      - Marketing Consent
+      summary: Export mailing list as CSV (US-PRF-05)
+      operationId: exportMailingList
+      responses:
+        "401":
+          description: Not authenticated
+          content:
+            text/csv:
+              schema:
+                type: string
+                format: byte
+        "200":
+          description: CSV file returned
+          content:
+            text/csv:
+              schema:
+                type: string
+                format: byte
   /api/vendor/alerts:
     get:
       tags:
@@ -2317,6 +2425,210 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/CountryResponse"
+  /api/admin/audit-logs:
+    get:
+      tags:
+      - Admin — Audit Log
+      summary: Query audit log with optional filters (US-SEC-05)
+      operationId: queryLogs
+      parameters:
+      - name: eventType
+        in: query
+        required: false
+        schema:
+          type: string
+          enum:
+          - LOGIN_SUCCESS
+          - LOGIN_FAILURE
+          - ACCOUNT_LOCKED
+          - REGISTRATION
+          - ACCOUNT_ACTIVATED
+          - PASSWORD_CHANGED
+          - ACCOUNT_SUSPENDED
+          - ACCOUNT_REACTIVATED
+          - ACCOUNT_DELETED
+          - ACCOUNT_CREATED
+          - RESEND_ACTIVATION
+          - PASSWORD_RESET_REQUESTED
+          - PASSWORD_RESET
+          - MFA_ENABLED
+          - MFA_LOGIN_SUCCESS
+          - MFA_LOGIN_FAILURE
+          - PASSWORD_REVOKED
+          - MARKETING_CONSENT_EXPORT
+      - name: email
+        in: query
+        required: false
+        schema:
+          type: string
+      - name: ipAddress
+        in: query
+        required: false
+        schema:
+          type: string
+      - name: from
+        in: query
+        required: false
+        schema:
+          type: string
+          format: date-time
+      - name: to
+        in: query
+        required: false
+        schema:
+          type: string
+          format: date-time
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 0
+      - name: size
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 20
+      responses:
+        "403":
+          description: Not an ADMIN
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/AuditLogPageResponse"
+        "200":
+          description: Paginated results returned
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/AuditLogPageResponse"
+  /api/admin/audit-logs/partitions:
+    get:
+      tags:
+      - Admin — Audit Log
+      summary: List audit log partition statistics (US-SEC-06)
+      operationId: listPartitions
+      responses:
+        "403":
+          description: Not an ADMIN
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/AuditPartitionStats"
+        "200":
+          description: Partition list returned
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/AuditPartitionStats"
+  /api/admin/audit-logs/export:
+    get:
+      tags:
+      - Admin — Audit Log
+      summary: Export filtered audit log as CSV (US-SEC-05)
+      operationId: exportCsv
+      parameters:
+      - name: eventType
+        in: query
+        required: false
+        schema:
+          type: string
+          enum:
+          - LOGIN_SUCCESS
+          - LOGIN_FAILURE
+          - ACCOUNT_LOCKED
+          - REGISTRATION
+          - ACCOUNT_ACTIVATED
+          - PASSWORD_CHANGED
+          - ACCOUNT_SUSPENDED
+          - ACCOUNT_REACTIVATED
+          - ACCOUNT_DELETED
+          - ACCOUNT_CREATED
+          - RESEND_ACTIVATION
+          - PASSWORD_RESET_REQUESTED
+          - PASSWORD_RESET
+          - MFA_ENABLED
+          - MFA_LOGIN_SUCCESS
+          - MFA_LOGIN_FAILURE
+          - PASSWORD_REVOKED
+          - MARKETING_CONSENT_EXPORT
+      - name: email
+        in: query
+        required: false
+        schema:
+          type: string
+      - name: ipAddress
+        in: query
+        required: false
+        schema:
+          type: string
+      - name: from
+        in: query
+        required: false
+        schema:
+          type: string
+          format: date-time
+      - name: to
+        in: query
+        required: false
+        schema:
+          type: string
+          format: date-time
+      responses:
+        "403":
+          description: Not an ADMIN
+          content:
+            text/csv:
+              schema:
+                type: string
+                format: byte
+        "200":
+          description: CSV file returned
+          content:
+            text/csv:
+              schema:
+                type: string
+                format: byte
+  /api/admin/accounts/revoked:
+    get:
+      tags:
+      - Admin — Accounts
+      summary: List accounts with revoked password awaiting renewal (US-SEC-04)
+      operationId: listRevokedAccounts
+      responses:
+        "200":
+          description: List returned
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/RevokedAccountResponse"
+  /api/profile/stock-subscriptions/{productId}:
+    delete:
+      tags:
+      - Buyer — Stock subscriptions
+      summary: Cancel a back-in-stock subscription
+      operationId: unsubscribe
+      parameters:
+      - name: productId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "204":
+          description: Subscription cancelled
+        "404":
+          description: Subscription not found
 components:
   schemas:
     UpdateProductRequest:
@@ -2525,6 +2837,7 @@ components:
       - countryCode
       - label
       - postalCode
+      - recipientName
       type: object
       properties:
         label:
@@ -2532,6 +2845,12 @@ components:
           minLength: 0
           type: string
           description: "Short label for this address, e.g. Home or Office"
+        recipientName:
+          maxLength: 100
+          minLength: 0
+          type: string
+          description: Name of the parcel recipient — may differ from the buyer's
+            account name
         addressLine:
           maxLength: 255
           minLength: 0
@@ -2565,6 +2884,9 @@ components:
         label:
           type: string
           description: Short label
+        recipientName:
+          type: string
+          description: Name of the parcel recipient
         addressLine:
           type: string
           description: Street address line
@@ -2644,6 +2966,10 @@ components:
           type: integer
           description: Total number of successfully created products
           format: int32
+        totalUpdated:
+          type: integer
+          description: Total number of products whose stock was updated by id
+          format: int32
         totalErrors:
           type: integer
           description: Total number of rows that failed to import
@@ -2658,7 +2984,7 @@ components:
           format: int32
         status:
           type: string
-          description: "Row outcome: CREATED or ERROR"
+          description: "Row outcome: CREATED, UPDATED or ERROR"
         message:
           type: string
           description: Error description when status is ERROR; null when status is
@@ -2723,6 +3049,15 @@ components:
           type: string
           description: Buyer account UUID
           format: uuid
+        buyerFirstName:
+          type: string
+          description: Buyer first name
+        buyerLastName:
+          type: string
+          description: Buyer last name
+        buyerEmail:
+          type: string
+          description: Buyer email address
         carrierId:
           type: string
           description: Carrier UUID
@@ -2737,6 +3072,9 @@ components:
           type: string
           description: Delivery address UUID
           format: uuid
+        deliveryRecipientName:
+          type: string
+          description: Name of the parcel recipient
         deliveryAddressLine:
           type: string
           description: Delivery street address
@@ -2860,6 +3198,39 @@ components:
           enum:
           - LANDSCAPE
           - PORTRAIT
+    StockSubscriptionRequest:
+      required:
+      - productId
+      type: object
+      properties:
+        productId:
+          type: string
+          description: UUID of the out-of-stock product to subscribe to
+          format: uuid
+    StockSubscriptionResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Subscription UUID
+          format: uuid
+        productId:
+          type: string
+          description: Product UUID
+          format: uuid
+        productName:
+          type: string
+          description: Product name
+        photoUrl:
+          type: string
+          description: "First product photo URL, or null"
+        priceTTC:
+          type: number
+          description: Product price incl. tax
+        createdAt:
+          type: string
+          description: Subscription creation timestamp
+          format: date-time
     CreateOrderRequest:
       required:
       - addressId
@@ -3087,6 +3458,9 @@ components:
         lastName:
           type: string
           description: Last name
+        marketingConsent:
+          type: boolean
+          description: "Marketing email opt-in — false by default, must not be pre-checked"
     MfaVerifyRequest:
       required:
       - code
@@ -3106,11 +3480,16 @@ components:
       properties:
         token:
           type: string
-          description: Signed JWT to include in subsequent requests as Bearer token
-            — null when requiresMfa is true
+          description: Signed JWT — also set as an HttpOnly cookie (US-SEC-01). Browser
+            clients should use the cookie; API clients may use this value as a Bearer
+            token.
         email:
           type: string
           description: Authenticated account email
+        role:
+          type: string
+          description: Account role — allows browser clients to determine access level
+            without decoding the JWT
         requiresPasswordSetup:
           type: boolean
           description: True when the account has no password yet — client must call
@@ -3261,6 +3640,7 @@ components:
           enum:
           - FR
           - EN
+          - ES
     AccountResponse:
       type: object
       properties:
@@ -3298,10 +3678,29 @@ components:
           enum:
           - FR
           - EN
+          - ES
         createdAt:
           type: string
           description: Creation timestamp
           format: date-time
+    RevokePasswordsRequest:
+      type: object
+      properties:
+        role:
+          type: string
+          description: Revoke passwords for all active accounts with this role — mutually
+            inclusive with emails
+          enum:
+          - ADMIN
+          - VENDOR
+          - BUYER
+        emails:
+          type: array
+          description: Explicit list of email addresses whose passwords must be revoked
+          items:
+            type: string
+            description: Explicit list of email addresses whose passwords must be
+              revoked
     UpdateShopThemeRequest:
       required:
       - accentColor
@@ -3464,6 +3863,7 @@ components:
           enum:
           - FR
           - EN
+          - ES
         currentPassword:
           type: string
           description: Current password — required when changing password
@@ -3475,6 +3875,9 @@ components:
         confirmPassword:
           type: string
           description: New password confirmation — must match newPassword
+        marketingConsent:
+          type: boolean
+          description: Marketing email opt-in — omit to leave unchanged (RGPD-CONS-001)
     ProfileResponse:
       type: object
       properties:
@@ -3500,6 +3903,7 @@ components:
           enum:
           - FR
           - EN
+          - ES
         role:
           type: string
           description: Account role
@@ -3510,6 +3914,15 @@ components:
         createdAt:
           type: string
           description: Account creation timestamp
+          format: date-time
+        marketingConsent:
+          type: boolean
+          description: Whether the buyer has opted in to commercial marketing emails
+            (RGPD-CONS-001)
+        marketingConsentUpdatedAt:
+          type: string
+          description: Timestamp of the last marketing consent change — null if never
+            changed (RGPD-CONS-002)
           format: date-time
     UpdateCartItemRequest:
       type: object
@@ -3580,6 +3993,7 @@ components:
           enum:
           - FR
           - EN
+          - ES
     SalesMetrics:
       type: object
       properties:
@@ -3600,9 +4014,12 @@ components:
     SalesReportResponse:
       type: object
       properties:
-        period:
+        startDate:
           type: string
-          description: The reporting period in YYYY-MM format.
+          description: Start of the reporting period in YYYY-MM-DD format.
+        endDate:
+          type: string
+          description: End of the reporting period in YYYY-MM-DD format (inclusive).
         category:
           type: string
           description: Optional product category filter applied to this report; null
@@ -3761,3 +4178,122 @@ components:
         nameEn:
           type: string
           description: Country name in English
+    AuditLogPageResponse:
+      type: object
+      properties:
+        content:
+          type: array
+          description: Audit log entries for the requested page
+          items:
+            $ref: "#/components/schemas/AuditLogResponse"
+        totalElements:
+          type: integer
+          description: Total number of matching entries across all pages
+          format: int64
+        totalPages:
+          type: integer
+          description: Total number of pages
+          format: int32
+        page:
+          type: integer
+          description: Zero-based current page index
+          format: int32
+        size:
+          type: integer
+          description: Number of entries per page
+          format: int32
+    AuditLogResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: Database identifier
+          format: int64
+        eventType:
+          type: string
+          description: Security event type
+          enum:
+          - LOGIN_SUCCESS
+          - LOGIN_FAILURE
+          - ACCOUNT_LOCKED
+          - REGISTRATION
+          - ACCOUNT_ACTIVATED
+          - PASSWORD_CHANGED
+          - ACCOUNT_SUSPENDED
+          - ACCOUNT_REACTIVATED
+          - ACCOUNT_DELETED
+          - ACCOUNT_CREATED
+          - RESEND_ACTIVATION
+          - PASSWORD_RESET_REQUESTED
+          - PASSWORD_RESET
+          - MFA_ENABLED
+          - MFA_LOGIN_SUCCESS
+          - MFA_LOGIN_FAILURE
+          - PASSWORD_REVOKED
+          - MARKETING_CONSENT_EXPORT
+        email:
+          type: string
+          description: "Email address of the account involved, or null"
+        ipAddress:
+          type: string
+          description: Originating IP address
+        details:
+          type: string
+          description: Optional free-text context
+        occurredAt:
+          type: string
+          description: UTC timestamp of the event
+          format: date-time
+      description: Audit log entries for the requested page
+    AuditPartitionStats:
+      type: object
+      properties:
+        partitionName:
+          type: string
+          description: "Partition table name, e.g. audit_log_2026_05"
+        rowCount:
+          type: integer
+          description: Number of rows in this partition
+          format: int64
+        sizeBytes:
+          type: integer
+          description: Estimated total size on disk (bytes)
+          format: int64
+    RevokedAccountResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Account UUID
+        email:
+          type: string
+          description: Email address
+        firstName:
+          type: string
+          description: Given name
+        lastName:
+          type: string
+          description: Family name
+        role:
+          type: string
+          description: Account role
+          enum:
+          - ADMIN
+          - VENDOR
+          - BUYER
+        status:
+          type: string
+          description: Account status
+          enum:
+          - PENDING
+          - ACTIVE
+          - SUSPENDED
+          - DELETED
+        revokedAt:
+          type: string
+          description: Timestamp when the password was administratively revoked
+          format: date-time
+        hoursSinceRevocation:
+          type: integer
+          description: Number of whole hours elapsed since the password was revoked
+          format: int64
