@@ -131,6 +131,34 @@ test.describe('US-CAT-06 — Import CSV products', () => {
     await expect(page.getByRole('heading', { name: 'Importer des produits via CSV' })).not.toBeVisible();
   });
 
+  test('export header with statut column — accepted for round-trip reimport', async ({ page }) => {
+    const email = `cat06f-${Date.now()}@shop-test.example`;
+    const password = 'sHp-E2e!Vnd-X9pZ';
+
+    await createActiveVendorViaApi(page, email, password);
+    const token = await getVendorToken(page, email, password);
+    await injectVendorSession(page, email, token);
+    await page.reload();
+
+    await page.getByRole('link', { name: 'Catalogue' }).click();
+    await page.getByRole('button', { name: 'Importer CSV' }).click();
+
+    // Use the export header format (with statut) — must be accepted for the export→reimport cycle
+    const csvContent = [
+      'id,nom,description,prix,categorie,quantite,seuil_alerte,statut',
+      ',Poster montagne,,22.00,,8,2,PUBLISHED',
+    ].join('\n');
+    const csvPath = writeTempCsv(csvContent);
+
+    const fileInput = page.locator('input[type="file"]');
+    await fileInput.setInputFiles(csvPath);
+    fs.unlinkSync(csvPath);
+
+    // Should succeed — statut column is ignored on import
+    await expect(page.getByText('1 produit(s) créé(s), 0 mis à jour, 0 erreur(s).')).toBeVisible();
+    await expect(page.locator('table').last().locator('tbody tr').nth(0).getByText('Créé')).toBeVisible();
+  });
+
   test('stock merge by id — CSV row with id updates stock only', async ({ page }) => {
     const email = `cat06e-${Date.now()}@shop-test.example`;
     const password = 'sHp-E2e!Vnd-X9pZ';
@@ -173,6 +201,19 @@ test.describe('US-CAT-06 — Import CSV products', () => {
     const rows = resultTable.locator('tbody tr');
     await expect(rows.nth(0).getByText('Mis à jour')).toBeVisible();
     await expect(rows.nth(0).getByText('Tableau stock initial')).toBeVisible();
+  });
+
+  test('unauthenticated request — returns 401', async ({ request }) => {
+    const csvContent = [VALID_HEADER, ',Produit test,,10.00,,0,0'].join('\n');
+    const blob = Buffer.from(csvContent, 'utf8');
+
+    const res = await request.post('/api/vendor/products/import', {
+      multipart: {
+        file: { name: 'test.csv', mimeType: 'text/csv', buffer: blob },
+      },
+    });
+
+    expect(res.status()).toBe(401);
   });
 
 });

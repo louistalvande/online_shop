@@ -79,4 +79,61 @@ test.describe('US-CAT-01 — Create product', () => {
     await expect(page.getByText('Le prix HT doit être un nombre positif')).toBeVisible();
   });
 
+  // BES-VND-016 — classify products by type and theme (free-text entry)
+  test('type and theme — saved and visible in product details', async ({ page }) => {
+    const email = `cat01d-${Date.now()}@shop-test.example`;
+    const password = 'sHp-E2e!Vnd-X9pZ';
+
+    await createActiveVendorViaApi(page, email, password);
+    const token = await getVendorToken(page, email, password);
+    await injectVendorSession(page, email, token);
+    await page.reload();
+
+    await page.getByRole('link', { name: 'Catalogue' }).click();
+    await page.getByRole('button', { name: 'Ajouter un produit' }).click();
+
+    await page.getByLabel('Nom').fill('Poster paysage');
+    await page.getByLabel('Prix HT (€)').fill('19.90');
+    await page.getByLabel('Quantité disponible').fill('5');
+    // Fill both classification axes (BES-VND-016)
+    await page.getByLabel('Type de produit').fill('Poster');
+    await page.getByLabel('Thème / occasion').fill('Paysage');
+
+    await page.getByRole('button', { name: 'Enregistrer' }).click();
+    await expect(page.getByRole('heading', { name: 'Ajouter un produit' })).not.toBeVisible();
+
+    // Re-open the product to verify both fields were persisted
+    await page.getByText('Poster paysage').first().click();
+    await expect(page.getByDisplayValue('Poster')).toBeVisible();
+    await expect(page.getByDisplayValue('Paysage')).toBeVisible();
+  });
+
+  // BES-VND-016 — combobox: previously-used values appear as datalist suggestions
+  test('type combobox — existing type appears as suggestion for next product', async ({ page }) => {
+    const email = `cat01e-${Date.now()}@shop-test.example`;
+    const password = 'sHp-E2e!Vnd-X9pZ';
+
+    await createActiveVendorViaApi(page, email, password);
+    const token = await getVendorToken(page, email, password);
+    await injectVendorSession(page, email, token);
+    await page.reload();
+
+    await page.getByRole('link', { name: 'Catalogue' }).click();
+
+    // Create first product with a specific type
+    await page.getByRole('button', { name: 'Ajouter un produit' }).click();
+    await page.getByLabel('Nom').fill('Carte anniversaire');
+    await page.getByLabel('Prix HT (€)').fill('5.00');
+    await page.getByLabel('Quantité disponible').fill('20');
+    await page.getByLabel('Type de produit').fill('Carte');
+    await page.getByLabel('Thème / occasion').fill('Anniversaire');
+    await page.getByRole('button', { name: 'Enregistrer' }).click();
+    await expect(page.getByRole('heading', { name: 'Ajouter un produit' })).not.toBeVisible();
+
+    // Open a second product form — the type 'Carte' must appear in the datalist
+    await page.getByRole('button', { name: 'Ajouter un produit' }).click();
+    await expect(page.locator('#pf-category-list option[value="Carte"]')).toBeAttached();
+    await expect(page.locator('#pf-theme-list option[value="Anniversaire"]')).toBeAttached();
+  });
+
 });
