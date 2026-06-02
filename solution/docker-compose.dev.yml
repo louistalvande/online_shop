@@ -38,6 +38,8 @@ services:
       APP_PASSWORD_RESET_BASE_URL: http://localhost:5073
     volumes:
       - ./backend:/workspace
+      - backend-m2:/root/.m2
+      - backend-vscode:/root/.vscode-server
     depends_on:
       db:
         condition: service_healthy
@@ -57,6 +59,7 @@ services:
       API_TARGET: http://backend:8080
     volumes:
       - ./frontend:/workspace
+      - buyer-portal-vscode:/root/.vscode-server
     depends_on:
       - backend
 
@@ -73,6 +76,7 @@ services:
       API_TARGET: http://backend:8080
     volumes:
       - ./frontend:/workspace
+      - vendor-backoffice-vscode:/root/.vscode-server
     depends_on:
       - backend
 
@@ -89,5 +93,13 @@ services:
       API_TARGET: http://backend:8080
     volumes:
       - ./frontend:/workspace
+      - admin-console-vscode:/root/.vscode-server
     depends_on:
       - backend
+
+volumes:
+  backend-m2:
+  backend-vscode:
+  buyer-portal-vscode:
+  vendor-backoffice-vscode:
+  admin-console-vscode:
