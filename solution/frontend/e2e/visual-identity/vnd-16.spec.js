@@ -161,8 +161,9 @@ test.describe('UCSA-16 — Visual identity', () => {
 
   test('nominal — reset button restores default accent colour #4e8b82', async ({ page }) => {
     const hexInput = page.locator('input[placeholder="#4e8b82"]');
-    // Set a non-default colour so the reset button appears
-    await hexInput.fill('#123456');
+    // Triple-click to select all, then type to trigger React onChange
+    await hexInput.click({ clickCount: 3 });
+    await hexInput.pressSequentially('#123456');
     const colorSection = page.locator('section').filter({ hasText: 'Couleurs de la boutique' });
     await expect(colorSection.getByRole('button', { name: 'Réinitialiser' }).first()).toBeVisible();
 

@@ -104,8 +104,8 @@ test.describe('US-CAT-01 — Create product', () => {
 
     // Re-open the product to verify both fields were persisted
     await page.getByText('Poster paysage').first().click();
-    await expect(page.getByDisplayValue('Poster')).toBeVisible();
-    await expect(page.getByDisplayValue('Paysage')).toBeVisible();
+    await expect(page.getByLabel('Type de produit')).toHaveValue('Poster');
+    await expect(page.getByLabel('Thème / occasion')).toHaveValue('Paysage');
   });
 
   // BES-VND-016 — combobox: previously-used values appear as datalist suggestions

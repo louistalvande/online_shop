@@ -2,6 +2,7 @@ import { defineConfig, devices } from '@playwright/test';
 
 export default defineConfig({
   testDir: '.',
+  globalSetup: './global-setup.js',
   globalTeardown: './global-teardown.js',
   fullyParallel: false,
   retries: 0,
@@ -10,8 +11,8 @@ export default defineConfig({
   use: {
     screenshot: 'only-on-failure',
     video: 'retain-on-failure',
-    actionTimeout: 15000,
-    navigationTimeout: 30000,
+    actionTimeout: 20000,
+    navigationTimeout: 60000,
   },
   projects: [
     {

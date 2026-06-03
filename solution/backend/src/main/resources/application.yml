@@ -54,7 +54,7 @@ jwt:
 
 app:
   # Comma-separated list of browser origins allowed to make credentialed cross-origin requests (US-SEC-02 / CPA-12)
-  allowed-origins: ${APP_ALLOWED_ORIGINS:http://localhost:5173,http://localhost:5174,http://localhost:5175,http://buyer.localhost,http://vendor.localhost,http://admin.localhost}
+  allowed-origins: ${APP_ALLOWED_ORIGINS:http://localhost:5173,http://localhost:5174,http://localhost:5175,http://buyer.localhost,http://vendor.localhost,http://admin.localhost,http://buyer-portal,http://vendor-backoffice,http://admin-console}
   # AES-256 key for TOTP secret column encryption (US-SEC-07 / FS-S08 / CPA-14).
   # Must be a Base64-encoded 32-byte (256-bit) random value.
   # NEVER commit a production key here — inject via TOTP_ENCRYPTION_KEY env var.

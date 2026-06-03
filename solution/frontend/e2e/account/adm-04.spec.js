@@ -26,7 +26,9 @@ test.describe('US-ADM-04 — Delete account', () => {
     await page.getByRole('button', { name: 'Supprimer' }).click();
 
     await expect(page.getByText('Compte supprimé.')).toBeVisible();
-    await expect(page.getByText(account.email)).not.toBeVisible();
+    // The list re-fetches after deletion; reload to assert the account is truly gone.
+    await page.reload();
+    await expect(page.locator('tr').filter({ hasText: account.email })).toHaveCount(0);
   });
 
   test('cancel — dismissing the confirmation dialog does not delete the account', async ({ page }) => {
@@ -38,6 +40,6 @@ test.describe('US-ADM-04 — Delete account', () => {
     await page.getByRole('button', { name: 'Annuler' }).click();
 
     await expect(page.getByRole('heading', { name: 'Supprimer le compte' })).not.toBeVisible();
-    await expect(page.getByText(account.email)).toBeVisible();
+    await expect(page.locator('tr').filter({ hasText: account.email })).toBeVisible();
   });
 });
