@@ -8,8 +8,12 @@ export default defineConfig({
   retries: 0,
   timeout: 120000,
   expect: { timeout: 15000 },
+  reporter: [
+    ['html', { outputFolder: 'playwright-report', open: 'never' }],
+    ['list'],
+  ],
   use: {
-    screenshot: 'only-on-failure',
+    screenshot: 'on',
     video: 'retain-on-failure',
     actionTimeout: 20000,
     navigationTimeout: 60000,
@@ -17,7 +21,7 @@ export default defineConfig({
   projects: [
     {
       name: 'admin-console',
-      testMatch: ['account/**/*.spec.js', 'carrier/**/*.spec.js'],
+      testMatch: ['account/**/*.spec.js', 'carrier/**/*.spec.js', 'settings/**/*.spec.js'],
       use: {
         ...devices['Desktop Chrome'],
         baseURL: process.env.ADMIN_URL ?? 'http://admin.localhost',
@@ -25,7 +29,7 @@ export default defineConfig({
     },
     {
       name: 'buyer-portal',
-      testMatch: ['registration/**/*.spec.js', 'profile/prf-01.spec.js', 'profile/prf-03.spec.js', 'profile/prf-04.spec.js', 'shop/**/*.spec.js', 'i18n/**/*.spec.js'],
+      testMatch: ['registration/**/*.spec.js', 'profile/prf-01.spec.js', 'profile/prf-03.spec.js', 'profile/prf-04.spec.js', 'shop/**/*.spec.js', 'i18n/**/*.spec.js', 'buyer-auth/**/*.spec.js', 'buyer-shop/**/*.spec.js', 'buyer-cart/**/*.spec.js', 'buyer-checkout/**/*.spec.js', 'buyer-orders/**/*.spec.js'],
       use: {
         ...devices['Desktop Chrome'],
         baseURL: process.env.BUYER_URL ?? 'http://buyer.localhost',
@@ -33,7 +37,7 @@ export default defineConfig({
     },
     {
       name: 'vendor-portal',
-      testMatch: ['profile/prf-02.spec.js', 'profile/prf-05.spec.js', 'catalog/**/*.spec.js', 'announcement/**/*.spec.js', 'visual-identity/**/*.spec.js'],
+      testMatch: ['profile/prf-02.spec.js', 'profile/prf-05.spec.js', 'catalog/**/*.spec.js', 'announcement/**/*.spec.js', 'visual-identity/**/*.spec.js', 'vendor-dashboard/**/*.spec.js', 'vendor-orders/**/*.spec.js', 'reports/**/*.spec.js'],
       use: {
         ...devices['Desktop Chrome'],
         baseURL: process.env.VENDOR_URL ?? 'http://vendor.localhost',

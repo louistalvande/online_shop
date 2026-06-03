@@ -182,7 +182,10 @@ test.describe('UCSA-16 — Visual identity', () => {
 
   test('nominal — bgColor persisted in public theme API after save', async ({ page }) => {
     const hexInput = page.locator('input[placeholder="#f2f6f5"]');
-    await hexInput.fill('#e8f0fe');
+    // Wait for the initial theme fetch to populate the input before modifying
+    await expect(hexInput).toHaveValue('#f2f6f5');
+    await hexInput.click({ clickCount: 3 });
+    await hexInput.pressSequentially('#e8f0fe');
     await page.getByRole('button', { name: 'Enregistrer' }).click();
     await expect(page.getByText('Couleurs mises à jour.')).toBeVisible();
 
