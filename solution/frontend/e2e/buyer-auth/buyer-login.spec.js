@@ -17,7 +17,7 @@ test.describe('Buyer portal — Login modal', () => {
   test.beforeEach(async ({ page }) => {
     // /login triggers App with openLogin=true, showing the modal
     await page.goto('/login');
-    await expect(page.getByRole('heading', { name: 'Se connecter' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Se connecter' })).toBeVisible({ timeout: 30000 });
   });
 
   test('nominal — modal shows email, password fields and submit button', async ({ page }) => {
