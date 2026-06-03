@@ -15,3 +15,4 @@ solution/backend/uploads/products/*
 solution/backend/uploads/announcements/*
 solution/backend/uploads/logos/*
 solution/backend/uploads/banners/*
+solution/frontend/e2e/playwright-report/*

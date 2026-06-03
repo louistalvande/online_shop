@@ -7,6 +7,7 @@
     "test:admin": "node --env-file=.env ./node_modules/.bin/playwright test --project=admin-console",
     "test:buyer": "node --env-file=.env ./node_modules/.bin/playwright test --project=buyer-portal",
     "test:docker": "node --env-file=.env.docker ./node_modules/.bin/playwright test",
+    "test:ci": "node ./node_modules/.bin/playwright test",
     "test:docker:admin": "node --env-file=.env.docker ./node_modules/.bin/playwright test --project=admin-console",
     "test:docker:vendor": "node --env-file=.env.docker ./node_modules/.bin/playwright test --project=vendor-portal",
     "test:docker:buyer": "node --env-file=.env.docker ./node_modules/.bin/playwright test --project=buyer-portal"
