@@ -194,7 +194,8 @@ test.describe('UCSA-16 — Visual identity', () => {
 
   test('nominal — reset button restores default background colour #f2f6f5', async ({ page }) => {
     const hexInput = page.locator('input[placeholder="#f2f6f5"]');
-    await hexInput.fill('#abcdef');
+    await hexInput.click({ clickCount: 3 });
+    await hexInput.pressSequentially('#abcdef');
     const colorSection = page.locator('section').filter({ hasText: 'Couleurs de la boutique' });
     // The bg reset button is the second Réinitialiser in the section
     await expect(colorSection.getByRole('button', { name: 'Réinitialiser' }).last()).toBeVisible();

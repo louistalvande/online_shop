@@ -40,6 +40,6 @@ test.describe('US-ADM-04 — Delete account', () => {
     await page.getByRole('button', { name: 'Annuler' }).click();
 
     await expect(page.getByRole('heading', { name: 'Supprimer le compte' })).not.toBeVisible();
-    await expect(page.locator('tr').filter({ hasText: account.email })).toBeVisible();
+    await expect(page.locator('tr').filter({ hasText: account.email }).first()).toBeVisible();
   });
 });

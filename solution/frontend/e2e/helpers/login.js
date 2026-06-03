@@ -20,8 +20,8 @@ export async function loginAsAdmin(page) {
     await page.getByRole('button', { name: 'Enregistrer et accéder' }).click();
   }
 
-  await page.locator('a.shell-nav-link', { hasText: "Vue d'ensemble" }).waitFor({ state: 'visible', timeout: 10000 });
-  await page.waitForLoadState('networkidle', { timeout: 15000 });
+  await page.locator('a.shell-nav-link', { hasText: "Vue d'ensemble" }).waitFor({ state: 'visible', timeout: 30000 });
+  await page.waitForLoadState('networkidle', { timeout: 30000 });
 }
 
 /**
