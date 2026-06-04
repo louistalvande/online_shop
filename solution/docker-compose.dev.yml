@@ -121,7 +121,7 @@ services:
       - admin-console
     profiles:
       - e2e
-    command: ["sh", "-c", "npm install && npm run test:ci"]
+    command: ["sh", "-c", "npm install && npm run test:ci -- --workers=2"]
 
 volumes:
   backend-m2:
