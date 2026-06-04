@@ -26,7 +26,7 @@ NOTE: Les choix technologiques retenus ci-dessous sont des recommandations archi
 
 | CPA-01
 | Déploiement conteneurisé
-| Chaque composant déployable est encapsulé dans un conteneur Docker. L'orchestration locale utilise Docker Compose (développement) et Kubernetes (production). En développement, chaque SPA dispose de son propre conteneur (`shop-buyer-portal`, `shop-vendor-backoffice`, `shop-admin-console`) pour permettre une connexion VS Code Remote SSH indépendante par application (CPA-06).
+| Chaque composant déployable est encapsulé dans un conteneur Docker. L'orchestration locale utilise Docker Compose (développement) et Kubernetes (production). Chaque SPA dispose de son propre conteneur (`shop-buyer-portal`, `shop-vendor-backoffice`, `shop-admin-console`) pour permettre une connexion VS Code Remote SSH indépendante par application (CPA-06). Un conteneur dédié aux tests E2E (`shop-e2e`) est disponible en développement via le profil Docker Compose `e2e`; il n'est jamais instancié en production.
 
 | CPA-02
 | HTTPS obligatoire
@@ -203,20 +203,45 @@ NOTE: Les choix technologiques retenus ci-dessous sont des recommandations archi
 
 | — (reverse proxy)
 | Nginx
-| *Développement* : un conteneur Nginx par SPA (`shop-buyer-portal` :5173, `shop-vendor-backoffice` :5174, `shop-admin-console` :5175) embarqué avec un Dockerfile partagé (`frontend/Dockerfile.dev`, arg `NGINX_CONF`) ; chaque instance proxy son Vite dev server interne (:5173) et relaie `/api` vers le backend. L'en-tête `Host` est réécrit en `localhost` pour lever le contrôle d'hôte de Vite (CPA-09). *Production* : un seul conteneur Nginx assure la terminaison TLS (CPA-02), sert les bundles SPA statiques compilés et proxy l'API REST ; rate limiting activé.
+| Un conteneur Nginx par SPA dans les deux environnements. *Développement* (`shop-buyer-portal` :5173, `shop-vendor-backoffice` :5174, `shop-admin-console` :5175) : Dockerfile partagé (`frontend/Dockerfile.dev`, arg `NGINX_CONF`) ; chaque instance proxy son Vite dev server interne (:5173) et relaie `/api` vers le backend. *Production* : même topologie à trois conteneurs — chaque Nginx sert le bundle SPA statique compilé et proxy `/api` vers le backend via le réseau interne ; terminaison TLS (CPA-02), en-têtes de sécurité (CPA-09) et rate limiting activés sur chacun.
+
+| — (tests E2E)
+| mcr.microsoft.com/playwright:v1.60.0-jammy
+| *Développement uniquement.* Conteneur `shop-e2e` activé par le profil Docker Compose `e2e`. Embarque Chromium, `@playwright/test` et le pilote PostgreSQL `pg` pour le teardown de base de données. Accède aux autres conteneurs via le réseau Docker interne (`backend:8080`, `buyer-portal:80`, `vendor-backoffice:80`, `admin-console:80`, `db:5432`). Lancé à la demande avec `docker compose --profile e2e run --rm e2e` ; absent du déploiement de production.
 
 | — (conteneurisation)
 | Docker / Docker Compose / Kubernetes
 | Isolation des composants (CPA-01), déploiements reproductibles par environnement (CPA-06)
 |===
 
-== Diagramme de déploiement
+== Diagrammes de déploiement
 
-Ce diagramme représente la topologie des nœuds physiques et l'allocation des composants logiques aux conteneurs Docker.
+Les deux vues ci-dessous distinguent l'environnement de développement (Docker Compose local avec conteneur E2E optionnel) et l'environnement de production (Kubernetes, Nginx TLS, sans outillage de test).
 
-[plantuml, pa-deployment, svg]
+=== Vue développement
+
+Topologie Docker Compose locale (`docker-compose.dev.yml`). Même structure à trois conteneurs que la production, avec deux différences :
+
+. *Vite dev server* à la place des bundles statiques — chaque conteneur frontend embarque un Vite dev server (:5173) derrière Nginx, avec Hot Module Replacement et connexion VS Code Remote SSH.
+. *Container Playwright `shop-e2e`* — absent en production, activé à la demande via le profil `e2e` (`docker compose --profile e2e run --rm e2e`) pour exécuter la suite de tests E2E et remettre la base en état seed.
+
+.Diagramme de déploiement — environnement de développement
+[plantuml, pa-deployment-dev, svg]
 ----
-include::diagrams/pa-deployment.puml[]
+include::diagrams/pa-deployment-dev.puml[]
+----
+
+=== Vue production
+
+Topologie cible (Kubernetes). Même structure à trois conteneurs que le développement, sans les deux composants dev-only :
+
+. Nginx sert des *bundles statiques compilés* (`vite build`) à la place du Vite dev server.
+. Le *container Playwright `shop-e2e`* n'est pas instancié — les tests E2E s'exécutent en CI/CD avant déploiement, jamais en production.
+
+.Diagramme de déploiement — environnement de production
+[plantuml, pa-deployment-prod, svg]
+----
+include::diagrams/pa-deployment-prod.puml[]
 ----
 
 == Diagramme de composants physiques

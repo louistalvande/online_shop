@@ -1,0 +1,91 @@
+@startuml pa-deployment-prod
+!theme plain
+skinparam shadowing false
+skinparam defaultFontSize 11
+skinparam defaultFontName "DejaVu Sans"
+top to bottom direction
+
+skinparam node {
+  BackgroundColor #F0F8FF
+  BorderColor #2E75B6
+  FontSize 11
+}
+skinparam component {
+  BackgroundColor #E8F4FD
+  BorderColor #2E75B6
+  FontSize 10
+}
+skinparam frame {
+  BackgroundColor #FAFAFA
+  BorderColor #AAAAAA
+}
+skinparam note {
+  BackgroundColor #FFFBE6
+  BorderColor #F0A500
+}
+skinparam ArrowColor #2E75B6
+
+actor "Acheteur"  as UserB
+actor "Vendeur"   as UserV
+actor "Admin"     as UserA
+
+node "shop-buyer-portal\nNginx — bundle statique + proxy /api (CPA-02, CPA-09)" as BuyerNode {
+  component "front-acheteur\n(React SPA compilé)" as FrontB
+}
+
+node "shop-vendor-backoffice\nNginx — bundle statique + proxy /api (CPA-02, CPA-09)" as VendorNode {
+  component "front-vendeur\n(React SPA compilé)" as FrontV
+}
+
+node "shop-admin-console\nNginx — bundle statique + proxy /api (CPA-02, CPA-09)" as AdminNode {
+  component "front-admin\n(React SPA compilé)" as FrontA
+}
+
+node "shop-backend\nSpring Boot — API REST stateless (CPA-05)" as AppServer {
+  frame "Modules métier" {
+    component "compte · catalogue · panier\ncommande · paiement\nexpédition · notification · rapport" as Modules
+  }
+  frame "Adaptateurs SDK" {
+    component "Stripe Java SDK  |  SendGrid Java SDK" as Adapters
+  }
+}
+
+node "shop-db\nPostgreSQL 16 (CPA-03)" as DB {
+  database "boutique_db\n(Flyway)" as PgDB
+}
+
+node "shop-redis\nRedis 7 (CPA-04)" as Cache {
+  database "Paniers (CS-03)\nBlacklist JWT" as RedisDB
+}
+
+component "Stripe API\n(IFS-04)" as Stripe #D5E8F0
+component "SendGrid\n(IFS-06)"   as SendGrid #D5E8F0
+
+UserB -down-> BuyerNode  : HTTPS :443
+UserV -down-> VendorNode : HTTPS :443
+UserA -down-> AdminNode  : HTTPS :443
+
+BuyerNode  -down-> AppServer : HTTP /api (réseau interne)
+VendorNode -down-> AppServer : HTTP /api (réseau interne)
+AdminNode  -down-> AppServer : HTTP /api (réseau interne)
+
+AppServer -down-> DB    : TCP :5432 (IFL-13)
+AppServer -down-> Cache : TCP :6379 (CPA-04)
+
+Adapters -right-> Stripe   : HTTPS :443 (IFS-04)
+Stripe   -left->  Adapters : webhook signé
+Adapters -right-> SendGrid : HTTPS :443 (IFS-06)
+
+note right of BuyerNode
+  HSTS · CSP · X-Frame-Options
+  Cookies : Secure; HttpOnly; SameSite=Strict
+  Rate limiting activé
+end note
+
+note right of AppServer
+  JWT HMAC-SHA-256 (CPA-08)
+  BCrypt coût 12 (CPA-10)
+  MFA TOTP (CPA-15)
+end note
+
+@enduml
