@@ -545,16 +545,16 @@ _Fonctions ARCADIA : FS-V17 — UCSA-17 — LA : Service Campagne Marketing / Se
 | *US-MKTG-01*
 | En tant que vendeur, je peux composer et envoyer une campagne email promotionnelle à l'ensemble des acheteurs actifs ayant donné leur consentement marketing.
 a|
-- [ ] Section « Campagnes email » accessible dans le back-office vendeur (IHM : formulaire objet + corps)
-- [ ] Le système affiche le nombre d'acheteurs consentants actifs disponibles avant envoi
-- [ ] Le bouton « Envoyer » est désactivé si aucun acheteur consentant actif n'existe, avec message explicatif
-- [ ] Les champs « Objet » et « Corps du message » sont obligatoires ; soumission bloquée si l'un est vide (validation frontend et backend)
-- [ ] L'envoi déclenche l'émission d'un email à chaque acheteur actif (`status = ACTIVE`) avec `marketing_consent = true` ; le contenu est celui saisi par le vendeur (non localisé)
-- [ ] Après envoi, le système affiche : nombre de destinataires atteints et horodatage
-- [ ] Chaque campagne est journalisée en table `campaign_log` : date, `vendor_id`, `recipient_count`, statut (`SUCCESS` / `PARTIAL` / `FAILED`)
-- [ ] Endpoint : `POST /api/vendor/campaigns/send` protégé rôle VENDOR — retourne `400 NO_CONSENTING_BUYERS` si liste vide
-- [ ] Seuls les comptes vendeur authentifiés peuvent déclencher l'envoi
-| À faire
+- [x] Section « Campagnes email » accessible dans le back-office vendeur (IHM : formulaire objet + corps)
+- [x] Le système affiche le nombre d'acheteurs consentants actifs disponibles avant envoi
+- [x] Le bouton « Envoyer » est désactivé si aucun acheteur consentant actif n'existe, avec message explicatif
+- [x] Les champs « Objet » et « Corps du message » sont obligatoires ; soumission bloquée si l'un est vide (validation frontend et backend)
+- [x] L'envoi déclenche l'émission d'un email à chaque acheteur actif (`status = ACTIVE`) avec `marketing_consent = true` ; le contenu est celui saisi par le vendeur (non localisé)
+- [x] Après envoi, le système affiche : nombre de destinataires atteints et horodatage
+- [x] Chaque campagne est journalisée en table `campaign_log` : date, `vendor_id`, `recipient_count`, statut (`SUCCESS` / `PARTIAL` / `FAILED`)
+- [x] Endpoint : `POST /api/vendor/campaigns/send` protégé rôle VENDOR — retourne `400 NO_CONSENTING_BUYERS` si liste vide
+- [x] Seuls les comptes vendeur authentifiés peuvent déclencher l'envoi
+| Terminée
 
 |===
 

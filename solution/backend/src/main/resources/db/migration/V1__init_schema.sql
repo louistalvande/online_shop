@@ -388,3 +388,20 @@ CREATE INDEX idx_back_in_stock_product ON back_in_stock_subscriptions (product_i
 CREATE INDEX idx_back_in_stock_buyer   ON back_in_stock_subscriptions (buyer_id);
 
 
+-- Marketing campaign log (US-MKTG-01 / FS-V17).
+-- Records every promotional email campaign sent by a vendor to consenting buyers.
+
+CREATE TABLE marketing_campaigns (
+    id               UUID         PRIMARY KEY DEFAULT gen_random_uuid(),
+    vendor_id        UUID         NOT NULL REFERENCES accounts(id),
+    subject          VARCHAR(200) NOT NULL,
+    body             TEXT         NOT NULL,
+    recipient_count  INTEGER      NOT NULL,
+    status           VARCHAR(20)  NOT NULL DEFAULT 'SUCCESS',
+    sent_at          TIMESTAMPTZ  NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX idx_marketing_campaigns_vendor_id ON marketing_campaigns (vendor_id);
+CREATE INDEX idx_marketing_campaigns_sent_at   ON marketing_campaigns (sent_at);
+
+

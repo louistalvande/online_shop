@@ -308,6 +308,18 @@ public class NotificationServiceImpl implements NotificationService {
         sendEmail(toEmail, subject, htmlBody);
     }
 
+    /** {@inheritDoc} */
+    @Async
+    @Override
+    public void sendMarketingCampaignEmail(String toEmail, String subject, String body, Locale locale) {
+        if (!sendGridConfigured) {
+            log.info("[EMAIL] Marketing campaign to {} — subject: {}", toEmail, subject);
+            return;
+        }
+        String htmlBody = "<p>" + body.replace("\n", "</p><p>") + "</p>";
+        sendEmail(toEmail, subject, htmlBody);
+    }
+
     /**
      * Sends an HTML email via SendGrid and logs a warning on failure.
      *

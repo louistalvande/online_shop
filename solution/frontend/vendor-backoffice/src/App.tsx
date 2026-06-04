@@ -11,6 +11,7 @@ import CatalogPage from './CatalogPage'
 import ReportsPage from './ReportsPage'
 import VisualIdentityPage from './VisualIdentityPage'
 import AnnouncementsPage from './AnnouncementsPage'
+import CampaignsPage from './CampaignsPage'
 import MaintenancePage from './MaintenancePage'
 
 export default function App() {
@@ -63,6 +64,7 @@ export default function App() {
       {page === 'catalog' && <CatalogPage />}
       {page === 'reports' && <ReportsPage />}
       {page === 'announcements' && <AnnouncementsPage />}
+      {page === 'campaigns' && <CampaignsPage />}
       {page === 'visual-identity' && <VisualIdentityPage onLogoChange={url => setLogoUrl(url)} />}
     </Header>
   )

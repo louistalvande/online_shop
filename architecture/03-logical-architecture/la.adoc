@@ -728,34 +728,29 @@ package "Entités métier (SA)" #F0F8FF {
 
   class Commande {
     + id : UUID
-    + adresseLivraisonId : UUID
+    + orderNumber : String
+    + buyerId : UUID
     + modeLivraison : String
+    + carrierId : UUID
+    + carrierName : String
+    + carrierTrackingUrl : URL
+    + trackingNumber : String
     + montantTotal : Decimal
+    + modePaiement : Enum {CARD, WIRE_TRANSFER}
+    + stripePaymentIntentId : String
+    + ibanAcheteur : String
     + statut : Enum {paiement_en_attente_virement,\nen_attente, en_préparation,\nexpédiée, demande_annulation,\nen_attente_retour,\nremboursement_virement_en_cours,\nlivrée, annulée}
     + dateCommande : DateTime
   }
+  note right of Commande
+    Paiement et expédition sont des champs
+    embarqués dans Commande — pas d'entités
+    séparées (choix d'implémentation).
+  end note
 
   class LigneCommande {
     + quantité : Integer
     + prixUnitaireCapturé : Decimal
-  }
-
-  class Paiement {
-    + id : UUID
-    + montant : Decimal
-    + mode : Enum {carte, virement}
-    + statut : Enum {en_attente_virement,\nautorisé, refusé, remboursé,\nvirement_inverse_en_cours}
-    + référencePrestataire : String
-    + ibanAcheteur : String
-    + date : DateTime
-  }
-
-  class Expédition {
-    + id : UUID
-    + numéroSuivi : String
-    + statutLivraison : String
-    + dateExpédition : DateTime
-    + dateLivraisonEstimée : Date
   }
 
   class Transporteur {
@@ -764,6 +759,36 @@ package "Entités métier (SA)" #F0F8FF {
     + paysSupportés : List<CodeISO>
     + urlSuivi : URL
     + actif : Boolean
+  }
+
+  class Annonce {
+    + id : UUID
+    + vendorId : UUID
+    + contentType : Enum {TEXT, IMAGE, BOTH}
+    + textContent : String
+    + imageUrl : URL
+    + imageOrientation : Enum {PORTRAIT, LANDSCAPE}
+    + redirectUrl : URL
+    + sortOrder : Integer
+    + active : Boolean
+    + createdAt : DateTime
+  }
+
+  class AbonnementStockRetour {
+    + id : UUID
+    + buyerId : UUID
+    + productId : UUID
+    + createdAt : DateTime
+  }
+
+  class AlerteStock {
+    + id : UUID
+    + productId : UUID
+    + productName : String
+    + quantité : Integer
+    + seuilAlerte : Integer
+    + acknowledged : Boolean
+    + createdAt : DateTime
   }
 
 }
@@ -778,45 +803,71 @@ package "Entités techniques (LA)" #FFF8E8 {
     + utilisé : Boolean
   }
 
-  class JournalPaiement {
+  class PasswordResetToken {
     + id : UUID
-    + paiementId : UUID
-    + événement : String
-    + données : JSON
-    + timestamp : DateTime
+    + compteId : UUID
+    + token : UUID
+    + expireAt : OffsetDateTime
+    + used : Boolean
   }
 
-  class TemplateNotification {
+  class JournalSecurité {
     + id : UUID
-    + code : String
-    + canal : Enum {email}
-    + sujet : String
-    + corps : Text
+    + userId : UUID
+    + eventType : Enum {LOGIN, LOGOUT, LOGIN_FAILED, ...}
+    + ipAddress : String
+    + details : String
+    + occurredAt : DateTime
   }
+  note right of JournalSecurité
+    Table audit_log — partitionnée par mois,
+    purge après 13 mois (CPA-13 / SEC-LOG-003).
+  end note
+
+  class CampagneMarketing {
+    + id : UUID
+    + vendorId : UUID
+    + subject : String
+    + body : Text
+    + recipientCount : Integer
+    + status : Enum {SUCCESS, PARTIAL, FAILED}
+    + sentAt : OffsetDateTime
+  }
+
+  class ParametrePlateforme {
+    + key : String
+    + value : String
+  }
+  note right of ParametrePlateforme
+    Table platform_settings —
+    maintenance_mode, shop_accent_color, shop_bg_color.
+  end note
+
 }
 
 CompteUtilisateur "1" --> "0..*" TokenActivation : génère
+CompteUtilisateur "1" --> "0..*" PasswordResetToken : génère
 CompteUtilisateur "1" --> "0..*" AdresseLivraison : carnet
 CompteUtilisateur "1" --> "0..1" Panier : possède
 CompteUtilisateur "1" --> "0..*" Commande : passe
+CompteUtilisateur "1" --> "0..*" CampagneMarketing : envoie
 Commande "0..*" --> "1" AdresseLivraison : livrée à
 Panier "1" *-- "0..*" LignePanier : contient
 LignePanier "0..*" --> "1" Produit : référence
 Commande "1" *-- "1..*" LigneCommande : contient
 LigneCommande "0..*" --> "1" Produit : référence
-Commande "1" *-- "1" Paiement : réglée par
-Commande "1" *-- "0..1" Expédition : donne lieu à
-Expédition "0..*" --> "1" Transporteur : acheminée par
-Paiement "1" *-- "0..*" JournalPaiement : journalisé par
+AbonnementStockRetour "0..*" --> "1" Produit : surveille
+AlerteStock "0..*" --> "1" Produit : concerne
 
 note bottom of TokenActivation
   CS-07 : TTL 24h
   usage unique (utilisé = true après activation)
 end note
 
-note bottom of JournalPaiement
-  CS-06 : toutes les transactions
-  financières sont journalisées
+note bottom of JournalSecurité
+  CS-06 / SEC-LOG : toutes les transactions
+  financières et événements de sécurité
+  sont journalisés dans audit_log.
 end note
 ----
 
