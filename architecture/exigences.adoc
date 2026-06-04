@@ -135,11 +135,11 @@ NOTE: L'administrateur n'a pas accès aux données personnelles des comptes (nom
 | UC_V9, Activités vendeur
 
 | BES-VND-012
-| Le vendeur a besoin d'importer en masse de nouveaux produits dans le catalogue partagé depuis un fichier CSV, afin de gagner du temps lors d'une initialisation ou d'un renouvellement important de l'offre.
+| Le vendeur a besoin d'importer en masse des produits dans le catalogue partagé depuis un fichier CSV : créer de nouvelles fiches produits, ou mettre à jour uniquement le stock de produits existants, afin de gagner du temps lors d'une initialisation, d'un renouvellement de l'offre ou d'un réapprovisionnement en masse.
 | UC_V1, Activités vendeur
 
 | BES-VND-013
-| Le vendeur a besoin d'exporter l'ensemble du catalogue produits partagé au format CSV afin de le consulter hors ligne, le partager ou le réimporter ultérieurement.
+| Le vendeur a besoin d'exporter l'ensemble du catalogue produits partagé au format CSV afin de le consulter hors ligne, le partager ou le réimporter ultérieurement pour mettre à jour les stocks en masse.
 | UC_V1, Activités vendeur
 
 | BES-VND-014
@@ -147,7 +147,7 @@ NOTE: L'administrateur n'a pas accès aux données personnelles des comptes (nom
 | UC_V2, Activités vendeur
 
 | BES-VND-015
-| Le vendeur a besoin de personnaliser l'identité visuelle de sa boutique en configurant l'ensemble de ses visuels. Chaque visuel peut être téléversé, remplacé ou supprimé ; la suppression restaure l'état par défaut. Toute modification est répercutée immédiatement sur le portail acheteur, sans interruption de service. Les visuels des annonces défilantes du carrousel sont gérés via `BES-VND-011`.
+| Le vendeur a besoin de personnaliser l'identité visuelle de sa boutique en configurant l'ensemble de ses visuels et de ses couleurs. Chaque visuel peut être téléversé, remplacé ou supprimé ; la suppression restaure l'état par défaut. Les couleurs (accentuation et fond) sont personnalisables via un sélecteur hexadécimal et réinitialisables à la valeur par défaut. Toute modification est répercutée immédiatement sur le portail acheteur, sans interruption de service. Les visuels des annonces défilantes du carrousel sont gérés via `BES-VND-011`.
 | UC_V11, Activités vendeur
 
 | BES-VND-016
@@ -282,7 +282,7 @@ Le tableau ci-dessous relie chaque besoin opérationnel aux activités et cas d'
 | BES-VND-009 | Vendeur | Activité « Émettre un virement inverse de remboursement »
 | BES-VND-010 | Vendeur | UC_V6 — Consulter les rapports de ventes
 | BES-VND-011 | Vendeur | UC_V9 — Gérer les annonces défilantes
-| BES-VND-012 | Vendeur | UC_V1 — Import CSV catalogue (nouveaux produits)
+| BES-VND-012 | Vendeur | UC_V1 — Import CSV catalogue (création + mise à jour stock par id)
 | BES-VND-013 | Vendeur | UC_V1 — Export CSV catalogue
 | BES-VND-014 | Vendeur | UC_V2 — Mise à jour en masse des stocks
 | BES-VND-015 | Vendeur | UC_V11 — Personnaliser l'identité visuelle

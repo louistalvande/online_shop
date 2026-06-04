@@ -55,7 +55,7 @@ test.describe('US-CAT-07 — Export CSV products', () => {
     // After BOM, first line must be the header
     const csvContent = buffer.subarray(3).toString('utf8');
     const firstLine = csvContent.split('\n')[0];
-    expect(firstLine).toBe('nom,description,prix,categorie,quantite,seuil_alerte,statut');
+    expect(firstLine).toBe('id,nom,description,prix,categorie,quantite,seuil_alerte,statut');
   });
 
   test('exported file includes both published and archived products', async ({ page, request }) => {

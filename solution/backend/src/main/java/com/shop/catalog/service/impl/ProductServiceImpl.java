@@ -255,8 +255,9 @@ public class ProductServiceImpl implements ProductService {
     public String exportProductsCsv() {
         List<ProductResponse> products = listProducts();
         StringBuilder sb = new StringBuilder();
-        sb.append("nom,description,prix,categorie,quantite,seuil_alerte,statut\n");
+        sb.append("id,nom,description,prix,categorie,quantite,seuil_alerte,statut\n");
         for (ProductResponse p : products) {
+            sb.append(p.getId()).append(',');
             sb.append(csvField(p.getName())).append(',');
             sb.append(csvField(p.getDescription())).append(',');
             sb.append(p.getPriceExclTax().toPlainString()).append(',');
@@ -283,8 +284,8 @@ public class ProductServiceImpl implements ProductService {
         return value;
     }
 
-    /** Expected CSV header (exact match, case-insensitive). */
-    private static final String EXPECTED_HEADER = "nom,description,prix,categorie,quantite,seuil_alerte";
+    /** Expected CSV import header (case-insensitive). The statut column from exports is accepted but ignored. */
+    private static final String EXPECTED_HEADER = "id,nom,description,prix,categorie,quantite,seuil_alerte";
 
     /** {@inheritDoc} */
     @Override
@@ -300,12 +301,17 @@ public class ProductServiceImpl implements ProductService {
                 break;
             }
         }
-        if (headerLine == null || !EXPECTED_HEADER.equalsIgnoreCase(headerLine)) {
+        // Accept the base header or the export variant that appends ,statut
+        boolean headerValid = headerLine != null && (
+                EXPECTED_HEADER.equalsIgnoreCase(headerLine) ||
+                (EXPECTED_HEADER + ",statut").equalsIgnoreCase(headerLine));
+        if (!headerValid) {
             throw new CsvHeaderInvalidException();
         }
 
         List<CsvImportRowResult> results = new ArrayList<>();
         int totalCreated = 0;
+        int totalUpdated = 0;
         int totalErrors = 0;
 
         for (int i = dataStartIndex; i < lines.length; i++) {
@@ -315,13 +321,78 @@ public class ProductServiceImpl implements ProductService {
 
             try {
                 List<String> fields = parseCsvLine(line);
-                String nom         = fields.size() > 0 ? fields.get(0) : "";
-                String description = fields.size() > 1 ? fields.get(1) : "";
-                String prixStr     = fields.size() > 2 ? fields.get(2) : "";
-                String categorie   = fields.size() > 3 ? fields.get(3) : "";
-                String quantiteStr = fields.size() > 4 ? fields.get(4) : "";
-                String seuilStr    = fields.size() > 5 ? fields.get(5) : "";
+                String idStr       = fields.size() > 0 ? fields.get(0) : "";
+                String nom         = fields.size() > 1 ? fields.get(1) : "";
+                String description = fields.size() > 2 ? fields.get(2) : "";
+                String prixStr     = fields.size() > 3 ? fields.get(3) : "";
+                String categorie   = fields.size() > 4 ? fields.get(4) : "";
+                String quantiteStr = fields.size() > 5 ? fields.get(5) : "";
+                String seuilStr    = fields.size() > 6 ? fields.get(6) : "";
 
+                if (!idStr.isBlank()) {
+                    // Stock-only merge path: find existing product and update quantity + threshold
+                    UUID productId;
+                    try {
+                        productId = UUID.fromString(idStr);
+                    } catch (IllegalArgumentException e) {
+                        results.add(CsvImportRowResult.error(lineNumber, "Identifiant invalide : " + idStr));
+                        totalErrors++;
+                        continue;
+                    }
+
+                    Product product = productRepository.findById(productId).orElse(null);
+                    if (product == null) {
+                        results.add(CsvImportRowResult.error(lineNumber, "Produit introuvable : " + idStr));
+                        totalErrors++;
+                        continue;
+                    }
+
+                    int quantite = 0;
+                    if (!quantiteStr.isBlank()) {
+                        try {
+                            quantite = Integer.parseInt(quantiteStr);
+                        } catch (NumberFormatException e) {
+                            results.add(CsvImportRowResult.error(lineNumber, "Quantité invalide : " + quantiteStr));
+                            totalErrors++;
+                            continue;
+                        }
+                        if (quantite < 0) {
+                            results.add(CsvImportRowResult.error(lineNumber, "La quantité ne peut pas être négative"));
+                            totalErrors++;
+                            continue;
+                        }
+                    }
+
+                    int seuil = 0;
+                    if (!seuilStr.isBlank()) {
+                        try {
+                            seuil = Integer.parseInt(seuilStr);
+                        } catch (NumberFormatException e) {
+                            results.add(CsvImportRowResult.error(lineNumber, "Seuil d'alerte invalide : " + seuilStr));
+                            totalErrors++;
+                            continue;
+                        }
+                        if (seuil < 0) {
+                            results.add(CsvImportRowResult.error(lineNumber, "Le seuil d'alerte ne peut pas être négatif"));
+                            totalErrors++;
+                            continue;
+                        }
+                    }
+
+                    int previousQuantity = product.getQuantity();
+                    product.setQuantity(quantite);
+                    product.setStockAlertThreshold(seuil);
+                    Product saved = productRepository.save(product);
+                    raiseAlertIfNeeded(saved);
+                    if (previousQuantity == 0 && saved.getQuantity() > 0) {
+                        notifyRestockSubscribers(saved);
+                    }
+                    results.add(CsvImportRowResult.updated(lineNumber, ProductResponse.from(saved)));
+                    totalUpdated++;
+                    continue;
+                }
+
+                // Creation path: id is blank, all mandatory fields required
                 if (nom.isBlank()) {
                     results.add(CsvImportRowResult.error(lineNumber, "Le nom est obligatoire"));
                     totalErrors++;
@@ -398,7 +469,7 @@ public class ProductServiceImpl implements ProductService {
             }
         }
 
-        return new CsvImportResponse(results, totalCreated, totalErrors);
+        return new CsvImportResponse(results, totalCreated, totalUpdated, totalErrors);
     }
 
     // -------------------------------------------------------------------------

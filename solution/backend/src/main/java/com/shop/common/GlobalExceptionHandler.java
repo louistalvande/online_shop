@@ -42,6 +42,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
 
 import java.util.Locale;
 import java.util.Map;
@@ -458,6 +459,21 @@ public class GlobalExceptionHandler {
         String message = messageSource.getMessage("error.product.image.type", null, locale);
         return ResponseEntity.badRequest()
                 .body(Map.of("error", "UNSUPPORTED_IMAGE_TYPE", "message", message));
+    }
+
+    /**
+     * Handles a multipart upload that exceeds the configured max file size — returns HTTP 413.
+     *
+     * @param ex     the exception
+     * @param locale the request locale
+     * @return a 413 response with a localised error body
+     */
+    @ExceptionHandler(MaxUploadSizeExceededException.class)
+    public ResponseEntity<Map<String, String>> handleMaxUploadSizeExceeded(
+            MaxUploadSizeExceededException ex, Locale locale) {
+        String message = messageSource.getMessage("error.upload.file.too.large", null, locale);
+        return ResponseEntity.status(HttpStatus.PAYLOAD_TOO_LARGE)
+                .body(Map.of("error", "FILE_TOO_LARGE", "message", message));
     }
 
     /**

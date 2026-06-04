@@ -4,7 +4,8 @@
 title Portail Acheteur — Détail produit
 
 {+
-  {/ Accueil | Catalogue | Mon panier (1) | Mon compte }
+  ' Header : logo | nav | langue (dropdown) | compte (dropdown avec icône user) | panier
+  [Logo] Accueil | Catalogue | ^FR / EN / ES^ | ^👤 Mon compte ▼^ | [🛒 (1)]
   ==
   Catalogue > Sport > Chaussures sport
   ==

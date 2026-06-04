@@ -26,7 +26,7 @@ NOTE: Les choix technologiques retenus ci-dessous sont des recommandations archi
 
 | CPA-01
 | Déploiement conteneurisé
-| Chaque composant déployable est encapsulé dans un conteneur Docker. L'orchestration locale utilise Docker Compose (développement) et Kubernetes (production). En développement, chaque SPA dispose de son propre conteneur (`shop-buyer-portal`, `shop-vendor-backoffice`, `shop-admin-console`) pour permettre une connexion VS Code Remote SSH indépendante par application (CPA-06).
+| Chaque composant déployable est encapsulé dans un conteneur Docker. L'orchestration locale utilise Docker Compose (développement) et Kubernetes (production). Chaque SPA dispose de son propre conteneur (`shop-buyer-portal`, `shop-vendor-backoffice`, `shop-admin-console`) pour permettre une connexion VS Code Remote SSH indépendante par application (CPA-06). Un conteneur dédié aux tests E2E (`shop-e2e`) est disponible en développement via le profil Docker Compose `e2e`; il n'est jamais instancié en production.
 
 | CPA-02
 | HTTPS obligatoire
@@ -203,20 +203,45 @@ NOTE: Les choix technologiques retenus ci-dessous sont des recommandations archi
 
 | — (reverse proxy)
 | Nginx
-| *Développement* : un conteneur Nginx par SPA (`shop-buyer-portal` :5173, `shop-vendor-backoffice` :5174, `shop-admin-console` :5175) embarqué avec un Dockerfile partagé (`frontend/Dockerfile.dev`, arg `NGINX_CONF`) ; chaque instance proxy son Vite dev server interne (:5173) et relaie `/api` vers le backend. L'en-tête `Host` est réécrit en `localhost` pour lever le contrôle d'hôte de Vite (CPA-09). *Production* : un seul conteneur Nginx assure la terminaison TLS (CPA-02), sert les bundles SPA statiques compilés et proxy l'API REST ; rate limiting activé.
+| Un conteneur Nginx par SPA dans les deux environnements. *Développement* (`shop-buyer-portal` :5173, `shop-vendor-backoffice` :5174, `shop-admin-console` :5175) : Dockerfile partagé (`frontend/Dockerfile.dev`, arg `NGINX_CONF`) ; chaque instance proxy son Vite dev server interne (:5173) et relaie `/api` vers le backend. *Production* : même topologie à trois conteneurs — chaque Nginx sert le bundle SPA statique compilé et proxy `/api` vers le backend via le réseau interne ; terminaison TLS (CPA-02), en-têtes de sécurité (CPA-09) et rate limiting activés sur chacun.
+
+| — (tests E2E)
+| mcr.microsoft.com/playwright:v1.60.0-jammy
+| *Développement uniquement.* Conteneur `shop-e2e` activé par le profil Docker Compose `e2e`. Embarque Chromium, `@playwright/test` et le pilote PostgreSQL `pg` pour le teardown de base de données. Accède aux autres conteneurs via le réseau Docker interne (`backend:8080`, `buyer-portal:80`, `vendor-backoffice:80`, `admin-console:80`, `db:5432`). Lancé à la demande avec `docker compose --profile e2e run --rm e2e` ; absent du déploiement de production.
 
 | — (conteneurisation)
 | Docker / Docker Compose / Kubernetes
 | Isolation des composants (CPA-01), déploiements reproductibles par environnement (CPA-06)
 |===
 
-== Diagramme de déploiement
+== Diagrammes de déploiement
 
-Ce diagramme représente la topologie des nœuds physiques et l'allocation des composants logiques aux conteneurs Docker.
+Les deux vues ci-dessous distinguent l'environnement de développement (Docker Compose local avec conteneur E2E optionnel) et l'environnement de production (Kubernetes, Nginx TLS, sans outillage de test).
 
-[plantuml, pa-deployment, svg]
+=== Vue développement
+
+Topologie Docker Compose locale (`docker-compose.dev.yml`). Même structure à trois conteneurs que la production, avec deux différences :
+
+. *Vite dev server* à la place des bundles statiques — chaque conteneur frontend embarque un Vite dev server (:5173) derrière Nginx, avec Hot Module Replacement et connexion VS Code Remote SSH.
+. *Container Playwright `shop-e2e`* — absent en production, activé à la demande via le profil `e2e` (`docker compose --profile e2e run --rm e2e`) pour exécuter la suite de tests E2E et remettre la base en état seed.
+
+.Diagramme de déploiement — environnement de développement
+[plantuml, pa-deployment-dev, svg]
 ----
-include::diagrams/pa-deployment.puml[]
+include::diagrams/pa-deployment-dev.puml[]
+----
+
+=== Vue production
+
+Topologie cible (Kubernetes). Même structure à trois conteneurs que le développement, sans les deux composants dev-only :
+
+. Nginx sert des *bundles statiques compilés* (`vite build`) à la place du Vite dev server.
+. Le *container Playwright `shop-e2e`* n'est pas instancié — les tests E2E s'exécutent en CI/CD avant déploiement, jamais en production.
+
+.Diagramme de déploiement — environnement de production
+[plantuml, pa-deployment-prod, svg]
+----
+include::diagrams/pa-deployment-prod.puml[]
 ----
 
 == Diagramme de composants physiques
@@ -792,11 +817,16 @@ include::diagrams/ihm/ihm-bov-catalogue.puml[]
 
 ==== Export CSV du catalogue
 
-Déclenchement d'un téléchargement navigateur du catalogue complet (FS-V13 / US-CAT-07). Un clic sur le bouton « Exporter CSV » appelle `GET /api/vendor/products/export` avec le JWT en en-tête `Authorization`. Le backend retourne un fichier `text/csv; charset=UTF-8` avec BOM UTF-8 (compatibilité tableur) et l'en-tête `Content-Disposition: attachment; filename="catalogue_export_YYYYMMDD.csv"`. Le frontend reçoit le blob, crée une URL objet et déclenche le téléchargement sans navigation. L'export inclut toutes les fiches (publiées et archivées) ; colonnes : `nom,description,prix,categorie,quantite,seuil_alerte,statut`.
+Déclenchement d'un téléchargement navigateur du catalogue complet (FS-V13 / US-CAT-07). Un clic sur le bouton « Exporter CSV » appelle `GET /api/vendor/products/export` avec le JWT en en-tête `Authorization`. Le backend retourne un fichier `text/csv; charset=UTF-8` avec BOM UTF-8 (compatibilité tableur) et l'en-tête `Content-Disposition: attachment; filename="catalogue_export_YYYYMMDD.csv"`. Le frontend reçoit le blob, crée une URL objet et déclenche le téléchargement sans navigation. L'export inclut toutes les fiches (publiées et archivées) ; colonnes : `id,nom,description,prix,categorie,quantite,seuil_alerte,statut`. La présence de la colonne `id` permet de réutiliser directement le fichier exporté pour une mise à jour de stock en masse via l'import CSV (US-CAT-06).
 
 ==== Import CSV de produits
 
-Modale d'import en masse de produits depuis un fichier CSV (FS-V12 / US-CAT-06). Le vendeur sélectionne un fichier `.csv` structuré selon l'en-tête `nom,description,prix,categorie,quantite,seuil_alerte`. L'import est partiel : les lignes valides sont créées même si d'autres sont en erreur. Un rapport ligne par ligne (statut `Créé` / `Erreur` + message) est affiché après traitement. L'endpoint backend est `POST /api/vendor/products/import` (`multipart/form-data`) ; il retourne HTTP 400 si l'en-tête CSV est invalide ou le fichier vide.
+Modale d'import en masse depuis un fichier CSV (FS-V12 / US-CAT-06). Le vendeur sélectionne un fichier `.csv` structuré selon l'en-tête `id,nom,description,prix,categorie,quantite,seuil_alerte`. L'en-tête de l'export (avec colonne `statut` supplémentaire) est également accepté pour permettre le cycle export → réimport. Deux comportements selon la présence de l'`id` :
+
+* **`id` vide** → création d'un nouveau produit (`nom` et `prix` obligatoires).
+* **`id` renseigné** → mise à jour du stock uniquement (`quantite` et `seuil_alerte`) sur le produit existant ; les autres champs sont ignorés.
+
+L'import est partiel : les lignes valides sont traitées même si d'autres sont en erreur. Un rapport ligne par ligne (statut `Créé` / `Mis à jour` / `Erreur` + message) est affiché après traitement. L'endpoint backend est `POST /api/vendor/products/import` (`multipart/form-data`) ; il retourne HTTP 400 si l'en-tête CSV est invalide ou le fichier vide.
 
 .Maquette filaire : Back-office Vendeur — Import CSV produits
 [plantuml, ihm-bov-csv-import, svg]
@@ -836,15 +866,19 @@ include::diagrams/ihm/ihm-bov-annonce-form.puml[]
 
 ==== Identité visuelle
 
-Personnalisation de l'identité visuelle de la boutique (FS-V16). La section « Identité visuelle » est accessible depuis l'onglet Profil du back-office vendeur. Elle regroupe trois sous-sections : logo, bannière hero et couleur d'accentuation.
+Personnalisation de l'identité visuelle de la boutique (FS-V16). La section « Identité visuelle » est accessible depuis l'onglet Profil du back-office vendeur. Elle regroupe quatre sous-sections : logo, bannière hero, couleur d'accentuation et couleur de fond.
 
 *Logo* — Image affichée dans l'en-tête des deux portails. Upload : `POST /api/me/logo` (multipart/form-data, champ `file`). Suppression : `DELETE /api/me/logo`. Le fichier est stocké sous le nom fixe `vendor-logo.png` dans `uploads/logos/` (configurable via `app.vendor-logo-upload-dir`) ; l'URL publique est dérivée du chemin et ne change jamais lors d'un remplacement. La suppression du fichier restaure l'icône par défaut dans les deux portails.
 
 *Bannière hero* — Image affichée en pleine largeur en section supérieure de la page d'accueil du portail acheteur, au-dessus du titre hero. Upload : `POST /api/me/banner` (multipart/form-data, champ `file`). Suppression : `DELETE /api/me/banner`. Le fichier est stocké sous le nom fixe `vendor-banner.{ext}` dans `uploads/banners/` (configurable via `app.vendor-banner-upload-dir`). La suppression masque la bannière et laisse s'afficher uniquement le titre et le sous-titre.
 
-*Couleur d'accentuation* — Couleur CSS (`--accent`) appliquée globalement à toute l'interface du portail acheteur. Mise à jour : `PATCH /api/vendor/shop/theme` avec `{ "accentColor": "#rrggbb" }`. La valeur est stockée dans `platform_settings` à la clé `shop_accent_color` (valeur par défaut `#4e8b82`). La couleur dérivée (`--accent-hover`) est calculée côté client.
+*Couleur d'accentuation* — Couleur CSS (`--accent`) appliquée globalement à toute l'interface du portail acheteur. La couleur dérivée (`--accent-hover`) est calculée côté client.
 
-L'API publique `GET /api/public/theme` retourne les trois champs `{ logoUrl, bannerUrl, accentColor }` aux deux portails au démarrage. Les images du carrousel restent gérées via la section Annonces défilantes (UCSA-15 / FS-V11).
+*Couleur de fond* — Couleur CSS (`--bg`) appliquée au fond de page du portail acheteur. Valeur par défaut : `#f2f6f5`, stockée dans `platform_settings` à la clé `shop_bg_color`.
+
+Les deux couleurs sont mises à jour via `PATCH /api/vendor/shop/theme` avec `{ "accentColor": "#rrggbb", "bgColor": "#rrggbb" }` (champs indépendants et optionnels — seuls les champs non nuls sont appliqués). Les valeurs par défaut sont `#4e8b82` pour l'accentuation et `#f2f6f5` pour le fond.
+
+L'API publique `GET /api/public/theme` retourne les quatre champs `{ logoUrl, bannerUrl, accentColor, bgColor }` aux deux portails au démarrage. Les images du carrousel restent gérées via la section Annonces défilantes (UCSA-15 / FS-V11).
 
 .Maquette filaire : Back-office Vendeur — Identité visuelle (logo, bannière, couleur)
 [plantuml, ihm-bov-logo, svg]

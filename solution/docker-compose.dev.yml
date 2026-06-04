@@ -38,6 +38,8 @@ services:
       APP_PASSWORD_RESET_BASE_URL: http://localhost:5073
     volumes:
       - ./backend:/workspace
+      - backend-m2:/root/.m2
+      - backend-vscode:/root/.vscode-server
     depends_on:
       db:
         condition: service_healthy
@@ -57,6 +59,7 @@ services:
       API_TARGET: http://backend:8080
     volumes:
       - ./frontend:/workspace
+      - buyer-portal-vscode:/root/.vscode-server
     depends_on:
       - backend
 
@@ -73,6 +76,7 @@ services:
       API_TARGET: http://backend:8080
     volumes:
       - ./frontend:/workspace
+      - vendor-backoffice-vscode:/root/.vscode-server
     depends_on:
       - backend
 
@@ -89,5 +93,39 @@ services:
       API_TARGET: http://backend:8080
     volumes:
       - ./frontend:/workspace
+      - admin-console-vscode:/root/.vscode-server
     depends_on:
       - backend
+
+  e2e:
+    image: mcr.microsoft.com/playwright:v1.60.0-jammy
+    working_dir: /workspace/e2e
+    environment:
+      API_URL: http://backend:8080
+      ADMIN_URL: http://admin-console
+      BUYER_URL: http://buyer-portal
+      VENDOR_URL: http://vendor-backoffice
+      ADMIN_EMAIL: admin@onlineshop.com
+      ADMIN_PASSWORD: Admin123456!
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_USER: shop
+      DB_PASSWORD: dev
+      DB_NAME: shop
+    volumes:
+      - ./frontend/e2e:/workspace/e2e
+    depends_on:
+      - backend
+      - buyer-portal
+      - vendor-backoffice
+      - admin-console
+    profiles:
+      - e2e
+    command: ["sh", "-c", "npm install && npm run test:ci -- --workers=2"]
+
+volumes:
+  backend-m2:
+  backend-vscode:
+  buyer-portal-vscode:
+  vendor-backoffice-vscode:
+  admin-console-vscode:

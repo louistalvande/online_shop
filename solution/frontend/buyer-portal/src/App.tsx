@@ -16,9 +16,19 @@ function darkenHex(hex: string, amount: number): string {
   return '#' + [r, g, b].map(v => v.toString(16).padStart(2, '0')).join('')
 }
 
-function applyTheme(accentColor: string) {
+function wcagLuminance(hex: string): number {
+  const toLinear = (c: number) => c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4
+  const r = toLinear(parseInt(hex.slice(1, 3), 16) / 255)
+  const g = toLinear(parseInt(hex.slice(3, 5), 16) / 255)
+  const b = toLinear(parseInt(hex.slice(5, 7), 16) / 255)
+  return 0.2126 * r + 0.7152 * g + 0.0722 * b
+}
+
+function applyTheme(accentColor: string, bgColor: string) {
   document.documentElement.style.setProperty('--accent', accentColor)
   document.documentElement.style.setProperty('--accent-hover', darkenHex(accentColor, 20))
+  document.documentElement.style.setProperty('--bg', bgColor)
+  document.documentElement.style.setProperty('--btn-text', wcagLuminance(accentColor) > 0.179 ? '#1a2120' : '#ffffff')
 }
 
 interface Props {
@@ -41,7 +51,7 @@ export default function App({ openLogin = false }: Props) {
   useEffect(() => {
     getShopTheme()
       .then(t => {
-        if (t.accentColor) applyTheme(t.accentColor)
+        if (t.accentColor) applyTheme(t.accentColor, t.bgColor ?? '#f2f6f5')
         setLogoUrl(t.logoUrl ?? null)
         setBannerUrl(t.bannerUrl ?? null)
       })

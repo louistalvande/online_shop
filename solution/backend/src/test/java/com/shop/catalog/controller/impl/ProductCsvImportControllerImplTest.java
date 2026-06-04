@@ -37,7 +37,7 @@ class ProductCsvImportControllerImplTest {
     MockMvc mvc;
 
     private static final String VENDOR_EMAIL = "vendor@example.com";
-    private static final String VALID_HEADER = "nom,description,prix,categorie,quantite,seuil_alerte";
+    private static final String VALID_HEADER = "id,nom,description,prix,categorie,quantite,seuil_alerte";
 
     private final UsernamePasswordAuthenticationToken vendorPrincipal =
             new UsernamePasswordAuthenticationToken(VENDOR_EMAIL, null, List.of());
@@ -57,7 +57,7 @@ class ProductCsvImportControllerImplTest {
                 "file", "products.csv", "text/csv",
                 csvContent.getBytes(StandardCharsets.UTF_8));
 
-        CsvImportResponse response = new CsvImportResponse(List.of(), 1, 0);
+        CsvImportResponse response = new CsvImportResponse(List.of(), 1, 0, 0);
         given(productService.importProductsCsv(any())).willReturn(response);
 
         mvc.perform(multipart("/api/vendor/products/import")
@@ -113,7 +113,7 @@ class ProductCsvImportControllerImplTest {
                 List.of(
                         CsvImportRowResult.created(2, null),
                         CsvImportRowResult.error(3, "Le nom est obligatoire")
-                ), 1, 1);
+                ), 1, 0, 1);
         given(productService.importProductsCsv(any())).willReturn(response);
 
         mvc.perform(multipart("/api/vendor/products/import")

@@ -1,0 +1,98 @@
+@startuml pa-deployment-dev
+!theme plain
+skinparam shadowing false
+skinparam defaultFontSize 11
+skinparam defaultFontName "DejaVu Sans"
+top to bottom direction
+
+skinparam node {
+  BackgroundColor #F0F8FF
+  BorderColor #2E75B6
+  FontSize 11
+}
+skinparam component {
+  BackgroundColor #E8F4FD
+  BorderColor #2E75B6
+  FontSize 10
+}
+skinparam frame {
+  BackgroundColor #FAFAFA
+  BorderColor #AAAAAA
+}
+skinparam note {
+  BackgroundColor #FFFBE6
+  BorderColor #F0A500
+}
+skinparam ArrowColor #2E75B6
+
+actor "Acheteur"    as UserB
+actor "Vendeur"     as UserV
+actor "Admin"       as UserA
+actor "Développeur" as Dev
+
+node "shop-buyer-portal\nNginx + Vite (HTTP :5173, SSH :2223)" as BuyerNode {
+  component "front-acheteur\n(React — HMR)" as FrontB
+}
+
+node "shop-vendor-backoffice\nNginx + Vite (HTTP :5174, SSH :2224)" as VendorNode {
+  component "front-vendeur\n(React — HMR)" as FrontV
+}
+
+node "shop-admin-console\nNginx + Vite (HTTP :5175, SSH :2225)" as AdminNode {
+  component "front-admin\n(React — HMR)" as FrontA
+}
+
+node "shop-backend\nSpring Boot — API REST (HTTP :8080, SSH :2222)" as AppServer {
+  frame "Modules métier" {
+    component "compte · catalogue · panier\ncommande · paiement\nexpédition · notification · rapport" as Modules
+  }
+  frame "Adaptateurs SDK" {
+    component "Stripe Java SDK  |  SendGrid Java SDK" as Adapters
+  }
+}
+
+node "shop-db\nPostgreSQL 16 (TCP :5432)" as DB {
+  database "boutique_db\n(Flyway)" as PgDB
+}
+
+node "shop-redis\nRedis 7 (TCP :6379)" as Cache {
+  database "Paniers · Blacklist JWT" as RedisDB
+}
+
+node "shop-e2e  [profil : e2e]\nPlaywright v1.60 — à la demande" as E2ENode #FFF8E1 {
+  component "Tests Playwright\n(@playwright/test)" as E2E
+  component "Teardown DB\n(pg)" as Teardown
+}
+
+component "Stripe API\n(IFS-04)" as Stripe #D5E8F0
+component "SendGrid\n(IFS-06)"   as SendGrid #D5E8F0
+
+UserB  -down->  BuyerNode   : HTTP :5173
+UserV  -down->  VendorNode  : HTTP :5174
+UserA  -down->  AdminNode   : HTTP :5175
+Dev    ..>       AppServer   : SSH :2222 (VS Code Remote)
+
+BuyerNode  -down-> AppServer : HTTP /api
+VendorNode -down-> AppServer : HTTP /api
+AdminNode  -down-> AppServer : HTTP /api
+
+E2ENode -down-> AppServer   : HTTP :8080
+E2ENode -down-> BuyerNode   : HTTP :80
+E2ENode -down-> VendorNode  : HTTP :80
+E2ENode -down-> AdminNode   : HTTP :80
+E2ENode -down-> DB          : TCP :5432 (teardown)
+
+AppServer -down-> DB    : TCP :5432 (IFL-13)
+AppServer -down-> Cache : TCP :6379 (CPA-04)
+
+Adapters -right-> Stripe   : HTTPS :443 (IFS-04)
+Stripe   -left->  Adapters : webhook signé
+Adapters -right-> SendGrid : HTTPS :443 (IFS-06)
+
+note right of E2ENode
+  Lancé via :
+  docker compose --profile e2e run --rm e2e
+  Non inclus dans compose up standard
+end note
+
+@enduml

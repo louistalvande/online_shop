@@ -413,7 +413,6 @@ export default function DashboardPage({ onUnauthorized }: Props) {
             </Card>
           )}
         </div>
-      </div>
 
         {/* ── Audit log (US-SEC-05) ─────────────────────────────────────────── */}
         <div style={{ marginTop: 48 }} id="audit">

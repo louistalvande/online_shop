@@ -50,7 +50,10 @@ export async function uploadVendorLogo(file: File): Promise<string> {
   const form = new FormData()
   form.append('file', file)
   const res = await authedFetch('/api/me/logo', { method: 'POST', body: form })
-  if (!res.ok) throw new Error('Failed to upload logo')
+  if (!res.ok) {
+    const body = await res.json().catch(() => null)
+    throw Object.assign(new Error('Failed to upload logo'), { serverMessage: body?.message ?? null })
+  }
   const data: { logoUrl: string } = await res.json()
   return data.logoUrl
 }

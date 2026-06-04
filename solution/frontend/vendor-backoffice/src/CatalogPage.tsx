@@ -440,6 +440,7 @@ export default function CatalogPage() {
                 }}>
                   {t('catalog.csv.summary', {
                     created: csvResult.totalCreated,
+                    updated: csvResult.totalUpdated,
                     errors: csvResult.totalErrors,
                   })}
                 </p>
@@ -458,14 +459,18 @@ export default function CatalogPage() {
                         <td style={{ padding: '6px 10px' }}>
                           <span style={{
                             fontSize: 11, fontWeight: 700, padding: '2px 8px', borderRadius: 10,
-                            background: row.status === 'CREATED' ? '#e8f5e9' : '#fde8e8',
-                            color: row.status === 'CREATED' ? '#1a7a2e' : '#c0392b',
+                            background: row.status === 'CREATED' ? '#e8f5e9' : row.status === 'UPDATED' ? '#e3f0fb' : '#fde8e8',
+                            color: row.status === 'CREATED' ? '#1a7a2e' : row.status === 'UPDATED' ? '#1a4a7a' : '#c0392b',
                           }}>
-                            {row.status === 'CREATED' ? t('catalog.csv.row.created') : t('catalog.csv.row.error')}
+                            {row.status === 'CREATED'
+                              ? t('catalog.csv.row.created')
+                              : row.status === 'UPDATED'
+                                ? t('catalog.csv.row.updated')
+                                : t('catalog.csv.row.error')}
                           </span>
                         </td>
                         <td style={{ padding: '6px 10px', color: row.status === 'ERROR' ? '#c0392b' : undefined }}>
-                          {row.status === 'CREATED' ? (row.product?.name ?? '') : row.message}
+                          {row.status !== 'ERROR' ? (row.product?.name ?? '') : row.message}
                         </td>
                       </tr>
                     ))}

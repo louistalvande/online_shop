@@ -34,6 +34,7 @@ public class ShopThemeControllerImpl implements ShopThemeController {
     public ResponseEntity<ShopThemeResponse> getTheme() {
         return ResponseEntity.ok(new ShopThemeResponse(
                 settingsService.getAccentColor(),
+                settingsService.getBgColor(),
                 vendorLogoUploadService.getPublicLogoUrl(),
                 vendorBannerUploadService.getPublicBannerUrl()
         ));

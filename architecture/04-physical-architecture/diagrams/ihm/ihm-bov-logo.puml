@@ -1,6 +1,6 @@
 @startsalt
 ' Composant PA — Back-office Vendeur
-' Illustre la fonction allouée : FS-V16 (personnalisation identité visuelle — logo, bannière hero, couleur)
+' Illustre la fonction allouée : FS-V16 (personnalisation identité visuelle — logo, bannière hero, couleurs)
 ' Interface : IFL-17 (Back-office Vendeur → Service Compte)
 title Back-office Vendeur — Identité visuelle (FS-V16)
 
@@ -27,11 +27,15 @@ title Back-office Vendeur — Identité visuelle (FS-V16)
   [  Supprimer la bannière  ]
   <i>Affichée en section supérieure de la page d'accueil du portail acheteur.
   ==
-  Couleur d'accentuation
+  Couleurs de la boutique
   --
-  Couleur : | [#4e8b82  ] "Hex : #4e8b82"
+  Couleur principale :  | [#4e8b82  ] "Hex : #4e8b82"
   [  Réinitialiser  ]
-  <i>Appliquée à l'ensemble de l'interface du portail acheteur.
+  <i>Appliquée aux boutons et éléments actifs du portail acheteur.
+  --
+  Couleur de fond :     | [#f2f6f5  ] "Hex : #f2f6f5"
+  [  Réinitialiser  ]
+  <i>Appliquée au fond de page du portail acheteur.
   ==
   [ Enregistrer ]   [ Annuler ]
 }

@@ -33,10 +33,7 @@ export default function Header({ onLogout, onNavigate, currentPage, alertCount, 
       ]}
       actions={
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-          <LangToggle
-            lang={i18n.language}
-            onToggle={() => i18n.changeLanguage(({ fr: 'en', en: 'es', es: 'fr' } as Record<string, string>)[i18n.language] ?? 'fr')}
-          />
+          <LangToggle lang={i18n.language} onChange={lang => i18n.changeLanguage(lang)} />
           <UserMenu
             label={t('nav.account')}
             settingsLabel={t('nav.profile')}

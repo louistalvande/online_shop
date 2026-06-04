@@ -1,5 +1,6 @@
 export interface ShopTheme {
   accentColor: string | null
+  bgColor: string | null
   logoUrl: string | null
   bannerUrl: string | null
 }

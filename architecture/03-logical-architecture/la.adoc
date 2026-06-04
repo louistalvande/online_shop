@@ -52,12 +52,12 @@ Le système est structuré en cinq couches logiques : *Présentation*, *Applicat
 
 | *Service Compte*
 | Application
-| Inscription, activation par token email, authentification, gestion du profil, gestion du carnet d'adresses de livraison, gestion des rôles, gestion des images de l'identité visuelle (logo et bannière hero — fichiers stockés sur le système de fichiers, URL publique dérivée), exposition d'une API publique de thème (`logoUrl`, `bannerUrl`, `accentColor`)
+| Inscription, activation par token email, authentification, gestion du profil, gestion du carnet d'adresses de livraison, gestion des rôles, gestion des images de l'identité visuelle (logo et bannière hero — fichiers stockés sur le système de fichiers, URL publique dérivée), gestion des couleurs de l'identité visuelle (accentuation et fond — persistées dans `platform_settings`), exposition d'une API publique de thème (`logoUrl`, `bannerUrl`, `accentColor`, `bgColor`)
 | FS-B01, FS-B02, FS-B10, FS-B11, FS-A01, FS-A02, FS-V16
 
 | *Service Catalogue*
 | Application
-| CRUD produits, gestion des catégories, recherche et filtrage, publication / archivage, suivi des niveaux de stock, mise à jour en masse des stocks, réservation à la commande, libération à l'annulation, alertes de rupture, import CSV de nouveaux produits, export CSV du catalogue, téléversement et stockage des images produit (renommage UUID, validation du contenu réel, service statique public)
+| CRUD produits, gestion des catégories, recherche et filtrage, publication / archivage, suivi des niveaux de stock, mise à jour en masse des stocks, réservation à la commande, libération à l'annulation, alertes de rupture, import CSV (création de nouvelles fiches ou mise à jour de stock par id), export CSV du catalogue avec identifiants, téléversement et stockage des images produit (renommage UUID, validation du contenu réel, service statique public)
 | FS-V02, FS-V03, FS-V12, FS-V13, FS-V14, FS-V16, FS-B03
 
 | *Service Commande*
@@ -245,7 +245,7 @@ Les interfaces logiques définissent les contrats d'échange entre composants, i
 | *IFL-02*
 | Portails (UI)
 | Service Catalogue
-| Lister produits, rechercher, filtrer, CRUD produits et catégories, import CSV (`POST /produits/import` — `multipart/form-data`), export CSV (`GET /produits/export`)
+| Lister produits, rechercher, filtrer, CRUD produits et catégories, import CSV (`POST /produits/import` — `multipart/form-data` ; création si `id` vide, mise à jour stock si `id` renseigné), export CSV (`GET /produits/export` — avec colonne `id`)
 | FS-B03, FS-V02, FS-V12, FS-V13
 
 | *IFL-03*
@@ -329,7 +329,7 @@ Les interfaces logiques définissent les contrats d'échange entre composants, i
 | *IFL-17*
 | Back-office Vendeur
 | Service Compte
-| Gérer les images de l'identité visuelle : téléverser / supprimer le logo (`POST/DELETE /api/me/logo`), téléverser / supprimer la bannière hero (`POST/DELETE /api/me/banner`), mettre à jour la couleur d'accentuation (`PATCH /api/vendor/shop/theme`) ; l'API publique de thème (`GET /api/public/theme`) retourne `logoUrl`, `bannerUrl` et `accentColor` aux deux portails
+| Gérer l'identité visuelle : téléverser / supprimer le logo (`POST/DELETE /api/me/logo`), téléverser / supprimer la bannière hero (`POST/DELETE /api/me/banner`), mettre à jour les couleurs d'accentuation et de fond (`PATCH /api/vendor/shop/theme` avec `{ accentColor?, bgColor? }`) ; l'API publique de thème (`GET /api/public/theme`) retourne `logoUrl`, `bannerUrl`, `accentColor` et `bgColor` aux deux portails
 | FS-V16
 |===
 
@@ -829,8 +829,8 @@ end note
 | FS-V02 | Gérer le catalogue produits | Service Catalogue | IFL-02, IFL-13
 | FS-V03 | Gérer les stocks et alertes | Service Catalogue | IFL-06, IFL-09, IFL-13
 | FS-V14 | Mettre à jour les stocks de plusieurs produits simultanément | Service Catalogue | IFL-02, IFL-13
-| FS-V12 | Importer de nouveaux produits depuis un fichier CSV | Service Catalogue | IFL-02, IFL-13
-| FS-V13 | Exporter le catalogue au format CSV | Service Catalogue | IFL-02, IFL-13
+| FS-V12 | Importer des produits depuis un fichier CSV (création ou mise à jour stock par id) | Service Catalogue | IFL-02, IFL-13
+| FS-V13 | Exporter le catalogue au format CSV avec identifiants produit | Service Catalogue | IFL-02, IFL-13
 | FS-V04 | Traiter les commandes reçues | Service Commande | IFL-04, IFL-09, IFL-13
 | FS-V05 | Déclarer l'expédition avec saisie du numéro de suivi | Service Expédition | IFL-05, IFL-09, IFL-13
 | FS-V07 | Consulter les rapports de ventes | Service Rapport | IFL-07, IFL-13

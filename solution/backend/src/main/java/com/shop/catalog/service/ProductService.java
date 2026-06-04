@@ -138,7 +138,7 @@ public interface ProductService {
 
     /**
      * Exports all products (published and archived) as a UTF-8 CSV string (US-CAT-07).
-     * The CSV uses the header: {@code nom,description,prix,categorie,quantite,seuil_alerte,statut}.
+     * The CSV uses the header: {@code id,nom,description,prix,categorie,quantite,seuil_alerte,statut}.
      * Fields containing commas, newlines, or double-quotes are RFC 4180-quoted.
      *
      * @return the full CSV content as a UTF-8 string (without BOM — the caller adds it if needed)
@@ -147,7 +147,9 @@ public interface ProductService {
 
     /**
      * Imports products from a UTF-8 CSV string (US-CAT-06).
-     * The CSV must have the header: {@code nom,description,prix,categorie,quantite,seuil_alerte}.
+     * The CSV must have the header: {@code id,nom,description,prix,categorie,quantite,seuil_alerte}.
+     * If the {@code id} column is non-blank the row performs a stock-only update on the existing product;
+     * otherwise a new product is created.
      * Valid rows are imported even if other rows fail (partial import).
      *
      * @param csvContent the full CSV content decoded as UTF-8

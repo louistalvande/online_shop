@@ -68,7 +68,7 @@ class ProductServiceImplExportTest {
         String csv = service.exportProductsCsv();
 
         String[] lines = csv.split("\n");
-        assertThat(lines[0]).isEqualTo("nom,description,prix,categorie,quantite,seuil_alerte,statut");
+        assertThat(lines[0]).isEqualTo("id,nom,description,prix,categorie,quantite,seuil_alerte,statut");
         assertThat(lines[1]).contains("Aquarelle forêt");
         assertThat(lines[1]).contains("29.90");
         assertThat(lines[1]).contains("PUBLISHED");
@@ -85,7 +85,7 @@ class ProductServiceImplExportTest {
 
         assertThat(csv).contains("PUBLISHED");
         assertThat(csv).contains("ARCHIVED");
-        long dataLines = csv.lines().filter(l -> !l.startsWith("nom,")).count();
+        long dataLines = csv.lines().filter(l -> !l.startsWith("id,")).count();
         assertThat(dataLines).isEqualTo(2);
     }
 
@@ -95,7 +95,7 @@ class ProductServiceImplExportTest {
 
         String csv = service.exportProductsCsv();
 
-        assertThat(csv.strip()).isEqualTo("nom,description,prix,categorie,quantite,seuil_alerte,statut");
+        assertThat(csv.strip()).isEqualTo("id,nom,description,prix,categorie,quantite,seuil_alerte,statut");
     }
 
     @Test

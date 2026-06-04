@@ -8,7 +8,7 @@ public class CsvImportRowResult {
     @Schema(description = "1-based line number in the CSV file (header counts as line 1)")
     private final int lineNumber;
 
-    @Schema(description = "Row outcome: CREATED or ERROR")
+    @Schema(description = "Row outcome: CREATED, UPDATED or ERROR")
     private final String status;
 
     @Schema(description = "Error description when status is ERROR; null when status is CREATED")
@@ -33,6 +33,17 @@ public class CsvImportRowResult {
      */
     public static CsvImportRowResult created(int lineNumber, ProductResponse product) {
         return new CsvImportRowResult(lineNumber, "CREATED", null, product);
+    }
+
+    /**
+     * Creates an UPDATED result for the given line (stock-only merge by id).
+     *
+     * @param lineNumber 1-based line number
+     * @param product    the updated product
+     * @return an UPDATED result
+     */
+    public static CsvImportRowResult updated(int lineNumber, ProductResponse product) {
+        return new CsvImportRowResult(lineNumber, "UPDATED", null, product);
     }
 
     /**
