@@ -89,18 +89,36 @@ wait_http_host() {
   echo " prêt"
 }
 
+reset_db() {
+  echo "    [db] reset"
+  docker exec "$VENDOR" bash -c \
+    "cd /workspace/e2e && node --env-file=.env.docker \
+      -e \"import('./helpers/db-reset.js').then(m=>m.resetDatabase()).catch(e=>{console.error(e);process.exit(1)})\"" \
+    2>/dev/null || true
+}
+
+run_project() {
+  local project="$1"
+  echo ">>> Projet : $project"
+  docker exec "$VENDOR" bash -c \
+    "cd /workspace/e2e && npm run test:docker -- --project=${project}" || true
+  reset_db
+}
+
 run_tests() {
-  echo ">>> Lancement tests E2E (depuis vendor-backoffice)"
-  # On exécute les tests depuis le container vendor-backoffice-1 :
-  # Vite du vendor portal est sur localhost (même container) — pas de latence réseau Docker.
-  # Les autres SPAs (buyer, admin) passent par le réseau Docker, mais Vite y est déjà chaud.
-  local cmd="cd /workspace/e2e"
+  echo ">>> Lancement tests E2E (depuis vendor-backoffice, reset DB entre chaque projet)"
   if [[ -n "$EXTRA_ARGS" ]]; then
-    cmd="$cmd && npm run test:docker -- $EXTRA_ARGS"
-  else
-    cmd="$cmd && npm run test:docker"
+    # Mode custom : on ne splitte pas par projet
+    docker exec "$VENDOR" bash -c "cd /workspace/e2e && npm run test:docker -- $EXTRA_ARGS" || true
+    return
   fi
-  docker exec "$VENDOR" bash -c "$cmd"
+  # Chaque projet repart sur une BDD propre — limite l'accumulation de données
+  run_project admin-console
+  run_project buyer-portal
+  run_project vendor-portal
+  run_project auth
+  run_project cart
+  run_project order
 }
 
 # ── Main ────────────────────────────────────────────────────────────────────
