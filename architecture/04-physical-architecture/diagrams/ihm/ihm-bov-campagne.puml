@@ -1,0 +1,24 @@
+@startsalt
+' Composant PA-PHY-002 — Back-office Vendeur
+' Illustre la fonction allouée : FS-V17 (composer et envoyer une campagne email promotionnelle)
+title PA-PHY-002 — Campagne email promotionnelle (FS-V17)
+
+{+
+  == Nouvelle campagne email
+  --
+  {#
+    Destinataires consentants | <b>42 acheteurs actifs
+  }
+  --
+  Objet   | "Nos nouveautés de juin                 "
+  --
+  Message | {SI
+             "                                         "
+             "                                         "
+             "                                         "
+           }
+  --
+  [ Annuler ]  [ Envoyer la campagne ]
+}
+
+@endsalt

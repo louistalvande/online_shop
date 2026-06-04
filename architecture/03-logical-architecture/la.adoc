@@ -95,6 +95,11 @@ Le système est structuré en cinq couches logiques : *Présentation*, *Applicat
 | CRUD des annonces défilantes (texte, image, lien optionnel, ordre d'affichage) ; exposition des annonces actives sur la page d'accueil
 | FS-V11
 
+| *Service Campagne Marketing*
+| Application
+| Composition et envoi de campagnes email promotionnelles : récupération des acheteurs actifs consentants (`marketing_consent = true`), refus si liste vide, orchestration de l'envoi via Service Notification, journalisation de chaque campagne (date, identifiant vendeur, nombre de destinataires)
+| FS-V17
+
 | *Adaptateur Paiement*
 | Intégration externe
 | Encapsulation du protocole IFS-04 — traduction des appels internes vers l'API du prestataire de paiement et des webhooks entrants
@@ -127,6 +132,7 @@ Ce diagramme représente l'architecture logique complète du système, les cinq 
 
 [plantuml, la-components, svg]
 ----
+left to right direction
 skinparam componentBackgroundColor #FEFEFE
 skinparam componentBorderColor #2E75B6
 skinparam arrowColor #2E75B6
@@ -156,6 +162,7 @@ package "Couche Application" {
   [Service Notification] as SvcNotif
   [Service Rapport] as SvcReport
   [Service Annonce] as SvcAnnounce
+  [Service Campagne\nMarketing] as SvcCampaign
 }
 
 package "Couche Sécurité & Journalisation (transverse)" {
@@ -194,6 +201,7 @@ UI_Vendor --> SvcShipping : IFL-05
 UI_Vendor --> SvcReport : IFL-07
 UI_Vendor --> SvcAnnounce : IFL-15
 UI_Vendor --> SvcAccount : IFL-17
+UI_Vendor --> SvcCampaign : IFL-18
 
 UI_Buyer --> SvcAnnounce : IFL-16
 
@@ -223,6 +231,8 @@ SvcPayment --> DB : IFL-13
 SvcShipping --> DB : IFL-13
 SvcReport --> DB : IFL-13
 SvcAnnounce --> DB : IFL-13
+SvcCampaign --> SvcNotif : IFL-09
+SvcCampaign --> DB : IFL-13
 SvcLog --> DB : IFL-13
 
 note "Service Sécurité (FS-S01..S12) et Service Journalisation (FS-S07,S13)\ns'appliquent de façon transverse à tous les services applicatifs" as NoteSecLog
@@ -331,6 +341,12 @@ Les interfaces logiques définissent les contrats d'échange entre composants, i
 | Service Compte
 | Gérer l'identité visuelle : téléverser / supprimer le logo (`POST/DELETE /api/me/logo`), téléverser / supprimer la bannière hero (`POST/DELETE /api/me/banner`), mettre à jour les couleurs d'accentuation et de fond (`PATCH /api/vendor/shop/theme` avec `{ accentColor?, bgColor? }`) ; l'API publique de thème (`GET /api/public/theme`) retourne `logoUrl`, `bannerUrl`, `accentColor` et `bgColor` aux deux portails
 | FS-V16
+
+| *IFL-18*
+| Back-office Vendeur
+| Service Campagne Marketing
+| Soumettre une campagne (objet, corps) pour envoi aux acheteurs consentants ; consulter le nombre de destinataires disponibles avant envoi
+| FS-V17
 |===
 
 == Diagramme de séquence logique — Inscription et activation de compte
@@ -844,6 +860,7 @@ end note
 | FS-A05 | Basculer en mode maintenance de la plateforme | Service Compte | IFL-14, IFL-13
 | FS-V10 | Confirmer l'émission d'un virement inverse de remboursement | Service Paiement | IFL-08, IFL-13
 | FS-V11 | Gérer les annonces défilantes de la page d'accueil | Service Annonce | IFL-15, IFL-16, IFL-13
+| FS-V17 | Composer et envoyer une campagne email promotionnelle aux acheteurs consentants | Service Campagne Marketing, Service Notification, Adaptateur Messagerie, Référentiel de données | IFL-18, IFL-09, IFL-12, IFL-13
 | FS-S01 | Enforcer la politique de mots de passe | Service Sécurité | transverse
 | FS-S02 | Détecter les tentatives d'auth répétées (force brute) | Service Sécurité | transverse
 | FS-S03 | Invalider la session à la déconnexion et après inactivité | Service Sécurité | transverse

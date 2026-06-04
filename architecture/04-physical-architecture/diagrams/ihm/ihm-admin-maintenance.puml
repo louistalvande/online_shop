@@ -1,0 +1,24 @@
+@startsalt
+' Composant PA-PHY-003 — Console Administrateur
+' Illustre la fonction allouée : FS-A05 (basculer en mode maintenance)
+title Console Admin — Mode maintenance (FS-A05)
+
+{+
+  == Administration de la plateforme
+  --
+  Mode maintenance | (X) Activé  ( ) Désactivé
+  --
+  {#
+    État actuel     | <b>MAINTENANCE ACTIVE
+    Depuis          | 2026-05-22 14:37 UTC
+    Acteurs bloqués | Acheteurs, Vendeurs
+  }
+  --
+  Message affiché aux visiteurs :
+  {SI
+    "Site temporairement indisponible. Merci de réessayer ultérieurement."
+  }
+  --
+  [Annuler]  [Enregistrer les modifications]
+}
+@endsalt

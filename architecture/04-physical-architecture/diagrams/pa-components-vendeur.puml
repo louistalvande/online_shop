@@ -1,0 +1,35 @@
+@startuml pa-components-vendeur
+skinparam componentBackgroundColor #FEFEFE
+skinparam componentBorderColor #2E75B6
+skinparam arrowColor #2E75B6
+skinparam packageBackgroundColor #F0F8FF
+skinparam packageBorderColor #AAAAAA
+skinparam defaultFontSize 10
+
+package "shop-vendor-backoffice (Nginx)" {
+  [front-vendeur] as FrontV
+}
+package "API Spring Boot" {
+  [composant-compte] as Cpt
+  [composant-catalogue] as Cat
+  [composant-commande] as Cmd
+  [composant-expedition] as Exp
+  [composant-rapport] as Rpt
+  [composant-annonce] as Ann
+  [composant-campagne] as Camp
+}
+component "Stripe (IFS-04)" as ExtStripe #D5E8F0
+component "SendGrid (IFS-06)" as ExtMail #D5E8F0
+
+FrontV --> Cpt : profil · identité visuelle
+FrontV --> Cat : catalogue · stocks · CSV
+FrontV --> Cmd : commandes · annulations
+FrontV --> Exp : expédition
+FrontV --> Rpt : rapports
+FrontV --> Ann : annonces défilantes
+FrontV --> Camp : campagnes email
+
+Cmd --> ExtStripe : remboursements
+Camp --> ExtMail : campagne marketing
+Cmd --> ExtMail : notifications commande
+@enduml

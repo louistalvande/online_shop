@@ -1,0 +1,39 @@
+@startuml pa-components-acheteur
+skinparam componentBackgroundColor #FEFEFE
+skinparam componentBorderColor #2E75B6
+skinparam arrowColor #2E75B6
+skinparam packageBackgroundColor #F0F8FF
+skinparam packageBorderColor #AAAAAA
+skinparam databaseBackgroundColor #FFF8E7
+skinparam databaseBorderColor #F0A500
+skinparam defaultFontSize 10
+
+package "shop-buyer-portal (Nginx)" {
+  [front-acheteur] as FrontB
+}
+package "API Spring Boot" {
+  [composant-compte] as Cpt
+  [composant-catalogue] as Cat
+  [composant-panier] as Pan
+  [composant-commande] as Cmd
+  [composant-expedition] as Exp
+  [composant-annonce] as Ann
+}
+package "Redis 7" {
+  database "sessions" as Redis
+}
+component "Stripe (IFS-04)" as ExtStripe #D5E8F0
+component "SendGrid (IFS-06)" as ExtMail #D5E8F0
+
+FrontB --> Cpt : auth · profil · adresses
+FrontB --> Cat : catalogue
+FrontB --> Pan : panier
+FrontB --> Cmd : commandes · annulation
+FrontB --> Exp : suivi livraison
+FrontB --> Ann : carrousel
+
+Cmd --> ExtStripe
+Cpt --> ExtMail : activation · alertes stock
+Cmd --> ExtMail : confirmation · expédition
+Pan --> Redis
+@enduml

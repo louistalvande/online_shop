@@ -157,11 +157,15 @@ NOTE: Les choix technologiques retenus ci-dessous sont des recommandations archi
 
 | Service Rapport
 | Module Spring Boot (Java)
-| Requêtes JPQL agrégées, génération de statistiques de ventes ; export CSV des acheteurs consentants — requête `SELECT email, prenom, nom FROM account WHERE marketing_consent = TRUE`, endpoint protégé VENDOR `GET /api/vendeur/export-mailing` (FS-V15 / CS-22)
+| Requêtes JPQL agrégées, génération de statistiques de ventes ; export CSV des acheteurs consentants — requête `SELECT email, prenom, nom FROM account WHERE marketing_consent = TRUE`, endpoint protégé VENDOR `GET /api/vendor/export-mailing` (FS-V15 / CS-22)
 
 | Service Annonce
 | Module Spring Boot (Java)
 | CRUD des annonces défilantes — entité `Announcement` (contenu, image, lien, ordre, actif) ; endpoint `GET /annonces` public pour le portail acheteur ; endpoints CRUD protégés VENDOR pour le back-office
+
+| Service Campagne Marketing
+| Module Spring Boot (Java)
+| Composition et envoi de campagnes email : endpoint protégé VENDOR `POST /api/vendor/campaigns/send` (corps : `{ sujet: String, corps: String }`) ; récupération des destinataires via `SELECT email, prenom, nom FROM account WHERE marketing_consent = TRUE AND status = 'ACTIVE'` ; refus avec `400 NO_CONSENTING_BUYERS` si liste vide ; délégation de l'envoi à composant-notification (FS-V17) ; journalisation en table `campaign_log` (date, vendor_id, recipient_count, statut)
 
 | Service Sécurité
 | Module transverse Spring Security (Java)
@@ -244,97 +248,24 @@ Topologie cible (Kubernetes). Même structure à trois conteneurs que le dévelo
 include::diagrams/pa-deployment-prod.puml[]
 ----
 
-== Diagramme de composants physiques
+== Diagrammes de composants physiques — vues par acteur
 
-Ce diagramme représente les composants et leurs dépendances, regroupés par conteneur de déploiement.
+NOTE: Tous les composants API persistent leurs données dans PostgreSQL (`boutique_db`). Seul `composant-panier` utilise également Redis pour la persistance de session (CPA-04). Ces connexions universelles ne sont pas répétées dans chaque diagramme.
 
-[plantuml, pa-components, svg]
+=== Vue Acheteur
+
+.Composants physiques — vue Acheteur
+[plantuml, pa-components-acheteur, svg]
 ----
-skinparam componentBackgroundColor #FEFEFE
-skinparam componentBorderColor #2E75B6
-skinparam arrowColor #2E75B6
-skinparam packageBackgroundColor #F0F8FF
-skinparam packageBorderColor #AAAAAA
-skinparam databaseBackgroundColor #FFF8E7
-skinparam databaseBorderColor #F0A500
-skinparam defaultFontSize 10
+include::diagrams/pa-components-acheteur.puml[]
+----
 
-package "Conteneur : shop-buyer-portal\n(Nginx + Vite)" {
-  [front-acheteur\n(React SPA)] as FrontB
-}
+=== Vue Vendeur
 
-package "Conteneur : shop-vendor-backoffice\n(Nginx + Vite)" {
-  [front-vendeur\n(React SPA)] as FrontV
-}
-
-package "Conteneur : shop-admin-console\n(Nginx + Vite)" {
-  [front-admin\n(React SPA)] as FrontA
-}
-
-note "En production : les trois SPA sont\nservies sous forme de bundles statiques\npar un seul conteneur Nginx." as NoteNginxProd
-
-package "Conteneur : API Spring Boot" {
-  package "Composants métier" {
-    [composant-compte] as MCompte
-    [composant-catalogue] as MCatalogue
-    [composant-panier] as MPanier
-    [composant-commande] as MCommande
-    [composant-paiement] as MPaiement
-    [composant-expedition] as MExpedition
-    [composant-notification] as MNotif
-    [composant-rapport] as MRapport
-    [composant-annonce] as MAnnounce
-  }
-  package "Composants transverses" {
-    [composant-securite\n(Spring Security)] as MSec
-    [composant-journalisation\n(Spring AOP)] as MLog
-  }
-  package "Adaptateurs externes" {
-    [adaptateur-stripe\n(SDK Stripe)] as AStripe
-    [adaptateur-messagerie\n(SDK SendGrid)] as AMail
-  }
-}
-
-package "Conteneur : PostgreSQL 16" {
-  database "boutique_db" as PgDB
-}
-
-package "Conteneur : Redis 7" {
-  database "cache / sessions" as RedisDB
-}
-
-FrontB --> MCompte : JWT auth
-FrontB --> MCatalogue
-FrontB --> MPanier
-FrontB --> MCommande
-FrontV --> MCatalogue
-FrontV --> MCommande
-FrontV --> MExpedition
-FrontV --> MRapport
-FrontV --> MAnnounce
-FrontB --> MAnnounce
-FrontA --> MCompte
-
-MAnnounce --> PgDB
-MLog --> PgDB : audit_log (CPA-13)
-note "MSec et MLog s'appliquent\nde façon transverse à tous\nles composants métier" as NoteSecLog
-
-MCompte --> MNotif : envoi token activation
-MCommande --> MCatalogue : réservation stock (IFL-06)
-MCommande --> MPaiement : IFL-08
-MCommande --> MExpedition : IFL-05
-MCommande --> MNotif : IFL-09
-MPaiement --> AStripe : IFL-10
-MNotif --> AMail : IFL-12
-
-MPanier --> RedisDB : session (TTL)
-MPanier --> PgDB : persistance longue durée (CS-03)
-MCompte --> PgDB
-MCatalogue --> PgDB
-MCommande --> PgDB
-MPaiement --> PgDB : journalisation (CPA-07)
-MExpedition --> PgDB
-MRapport --> PgDB
+.Composants physiques — vue Vendeur
+[plantuml, pa-components-vendeur, svg]
+----
+include::diagrams/pa-components-vendeur.puml[]
 ----
 
 == Diagramme de séquence technique — Tunnel d'achat et paiement Stripe
@@ -886,6 +817,16 @@ L'API publique `GET /api/public/theme` retourne les quatre champs `{ logoUrl, ba
 include::diagrams/ihm/ihm-bov-logo.puml[]
 ----
 
+==== Campagne email promotionnelle
+
+Formulaire de composition et d'envoi d'une campagne marketing (FS-V17 / US-MKTG-01). Le nombre de destinataires potentiels est affiché avant envoi ; le bouton « Envoyer » est désactivé si aucun acheteur consentant n'est disponible.
+
+.Maquette filaire : Back-office Vendeur — Campagne email promotionnelle
+[plantuml, ihm-bov-campagne, svg]
+----
+include::diagrams/ihm/ihm-bov-campagne.puml[]
+----
+
 ==== Rapports de ventes
 
 Tableau de bord analytique (FS-V07). Les indicateurs clés (CA, nombre de commandes, panier moyen, taux d'annulation) sont calculés par des requêtes JPQL agrégées sur la période sélectionnée. Le classement des produits est dérivé des `LigneCommande`. L'export CSV génère un fichier téléchargeable côté client.
@@ -945,30 +886,7 @@ Bascule du mode maintenance (FS-A05 / UCSA-14). L'interrupteur est accessible un
 .Maquette filaire : Console Admin — Mode maintenance
 [plantuml, ihm-admin-maintenance, svg]
 ----
-@startsalt
-' Composant PA-PHY-003 — Console Administrateur
-' Illustre la fonction allouée : FS-A05 (basculer en mode maintenance)
-title Console Admin — Mode maintenance (FS-A05)
-
-{+
-  == Administration de la plateforme
-  --
-  Mode maintenance | (X) Activé  ( ) Désactivé
-  --
-  {#
-    État actuel     | <b>MAINTENANCE ACTIVE
-    Depuis          | 2026-05-22 14:37 UTC
-    Acteurs bloqués | Acheteurs, Vendeurs
-  }
-  --
-  Message affiché aux visiteurs :
-  {SI
-    "Site temporairement indisponible. Merci de réessayer ultérieurement."
-  }
-  --
-  [Annuler]  [Enregistrer les modifications]
-}
-@endsalt
+include::diagrams/ihm/ihm-admin-maintenance.puml[]
 ----
 
 ==== Gestion des transporteurs
@@ -1071,6 +989,11 @@ include::diagrams/ihm/ihm-admin-form-transporteur.puml[]
 | composant-annonce
 | Conteneur API Spring Boot
 | Spring Boot / Spring Data JPA — entité `Announcement`, endpoints REST `/annonces`
+
+| Service Campagne Marketing
+| composant-campagne
+| Conteneur API Spring Boot
+| Spring Boot / Spring Data JPA — endpoint `POST /api/vendor/campaigns/send` (protégé VENDOR), table `campaign_log`, délégation de l'envoi à composant-notification
 
 | Service Sécurité
 | composant-securite
