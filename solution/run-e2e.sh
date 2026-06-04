@@ -1,92 +1,126 @@
 #!/usr/bin/env bash
 # run-e2e.sh — Lance la suite E2E complète avec gestion propre des processus.
 # Usage : bash run-e2e.sh [-- <playwright-flags>]
-#
-# Cycle :
-#   1. Kill tous les processus dev existants (Vite + Spring Boot)
-#   2. Démarre des instances fraîches
-#   3. Attend que chaque service soit prêt
-#   4. Lance le container e2e (docker compose --profile e2e run --rm e2e)
-#   5. Kill à nouveau après les tests
-#
-# Pré-requis : les containers shop-* doivent déjà tourner (docker compose up -d).
 
-set -euo pipefail
+COMPOSE_FILE="$(cd "$(dirname "$0")" && pwd)/docker-compose.dev.yml"
 
-COMPOSE_FILE="$(dirname "$0")/docker-compose.dev.yml"
-EXTRA_ARGS="$*"
+EXTRA_ARGS=""
+for arg in "$@"; do
+  [[ "$arg" == "--" ]] && continue
+  EXTRA_ARGS="$EXTRA_ARGS $arg"
+done
+EXTRA_ARGS="${EXTRA_ARGS# }"
 
 BACKEND=shop-backend-1
 VENDOR=shop-vendor-backoffice-1
 BUYER=shop-buyer-portal-1
 ADMIN=shop-admin-console-1
 
-kill_dev_processes() {
+die() { echo "ERROR: $*" >&2; exit 1; }
+
+kill_dev() {
   echo ">>> Kill processus dev existants"
   docker exec "$BACKEND" bash -c \
-    "pkill -9 -f 'spring-boot:run' 2>/dev/null; pkill -9 -f 'ShopApplication' 2>/dev/null; true"
+    "pkill -9 -f 'spring-boot:run' 2>/dev/null; pkill -9 -f 'ShopApplication' 2>/dev/null; true" || true
   for c in "$VENDOR" "$BUYER" "$ADMIN"; do
-    docker exec "$c" bash -c "pkill -9 -f 'vite' 2>/dev/null; pkill -9 -f 'node.*dev' 2>/dev/null; true"
+    docker exec "$c" bash -c \
+      "pkill -9 -f 'vite' 2>/dev/null; pkill -9 -f 'node.*dev' 2>/dev/null; true" || true
   done
   sleep 2
 }
 
-start_dev_processes() {
+install_frontend_deps() {
+  echo ">>> npm install (workspaces)"
+  docker exec "$VENDOR" bash -c "cd /workspace && npm install --workspaces --silent 2>/dev/null" || true
+}
+
+start_vite() {
+  local container="$1" prefix="$2"
+  docker exec "$container" bash -c \
+    "nohup npm run --prefix /workspace/${prefix} dev -- --host --port 5173 >/tmp/vite.log 2>&1 &"
+}
+
+start_dev() {
   echo ">>> Démarrage Vite (3 SPAs)"
-  docker exec "$VENDOR" bash -c \
-    "nohup npm run --prefix /workspace/vendor-backoffice dev -- --host --port 5173 > /tmp/vite.log 2>&1 &"
-  docker exec "$BUYER" bash -c \
-    "nohup npm run --prefix /workspace/buyer-portal dev -- --host --port 5173 > /tmp/vite.log 2>&1 &"
-  docker exec "$ADMIN" bash -c \
-    "nohup npm run --prefix /workspace/admin-console dev -- --host --port 5173 > /tmp/vite.log 2>&1 &"
+  start_vite "$VENDOR" "vendor-backoffice"
+  start_vite "$BUYER"  "buyer-portal"
+  start_vite "$ADMIN"  "admin-console"
 
   echo ">>> Démarrage Spring Boot"
   docker exec "$BACKEND" bash -c \
-    "nohup mvn -f /workspace/pom.xml spring-boot:run > /tmp/spring.log 2>&1 &"
+    "nohup mvn -f /workspace/pom.xml spring-boot:run >/tmp/spring.log 2>&1 &"
 }
 
-wait_vite() {
-  echo ">>> Attente Vite servers..."
-  for c in "$VENDOR" "$BUYER" "$ADMIN"; do
-    i=0
-    until docker exec "$c" curl -sf http://localhost:5173/ > /dev/null 2>&1; do
-      sleep 3; i=$((i+1))
-      [[ $i -ge 40 ]] && { echo "TIMEOUT: $c Vite"; exit 1; }
-    done
-    echo "    $c: prêt"
-  done
-}
-
-wait_spring() {
-  echo ">>> Attente Spring Boot (~5 min)..."
+# Attend que le port $2 accepte des connexions TCP depuis l'intérieur du container $1.
+wait_port_inside() {
+  local container="$1" port="${2:-5173}" label="$3" max="${4:-40}"
+  echo -n "    $label "
   i=0
-  until docker exec "$BACKEND" curl -sf http://localhost:8080/api/public/theme > /dev/null 2>&1; do
-    sleep 8; i=$((i+1))
-    [[ $i -ge 50 ]] && { echo "TIMEOUT: Spring Boot"; exit 1; }
+  until docker exec "$container" bash -c \
+      "(exec 3<>/dev/tcp/localhost/${port}) 2>/dev/null"; do
+    echo -n "."
+    sleep 3
+    i=$((i+1))
+    if [[ $i -ge $max ]]; then
+      echo " TIMEOUT"
+      echo "--- dernières lignes de /tmp/vite.log dans $container ---"
+      docker exec "$container" tail -20 /tmp/vite.log 2>/dev/null || true
+      die "Vite timeout dans $container"
+    fi
   done
-  echo "    Spring Boot: prêt"
+  echo " prêt"
+}
+
+wait_http_host() {
+  local url="$1" label="$2" max="${3:-50}" interval="${4:-8}"
+  echo -n "    $label "
+  i=0
+  until curl -sf "$url" >/dev/null 2>&1; do
+    echo -n "."
+    sleep "$interval"
+    i=$((i+1))
+    if [[ $i -ge $max ]]; then
+      echo " TIMEOUT"
+      echo "--- dernières lignes de /tmp/spring.log ---"
+      docker exec "$BACKEND" tail -20 /tmp/spring.log 2>/dev/null || true
+      die "Spring Boot timeout"
+    fi
+  done
+  echo " prêt"
 }
 
 run_tests() {
-  echo ">>> Lancement tests E2E (container dédié)"
+  echo ">>> Lancement tests E2E (depuis vendor-backoffice)"
+  # On exécute les tests depuis le container vendor-backoffice-1 :
+  # Vite du vendor portal est sur localhost (même container) — pas de latence réseau Docker.
+  # Les autres SPAs (buyer, admin) passent par le réseau Docker, mais Vite y est déjà chaud.
+  local cmd="cd /workspace/e2e"
   if [[ -n "$EXTRA_ARGS" ]]; then
-    docker compose -f "$COMPOSE_FILE" --profile e2e run --rm e2e \
-      sh -c "npm install && npm run test:ci -- $EXTRA_ARGS"
+    cmd="$cmd && npm run test:docker -- $EXTRA_ARGS"
   else
-    docker compose -f "$COMPOSE_FILE" --profile e2e run --rm e2e
+    cmd="$cmd && npm run test:docker"
   fi
+  docker exec "$VENDOR" bash -c "$cmd"
 }
 
 # ── Main ────────────────────────────────────────────────────────────────────
 
-kill_dev_processes
-start_dev_processes
-wait_vite
-wait_spring
+kill_dev
+install_frontend_deps
+start_dev
+
+# Vite : check TCP port 5173 depuis l'intérieur de chaque container (pas besoin de curl)
+wait_port_inside "$VENDOR" 5173 "vendor-vite"
+wait_port_inside "$BUYER"  5173 "buyer-vite"
+wait_port_inside "$ADMIN"  5173 "admin-vite"
+
+# Spring Boot : check depuis le host via port mappé 8080
+wait_http_host "http://localhost:8080/api/public/theme" "spring-boot"
 
 E2E_EXIT=0
 run_tests || E2E_EXIT=$?
 
-kill_dev_processes
+kill_dev
+echo ""
 echo ">>> Tests terminés (exit $E2E_EXIT)"
 exit $E2E_EXIT

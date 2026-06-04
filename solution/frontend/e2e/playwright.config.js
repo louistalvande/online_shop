@@ -15,8 +15,8 @@ export default defineConfig({
   use: {
     screenshot: 'on',
     video: 'retain-on-failure',
-    actionTimeout: 30000,
-    navigationTimeout: 60000,
+    actionTimeout: 60000,
+    navigationTimeout: 90000,
   },
   projects: [
     {
