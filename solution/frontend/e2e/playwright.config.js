@@ -6,8 +6,8 @@ export default defineConfig({
   globalTeardown: './global-teardown.js',
   fullyParallel: false,
   retries: 0,
-  timeout: 300000,
-  expect: { timeout: 20000 },
+  timeout: 120000,
+  expect: { timeout: 15000 },
   reporter: [
     ['html', { outputFolder: 'playwright-report', open: 'never' }],
     ['list'],
@@ -15,8 +15,8 @@ export default defineConfig({
   use: {
     screenshot: 'on',
     video: 'retain-on-failure',
-    actionTimeout: 60000,
-    navigationTimeout: 120000,
+    actionTimeout: 25000,
+    navigationTimeout: 60000,
   },
   projects: [
     {
