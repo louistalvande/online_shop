@@ -41,10 +41,10 @@ button { cursor: pointer; font-family: inherit; }
 }
 .btn--md, .btn-md { padding: 10px 20px; font-size: 15px; }
 .btn--sm, .btn-sm { padding: 6px 12px; font-size: 13px; }
-.btn--primary, .btn-primary { background: var(--accent); color: var(--btn-text); }
+.btn--primary, .btn-primary { background: var(--accent); color: #fff; }
 .btn--secondary, .btn-secondary { background: var(--surface); color: var(--text); border: 1px solid var(--border); }
 .btn--ghost, .btn-ghost { background: none; color: var(--text); }
-.btn--danger, .btn-danger { background: #c62828; color: var(--btn-text); }
+.btn--danger, .btn-danger { background: #c62828; color: #fff; }
 .btn:disabled { opacity: 0.6; cursor: not-allowed; }
 
 /* ─── Card ─── */
