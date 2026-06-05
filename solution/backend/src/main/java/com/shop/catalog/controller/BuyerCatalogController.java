@@ -12,6 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.UUID;
 
 /** Public buyer-facing endpoints for browsing the product catalog (US-SHP-01, US-SHP-02). */
@@ -53,4 +54,28 @@ public interface BuyerCatalogController {
     @ApiResponse(responseCode = "404", description = "Product not found or not published")
     @GetMapping("/products/{id}")
     ResponseEntity<BuyerProductResponse> getProduct(@PathVariable UUID id);
+
+    /**
+     * Returns all distinct non-blank product type values from published products,
+     * sorted alphabetically. Used for catalog filter autocomplete.
+     * Accessible without authentication.
+     *
+     * @return sorted list of distinct published product types with HTTP 200
+     */
+    @Operation(summary = "List distinct published product types for filter autocomplete")
+    @ApiResponse(responseCode = "200", description = "Distinct types returned")
+    @GetMapping("/products/distinct-types")
+    ResponseEntity<List<String>> listDistinctTypes();
+
+    /**
+     * Returns all distinct non-blank product theme values from published products,
+     * sorted alphabetically. Used for catalog filter autocomplete.
+     * Accessible without authentication.
+     *
+     * @return sorted list of distinct published product themes with HTTP 200
+     */
+    @Operation(summary = "List distinct published product themes for filter autocomplete")
+    @ApiResponse(responseCode = "200", description = "Distinct themes returned")
+    @GetMapping("/products/distinct-themes")
+    ResponseEntity<List<String>> listDistinctThemes();
 }

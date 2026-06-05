@@ -242,6 +242,20 @@ public class ProductServiceImpl implements ProductService {
     /** {@inheritDoc} */
     @Override
     @Transactional(readOnly = true)
+    public List<String> distinctPublishedProductTypes() {
+        return productRepository.findDistinctPublishedTypes();
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    @Transactional(readOnly = true)
+    public List<String> distinctPublishedProductThemes() {
+        return productRepository.findDistinctPublishedThemes();
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    @Transactional(readOnly = true)
     public BuyerProductResponse getPublishedProduct(UUID productId) {
         Product product = productRepository.findById(productId)
                 .filter(p -> p.getStatus() == ProductStatus.PUBLISHED)

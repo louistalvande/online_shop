@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.UUID;
 
 /** {@link BuyerCatalogController} implementation. */
@@ -37,5 +38,17 @@ public class BuyerCatalogControllerImpl implements BuyerCatalogController {
     @Override
     public ResponseEntity<BuyerProductResponse> getProduct(UUID id) {
         return ResponseEntity.ok(productService.getPublishedProduct(id));
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public ResponseEntity<List<String>> listDistinctTypes() {
+        return ResponseEntity.ok(productService.distinctPublishedProductTypes());
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public ResponseEntity<List<String>> listDistinctThemes() {
+        return ResponseEntity.ok(productService.distinctPublishedProductThemes());
     }
 }

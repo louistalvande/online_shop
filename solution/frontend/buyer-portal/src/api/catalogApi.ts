@@ -47,6 +47,20 @@ export async function fetchProduct(id: string): Promise<BuyerProduct> {
   return res.json()
 }
 
+/** Returns all distinct category values from published products (for filter autocomplete). */
+export async function fetchDistinctCategories(): Promise<string[]> {
+  const res = await fetch('/api/buyer/products/distinct-types')
+  if (!res.ok) return []
+  return res.json()
+}
+
+/** Returns all distinct theme values from published products (for filter autocomplete). */
+export async function fetchDistinctThemes(): Promise<string[]> {
+  const res = await fetch('/api/buyer/products/distinct-themes')
+  if (!res.ok) return []
+  return res.json()
+}
+
 /** Returns a sorted deduplicated list of categories from a product page. */
 export function extractCategories(products: BuyerProduct[]): string[] {
   const cats = products.map(p => p.category).filter((c): c is string => !!c)

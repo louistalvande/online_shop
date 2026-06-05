@@ -127,6 +127,22 @@ public interface ProductService {
     List<String> distinctProductThemes();
 
     /**
+     * Returns all distinct non-blank product type values from published products,
+     * sorted alphabetically. Used for buyer catalog autocomplete.
+     *
+     * @return sorted list of distinct published product types
+     */
+    List<String> distinctPublishedProductTypes();
+
+    /**
+     * Returns all distinct non-blank product theme values from published products,
+     * sorted alphabetically. Used for buyer catalog autocomplete.
+     *
+     * @return sorted list of distinct published product themes
+     */
+    List<String> distinctPublishedProductThemes();
+
+    /**
      * Updates stock quantity and alert threshold for multiple products in a single operation (US-CAT-08).
      * Each product is processed independently; failures for individual products do not prevent
      * successful updates for others (partial success).
