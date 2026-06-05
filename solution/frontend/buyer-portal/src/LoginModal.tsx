@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Button } from '@workspace/theme'
 import { login, verifyMfa, type BuyerSession } from './api/authApi'
+import { getProfile } from './api/profileApi'
 
 interface Props {
   onClose: () => void
@@ -9,7 +10,16 @@ interface Props {
 }
 
 export default function LoginModal({ onClose, onLogin }: Props) {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
+
+  async function applyUserLanguage() {
+    try {
+      const profile = await getProfile()
+      await i18n.changeLanguage(profile.language.toLowerCase())
+    } catch {
+      // non-critical
+    }
+  }
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [mfaStep, setMfaStep] = useState(false)
@@ -28,6 +38,7 @@ export default function LoginModal({ onClose, onLogin }: Props) {
         setMfaToken(result.mfaToken)
         setMfaStep(true)
       } else if (result.session) {
+        await applyUserLanguage()
         onLogin(result.session)
       }
     } catch (err: unknown) {
@@ -47,6 +58,7 @@ export default function LoginModal({ onClose, onLogin }: Props) {
     setLoading(true)
     try {
       const session = await verifyMfa(mfaToken, mfaCode)
+      await applyUserLanguage()
       onLogin(session)
     } catch (err: unknown) {
       const code = err instanceof Error ? (err as { code?: string }).code : undefined

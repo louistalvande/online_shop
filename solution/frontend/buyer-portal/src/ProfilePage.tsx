@@ -85,15 +85,11 @@ export default function ProfilePage() {
         setLastName(p.lastName)
         setPhone(p.phone ?? '')
         setMarketingConsent(p.marketingConsent)
+        setLanguage(p.language)
         i18n.changeLanguage(p.language.toLowerCase())
       })
       .catch(() => setLoadError(true))
   }, [])
-
-  useEffect(() => {
-    const upper = i18n.language.toUpperCase() as 'FR' | 'EN' | 'ES'
-    setLanguage(['FR', 'EN', 'ES'].includes(upper) ? upper : 'FR')
-  }, [i18n.language])
 
   useEffect(() => {
     if (activeTab !== 'addresses') return
