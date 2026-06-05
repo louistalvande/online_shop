@@ -4,6 +4,7 @@ import { Button, Card, Snackbar, CartIcon } from '@workspace/theme'
 import { fetchProducts, type BuyerProduct } from './api/catalogApi'
 import { addToCart } from './api/cartApi'
 import { getSession, type BuyerSession } from './api/authApi'
+import { subscribeToRestock } from './api/stockSubscriptionApi'
 import LoginModal from './LoginModal'
 import AnnouncementCarousel from './AnnouncementCarousel'
 
@@ -21,6 +22,9 @@ export default function HomePage({ bannerUrl }: Props) {
   const [addingId, setAddingId] = useState<string | null>(null)
   const [cartFeedback, setCartFeedback] = useState<{ id: string; ok: boolean } | null>(null)
   const [snackbar, setSnackbar] = useState<{ message: string; variant: 'success' | 'error' } | null>(null)
+  const [pendingAlertProductId, setPendingAlertProductId] = useState<string | null>(null)
+  const [subscribingId, setSubscribingId] = useState<string | null>(null)
+  const [subscribedIds, setSubscribedIds] = useState<Set<string>>(new Set())
 
   useEffect(() => {
     fetchProducts({ page: 0, size: 8 })
@@ -33,6 +37,11 @@ export default function HomePage({ bannerUrl }: Props) {
       const id = pendingCartProductId
       setPendingCartProductId(null)
       doAddToCart(id)
+    }
+    if (session && pendingAlertProductId) {
+      const id = pendingAlertProductId
+      setPendingAlertProductId(null)
+      doSubscribe(id)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [session])
@@ -59,12 +68,35 @@ export default function HomePage({ bannerUrl }: Props) {
     await doAddToCart(productId)
   }
 
+  async function doSubscribe(productId: string) {
+    setSubscribingId(productId)
+    try {
+      await subscribeToRestock(productId)
+      setSubscribedIds(prev => new Set(prev).add(productId))
+      setSnackbar({ message: t('stock.notify.success'), variant: 'success' })
+    } catch (err: unknown) {
+      const code = (err as { code?: string }).code
+      if (code === 'ALREADY_SUBSCRIBED') {
+        setSubscribedIds(prev => new Set(prev).add(productId))
+      } else {
+        setSnackbar({ message: t('stock.notify.error'), variant: 'error' })
+      }
+    } finally {
+      setSubscribingId(null)
+    }
+  }
+
+  async function handleNotifyAlert(productId: string) {
+    if (!session) { setPendingAlertProductId(productId); setShowLogin(true); return }
+    await doSubscribe(productId)
+  }
+
   return (
     <>
       {snackbar && <Snackbar message={snackbar.message} variant={snackbar.variant} onDismiss={() => setSnackbar(null)} />}
       {showLogin && (
         <LoginModal
-          onClose={() => { setShowLogin(false); setPendingCartProductId(null) }}
+          onClose={() => { setShowLogin(false); setPendingCartProductId(null); setPendingAlertProductId(null) }}
           onLogin={(s) => {
             setSession(s)
             setShowLogin(false)
@@ -103,8 +135,13 @@ export default function HomePage({ bannerUrl }: Props) {
                     {p.priceTTC.toLocaleString('fr-FR', { style: 'currency', currency: 'EUR' })}
                   </span>
                   {p.outOfStock ? (
-                    <Button variant="secondary" size="sm" disabled>
-                      {t('catalog.outOfStock')}
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      disabled={subscribingId === p.id || subscribedIds.has(p.id)}
+                      onClick={() => handleNotifyAlert(p.id)}
+                    >
+                      {subscribedIds.has(p.id) ? t('stock.notify.subscribed') : t('stock.notify.subscribe')}
                     </Button>
                   ) : (
                     <Button
