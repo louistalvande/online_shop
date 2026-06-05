@@ -8,15 +8,32 @@ import {
   confirmCardPayment,
   initCheckout,
   listCarriers,
+  listCountries,
+  type CountryData,
 } from './api/orderApi'
 import { getSession } from './api/authApi'
-import { listAddresses, type DeliveryAddressData } from './api/profileApi'
+import { listAddresses, createAddress, type DeliveryAddressData, type CreateDeliveryAddressPayload } from './api/profileApi'
 
 type Step = 'address' | 'payment' | 'confirmation'
 
+interface AddressFormState {
+  label: string
+  recipientName: string
+  addressLine: string
+  city: string
+  postalCode: string
+  countryCode: string
+  makeDefault: boolean
+}
+
+const EMPTY_ADDR_FORM: AddressFormState = {
+  label: '', recipientName: '', addressLine: '', city: '', postalCode: '', countryCode: '', makeDefault: false,
+}
+
 export default function CheckoutPage() {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   const session = getSession()
+  const locale = i18n.language
 
   const [step, setStep] = useState<Step>('address')
 
@@ -38,6 +55,13 @@ export default function CheckoutPage() {
   const [addressError, setAddressError] = useState('')
   const [paymentError, setPaymentError] = useState('')
   const [submitting, setSubmitting] = useState(false)
+
+  // Add address modal
+  const [showAddressModal, setShowAddressModal] = useState(false)
+  const [addrForm, setAddrForm] = useState<AddressFormState>(EMPTY_ADDR_FORM)
+  const [addrSaving, setAddrSaving] = useState(false)
+  const [addrFormError, setAddrFormError] = useState('')
+  const [countries, setCountries] = useState<CountryData[]>([])
 
   useEffect(() => {
     if (!session) return
@@ -81,6 +105,34 @@ export default function CheckoutPage() {
     if (!selectedAddressId) { setAddressError(t('checkout.error.noAddress')); return }
     if (!carrierId) { setAddressError(t('checkout.error.noCarrier')); return }
     setStep('payment')
+  }
+
+  function openAddressModal() {
+    setAddrForm(EMPTY_ADDR_FORM)
+    setAddrFormError('')
+    if (countries.length === 0) listCountries().then(setCountries).catch(() => {})
+    setShowAddressModal(true)
+  }
+
+  async function handleCreateAddress(e: React.FormEvent) {
+    e.preventDefault()
+    setAddrFormError('')
+    setAddrSaving(true)
+    try {
+      const payload: CreateDeliveryAddressPayload = { ...addrForm }
+      const created = await createAddress(payload)
+      setAddresses(prev => {
+        const cleared = payload.makeDefault ? prev.map(a => ({ ...a, default: false })) : prev
+        return [...cleared, created]
+      })
+      setSelectedAddressId(created.id)
+      setShowAddressModal(false)
+    } catch (err: unknown) {
+      const code = (err as { code?: string }).code
+      setAddrFormError(code === 'INVALID_COUNTRY' ? t('profile.addresses.error.invalidCountry') : t('profile.addresses.error.save'))
+    } finally {
+      setAddrSaving(false)
+    }
   }
 
   async function handlePaymentSubmit(e: React.FormEvent) {
@@ -139,7 +191,9 @@ export default function CheckoutPage() {
             ) : addresses.length === 0 ? (
               <div className="checkout-no-addresses">
                 <p className="checkout-error">{t('checkout.address.noAddresses')}</p>
-                <a href="/profile#addresses">{t('checkout.address.manageLink')}</a>
+                <button type="button" onClick={openAddressModal}>
+                  {t('checkout.address.addAddress')}
+                </button>
               </div>
             ) : (
               <div className="checkout-field">
@@ -292,6 +346,74 @@ export default function CheckoutPage() {
           </div>
         )}
       </div>
+
+      {/* ─── ADD ADDRESS MODAL ─── */}
+      {showAddressModal && (
+        <div className="profile-modal-overlay" role="dialog" aria-modal="true">
+          <div className="profile-modal">
+            <h2 className="profile-modal-title">{t('checkout.address.addTitle')}</h2>
+            <form onSubmit={handleCreateAddress}>
+              <div className="profile-field">
+                <label htmlFor="addrLabel" className="profile-label">{t('profile.addresses.form.label')}</label>
+                <input id="addrLabel" className="profile-input" value={addrForm.label} maxLength={100} required
+                  onChange={e => setAddrForm(f => ({ ...f, label: e.target.value }))} />
+              </div>
+              <div className="profile-field">
+                <label htmlFor="addrRecipient" className="profile-label">{t('profile.addresses.form.recipientName')}</label>
+                <input id="addrRecipient" className="profile-input" value={addrForm.recipientName} maxLength={100} required
+                  onChange={e => setAddrForm(f => ({ ...f, recipientName: e.target.value }))} />
+              </div>
+              <div className="profile-field">
+                <label htmlFor="addrLine" className="profile-label">{t('profile.addresses.form.line')}</label>
+                <input id="addrLine" className="profile-input" value={addrForm.addressLine} maxLength={255} required
+                  onChange={e => setAddrForm(f => ({ ...f, addressLine: e.target.value }))} />
+              </div>
+              <div className="profile-row">
+                <div className="profile-field">
+                  <label htmlFor="addrPostal" className="profile-label">{t('profile.addresses.form.postalCode')}</label>
+                  <input id="addrPostal" className="profile-input" value={addrForm.postalCode} maxLength={20} required
+                    onChange={e => setAddrForm(f => ({ ...f, postalCode: e.target.value }))} />
+                </div>
+                <div className="profile-field">
+                  <label htmlFor="addrCity" className="profile-label">{t('profile.addresses.form.city')}</label>
+                  <input id="addrCity" className="profile-input" value={addrForm.city} maxLength={100} required
+                    onChange={e => setAddrForm(f => ({ ...f, city: e.target.value }))} />
+                </div>
+              </div>
+              <div className="profile-field">
+                <label htmlFor="addrCountry" className="profile-label">{t('profile.addresses.form.country')}</label>
+                <select id="addrCountry" className="profile-input" value={addrForm.countryCode} required
+                  onChange={e => setAddrForm(f => ({ ...f, countryCode: e.target.value }))}>
+                  <option value="">{t('checkout.address.countryPlaceholder')}</option>
+                  {countries.map(c => (
+                    <option key={c.code} value={c.code}>
+                      {locale === 'en' ? c.nameEn : c.nameFr} ({c.code})
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="profile-field">
+                <label className="profile-checkbox-label">
+                  <input type="checkbox" checked={addrForm.makeDefault}
+                    onChange={e => setAddrForm(f => ({ ...f, makeDefault: e.target.checked }))} />
+                  {' '}{t('profile.addresses.form.makeDefault')}
+                </label>
+              </div>
+
+              {addrFormError && <p className="profile-alert-error">{addrFormError}</p>}
+
+              <div className="profile-actions">
+                <button type="button" onClick={() => setShowAddressModal(false)}>
+                  {t('profile.addresses.form.cancel')}
+                </button>
+                <button type="submit" disabled={addrSaving}>
+                  {addrSaving ? t('profile.saving') : t('profile.addresses.form.save')}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </Header>
   )
 }
