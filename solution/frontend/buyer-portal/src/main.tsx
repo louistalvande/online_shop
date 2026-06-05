@@ -1,9 +1,10 @@
-import { StrictMode } from 'react'
+import { StrictMode, useState, useEffect, type ReactNode } from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'
 import './i18n'
 import App from './App'
 import { getShopTheme } from './api/themeApi'
+import { getSession, validateSession } from './api/authApi'
 
 function darkenHex(hex: string, amount: number): string {
   const n = parseInt(hex.slice(1), 16)
@@ -36,20 +37,43 @@ const path = window.location.pathname
 const params = new URLSearchParams(window.location.search)
 const token = params.get('token') ?? ''
 
+/** Validates the JWT with the backend before rendering a protected page. Redirects to /login if expired. */
+function AuthGuard({ children }: { children: ReactNode }) {
+  const [status, setStatus] = useState<'checking' | 'ok' | 'denied'>(() =>
+    getSession() ? 'checking' : 'denied'
+  )
+
+  useEffect(() => {
+    if (status === 'denied') {
+      window.location.replace('/login')
+      return
+    }
+    validateSession()
+      .then(() => setStatus('ok'))
+      .catch(() => {
+        setStatus('denied')
+        window.location.replace('/login')
+      })
+  }, [])
+
+  if (status !== 'ok') return null
+  return <>{children}</>
+}
+
 function Root() {
   if (path === '/register') return <RegisterPage />
   if (path === '/activate') return <ActivatePage token={token} />
   if (path === '/forgot-password') return <ForgotPasswordPage />
   if (path === '/reset-password') return <ResetPasswordPage token={token} />
-  if (path === '/profile') return <ProfilePage />
+  if (path === '/profile') return <AuthGuard><ProfilePage /></AuthGuard>
   if (path === '/catalog') return <CatalogPage />
   const catalogDetailMatch = path.match(/^\/catalog\/([^/]+)$/)
   if (catalogDetailMatch) return <ProductDetailPage productId={catalogDetailMatch[1]} />
-  if (path === '/cart') return <CartPage />
-  if (path === '/checkout') return <CheckoutPage />
-  if (path === '/my-orders') return <OrderListPage />
+  if (path === '/cart') return <AuthGuard><CartPage /></AuthGuard>
+  if (path === '/checkout') return <AuthGuard><CheckoutPage /></AuthGuard>
+  if (path === '/my-orders') return <AuthGuard><OrderListPage /></AuthGuard>
   const orderDetailMatch = path.match(/^\/my-orders\/([^/]+)$/)
-  if (orderDetailMatch) return <OrderDetailPage orderId={orderDetailMatch[1]} />
+  if (orderDetailMatch) return <AuthGuard><OrderDetailPage orderId={orderDetailMatch[1]} /></AuthGuard>
   return <App openLogin={path === '/login'} />
 }
 

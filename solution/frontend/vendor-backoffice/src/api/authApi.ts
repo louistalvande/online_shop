@@ -32,6 +32,18 @@ export function getSession(): VendorSession | null {
   return raw ? JSON.parse(raw) : null
 }
 
+/**
+ * Calls GET /api/auth/me to verify the JWT cookie is still valid.
+ * Clears the local session and throws if the server returns 401.
+ */
+export async function validateSession(): Promise<void> {
+  const res = await fetch('/api/auth/me', { credentials: 'include' })
+  if (res.status === 401 || res.status === 403) {
+    localStorage.removeItem(SESSION_KEY)
+    throw new Error('SESSION_EXPIRED')
+  }
+}
+
 /** fetch wrapper that uses the HttpOnly cookie; redirects to app root on 401. */
 export async function authedFetch(url: string, init: RequestInit = {}): Promise<Response> {
   if (!getSession()) {

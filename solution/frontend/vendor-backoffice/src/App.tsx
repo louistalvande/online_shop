@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import './index.css'
-import { getSession, logout } from './api/authApi'
+import { getSession, logout, validateSession } from './api/authApi'
 import { listPendingAlerts } from './api/productApi'
 import { getMaintenanceStatus } from './api/maintenanceApi'
 import { getShopTheme } from './api/shopConfigApi'
@@ -16,10 +16,18 @@ import MaintenancePage from './MaintenancePage'
 
 export default function App() {
   const [session, setSession] = useState(getSession)
+  const [authChecked, setAuthChecked] = useState(() => !getSession())
   const [page, setPage] = useState<Page>('dashboard')
   const [alertCount, setAlertCount] = useState(0)
   const [maintenance, setMaintenance] = useState(false)
   const [logoUrl, setLogoUrl] = useState<string | null>(null)
+
+  useEffect(() => {
+    if (!getSession()) { setAuthChecked(true); return }
+    validateSession()
+      .then(() => setAuthChecked(true))
+      .catch(() => { setSession(null); setAuthChecked(true) })
+  }, [])
 
   useEffect(() => {
     getMaintenanceStatus()
@@ -59,6 +67,10 @@ export default function App() {
 
   if (maintenance) {
     return <MaintenancePage />
+  }
+
+  if (!authChecked) {
+    return null
   }
 
   if (!session) {
