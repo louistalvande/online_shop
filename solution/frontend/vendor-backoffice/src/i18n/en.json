@@ -295,7 +295,7 @@
   "campaigns.error.subjectRequired": "Subject is required.",
   "campaigns.error.bodyRequired": "Message body is required.",
   "campaigns.error.noConsentingBuyers": "No active buyer has consented to marketing emails.",
-  "campaigns.error.generic": "An error occurred while sending. Please try again."
+  "campaigns.error.generic": "An error occurred while sending. Please try again.",
   "visual.title": "Visual identity",
   "visual.section.logo": "Shop logo",
   "visual.section.color": "Shop colours",

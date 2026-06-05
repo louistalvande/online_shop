@@ -285,7 +285,7 @@
   "campaigns.error.subjectRequired": "El asunto es obligatorio.",
   "campaigns.error.bodyRequired": "El mensaje es obligatorio.",
   "campaigns.error.noConsentingBuyers": "Ningún comprador activo ha dado su consentimiento a los emails comerciales.",
-  "campaigns.error.generic": "Se produjo un error al enviar. Por favor, inténtelo de nuevo."
+  "campaigns.error.generic": "Se produjo un error al enviar. Por favor, inténtelo de nuevo.",
   "visual.title": "Identidad visual",
   "visual.section.logo": "Logo de la tienda",
   "visual.section.color": "Colores de la tienda",
