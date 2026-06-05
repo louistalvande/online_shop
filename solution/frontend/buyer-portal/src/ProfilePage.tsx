@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { AppShell, Button, LangToggle } from '@workspace/theme'
 import { useShopName } from './hooks/useShopName'
+import { useLogoUrl } from './hooks/useLogoUrl'
 import { getSession, logout } from './api/authApi'
 import {
   getProfile,
@@ -39,6 +40,7 @@ export default function ProfilePage() {
   const session = getSession()
   const locale = i18n.language
   const brandName = useShopName()
+  const logoUrl = useLogoUrl()
 
   const [activeTab, setActiveTab] = useState<Tab>('profile')
   const [profile, setProfile] = useState<ProfileData | null>(null)
@@ -220,6 +222,7 @@ export default function ProfilePage() {
     <AppShell
       appName={t('app.name')}
       brandName={brandName}
+      logoUrl={logoUrl}
       navLinks={[
         { label: t('nav.home'), href: '/' },
         { label: t('nav.catalog'), href: '/catalog' },

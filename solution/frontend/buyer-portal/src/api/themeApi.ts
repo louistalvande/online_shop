@@ -23,3 +23,7 @@ export async function getShopTheme(): Promise<ShopTheme> {
 export function getCachedShopName(): string | null {
   return _cached?.shopName ?? null
 }
+
+export function getCachedLogoUrl(): string | null {
+  return _cached?.logoUrl ?? null
+}

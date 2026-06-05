@@ -8,6 +8,7 @@ import { subscribeToRestock, unsubscribeFromRestock, listSubscriptions } from '.
 import LoginModal from './LoginModal'
 import { useCartCount } from './hooks/useCartCount'
 import { useShopName } from './hooks/useShopName'
+import { useLogoUrl } from './hooks/useLogoUrl'
 
 function formatPrice(price: number): string {
   return price.toLocaleString('fr-FR', { style: 'currency', currency: 'EUR' })
@@ -20,6 +21,7 @@ interface Props {
 export default function ProductDetailPage({ productId }: Props) {
   const { t, i18n } = useTranslation()
   const brandName = useShopName()
+  const logoUrl = useLogoUrl()
   const [session, setSession] = useState<BuyerSession | null>(getSession)
   const [product, setProduct] = useState<BuyerProduct | null>(null)
   const [loading, setLoading] = useState(true)
@@ -95,6 +97,7 @@ export default function ProductDetailPage({ productId }: Props) {
       <AppShell
         appName={t('app.name')}
         brandName={brandName}
+        logoUrl={logoUrl}
         navLinks={[
           { label: t('nav.home'), href: '/' },
           { label: t('nav.catalog'), href: '/catalog' },

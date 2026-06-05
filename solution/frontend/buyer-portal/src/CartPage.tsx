@@ -5,10 +5,12 @@ import { getSession, logout, type BuyerSession } from './api/authApi'
 import { getCart, updateCartItem, removeCartItem, type CartData } from './api/cartApi'
 import LoginModal from './LoginModal'
 import { useShopName } from './hooks/useShopName'
+import { useLogoUrl } from './hooks/useLogoUrl'
 
 export default function CartPage() {
   const { t, i18n } = useTranslation()
   const brandName = useShopName()
+  const logoUrl = useLogoUrl()
   const [session, setSession] = useState<BuyerSession | null>(getSession)
   const [showLogin, setShowLogin] = useState(false)
   const [cart, setCart] = useState<CartData | null>(null)
@@ -95,6 +97,7 @@ export default function CartPage() {
       <AppShell
         appName={t('app.name')}
         brandName={brandName}
+        logoUrl={logoUrl}
         navLinks={[
           { label: t('nav.home'), href: '/' },
           { label: t('nav.catalog'), href: '/catalog' },

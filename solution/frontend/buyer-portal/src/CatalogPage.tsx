@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { Button, Card, AppShell, LangToggle, CartIcon, UserMenu, Snackbar } from '@workspace/theme'
 import { fetchProducts, fetchDistinctCategories, fetchDistinctThemes, type BuyerProduct, type CatalogFilters } from './api/catalogApi'
 import { useShopName } from './hooks/useShopName'
+import { useLogoUrl } from './hooks/useLogoUrl'
 import { addToCart } from './api/cartApi'
 import { getSession, logout, type BuyerSession } from './api/authApi'
 import LoginModal from './LoginModal'
@@ -17,6 +18,7 @@ function formatPrice(price: number): string {
 export default function CatalogPage() {
   const { t, i18n } = useTranslation()
   const brandName = useShopName()
+  const logoUrl = useLogoUrl()
   const [session, setSession] = useState<BuyerSession | null>(getSession)
 
   const [search, setSearch] = useState('')
@@ -141,6 +143,7 @@ export default function CatalogPage() {
     <AppShell
       appName={t('app.name')}
       brandName={brandName}
+      logoUrl={logoUrl}
       navLinks={[
         { label: t('nav.home'), href: '/' },
         { label: t('nav.catalog'), href: '/catalog' },

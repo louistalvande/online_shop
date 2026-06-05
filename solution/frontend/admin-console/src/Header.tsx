@@ -6,15 +6,19 @@ interface Props {
   session: AdminSession
   onLogout: () => void
   onSettings: () => void
+  shopName?: string
+  logoUrl?: string | null
   children: React.ReactNode
 }
 
-export default function Header({ session, onLogout, onSettings, children }: Props) {
+export default function Header({ session, onLogout, onSettings, shopName, logoUrl, children }: Props) {
   const { t, i18n } = useTranslation()
 
   return (
     <AppShell
       appName={t('app.name')}
+      brandName={shopName}
+      logoUrl={logoUrl ?? undefined}
       navLinks={[
         { label: t('nav.overview'),  href: '#' },
         { label: t('nav.users'),     href: '#users' },

@@ -36,7 +36,7 @@ export default function App() {
   }
 
   return (
-    <Header session={session} onLogout={() => { logout(); setSession(null) }} onSettings={() => setShowProfile(true)}>
+    <Header session={session} onLogout={() => { logout(); setSession(null) }} onSettings={() => setShowProfile(true)} shopName={shopName} logoUrl={logoUrl}>
       {showProfile
         ? <ProfilePage onBack={() => setShowProfile(false)} />
         : <DashboardPage onUnauthorized={() => setSession(null)} />
