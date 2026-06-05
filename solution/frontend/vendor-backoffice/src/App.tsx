@@ -28,7 +28,20 @@ export default function App() {
   }, [])
 
   useEffect(() => {
-    getShopTheme().then(t => setLogoUrl(t.logoUrl ?? null)).catch(() => {})
+    getShopTheme().then(t => {
+      setLogoUrl(t.logoUrl ?? null)
+      if (t.accentColor) {
+        const hex = t.accentColor
+        const n = parseInt(hex.slice(1), 16)
+        const darken = (v: number) => Math.max(0, v - 20).toString(16).padStart(2, '0')
+        const hover = '#' + darken(n >> 16) + darken((n >> 8) & 0xff) + darken(n & 0xff)
+        document.documentElement.style.setProperty('--accent', hex)
+        document.documentElement.style.setProperty('--accent-hover', hover)
+      }
+      if (t.bgColor) {
+        document.documentElement.style.setProperty('--bg', t.bgColor)
+      }
+    }).catch(() => {})
   }, [])
 
   useEffect(() => {

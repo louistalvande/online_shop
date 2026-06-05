@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { AppShell, LangToggle, Button } from '@workspace/theme'
 import { listVendorOrders, type OrderData } from './api/orderApi'
 import { getSession, logout } from './api/authApi'
+import Header from './Header'
 
 const STATUS_LABELS: Record<string, string> = {
   PAYMENT_PENDING_CARD: 'orders.status.pendingCard',
@@ -32,30 +32,18 @@ export default function OrderListPage() {
       .finally(() => setLoading(false))
   }, [])
 
-  const shell = (content: React.ReactNode) => (
-    <AppShell
-      appName={t('app.name')}
-      navLinks={[
-        { label: t('nav.dashboard'), href: import.meta.env.BASE_URL },
-      ]}
-      actions={
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-          <LangToggle lang={i18n.language} onToggle={() => i18n.changeLanguage(({ fr: 'en', en: 'es', es: 'fr' } as Record<string, string>)[i18n.language] ?? 'fr')} />
-          <Button variant="ghost" size="sm" onClick={() => { logout(); window.location.href = import.meta.env.BASE_URL }}>
-            {t('nav.logout')}
-          </Button>
-        </div>
-      }
-    >
-      {content}
-    </AppShell>
-  )
+  const onLogout = () => { logout(); window.location.href = import.meta.env.BASE_URL }
 
   if (!session) {
-    return shell(<main style={{ padding: '2rem' }}><p>{t('orders.error.notAuthenticated')}</p></main>)
+    return (
+      <Header onLogout={onLogout}>
+        <div style={{ padding: '2rem' }}><p>{t('orders.error.notAuthenticated')}</p></div>
+      </Header>
+    )
   }
 
-  return shell(
+  return (
+    <Header onLogout={onLogout}>
     <main style={{ padding: '2rem', maxWidth: '1100px', margin: '0 auto' }}>
       <h1>{t('orders.list.title')}</h1>
 
@@ -95,5 +83,6 @@ export default function OrderListPage() {
         </table>
       )}
     </main>
+    </Header>
   )
 }

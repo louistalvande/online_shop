@@ -82,7 +82,7 @@ export default function CampaignsPage() {
       {loadError && (
         <p style={{ color: 'red' }}>
           {t('campaigns.error.load')}{' '}
-          <button onClick={loadCount}>{t('campaigns.retry')}</button>
+          <button className="btn btn-secondary btn-sm" onClick={loadCount}>{t('campaigns.retry')}</button>
         </p>
       )}
 

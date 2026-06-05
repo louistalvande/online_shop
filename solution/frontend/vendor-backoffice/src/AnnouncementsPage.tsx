@@ -196,7 +196,7 @@ export default function AnnouncementsPage({ embedded = false }: AnnouncementsPag
       )}
 
       {loading && <p>{t('announcements.loading')}</p>}
-      {loadError && <p style={{ color: 'red' }}>{t('announcements.error.load')} <button onClick={load}>{t('announcements.retry')}</button></p>}
+      {loadError && <p style={{ color: 'red' }}>{t('announcements.error.load')} <button className="btn btn-secondary btn-sm" onClick={load}>{t('announcements.retry')}</button></p>}
 
       {!loading && !loadError && announcements.length === 0 && (
         <p style={{ color: '#888' }}>{t('announcements.empty')}</p>
