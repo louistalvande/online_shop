@@ -2,6 +2,7 @@ import { useTranslation } from 'react-i18next'
 import { AppShell, Button, CartIcon, LangToggle, UserMenu } from '@workspace/theme'
 import type { BuyerSession } from './api/authApi'
 import { useCartCount } from './hooks/useCartCount'
+import { useShopName } from './hooks/useShopName'
 
 interface Props {
   session: BuyerSession | null
@@ -14,10 +15,12 @@ interface Props {
 export default function Header({ session, onShowLogin, onLogout, children, logoUrl }: Props) {
   const { t, i18n } = useTranslation()
   const cartCount = useCartCount()
+  const brandName = useShopName()
 
   return (
     <AppShell
       appName={t('app.name')}
+      brandName={brandName}
       logoUrl={logoUrl ?? undefined}
       navLinks={[
         { label: t('nav.home'), href: '/' },

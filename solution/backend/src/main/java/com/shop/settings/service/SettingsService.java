@@ -55,4 +55,18 @@ public interface SettingsService {
      * @param bgColor the new CSS hex colour (e.g. {@code #f2f6f5})
      */
     void setBgColor(String bgColor);
+
+    /**
+     * Returns the shop name displayed in the buyer-facing header.
+     *
+     * @return the shop name; defaults to {@code "Catalogue de dessins"} if absent
+     */
+    String getShopName();
+
+    /**
+     * Updates the shop name displayed in the buyer-facing header.
+     *
+     * @param shopName the new shop name
+     */
+    void setShopName(String shopName);
 }

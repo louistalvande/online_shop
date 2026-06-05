@@ -6,6 +6,9 @@ import jakarta.validation.constraints.Pattern;
 /** PATCH payload for vendor shop theme update (FS-V16). Fields are individually optional — only non-null values are applied. */
 public class UpdateShopThemeRequest {
 
+    @Schema(description = "New shop name displayed in the buyer-facing header; null = no change")
+    private String shopName;
+
     @Pattern(regexp = "^#[0-9a-fA-F]{6}$", message = "Must be a 6-digit CSS hex colour (e.g. #4e8b82)")
     @Schema(description = "New shop accent colour — 6-digit CSS hex (e.g. #4e8b82); null = no change")
     private String accentColor;
@@ -13,6 +16,12 @@ public class UpdateShopThemeRequest {
     @Pattern(regexp = "^#[0-9a-fA-F]{6}$", message = "Must be a 6-digit CSS hex colour (e.g. #ffffff)")
     @Schema(description = "New shop background colour — 6-digit CSS hex (e.g. #f2f6f5); null = no change")
     private String bgColor;
+
+    /** @return the new shop name, or {@code null} if not being updated */
+    public String getShopName() { return shopName; }
+
+    /** @param shopName the new shop name */
+    public void setShopName(String shopName) { this.shopName = shopName; }
 
     /** @return the new accent colour, or {@code null} if not being updated */
     public String getAccentColor() { return accentColor; }

@@ -3,6 +3,7 @@ import { GalleryIcon } from './icons'
 
 interface AppShellProps {
   appName: string
+  brandName?: string
   logoUrl?: string
   onLogoClick?: () => void
   navLinks?: { label: string; href: string; onClick?: () => void; badge?: number }[]
@@ -10,7 +11,7 @@ interface AppShellProps {
   children: ReactNode
 }
 
-export function AppShell({ appName, logoUrl, onLogoClick, navLinks = [], actions, children }: AppShellProps) {
+export function AppShell({ appName, brandName, logoUrl, onLogoClick, navLinks = [], actions, children }: AppShellProps) {
   return (
     <>
       <header className="shell-header">
@@ -27,7 +28,7 @@ export function AppShell({ appName, logoUrl, onLogoClick, navLinks = [], actions
               : <GalleryIcon size={32} />
             }
             <div>
-              <div className="shell-brand-name">Catalogue de dessins</div>
+              <div className="shell-brand-name">{brandName ?? 'Catalogue de dessins'}</div>
               <div className="shell-brand-sub">{appName}</div>
             </div>
           </div>
@@ -51,7 +52,7 @@ export function AppShell({ appName, logoUrl, onLogoClick, navLinks = [], actions
       </header>
       <main>{children}</main>
       <footer className="shell-footer">
-        <p>© 2026 Catalogue de dessins</p>
+        <p>© 2026 {brandName ?? 'Catalogue de dessins'}</p>
       </footer>
     </>
   )

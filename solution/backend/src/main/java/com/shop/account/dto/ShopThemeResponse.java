@@ -5,6 +5,9 @@ import io.swagger.v3.oas.annotations.media.Schema;
 /** Public shop theme returned to unauthenticated clients (FS-V16). */
 public class ShopThemeResponse {
 
+    @Schema(description = "Shop name displayed in the buyer-facing header; never null")
+    private String shopName;
+
     @Schema(description = "CSS hex accent colour for --accent; never null — defaults to the platform value")
     private String accentColor;
 
@@ -18,17 +21,22 @@ public class ShopThemeResponse {
     private String bannerUrl;
 
     /**
+     * @param shopName    the shop name
      * @param accentColor the accent colour
      * @param bgColor     the background colour
      * @param logoUrl     the logo URL, or {@code null} if none uploaded
      * @param bannerUrl   the hero banner URL, or {@code null} if none uploaded
      */
-    public ShopThemeResponse(String accentColor, String bgColor, String logoUrl, String bannerUrl) {
+    public ShopThemeResponse(String shopName, String accentColor, String bgColor, String logoUrl, String bannerUrl) {
+        this.shopName    = shopName;
         this.accentColor = accentColor;
         this.bgColor     = bgColor;
         this.logoUrl     = logoUrl;
         this.bannerUrl   = bannerUrl;
     }
+
+    /** @return the shop name */
+    public String getShopName() { return shopName; }
 
     /** @return the accent colour */
     public String getAccentColor() { return accentColor; }

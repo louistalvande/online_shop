@@ -350,6 +350,7 @@ CREATE TABLE platform_settings (
 INSERT INTO platform_settings (key, value) VALUES ('maintenance_mode', 'false');
 INSERT INTO platform_settings (key, value) VALUES ('shop_accent_color', '#4e8b82');
 INSERT INTO platform_settings (key, value) VALUES ('shop_bg_color', '#f2f6f5');
+INSERT INTO platform_settings (key, value) VALUES ('shop_name', 'Catalogue de dessins');
 
 
 -- Scrolling announcements (US-ANN-01 — FS-V11)

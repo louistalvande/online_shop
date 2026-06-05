@@ -14,6 +14,8 @@ interface Props {
 export default function VisualIdentityPage({ onLogoChange }: Props) {
   const { t } = useTranslation()
 
+  const [shopName, setShopName] = useState('')
+  const [savingName, setSavingName] = useState(false)
   const [logoUrl, setLogoUrl] = useState<string | null>(null)
   const [bannerUrl, setBannerUrl] = useState<string | null>(null)
   const [accentColor, setAccentColor] = useState('#4e8b82')
@@ -29,6 +31,7 @@ export default function VisualIdentityPage({ onLogoChange }: Props) {
   useEffect(() => {
     getShopTheme()
       .then(theme => {
+        setShopName(theme.shopName ?? '')
         setLogoUrl(theme.logoUrl ?? null)
         setBannerUrl(theme.bannerUrl ?? null)
         setAccentColor(theme.accentColor ?? '#4e8b82')
@@ -98,6 +101,21 @@ export default function VisualIdentityPage({ onLogoChange }: Props) {
     }
   }
 
+  async function handleSaveName(e: React.FormEvent) {
+    e.preventDefault()
+    if (!shopName.trim()) return
+    setSavingName(true)
+    try {
+      const updated = await updateShopTheme({ shopName: shopName.trim() })
+      setShopName(updated.shopName ?? shopName)
+      flash(t('visual.shopName.success'), 'success')
+    } catch {
+      flash(t('profile.error.generic'), 'error')
+    } finally {
+      setSavingName(false)
+    }
+  }
+
   async function handleSaveColor() {
     setSavingColor(true)
     try {
@@ -142,6 +160,25 @@ export default function VisualIdentityPage({ onLogoChange }: Props) {
           {errorMsg}
         </div>
       )}
+
+      {/* ── Nom de la boutique ── */}
+      <section style={sectionStyle}>
+        <h2 style={sectionHeadStyle}>{t('visual.section.shopName')}</h2>
+        <form onSubmit={handleSaveName} style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
+          <input
+            style={{ ...inputStyle, flex: '1 1 240px', maxWidth: 400 }}
+            value={shopName}
+            maxLength={100}
+            required
+            onChange={e => setShopName(e.target.value)}
+            placeholder={t('visual.shopName.placeholder')}
+          />
+          <Button type="submit" size="sm" disabled={savingName || !shopName.trim()}>
+            {savingName ? t('profile.saving') : t('profile.save')}
+          </Button>
+        </form>
+        <p style={{ fontSize: 13, color: 'var(--text-muted)', marginTop: 8 }}>{t('visual.shopName.hint')}</p>
+      </section>
 
       {/* ── Logo ── */}
       <section style={sectionStyle}>
