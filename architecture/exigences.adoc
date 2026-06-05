@@ -153,6 +153,10 @@ NOTE: L'administrateur n'a pas accès aux données personnelles des comptes (nom
 | BES-VND-016
 | Le vendeur a besoin de classer chaque produit selon deux axes de catégorisation indépendants : le **type de produit** (ex. carte, poster, affiche…) et le **thème ou occasion** (ex. paysage, portrait, naissance, vacances…). Pour chaque axe, il doit pouvoir saisir librement une valeur ou sélectionner une valeur déjà utilisée dans le catalogue via une liste déroulante combinée (combobox).
 | UC_V1, Activités vendeur
+
+| BES-VND-017
+| Le vendeur a besoin d'envoyer des emails promotionnels (offres spéciales, nouveaux produits, événements) aux acheteurs ayant explicitement consenti à recevoir ce type de communication. Il doit pouvoir rédiger le contenu de la campagne et déclencher l'envoi vers la liste des acheteurs consentants. L'envoi est conditionné à l'existence d'au moins un acheteur consentant.
+| UC_V12, Activités vendeur, RGPD-CONS-001, RGPD-CONS-003
 |===
 
 ---
@@ -222,6 +226,10 @@ NOTE: L'administrateur n'a pas accès aux données personnelles des comptes (nom
 | BES-ACH-015
 | L'acheteur a besoin d'être alerté par email lorsqu'un produit actuellement indisponible redevient en stock, afin de pouvoir l'acheter sans avoir à surveiller régulièrement la boutique. L'abonnement à l'alerte doit être possible depuis la fiche produit, et consultable ou annulable depuis son espace compte.
 | UC_B1, Activités acheteur
+
+| BES-ACH-016
+| L'acheteur a besoin de donner ou retirer son consentement aux emails promotionnels du vendeur, à l'inscription (case non pré-cochée) et depuis son espace compte. Le retrait de consentement prend effet immédiatement et ne conditionne pas l'accès aux fonctionnalités de la boutique.
+| UC_B_ACC, Activités acheteur, RGPD-CONS-002
 |===
 
 ---
@@ -287,6 +295,7 @@ Le tableau ci-dessous relie chaque besoin opérationnel aux activités et cas d'
 | BES-VND-014 | Vendeur | UC_V2 — Mise à jour en masse des stocks
 | BES-VND-015 | Vendeur | UC_V11 — Personnaliser l'identité visuelle
 | BES-VND-016 | Vendeur | UC_V1 — Classer les produits par type et thème/occasion
+| BES-VND-017 | Vendeur | UC_V12 — Envoyer des emails promotionnels aux acheteurs consentants
 | BES-ACH-001 | Acheteur | UC_B0 — S'inscrire
 | BES-ACH-002 | Acheteur | UC_B0B — Activer son compte via email ; COp-04
 | BES-ACH-003 | Acheteur | UC_B_AUTH — S'authentifier
@@ -302,6 +311,7 @@ Le tableau ci-dessous relie chaque besoin opérationnel aux activités et cas d'
 | BES-ACH-013 | Acheteur | UC_B_ACC — Gérer le carnet d'adresses de livraison
 | BES-ACH-014 | Acheteur | UC_V9 — Affichage des annonces adapté à l'orientation des images
 | BES-ACH-015 | Acheteur | UC_B1 — S'abonner à une alerte de remise en stock
+| BES-ACH-016 | Acheteur | UC_B_ACC — Gérer le consentement aux emails promotionnels du vendeur ; RGPD-CONS-002
 |===
 
 ---

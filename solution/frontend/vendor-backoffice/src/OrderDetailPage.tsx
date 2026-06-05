@@ -1,6 +1,7 @@
 import { useEffect, useState, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
-import { AppShell, LangToggle, Button } from '@workspace/theme'
+import { Button } from '@workspace/theme'
+import Header from './Header'
 import { getVendorOrder, confirmWirePayment, rejectWirePayment, markInPreparation, shipOrder, acceptReturn, confirmReturn, waiveReturn, confirmWireRefund, refuseCancellationRequest, type OrderData } from './api/orderApi'
 import { getSession, logout } from './api/authApi'
 import ConfirmModal from './ConfirmModal'
@@ -72,27 +73,18 @@ export default function OrderDetailPage({ orderId }: Props) {
     }
   }
 
-  const shellActions = (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-      <LangToggle lang={i18n.language} onToggle={() => i18n.changeLanguage(({ fr: 'en', en: 'es', es: 'fr' } as Record<string, string>)[i18n.language] ?? 'fr')} />
-      <Button variant="ghost" size="sm" onClick={() => { logout(); window.location.href = import.meta.env.BASE_URL }}>
-        {t('nav.logout')}
-      </Button>
-    </div>
-  )
+  const onLogout = () => { logout(); window.location.href = import.meta.env.BASE_URL }
 
   if (!session) {
     return (
-      <AppShell appName={t('app.name')} navLinks={[{ label: t('nav.dashboard'), href: import.meta.env.BASE_URL }]} actions={shellActions}>
-        <main style={{ padding: '2rem' }}>
-          <p>{t('orders.error.notAuthenticated')}</p>
-        </main>
-      </AppShell>
+      <Header onLogout={onLogout}>
+        <div style={{ padding: '2rem' }}><p>{t('orders.error.notAuthenticated')}</p></div>
+      </Header>
     )
   }
 
   return (
-    <AppShell appName={t('app.name')} navLinks={[{ label: t('nav.dashboard'), href: import.meta.env.BASE_URL }]} actions={shellActions}>
+    <Header onLogout={onLogout}>
       {modal && (
         <ConfirmModal
           title={modal.title}
@@ -423,6 +415,6 @@ export default function OrderDetailPage({ orderId }: Props) {
           </>
         )}
       </main>
-    </AppShell>
+    </Header>
   )
 }

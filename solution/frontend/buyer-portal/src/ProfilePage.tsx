@@ -62,6 +62,7 @@ export default function ProfilePage() {
   const [addresses, setAddresses] = useState<DeliveryAddressData[]>([])
   const [countries, setCountries] = useState<CountryData[]>([])
   const [addrLoading, setAddrLoading] = useState(false)
+  const [addrLoadError, setAddrLoadError] = useState(false)
   const [showAddrForm, setShowAddrForm] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
   const [addrForm, setAddrForm] = useState<AddressFormState>(EMPTY_FORM)
@@ -104,9 +105,10 @@ export default function ProfilePage() {
 
   function loadAddresses() {
     setAddrLoading(true)
+    setAddrLoadError(false)
     listAddresses()
-      .then(setAddresses)
-      .catch(() => setErrorMsg(t('profile.addresses.error.load')))
+      .then(data => { setAddresses(data); setAddrLoadError(false) })
+      .catch(() => setAddrLoadError(true))
       .finally(() => setAddrLoading(false))
   }
 
@@ -333,6 +335,11 @@ export default function ProfilePage() {
 
             {addrLoading ? (
               <p className="profile-loading">{t('profile.loading')}</p>
+            ) : addrLoadError ? (
+              <p className="profile-alert-error">
+                {t('profile.addresses.error.load')}{' '}
+                <button className="btn btn-secondary btn-sm" onClick={loadAddresses}>{t('profile.retry')}</button>
+              </p>
             ) : addresses.length === 0 ? (
               <p className="profile-addresses-empty">{t('profile.addresses.empty')}</p>
             ) : (

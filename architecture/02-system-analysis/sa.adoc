@@ -203,9 +203,9 @@ Les capacités système raffinent les capacités opérationnelles (CAP-xxx) de l
 | FS-V07, FS-V11, FS-V16
 
 | CAPS-008
-| Assurer la communication transactionnelle
+| Assurer la communication transactionnelle et marketing
 | CAP-008
-| Via IFS-06 (déclenché par FS-B01, FS-V04, FS-V05, FS-V08, FS-P01..P03)
+| Via IFS-06 (déclenché par FS-B01, FS-V04, FS-V05, FS-V08, FS-V17, FS-P01..P03)
 |===
 
 === Diagramme Mission — Capacités — Fonctions
@@ -257,7 +257,7 @@ wbsDiagram {
 ***_ FS-V07, FS-V11, FS-V16 <<funcs>>
 
 ** CAPS-008 — Communication <<caps>>
-***_ IFS-06 (FS-B01, V04, V05, V08...) <<funcs>>
+***_ IFS-06 (FS-B01, V04, V05, V08, V17...) <<funcs>>
 @endwbs
 ----
 
@@ -300,6 +300,7 @@ Les fonctions système (FS) sont dérivées des cas d'utilisation opérationnels
 | FS-V12 | Importer des produits depuis un fichier CSV : validation du format (`id,nom,description,prix,categorie,quantite,seuil_alerte`) ; si `id` vide → création d'une nouvelle fiche ; si `id` renseigné → mise à jour du stock uniquement (`quantite`, `seuil_alerte`) ; rapport ligne par ligne (Créé / Mis à jour / Erreur) | UC_V1
 | FS-V13 | Exporter le catalogue produits au format CSV (toutes les fiches actives et archivées) avec colonnes `id,nom,description,prix,categorie,quantite,seuil_alerte,statut` ; le fichier est réutilisable directement pour un import de mise à jour de stock (FS-V12) | UC_V1
 | FS-V15 | Exporter la liste des acheteurs ayant donné leur consentement marketing (`consentement_marketing = true`) au format CSV (email, prénom, nom), destiné à l'import dans un outil de mailing externe (CS-22 / RGPD-CONS-003) | UC_B_MKTG
+| FS-V17 | Permettre au vendeur de composer et envoyer une campagne email promotionnelle depuis le back-office, à destination de l'ensemble des acheteurs actifs ayant consenti (`consentement_marketing = true`). Le vendeur saisit un objet et un corps de message ; le système envoie l'email à chaque acheteur consentant via le service de messagerie (IFS-06). L'envoi est refusé si aucun acheteur consentant actif n'existe. Chaque envoi est journalisé (date, nombre de destinataires) | UC_V12
 |===
 
 === Expérience d'achat (Acheteur)
@@ -1064,6 +1065,47 @@ a|
 | FS-V16
 |===
 
+=== UCSA-17 : Composer et envoyer une campagne email promotionnelle
+
+[cols="1,3", options="header"]
+|===
+| Champ | Description
+
+| *Identifiant*
+| UCSA-17
+
+| *Acteurs*
+| Vendeur (principal) ; Service de messagerie — IFS-06 (secondaire)
+
+| *Préconditions*
+| Vendeur authentifié ; au moins un acheteur actif avec `consentement_marketing = true`
+
+| *Déclencheur*
+| Le vendeur accède à la section « Campagnes email » du back-office et soumet le formulaire de composition
+
+| *Scénario nominal*
+a|
+. Le vendeur accède à la section « Campagnes email » du back-office (FS-V17).
+. Le système affiche le nombre d'acheteurs actifs consentants disponibles comme destinataires.
+. Le vendeur saisit l'objet et le corps du message de la campagne.
+. Le vendeur déclenche l'envoi.
+. Le système récupère la liste des acheteurs actifs ayant `marketing_consent = true`.
+. Le système envoie un email à chaque destinataire via le service de messagerie (IFS-06).
+. Le système confirme l'envoi : nombre de destinataires atteints et horodatage journalisés.
+
+| *Scénarios alternatifs*
+a|
+* *2a.* Aucun acheteur consentant actif : le système affiche un message informatif et désactive le bouton d'envoi.
+* *4a.* L'objet ou le corps est vide : le système bloque la soumission et signale les champs manquants.
+* *6a.* Erreur du service de messagerie : le système journalise l'erreur et informe le vendeur ; les envois partiellement réussis sont comptabilisés.
+
+| *Postconditions*
+| Emails envoyés aux acheteurs consentants ; campagne journalisée (date, vendeur, nombre de destinataires).
+
+| *Exigences liées*
+| FS-V17, CS-22, RGPD-CONS-001, RGPD-CONS-003, IFS-06
+|===
+
 == Diagramme d'activité système — Flux de commande complet
 
 Ce diagramme modélise le flux système de bout en bout, depuis la connexion de l'acheteur jusqu'à la clôture de la commande, en faisant apparaître les échanges avec les systèmes externes.
@@ -1557,4 +1599,6 @@ La matrice ci-dessous assure la couverture complète de chaque besoin opération
 | COp-02 | Modes de paiement carte / virement | CS-02, CS-06 | UCSA-05
 | COp-03 | Persistance du panier entre sessions | CS-03, FS-B05 | UCSA-04
 | — | Activation de compte par lien email | CS-07, FS-B01, FS-B10 | UCSA-01
+| UC_B_MKTG | Gérer le consentement marketing acheteur (BES-ACH-016) | FS-B13, FS-V15 | —
+| UC_V12 | Envoyer une campagne email promotionnelle aux acheteurs consentants (BES-VND-017) | FS-V17 | UCSA-17
 |===

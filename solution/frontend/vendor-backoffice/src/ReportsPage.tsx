@@ -92,12 +92,9 @@ export default function ReportsPage() {
           </div>
         )}
         <button
+          className="btn btn-primary btn-sm"
           onClick={handleExportMailing}
           disabled={exportingMailing}
-          style={{
-            padding: '0.45rem 1.2rem', borderRadius: 4, border: 'none',
-            background: '#1a73e8', color: '#fff', cursor: 'pointer', fontWeight: 500,
-          }}
         >
           {exportingMailing ? t('reports.mailing.exporting') : t('reports.mailing.export')}
         </button>

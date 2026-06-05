@@ -144,4 +144,15 @@ public interface NotificationService {
      */
     void sendPasswordRevokedEmail(String toEmail, String resetLink, Locale locale);
 
+    /**
+     * Sends a promotional marketing campaign email to a single buyer (US-MKTG-01 / FS-V17).
+     * The subject and body are composed by the vendor and sent as-is (not localised via templates).
+     *
+     * @param toEmail  the buyer's email address
+     * @param subject  the campaign subject line
+     * @param body     the campaign body text
+     * @param locale   the buyer's preferred locale (used only if the implementation falls back to templates)
+     */
+    void sendMarketingCampaignEmail(String toEmail, String subject, String body, Locale locale);
+
 }

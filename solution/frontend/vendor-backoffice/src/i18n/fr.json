@@ -322,5 +322,24 @@
   "announcements.error.save": "Une erreur est survenue lors de l'enregistrement.",
   "announcements.error.delete": "Une erreur est survenue lors de la suppression.",
   "announcements.error.textRequired": "Le texte est obligatoire pour ce type de contenu.",
-  "announcements.error.imageRequired": "Une image est requise pour ce type de contenu."
+  "announcements.error.imageRequired": "Une image est requise pour ce type de contenu.",
+
+  "nav.campaigns": "Campagnes email",
+  "campaigns.title": "Campagnes email promotionnelles",
+  "campaigns.recipients.label": "Destinataires consentants :",
+  "campaigns.recipients.loading": "Chargement…",
+  "campaigns.recipients.count": "{{count}} acheteur(s) actif(s)",
+  "campaigns.form.subject": "Objet",
+  "campaigns.form.subjectPlaceholder": "Soldes d'été — jusqu'à 30% de réduction",
+  "campaigns.form.body": "Message",
+  "campaigns.form.bodyPlaceholder": "Cher client, découvrez nos dernières offres…",
+  "campaigns.form.send": "Envoyer la campagne",
+  "campaigns.form.sending": "Envoi en cours…",
+  "campaigns.success": "Campagne envoyée à {{count}} destinataire(s) le {{sentAt}}.",
+  "campaigns.retry": "Réessayer",
+  "campaigns.error.load": "Impossible de charger le nombre de destinataires.",
+  "campaigns.error.subjectRequired": "L'objet est obligatoire.",
+  "campaigns.error.bodyRequired": "Le message est obligatoire.",
+  "campaigns.error.noConsentingBuyers": "Aucun acheteur actif n'a donné son consentement aux emails commerciaux.",
+  "campaigns.error.generic": "Une erreur est survenue lors de l'envoi. Veuillez réessayer."
 }

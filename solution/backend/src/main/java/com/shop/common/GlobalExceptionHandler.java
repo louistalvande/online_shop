@@ -5,6 +5,7 @@ import com.shop.account.exception.DeliveryAddressNotFoundException;
 import com.shop.account.exception.UnsupportedBannerImageTypeException;
 import com.shop.account.exception.UnsupportedLogoImageTypeException;
 import com.shop.announcement.exception.AnnouncementNotFoundException;
+import com.shop.campaign.exception.NoConsentingBuyersException;
 import com.shop.announcement.exception.UnsupportedImageTypeException;
 import com.shop.account.exception.LastActiveAddressException;
 import com.shop.report.exception.InvalidPeriodException;
@@ -609,6 +610,21 @@ public class GlobalExceptionHandler {
         String message = messageSource.getMessage("error.subscription.not.found", null, locale);
         return ResponseEntity.status(HttpStatus.NOT_FOUND)
                 .body(Map.of("error", "SUBSCRIPTION_NOT_FOUND", "message", message));
+    }
+
+    /**
+     * Handles send attempt with no consenting buyers — returns HTTP 400 (US-MKTG-01 / FS-V17).
+     *
+     * @param ex     the exception
+     * @param locale the request locale
+     * @return a 400 response with error code NO_CONSENTING_BUYERS
+     */
+    @ExceptionHandler(NoConsentingBuyersException.class)
+    public ResponseEntity<Map<String, String>> handleNoConsentingBuyers(
+            NoConsentingBuyersException ex, Locale locale) {
+        String message = messageSource.getMessage("error.campaign.no.consenting.buyers", null, locale);
+        return ResponseEntity.badRequest()
+                .body(Map.of("error", "NO_CONSENTING_BUYERS", "message", message));
     }
 
     /**
