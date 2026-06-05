@@ -6,14 +6,12 @@ import com.shop.campaign.dto.CampaignSentResponse;
 import com.shop.campaign.dto.SendCampaignRequest;
 import com.shop.campaign.service.CampaignService;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.security.Principal;
 
 /** REST implementation of {@link VendorCampaignController}. */
 @RestController
-@PreAuthorize("hasRole('VENDOR')")
 public class VendorCampaignControllerImpl implements VendorCampaignController {
 
     private final CampaignService campaignService;
