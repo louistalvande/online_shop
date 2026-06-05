@@ -1,4 +1,5 @@
 export interface ShopTheme {
+  shopName: string | null
   logoUrl: string | null
   bannerUrl: string | null
   accentColor: string

@@ -84,11 +84,16 @@ export default function ProfilePage() {
         setFirstName(p.firstName)
         setLastName(p.lastName)
         setPhone(p.phone ?? '')
-        setLanguage(p.language)
         setMarketingConsent(p.marketingConsent)
+        i18n.changeLanguage(p.language.toLowerCase())
       })
       .catch(() => setLoadError(true))
   }, [])
+
+  useEffect(() => {
+    const upper = i18n.language.toUpperCase() as 'FR' | 'EN' | 'ES'
+    setLanguage(['FR', 'EN', 'ES'].includes(upper) ? upper : 'FR')
+  }, [i18n.language])
 
   useEffect(() => {
     if (activeTab !== 'addresses') return
@@ -225,7 +230,7 @@ export default function ProfilePage() {
       ]}
       actions={
         <div className="header-actions">
-          <LangToggle lang={i18n.language} onToggle={() => i18n.changeLanguage(({ fr: 'en', en: 'es', es: 'fr' } as Record<string, string>)[i18n.language] ?? 'fr')} />
+          <LangToggle lang={i18n.language} onChange={lang => i18n.changeLanguage(lang)} />
           <Button variant="ghost" size="sm" onClick={() => { logout(); window.dispatchEvent(new Event('session-changed')); window.location.href = '/' }}>
             {t('nav.logout')}
           </Button>

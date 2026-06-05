@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { getShopTheme, getCachedShopName } from '../api/themeApi'
 
-const DEFAULT = 'Catalogue de dessins'
+const DEFAULT = ''
 
 /** Returns the shop name from platform settings, falling back to the default while loading. */
 export function useShopName(): string {

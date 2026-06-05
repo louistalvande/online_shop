@@ -21,6 +21,7 @@ export default function App() {
   const [alertCount, setAlertCount] = useState(0)
   const [maintenance, setMaintenance] = useState(false)
   const [logoUrl, setLogoUrl] = useState<string | null>(null)
+  const [shopName, setShopName] = useState('')
 
   useEffect(() => {
     if (!getSession()) { setAuthChecked(true); return }
@@ -38,6 +39,7 @@ export default function App() {
   useEffect(() => {
     getShopTheme().then(t => {
       setLogoUrl(t.logoUrl ?? null)
+      if (t.shopName) setShopName(t.shopName)
       if (t.accentColor) {
         const hex = t.accentColor
         const n = parseInt(hex.slice(1), 16)
@@ -74,7 +76,7 @@ export default function App() {
   }
 
   if (!session) {
-    return <LoginPage onLogin={() => setSession(getSession())} />
+    return <LoginPage shopName={shopName} logoUrl={logoUrl} onLogin={() => setSession(getSession())} />
   }
 
   return (
@@ -84,6 +86,7 @@ export default function App() {
       currentPage={page}
       alertCount={alertCount}
       logoUrl={logoUrl}
+      shopName={shopName}
     >
       {page === 'dashboard' && <DashboardPage />}
       {page === 'catalog' && <CatalogPage />}

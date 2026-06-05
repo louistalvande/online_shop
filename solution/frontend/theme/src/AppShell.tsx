@@ -28,7 +28,7 @@ export function AppShell({ appName, brandName, logoUrl, onLogoClick, navLinks = 
               : <GalleryIcon size={32} />
             }
             <div>
-              <div className="shell-brand-name">{brandName ?? 'Catalogue de dessins'}</div>
+              <div className="shell-brand-name">{brandName ?? ''}</div>
               <div className="shell-brand-sub">{appName}</div>
             </div>
           </div>
@@ -52,7 +52,7 @@ export function AppShell({ appName, brandName, logoUrl, onLogoClick, navLinks = 
       </header>
       <main>{children}</main>
       <footer className="shell-footer">
-        <p>© 2026 {brandName ?? 'Catalogue de dessins'}</p>
+        <p>© 2026 {brandName ?? ''}</p>
       </footer>
     </>
   )

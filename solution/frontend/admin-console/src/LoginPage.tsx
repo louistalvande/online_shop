@@ -4,10 +4,12 @@ import { Button, Card, GalleryIcon } from '@workspace/theme'
 import { login, setupPassword } from './api/authApi'
 
 interface LoginPageProps {
+  shopName: string
+  logoUrl?: string | null
   onLogin: () => void
 }
 
-export default function LoginPage({ onLogin }: LoginPageProps) {
+export default function LoginPage({ shopName, logoUrl, onLogin }: LoginPageProps) {
   const { t } = useTranslation()
   const [step, setStep] = useState<'login' | 'setup'>('login')
   const [email, setEmail] = useState('')
@@ -59,8 +61,11 @@ export default function LoginPage({ onLogin }: LoginPageProps) {
   return (
     <div style={pageStyle}>
       <div style={brandStyle}>
-        <GalleryIcon size={32} />
-        <span style={brandNameStyle}>Catalogue de dessins</span>
+        {logoUrl
+          ? <img src={logoUrl} alt="" style={logoStyle} />
+          : <GalleryIcon size={32} />
+        }
+        <span style={brandNameStyle}>{shopName}</span>
       </div>
 
       {step === 'login' ? (
@@ -161,6 +166,12 @@ const brandStyle: React.CSSProperties = {
 const brandNameStyle: React.CSSProperties = {
   fontWeight: 700,
   fontSize: 18,
+}
+const logoStyle: React.CSSProperties = {
+  width: 32,
+  height: 32,
+  objectFit: 'contain',
+  borderRadius: 4,
 }
 const cardStyle: React.CSSProperties = {
   width: '100%',

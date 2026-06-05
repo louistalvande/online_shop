@@ -84,7 +84,7 @@ button { cursor: pointer; font-family: inherit; }
 .shell-brand-logo { height: 36px; width: auto; object-fit: contain; border-radius: 4px; }
 .shell-brand--clickable { cursor: pointer; }
 .shell-brand--clickable:hover { opacity: 0.85; }
-.shell-nav { display: flex; align-items: center; gap: 16px; flex-wrap: nowrap; overflow: hidden; }
+.shell-nav { display: flex; align-items: center; gap: 16px; flex-wrap: nowrap; overflow: visible; }
 .shell-nav-link { font-size: 14px; font-weight: 500; color: #fff; white-space: nowrap; }
 .shell-nav-badge {
   margin-left: 6px;

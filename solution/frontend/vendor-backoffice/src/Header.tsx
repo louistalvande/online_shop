@@ -9,10 +9,11 @@ interface Props {
   currentPage?: Page
   alertCount?: number
   logoUrl?: string | null
+  shopName?: string
   children: React.ReactNode
 }
 
-export default function Header({ onLogout, onNavigate, currentPage, alertCount = 0, logoUrl, children }: Props) {
+export default function Header({ onLogout, onNavigate, currentPage, alertCount = 0, logoUrl, shopName, children }: Props) {
   const { t, i18n } = useTranslation()
   const base = import.meta.env.BASE_URL.replace(/\/$/, '')
   function nav(page: Page) {
@@ -22,6 +23,7 @@ export default function Header({ onLogout, onNavigate, currentPage, alertCount =
   return (
     <AppShell
       appName={t('app.name')}
+      brandName={shopName}
       logoUrl={logoUrl ?? undefined}
       navLinks={[
         { label: t('nav.dashboard'), href: '#', onClick: () => nav('dashboard') },

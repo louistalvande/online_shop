@@ -149,7 +149,7 @@ export default function CatalogPage() {
         <div className="header-actions">
           <LangToggle
             lang={i18n.language}
-            onToggle={() => i18n.changeLanguage(({ fr: 'en', en: 'es', es: 'fr' } as Record<string, string>)[i18n.language] ?? 'fr')}
+            onChange={lang => i18n.changeLanguage(lang)}
           />
           {session ? (
             <UserMenu

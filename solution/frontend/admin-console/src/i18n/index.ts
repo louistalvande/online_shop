@@ -10,9 +10,11 @@ i18n.use(initReactI18next).init({
     en: { translation: en },
     es: { translation: es },
   },
-  lng: 'fr',
+  lng: localStorage.getItem('lang') ?? 'fr',
   fallbackLng: 'fr',
   interpolation: { escapeValue: false },
 })
+
+i18n.on('languageChanged', lng => localStorage.setItem('lang', lng))
 
 export default i18n
