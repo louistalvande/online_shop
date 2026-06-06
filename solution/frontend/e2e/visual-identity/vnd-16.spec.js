@@ -155,8 +155,8 @@ test.describe('UCSA-16 — Visual identity', () => {
   test('nominal — changes accent colour and saves successfully', async ({ page }) => {
     const hexInput = page.locator('input[placeholder="#4e8b82"]');
     await hexInput.fill('#c0392b');
-    await page.getByRole('button', { name: 'Enregistrer' }).click();
-    await expect(page.getByText('Couleurs mises à jour.')).toBeVisible();
+    await page.getByRole('button', { name: 'Enregistrer les modifications' }).click();
+    await expect(page.getByText('Paramètres enregistrés.')).toBeVisible();
   });
 
   test('nominal — reset button restores default accent colour #4e8b82', async ({ page }) => {
@@ -176,8 +176,8 @@ test.describe('UCSA-16 — Visual identity', () => {
   test('nominal — changes background colour and saves successfully', async ({ page }) => {
     const hexInput = page.locator('input[placeholder="#f2f6f5"]');
     await hexInput.fill('#ffffff');
-    await page.getByRole('button', { name: 'Enregistrer' }).click();
-    await expect(page.getByText('Couleurs mises à jour.')).toBeVisible();
+    await page.getByRole('button', { name: 'Enregistrer les modifications' }).click();
+    await expect(page.getByText('Paramètres enregistrés.')).toBeVisible();
   });
 
   test('nominal — bgColor persisted in public theme API after save', async ({ page }) => {
@@ -186,8 +186,8 @@ test.describe('UCSA-16 — Visual identity', () => {
     await expect(hexInput).toHaveValue('#f2f6f5');
     await hexInput.click({ clickCount: 3 });
     await hexInput.pressSequentially('#e8f0fe');
-    await page.getByRole('button', { name: 'Enregistrer' }).click();
-    await expect(page.getByText('Couleurs mises à jour.')).toBeVisible();
+    await page.getByRole('button', { name: 'Enregistrer les modifications' }).click();
+    await expect(page.getByText('Paramètres enregistrés.')).toBeVisible();
 
     const res = await page.request.get(`${API_URL}/api/public/theme`);
     expect(res.ok()).toBeTruthy();

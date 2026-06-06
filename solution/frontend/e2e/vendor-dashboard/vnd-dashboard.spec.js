@@ -65,7 +65,6 @@ test.describe('Vendor dashboard', () => {
     await expect(page.getByRole('link', { name: 'Catalogue' })).toBeVisible();
     await expect(page.getByRole('link', { name: 'Commandes' })).toBeVisible();
     await expect(page.getByRole('link', { name: 'Rapports' })).toBeVisible();
-    await expect(page.getByRole('link', { name: 'Annonces' })).toBeVisible();
     await expect(page.getByRole('link', { name: 'Identité visuelle' })).toBeVisible();
   });
 

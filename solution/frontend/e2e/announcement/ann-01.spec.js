@@ -34,8 +34,8 @@ test.describe('US-ANN-01 — Scrolling announcements', () => {
   test.beforeEach(async ({ page }) => {
     await injectVendorSession(page, VENDOR_EMAIL, vendorToken);
     await page.goto('/vendor/');
-    await page.getByText('Annonces').click();
-    await expect(page.getByRole('heading', { name: 'Annonces défilantes' })).toBeVisible();
+    await page.getByText('Identité visuelle').click();
+    await expect(page.getByRole('heading', { name: "Carrousel d'annonces" })).toBeVisible();
   });
 
   // --- nominal: create text announcement ---
@@ -47,7 +47,7 @@ test.describe('US-ANN-01 — Scrolling announcements', () => {
     await page.getByLabel('Type de contenu').selectOption('TEXT');
     const textArea = page.locator('textarea');
     await textArea.fill('Soldes été — jusqu\'à -50 % !');
-    await page.getByRole('button', { name: 'Enregistrer' }).click();
+    await page.getByRole('button', { name: 'Enregistrer', exact: true }).click();
 
     const row = page.locator('tbody tr').filter({ hasText: 'Soldes été' });
     await expect(row).toBeVisible();
@@ -68,7 +68,7 @@ test.describe('US-ANN-01 — Scrolling announcements', () => {
     });
 
     await page.reload();
-    await page.getByText('Annonces').click();
+    await page.getByText('Identité visuelle').click();
 
     // The newly created LANDSCAPE row must appear somewhere in the list
     await expect(page.locator('tbody').getByText('Paysage').first()).toBeVisible();
@@ -87,7 +87,7 @@ test.describe('US-ANN-01 — Scrolling announcements', () => {
     });
 
     await page.reload();
-    await page.getByText('Annonces').click();
+    await page.getByText('Identité visuelle').click();
 
     await expect(page.getByText('Portrait')).toBeVisible();
   });
@@ -103,14 +103,14 @@ test.describe('US-ANN-01 — Scrolling announcements', () => {
     });
 
     await page.reload();
-    await page.getByText('Annonces').click();
+    await page.getByText('Identité visuelle').click();
 
     const row = page.locator('tbody tr').filter({ hasText: 'Original text' });
     await row.getByRole('button', { name: 'Modifier' }).click();
 
     await page.locator('textarea').clear();
     await page.locator('textarea').fill('Updated text');
-    await page.getByRole('button', { name: 'Enregistrer' }).click();
+    await page.getByRole('button', { name: 'Enregistrer', exact: true }).click();
 
     await expect(page.getByText('Updated text')).toBeVisible();
     await expect(page.getByText('Original text')).not.toBeVisible();
@@ -127,7 +127,7 @@ test.describe('US-ANN-01 — Scrolling announcements', () => {
     });
 
     await page.reload();
-    await page.getByText('Annonces').click();
+    await page.getByText('Identité visuelle').click();
 
     page.once('dialog', dialog => dialog.accept());
     const row = page.locator('tbody tr').filter({ hasText: 'To be deleted' });
@@ -152,7 +152,7 @@ test.describe('US-ANN-01 — Scrolling announcements', () => {
     });
 
     await page.reload();
-    await page.getByText('Annonces').click();
+    await page.getByText('Identité visuelle').click();
 
     const rowA = page.locator('tbody tr').filter({ hasText: textA });
     const rowB = page.locator('tbody tr').filter({ hasText: textB });
@@ -193,7 +193,7 @@ test.describe('US-ANN-01 — Scrolling announcements', () => {
     await page.getByRole('button', { name: 'Ajouter une annonce' }).click();
     await page.getByLabel('Type de contenu').selectOption('TEXT');
     // Leave textarea empty
-    await page.getByRole('button', { name: 'Enregistrer' }).click();
+    await page.getByRole('button', { name: 'Enregistrer', exact: true }).click();
 
     await expect(page.getByText('Le texte est obligatoire')).toBeVisible();
   });
@@ -203,7 +203,7 @@ test.describe('US-ANN-01 — Scrolling announcements', () => {
   test('error — saving IMAGE type without image shows validation error', async ({ page }) => {
     await page.getByRole('button', { name: 'Ajouter une annonce' }).click();
     await page.getByLabel('Type de contenu').selectOption('IMAGE');
-    await page.getByRole('button', { name: 'Enregistrer' }).click();
+    await page.getByRole('button', { name: 'Enregistrer', exact: true }).click();
 
     await expect(page.getByText('Une image est requise')).toBeVisible();
   });
