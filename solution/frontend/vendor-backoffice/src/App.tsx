@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import './index.css'
 import { getSession, logout, validateSession } from './api/authApi'
 import { listPendingAlerts } from './api/productApi'
@@ -11,18 +11,37 @@ import CatalogPage from './CatalogPage'
 import ReportsPage from './ReportsPage'
 import VisualIdentityPage from './VisualIdentityPage'
 import LegalPagesPage from './LegalPagesPage'
-import AnnouncementsPage from './AnnouncementsPage'
 import CampaignsPage from './CampaignsPage'
 import MaintenancePage from './MaintenancePage'
+
+const VALID_PAGES: Page[] = ['dashboard', 'catalog', 'reports', 'campaigns', 'visual-identity', 'legal-pages']
+
+function pageFromUrl(): Page {
+  const base = import.meta.env.BASE_URL.replace(/\/$/, '')
+  const segment = window.location.pathname.replace(base, '').replace(/^\//, '').split('/')[0]
+  return VALID_PAGES.includes(segment as Page) ? (segment as Page) : 'dashboard'
+}
 
 export default function App() {
   const [session, setSession] = useState(getSession)
   const [authChecked, setAuthChecked] = useState(() => !getSession())
-  const [page, setPage] = useState<Page>('dashboard')
+  const [page, setPage] = useState<Page>(pageFromUrl)
   const [alertCount, setAlertCount] = useState(0)
   const [maintenance, setMaintenance] = useState(false)
   const [logoUrl, setLogoUrl] = useState<string | null>(null)
   const [shopName, setShopName] = useState('')
+
+  const navigate = useCallback((newPage: Page) => {
+    const base = import.meta.env.BASE_URL.replace(/\/$/, '')
+    window.history.pushState({}, '', `${base}/${newPage}`)
+    setPage(newPage)
+  }, [])
+
+  useEffect(() => {
+    const onPop = () => setPage(pageFromUrl())
+    window.addEventListener('popstate', onPop)
+    return () => window.removeEventListener('popstate', onPop)
+  }, [])
 
   useEffect(() => {
     if (!getSession()) { setAuthChecked(true); return }
@@ -83,7 +102,7 @@ export default function App() {
   return (
     <Header
       onLogout={() => { logout(); setSession(null) }}
-      onNavigate={setPage}
+      onNavigate={navigate}
       currentPage={page}
       alertCount={alertCount}
       logoUrl={logoUrl}
@@ -92,7 +111,6 @@ export default function App() {
       {page === 'dashboard' && <DashboardPage />}
       {page === 'catalog' && <CatalogPage />}
       {page === 'reports' && <ReportsPage />}
-      {page === 'announcements' && <AnnouncementsPage />}
       {page === 'campaigns' && <CampaignsPage />}
       {page === 'visual-identity' && <VisualIdentityPage onLogoChange={url => setLogoUrl(url)} />}
       {page === 'legal-pages' && <LegalPagesPage />}
