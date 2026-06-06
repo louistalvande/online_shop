@@ -15,18 +15,16 @@ export default function VisualIdentityPage({ onLogoChange }: Props) {
   const { t } = useTranslation()
 
   const [shopName, setShopName] = useState('')
-  const [savingName, setSavingName] = useState(false)
   const [logoUrl, setLogoUrl] = useState<string | null>(null)
   const [bannerUrl, setBannerUrl] = useState<string | null>(null)
   const [accentColor, setAccentColor] = useState('#4e8b82')
   const [bgColor, setBgColor] = useState('#f2f6f5')
   const [footerNotice, setFooterNotice] = useState('')
-  const [savingFooter, setSavingFooter] = useState(false)
+  const [saving, setSaving] = useState(false)
   const [uploadingLogo, setUploadingLogo] = useState(false)
   const [uploadingBanner, setUploadingBanner] = useState(false)
   const logoInputRef = useRef<HTMLInputElement>(null)
   const bannerInputRef = useRef<HTMLInputElement>(null)
-  const [savingColor, setSavingColor] = useState(false)
   const [successMsg, setSuccessMsg] = useState('')
   const [errorMsg, setErrorMsg] = useState('')
 
@@ -104,43 +102,22 @@ export default function VisualIdentityPage({ onLogoChange }: Props) {
     }
   }
 
-  async function handleSaveName(e: React.FormEvent) {
-    e.preventDefault()
+  async function handleSaveTheme() {
     if (!shopName.trim()) return
-    setSavingName(true)
+    setSaving(true)
     try {
-      const updated = await updateShopTheme({ shopName: shopName.trim() })
+      const updated = await updateShopTheme({
+        shopName: shopName.trim(),
+        accentColor,
+        bgColor,
+        footerNotice,
+      })
       setShopName(updated.shopName ?? shopName)
-      flash(t('visual.shopName.success'), 'success')
+      flash(t('visual.save.success'), 'success')
     } catch {
       flash(t('profile.error.generic'), 'error')
     } finally {
-      setSavingName(false)
-    }
-  }
-
-  async function handleSaveFooter(e: React.FormEvent) {
-    e.preventDefault()
-    setSavingFooter(true)
-    try {
-      await updateShopTheme({ footerNotice })
-      flash(t('visual.footerNotice.success'), 'success')
-    } catch {
-      flash(t('profile.error.generic'), 'error')
-    } finally {
-      setSavingFooter(false)
-    }
-  }
-
-  async function handleSaveColor() {
-    setSavingColor(true)
-    try {
-      await updateShopTheme({ accentColor, bgColor })
-      flash(t('profile.theme.success'), 'success')
-    } catch {
-      flash(t('profile.error.generic'), 'error')
-    } finally {
-      setSavingColor(false)
+      setSaving(false)
     }
   }
 
@@ -180,19 +157,13 @@ export default function VisualIdentityPage({ onLogoChange }: Props) {
       {/* ── Nom de la boutique ── */}
       <section style={sectionStyle}>
         <h2 style={sectionHeadStyle}>{t('visual.section.shopName')}</h2>
-        <form onSubmit={handleSaveName} style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
-          <input
-            style={{ ...inputStyle, flex: '1 1 240px', maxWidth: 400 }}
-            value={shopName}
-            maxLength={100}
-            required
-            onChange={e => setShopName(e.target.value)}
-            placeholder={t('visual.shopName.placeholder')}
-          />
-          <Button type="submit" size="sm" disabled={savingName || !shopName.trim()}>
-            {savingName ? t('profile.saving') : t('profile.save')}
-          </Button>
-        </form>
+        <input
+          style={{ ...inputStyle, flex: '1 1 240px', maxWidth: 400, display: 'block' }}
+          value={shopName}
+          maxLength={100}
+          onChange={e => setShopName(e.target.value)}
+          placeholder={t('visual.shopName.placeholder')}
+        />
         <p style={{ fontSize: 13, color: 'var(--text-muted)', marginTop: 8 }}>{t('visual.shopName.hint')}</p>
       </section>
 
@@ -224,7 +195,6 @@ export default function VisualIdentityPage({ onLogoChange }: Props) {
       <section style={sectionStyle}>
         <h2 style={sectionHeadStyle}>{t('visual.section.color')}</h2>
 
-        {/* Accent color row */}
         <div style={{ marginBottom: 20 }}>
           <p style={{ fontSize: 13, fontWeight: 600, marginBottom: 8, color: 'var(--text)' }}>{t('profile.theme.accentColor')}</p>
           <div style={{ display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap' }}>
@@ -249,7 +219,6 @@ export default function VisualIdentityPage({ onLogoChange }: Props) {
           </div>
         </div>
 
-        {/* Background color row */}
         <div style={{ marginBottom: 20 }}>
           <p style={{ fontSize: 13, fontWeight: 600, marginBottom: 8, color: 'var(--text)' }}>{t('profile.theme.bgColor')}</p>
           <div style={{ display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap' }}>
@@ -274,36 +243,35 @@ export default function VisualIdentityPage({ onLogoChange }: Props) {
           </div>
         </div>
 
-        <p style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 16 }}>{t('profile.theme.hint')}</p>
-        <Button type="button" size="sm" disabled={savingColor} onClick={handleSaveColor}>
-          {savingColor ? t('profile.saving') : t('profile.save')}
-        </Button>
+        <p style={{ fontSize: 13, color: 'var(--text-muted)' }}>{t('profile.theme.hint')}</p>
       </section>
 
       {/* ── Mention pied de page ── */}
       <section style={sectionStyle}>
         <h2 style={sectionHeadStyle}>{t('visual.section.footerNotice')}</h2>
-        <form onSubmit={handleSaveFooter}>
-          <textarea
-            value={footerNotice}
-            onChange={e => setFooterNotice(e.target.value)}
-            rows={3}
-            maxLength={500}
-            style={{
-              ...inputStyle,
-              width: '100%',
-              boxSizing: 'border-box',
-              resize: 'vertical',
-              lineHeight: 1.5,
-            }}
-            placeholder={t('visual.footerNotice.placeholder')}
-          />
-          <p style={{ fontSize: 13, color: 'var(--text-muted)', margin: '6px 0 12px' }}>{t('visual.footerNotice.hint')}</p>
-          <Button type="submit" size="sm" disabled={savingFooter}>
-            {savingFooter ? t('profile.saving') : t('profile.save')}
-          </Button>
-        </form>
+        <textarea
+          value={footerNotice}
+          onChange={e => setFooterNotice(e.target.value)}
+          rows={3}
+          maxLength={500}
+          style={{
+            ...inputStyle,
+            width: '100%',
+            boxSizing: 'border-box',
+            resize: 'vertical',
+            lineHeight: 1.5,
+          }}
+          placeholder={t('visual.footerNotice.placeholder')}
+        />
+        <p style={{ fontSize: 13, color: 'var(--text-muted)', margin: '6px 0 0' }}>{t('visual.footerNotice.hint')}</p>
       </section>
+
+      {/* ── Bouton d'enregistrement unique ── */}
+      <div style={{ marginBottom: 48 }}>
+        <Button size="sm" disabled={saving || !shopName.trim()} onClick={handleSaveTheme}>
+          {saving ? t('profile.saving') : t('profile.save')}
+        </Button>
+      </div>
 
       {/* ── Bannière ── */}
       <section style={sectionStyle}>

@@ -70,7 +70,7 @@ function Root() {
   if (path === '/catalog') return <CatalogPage />
   const catalogDetailMatch = path.match(/^\/catalog\/([^/]+)$/)
   if (catalogDetailMatch) return <ProductDetailPage productId={catalogDetailMatch[1]} />
-  if (path === '/cart') return <AuthGuard><CartPage /></AuthGuard>
+  if (path === '/cart') return <CartPage />
   if (path === '/checkout') return <AuthGuard><CheckoutPage /></AuthGuard>
   if (path === '/my-orders') return <AuthGuard><OrderListPage /></AuthGuard>
   const orderDetailMatch = path.match(/^\/my-orders\/([^/]+)$/)

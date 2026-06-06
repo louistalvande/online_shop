@@ -281,6 +281,7 @@
   "visual.footerNotice.placeholder": "© 2025 by Maison des artistes — Reproduction of artworks is strictly prohibited",
   "visual.footerNotice.hint": "Displayed at the bottom of every buyer portal page.",
   "visual.footerNotice.success": "Footer notice updated.",
+  "visual.save.success": "Settings saved.",
   "nav.campaigns": "Email campaigns",
   "campaigns.title": "Promotional email campaigns",
   "campaigns.recipients.label": "Consenting recipients:",

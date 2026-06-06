@@ -290,6 +290,7 @@
   "visual.shopName.placeholder": "Ej. Catálogo de dibujos",
   "visual.shopName.hint": "Este nombre aparece en el encabezado y pie de página del portal del comprador.",
   "visual.shopName.success": "Nombre de la tienda actualizado.",
+  "visual.save.success": "Configuración guardada.",
   "visual.section.logo": "Logo de la tienda",
   "visual.section.color": "Colores de la tienda",
   "visual.section.banner": "Banner de la página de inicio",
