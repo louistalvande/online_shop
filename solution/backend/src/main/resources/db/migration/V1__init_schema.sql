@@ -351,7 +351,7 @@ INSERT INTO platform_settings (key, value) VALUES ('maintenance_mode', 'false');
 INSERT INTO platform_settings (key, value) VALUES ('shop_accent_color', '#4e8b82');
 INSERT INTO platform_settings (key, value) VALUES ('shop_bg_color', '#f2f6f5');
 INSERT INTO platform_settings (key, value) VALUES ('shop_name', 'Catalogue de dessins');
-INSERT INTO platform_settings (key, value) VALUES ('shop_footer_notice', '© 2025 par Maison Machin — Toute reproduction d''œuvre est strictement interdite');
+INSERT INTO platform_settings (key, value) VALUES ('shop_footer_notice', '© 2025 par Maison des artistes — Toute reproduction d''œuvre est strictement interdite');
 INSERT INTO platform_settings (key, value) VALUES ('legal_cgv', 'Conditions Générales de Vente
 
 Article 1 – Objet

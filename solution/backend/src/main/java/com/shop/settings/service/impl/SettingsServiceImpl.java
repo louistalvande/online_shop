@@ -126,7 +126,7 @@ public class SettingsServiceImpl implements SettingsService {
     public String getFooterNotice() {
         return settingRepository.findById(KEY_FOOTER_NOTICE)
                 .map(PlatformSetting::getValue)
-                .orElse("© 2025 par Maison Machin — Toute reproduction d'œuvre est strictement interdite");
+                .orElse("© 2025 par Maison des artistes — Toute reproduction d'œuvre est strictement interdite");
     }
 
     /** {@inheritDoc} */
