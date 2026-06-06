@@ -157,6 +157,18 @@ NOTE: L'administrateur n'a pas accès aux données personnelles des comptes (nom
 | BES-VND-017
 | Le vendeur a besoin d'envoyer des emails promotionnels (offres spéciales, nouveaux produits, événements) aux acheteurs ayant explicitement consenti à recevoir ce type de communication. Il doit pouvoir rédiger le contenu de la campagne et déclencher l'envoi vers la liste des acheteurs consentants. L'envoi est conditionné à l'existence d'au moins un acheteur consentant.
 | UC_V12, Activités vendeur, RGPD-CONS-001, RGPD-CONS-003
+
+| BES-VND-018
+| Le vendeur a besoin de définir les informations de présentation de sa boutique dans les résultats des moteurs de recherche : titre, description, mots-clés et image affichée lors d'un partage sur les réseaux sociaux. Ces informations doivent pouvoir être saisies une fois pour la boutique dans son ensemble et, de manière spécifique, pour chaque fiche produit.
+| UC_V13, Activités vendeur
+
+| BES-VND-019
+| Le vendeur a besoin de contrôler quelles parties de sa boutique sont accessibles aux moteurs de recherche, d'indiquer la fréquence à laquelle ses pages et produits doivent être explorés, et de déclarer l'adresse web officielle de sa boutique afin d'éviter tout problème de contenu dupliqué.
+| UC_V13, Activités vendeur
+
+| BES-VND-020
+| Le vendeur a besoin de connecter sa boutique aux outils de mesure d'audience et de vérification de propriété de son choix, afin de suivre le trafic provenant des moteurs de recherche et d'accéder aux données de référencement de sa boutique.
+| UC_V13, Activités vendeur
 |===
 
 ---
@@ -261,6 +273,10 @@ Les contraintes suivantes s'imposent indépendamment des acteurs et de toute dé
 | COp-08
 | Interface multilingue (FR / EN / ES)
 | Les trois interfaces utilisateur (portail acheteur, espace vendeur, console d'administration) sont disponibles en **français** (langue par défaut), en **anglais** et en **espagnol**. Chaque compte dispose d'une préférence de langue de notification indépendante de la langue de navigation. La sélection de langue est accessible depuis toutes les pages via un sélecteur visible dans l'en-tête. _(CS-10 / FS-A06)_
+
+| COp-09
+| Référencement naturel (SEO)
+| La boutique et chacune de ses fiches produits doivent être indexables individuellement par les moteurs de recherche, afin de permettre à des acheteurs potentiels de les découvrir via une recherche web. Les informations communiquées aux moteurs de recherche doivent refléter fidèlement le contenu de chaque page. L'ensemble des paramètres de référencement sont sous le contrôle du vendeur. _(BES-VND-018, BES-VND-019, BES-VND-020)_
 |===
 
 ---
@@ -296,6 +312,9 @@ Le tableau ci-dessous relie chaque besoin opérationnel aux activités et cas d'
 | BES-VND-015 | Vendeur | UC_V11 — Personnaliser l'identité visuelle
 | BES-VND-016 | Vendeur | UC_V1 — Classer les produits par type et thème/occasion
 | BES-VND-017 | Vendeur | UC_V12 — Envoyer des emails promotionnels aux acheteurs consentants
+| BES-VND-018 | Vendeur | UC_V13 — Configurer la présentation de la boutique dans les moteurs de recherche
+| BES-VND-019 | Vendeur | UC_V13 — Contrôler l'indexation et déclarer l'adresse officielle de la boutique
+| BES-VND-020 | Vendeur | UC_V13 — Connecter les outils de mesure d'audience
 | BES-ACH-001 | Acheteur | UC_B0 — S'inscrire
 | BES-ACH-002 | Acheteur | UC_B0B — Activer son compte via email ; COp-04
 | BES-ACH-003 | Acheteur | UC_B_AUTH — S'authentifier
@@ -312,6 +331,7 @@ Le tableau ci-dessous relie chaque besoin opérationnel aux activités et cas d'
 | BES-ACH-014 | Acheteur | UC_V9 — Affichage des annonces adapté à l'orientation des images
 | BES-ACH-015 | Acheteur | UC_B1 — S'abonner à une alerte de remise en stock
 | BES-ACH-016 | Acheteur | UC_B_ACC — Gérer le consentement aux emails promotionnels du vendeur ; RGPD-CONS-002
+| COp-09 | — | Besoin de visibilité en ligne de la boutique ; BES-VND-018, BES-VND-019, BES-VND-020
 |===
 
 ---
