@@ -45,8 +45,7 @@ test.describe('US-ANN-01 — Scrolling announcements', () => {
     await expect(page.getByText('Ajouter une annonce').last()).toBeVisible();
 
     await page.getByLabel('Type de contenu').selectOption('TEXT');
-    const textArea = page.locator('textarea');
-    await textArea.fill('Soldes été — jusqu\'à -50 % !');
+    await page.getByPlaceholder("Texte de l'annonce…").fill('Soldes été — jusqu\'à -50 % !');
     await page.getByRole('button', { name: 'Enregistrer', exact: true }).click();
 
     const row = page.locator('tbody tr').filter({ hasText: 'Soldes été' });
@@ -68,7 +67,7 @@ test.describe('US-ANN-01 — Scrolling announcements', () => {
     });
 
     await page.reload();
-    await page.getByText('Identité visuelle').click();
+    await page.getByRole('link', { name: 'Identité visuelle' }).click();
 
     // The newly created LANDSCAPE row must appear somewhere in the list
     await expect(page.locator('tbody').getByText('Paysage').first()).toBeVisible();
@@ -87,7 +86,7 @@ test.describe('US-ANN-01 — Scrolling announcements', () => {
     });
 
     await page.reload();
-    await page.getByText('Identité visuelle').click();
+    await page.getByRole('link', { name: 'Identité visuelle' }).click();
 
     await expect(page.getByText('Portrait')).toBeVisible();
   });
@@ -103,13 +102,13 @@ test.describe('US-ANN-01 — Scrolling announcements', () => {
     });
 
     await page.reload();
-    await page.getByText('Identité visuelle').click();
+    await page.getByRole('link', { name: 'Identité visuelle' }).click();
 
     const row = page.locator('tbody tr').filter({ hasText: 'Original text' });
     await row.getByRole('button', { name: 'Modifier' }).click();
 
-    await page.locator('textarea').clear();
-    await page.locator('textarea').fill('Updated text');
+    await page.getByPlaceholder("Texte de l'annonce…").clear();
+    await page.getByPlaceholder("Texte de l'annonce…").fill('Updated text');
     await page.getByRole('button', { name: 'Enregistrer', exact: true }).click();
 
     await expect(page.getByText('Updated text')).toBeVisible();
@@ -127,7 +126,7 @@ test.describe('US-ANN-01 — Scrolling announcements', () => {
     });
 
     await page.reload();
-    await page.getByText('Identité visuelle').click();
+    await page.getByRole('link', { name: 'Identité visuelle' }).click();
 
     page.once('dialog', dialog => dialog.accept());
     const row = page.locator('tbody tr').filter({ hasText: 'To be deleted' });
@@ -152,7 +151,7 @@ test.describe('US-ANN-01 — Scrolling announcements', () => {
     });
 
     await page.reload();
-    await page.getByText('Identité visuelle').click();
+    await page.getByRole('link', { name: 'Identité visuelle' }).click();
 
     const rowA = page.locator('tbody tr').filter({ hasText: textA });
     const rowB = page.locator('tbody tr').filter({ hasText: textB });

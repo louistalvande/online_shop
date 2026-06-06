@@ -32,7 +32,7 @@ test.describe('US-CAT-01 — Create product', () => {
     await page.getByLabel('Type de produit').fill('Aquarelle');
 
     // Submit
-    await page.getByRole('button', { name: 'Enregistrer' }).click();
+    await page.getByRole('button', { name: 'Enregistrer', exact: true }).click();
 
     // Modal closed, product appears in table
     await expect(page.getByRole('heading', { name: 'Ajouter un produit' })).not.toBeVisible();
@@ -54,7 +54,7 @@ test.describe('US-CAT-01 — Create product', () => {
 
     await page.getByLabel('Prix HT (€)').fill('29.90');
     await page.getByLabel('Quantité disponible').fill('5');
-    await page.getByRole('button', { name: 'Enregistrer' }).click();
+    await page.getByRole('button', { name: 'Enregistrer', exact: true }).click();
 
     await expect(page.getByText('Le nom du produit est obligatoire')).toBeVisible();
     await expect(page.getByRole('heading', { name: 'Ajouter un produit' })).toBeVisible();
@@ -74,7 +74,7 @@ test.describe('US-CAT-01 — Create product', () => {
 
     await page.getByLabel('Nom').fill('Test produit');
     await page.getByLabel('Quantité disponible').fill('5');
-    await page.getByRole('button', { name: 'Enregistrer' }).click();
+    await page.getByRole('button', { name: 'Enregistrer', exact: true }).click();
 
     await expect(page.getByText('Le prix HT doit être un nombre positif')).toBeVisible();
   });
@@ -99,7 +99,7 @@ test.describe('US-CAT-01 — Create product', () => {
     await page.getByLabel('Type de produit').fill('Poster');
     await page.getByLabel('Thème / occasion').fill('Paysage');
 
-    await page.getByRole('button', { name: 'Enregistrer' }).click();
+    await page.getByRole('button', { name: 'Enregistrer', exact: true }).click();
     await expect(page.getByRole('heading', { name: 'Ajouter un produit' })).not.toBeVisible();
 
     // Re-open the product to verify both fields were persisted
@@ -127,7 +127,7 @@ test.describe('US-CAT-01 — Create product', () => {
     await page.getByLabel('Quantité disponible').fill('20');
     await page.getByLabel('Type de produit').fill('Carte');
     await page.getByLabel('Thème / occasion').fill('Anniversaire');
-    await page.getByRole('button', { name: 'Enregistrer' }).click();
+    await page.getByRole('button', { name: 'Enregistrer', exact: true }).click();
     await expect(page.getByRole('heading', { name: 'Ajouter un produit' })).not.toBeVisible();
 
     // Open a second product form — the type 'Carte' must appear in the datalist
