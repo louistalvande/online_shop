@@ -32,6 +32,7 @@ import OrderDetailPage from './OrderDetailPage'
 import ForgotPasswordPage from './ForgotPasswordPage'
 import ResetPasswordPage from './ResetPasswordPage'
 import ProductDetailPage from './ProductDetailPage'
+import LegalPage from './LegalPage'
 
 const path = window.location.pathname
 const params = new URLSearchParams(window.location.search)
@@ -74,6 +75,12 @@ function Root() {
   if (path === '/my-orders') return <AuthGuard><OrderListPage /></AuthGuard>
   const orderDetailMatch = path.match(/^\/my-orders\/([^/]+)$/)
   if (orderDetailMatch) return <AuthGuard><OrderDetailPage orderId={orderDetailMatch[1]} /></AuthGuard>
+  if (path === '/legal/cgv')              return <LegalPage pageKey="legal_cgv" />
+  if (path === '/legal/mentions-legales') return <LegalPage pageKey="legal_mentions_legales" />
+  if (path === '/legal/confidentialite')  return <LegalPage pageKey="legal_confidentialite" />
+  if (path === '/legal/retour')           return <LegalPage pageKey="legal_retour" />
+  if (path === '/legal/apropos')          return <LegalPage pageKey="legal_apropos" />
+  if (path === '/legal/reproduction')     return <LegalPage pageKey="legal_reproduction" />
   return <App openLogin={path === '/login'} />
 }
 

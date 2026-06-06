@@ -4,6 +4,8 @@ import { Button, Card, AppShell, LangToggle, CartIcon, UserMenu, Snackbar } from
 import { fetchProducts, fetchDistinctCategories, fetchDistinctThemes, type BuyerProduct, type CatalogFilters } from './api/catalogApi'
 import { useShopName } from './hooks/useShopName'
 import { useLogoUrl } from './hooks/useLogoUrl'
+import { useFooterLinks } from './hooks/useFooterLinks'
+import { useFooterNotice } from './hooks/useFooterNotice'
 import { addToCart } from './api/cartApi'
 import { getSession, logout, type BuyerSession } from './api/authApi'
 import LoginModal from './LoginModal'
@@ -19,6 +21,8 @@ export default function CatalogPage() {
   const { t, i18n } = useTranslation()
   const brandName = useShopName()
   const logoUrl = useLogoUrl()
+  const footerLinks = useFooterLinks()
+  const footerNotice = useFooterNotice()
   const [session, setSession] = useState<BuyerSession | null>(getSession)
 
   const [search, setSearch] = useState('')
@@ -144,6 +148,8 @@ export default function CatalogPage() {
       appName={t('app.name')}
       brandName={brandName}
       logoUrl={logoUrl}
+      footerLinks={footerLinks}
+      footerNotice={footerNotice}
       navLinks={[
         { label: t('nav.home'), href: '/' },
         { label: t('nav.catalog'), href: '/catalog' },

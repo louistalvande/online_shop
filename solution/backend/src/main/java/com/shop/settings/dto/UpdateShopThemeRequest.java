@@ -17,6 +17,9 @@ public class UpdateShopThemeRequest {
     @Schema(description = "New shop background colour — 6-digit CSS hex (e.g. #f2f6f5); null = no change")
     private String bgColor;
 
+    @Schema(description = "New footer copyright / notice text; null = no change")
+    private String footerNotice;
+
     /** @return the new shop name, or {@code null} if not being updated */
     public String getShopName() { return shopName; }
 
@@ -34,4 +37,10 @@ public class UpdateShopThemeRequest {
 
     /** @param bgColor the new background colour */
     public void setBgColor(String bgColor) { this.bgColor = bgColor; }
+
+    /** @return the new footer notice text, or {@code null} if not being updated */
+    public String getFooterNotice() { return footerNotice; }
+
+    /** @param footerNotice the new footer notice text */
+    public void setFooterNotice(String footerNotice) { this.footerNotice = footerNotice; }
 }

@@ -8,10 +8,12 @@ interface AppShellProps {
   onLogoClick?: () => void
   navLinks?: { label: string; href: string; onClick?: () => void; badge?: number }[]
   actions?: ReactNode
+  footerLinks?: { label: string; href: string }[]
+  footerNotice?: string
   children: ReactNode
 }
 
-export function AppShell({ appName, brandName, logoUrl, onLogoClick, navLinks = [], actions, children }: AppShellProps) {
+export function AppShell({ appName, brandName, logoUrl, onLogoClick, navLinks = [], actions, footerLinks, footerNotice, children }: AppShellProps) {
   return (
     <>
       <header className="shell-header">
@@ -52,7 +54,14 @@ export function AppShell({ appName, brandName, logoUrl, onLogoClick, navLinks = 
       </header>
       <main>{children}</main>
       <footer className="shell-footer">
-        <p>© 2026 {brandName ?? ''}</p>
+        <p>{footerNotice ?? `© 2026 ${brandName ?? ''}`}</p>
+        {footerLinks && footerLinks.length > 0 && (
+          <nav className="shell-footer-nav">
+            {footerLinks.map(l => (
+              <a key={l.href} href={l.href} className="shell-footer-link">{l.label}</a>
+            ))}
+          </nav>
+        )}
       </footer>
     </>
   )

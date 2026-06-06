@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next'
 import { AppShell, LangToggle, UserMenu } from '@workspace/theme'
 
-export type Page = 'dashboard' | 'catalog' | 'reports' | 'visual-identity' | 'announcements' | 'campaigns'
+export type Page = 'dashboard' | 'catalog' | 'reports' | 'visual-identity' | 'announcements' | 'campaigns' | 'legal-pages'
 
 interface Props {
   onLogout: () => void
@@ -37,6 +37,7 @@ export default function Header({ onLogout, onNavigate, currentPage, alertCount =
         { label: t('nav.announcements'), href: '#', onClick: () => nav('announcements') },
         { label: t('nav.campaigns'), href: '#', onClick: () => nav('campaigns') },
         { label: t('nav.visualIdentity'), href: '#', onClick: () => nav('visual-identity') },
+        { label: t('nav.legalPages'), href: '#', onClick: () => nav('legal-pages') },
       ]}
       actions={
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>

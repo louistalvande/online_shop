@@ -3,6 +3,8 @@ import { useTranslation } from 'react-i18next'
 import { AppShell, Button, LangToggle } from '@workspace/theme'
 import { useShopName } from './hooks/useShopName'
 import { useLogoUrl } from './hooks/useLogoUrl'
+import { useFooterLinks } from './hooks/useFooterLinks'
+import { useFooterNotice } from './hooks/useFooterNotice'
 import { getSession, logout } from './api/authApi'
 import {
   getProfile,
@@ -41,6 +43,8 @@ export default function ProfilePage() {
   const locale = i18n.language
   const brandName = useShopName()
   const logoUrl = useLogoUrl()
+  const footerLinks = useFooterLinks()
+  const footerNotice = useFooterNotice()
 
   const [activeTab, setActiveTab] = useState<Tab>('profile')
   const [profile, setProfile] = useState<ProfileData | null>(null)
@@ -223,6 +227,8 @@ export default function ProfilePage() {
       appName={t('app.name')}
       brandName={brandName}
       logoUrl={logoUrl}
+      footerLinks={footerLinks}
+      footerNotice={footerNotice}
       navLinks={[
         { label: t('nav.home'), href: '/' },
         { label: t('nav.catalog'), href: '/catalog' },

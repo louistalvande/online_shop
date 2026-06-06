@@ -10,6 +10,7 @@ import DashboardPage from './DashboardPage'
 import CatalogPage from './CatalogPage'
 import ReportsPage from './ReportsPage'
 import VisualIdentityPage from './VisualIdentityPage'
+import LegalPagesPage from './LegalPagesPage'
 import AnnouncementsPage from './AnnouncementsPage'
 import CampaignsPage from './CampaignsPage'
 import MaintenancePage from './MaintenancePage'
@@ -94,6 +95,7 @@ export default function App() {
       {page === 'announcements' && <AnnouncementsPage />}
       {page === 'campaigns' && <CampaignsPage />}
       {page === 'visual-identity' && <VisualIdentityPage onLogoChange={url => setLogoUrl(url)} />}
+      {page === 'legal-pages' && <LegalPagesPage />}
     </Header>
   )
 }

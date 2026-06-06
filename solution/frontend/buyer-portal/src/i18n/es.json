@@ -298,5 +298,14 @@
   "carousel.label": "Anuncios en carrusel",
   "carousel.prev": "Anterior",
   "carousel.next": "Siguiente",
-  "carousel.goTo": "Ir al anuncio"
+  "carousel.goTo": "Ir al anuncio",
+  "footer.reproduction": "Reproducción de obras",
+  "footer.returnPolicy": "Política de devoluciones",
+  "footer.privacy": "Política de privacidad",
+  "footer.cgv": "Condiciones de venta",
+  "footer.legal": "Avisos legales",
+  "footer.about": "Acerca de",
+  "legal.loading": "Cargando…",
+  "legal.loadError": "No se puede cargar el contenido.",
+  "legal.back": "← Volver al inicio"
 }

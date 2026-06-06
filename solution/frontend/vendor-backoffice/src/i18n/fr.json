@@ -277,6 +277,10 @@
   "reports.topProducts.revenue": "CA généré",
 
   "nav.visualIdentity": "Identité visuelle",
+  "visual.section.footerNotice": "Mention pied de page",
+  "visual.footerNotice.placeholder": "© 2025 par Maison Machin — Toute reproduction d'œuvre est strictement interdite",
+  "visual.footerNotice.hint": "Affichée en bas de chaque page du portail acheteur.",
+  "visual.footerNotice.success": "Mention pied de page mise à jour.",
   "nav.announcements": "Annonces",
   "visual.title": "Identité visuelle",
   "visual.section.shopName": "Nom de la boutique",
@@ -345,5 +349,20 @@
   "campaigns.error.subjectRequired": "L'objet est obligatoire.",
   "campaigns.error.bodyRequired": "Le message est obligatoire.",
   "campaigns.error.noConsentingBuyers": "Aucun acheteur actif n'a donné son consentement aux emails commerciaux.",
-  "campaigns.error.generic": "Une erreur est survenue lors de l'envoi. Veuillez réessayer."
+  "campaigns.error.generic": "Une erreur est survenue lors de l'envoi. Veuillez réessayer.",
+
+  "nav.legalPages": "Pages légales",
+  "legal.pageTitle": "Gestion des pages légales",
+  "legal.cgv": "CGV",
+  "legal.mentions": "Mentions légales",
+  "legal.privacy": "Confidentialité",
+  "legal.return": "Politique de retour",
+  "legal.about": "À propos",
+  "legal.reproduction": "Reproduction",
+  "legal.loading": "Chargement…",
+  "legal.loadError": "Impossible de charger le contenu.",
+  "legal.save": "Enregistrer",
+  "legal.saving": "Enregistrement…",
+  "legal.saved": "Contenu enregistré.",
+  "legal.saveError": "Erreur lors de l'enregistrement."
 }

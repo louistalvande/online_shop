@@ -301,5 +301,14 @@
   "carousel.label": "Annonces défilantes",
   "carousel.prev": "Précédent",
   "carousel.next": "Suivant",
-  "carousel.goTo": "Aller à l'annonce"
+  "carousel.goTo": "Aller à l'annonce",
+  "footer.reproduction": "Reproduction des œuvres",
+  "footer.returnPolicy": "Politique de retour",
+  "footer.privacy": "Politique de confidentialité",
+  "footer.cgv": "CGV",
+  "footer.legal": "Mentions légales",
+  "footer.about": "À propos",
+  "legal.loading": "Chargement…",
+  "legal.loadError": "Impossible de charger le contenu.",
+  "legal.back": "← Retour à l'accueil"
 }

@@ -37,7 +37,8 @@ public class ShopThemeControllerImpl implements ShopThemeController {
                 settingsService.getAccentColor(),
                 settingsService.getBgColor(),
                 vendorLogoUploadService.getPublicLogoUrl(),
-                vendorBannerUploadService.getPublicBannerUrl()
+                vendorBannerUploadService.getPublicBannerUrl(),
+                settingsService.getFooterNotice()
         ));
     }
 }

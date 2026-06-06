@@ -20,19 +20,25 @@ public class ShopThemeResponse {
     @Schema(description = "Public URL of the vendor hero banner; null if no banner has been uploaded")
     private String bannerUrl;
 
+    @Schema(description = "Footer copyright / notice text displayed in the buyer portal footer")
+    private String footerNotice;
+
     /**
-     * @param shopName    the shop name
-     * @param accentColor the accent colour
-     * @param bgColor     the background colour
-     * @param logoUrl     the logo URL, or {@code null} if none uploaded
-     * @param bannerUrl   the hero banner URL, or {@code null} if none uploaded
+     * @param shopName     the shop name
+     * @param accentColor  the accent colour
+     * @param bgColor      the background colour
+     * @param logoUrl      the logo URL, or {@code null} if none uploaded
+     * @param bannerUrl    the hero banner URL, or {@code null} if none uploaded
+     * @param footerNotice the footer notice text
      */
-    public ShopThemeResponse(String shopName, String accentColor, String bgColor, String logoUrl, String bannerUrl) {
-        this.shopName    = shopName;
-        this.accentColor = accentColor;
-        this.bgColor     = bgColor;
-        this.logoUrl     = logoUrl;
-        this.bannerUrl   = bannerUrl;
+    public ShopThemeResponse(String shopName, String accentColor, String bgColor,
+                             String logoUrl, String bannerUrl, String footerNotice) {
+        this.shopName     = shopName;
+        this.accentColor  = accentColor;
+        this.bgColor      = bgColor;
+        this.logoUrl      = logoUrl;
+        this.bannerUrl    = bannerUrl;
+        this.footerNotice = footerNotice;
     }
 
     /** @return the shop name */
@@ -49,4 +55,7 @@ public class ShopThemeResponse {
 
     /** @return the hero banner URL, or {@code null} */
     public String getBannerUrl() { return bannerUrl; }
+
+    /** @return the footer notice text */
+    public String getFooterNotice() { return footerNotice; }
 }

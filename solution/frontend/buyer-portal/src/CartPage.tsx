@@ -6,11 +6,15 @@ import { getCart, updateCartItem, removeCartItem, type CartData } from './api/ca
 import LoginModal from './LoginModal'
 import { useShopName } from './hooks/useShopName'
 import { useLogoUrl } from './hooks/useLogoUrl'
+import { useFooterLinks } from './hooks/useFooterLinks'
+import { useFooterNotice } from './hooks/useFooterNotice'
 
 export default function CartPage() {
   const { t, i18n } = useTranslation()
   const brandName = useShopName()
   const logoUrl = useLogoUrl()
+  const footerLinks = useFooterLinks()
+  const footerNotice = useFooterNotice()
   const [session, setSession] = useState<BuyerSession | null>(getSession)
   const [showLogin, setShowLogin] = useState(false)
   const [cart, setCart] = useState<CartData | null>(null)
@@ -98,6 +102,8 @@ export default function CartPage() {
         appName={t('app.name')}
         brandName={brandName}
         logoUrl={logoUrl}
+        footerLinks={footerLinks}
+        footerNotice={footerNotice}
         navLinks={[
           { label: t('nav.home'), href: '/' },
           { label: t('nav.catalog'), href: '/catalog' },

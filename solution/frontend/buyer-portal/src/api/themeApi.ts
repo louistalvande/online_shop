@@ -4,6 +4,7 @@ export interface ShopTheme {
   bgColor: string | null
   logoUrl: string | null
   bannerUrl: string | null
+  footerNotice: string | null
 }
 
 let _inflight: Promise<ShopTheme> | null = null
@@ -26,4 +27,8 @@ export function getCachedShopName(): string | null {
 
 export function getCachedLogoUrl(): string | null {
   return _cached?.logoUrl ?? null
+}
+
+export function getCachedFooterNotice(): string | null {
+  return _cached?.footerNotice ?? null
 }

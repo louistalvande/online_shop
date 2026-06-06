@@ -20,6 +20,8 @@ export default function VisualIdentityPage({ onLogoChange }: Props) {
   const [bannerUrl, setBannerUrl] = useState<string | null>(null)
   const [accentColor, setAccentColor] = useState('#4e8b82')
   const [bgColor, setBgColor] = useState('#f2f6f5')
+  const [footerNotice, setFooterNotice] = useState('')
+  const [savingFooter, setSavingFooter] = useState(false)
   const [uploadingLogo, setUploadingLogo] = useState(false)
   const [uploadingBanner, setUploadingBanner] = useState(false)
   const logoInputRef = useRef<HTMLInputElement>(null)
@@ -36,6 +38,7 @@ export default function VisualIdentityPage({ onLogoChange }: Props) {
         setBannerUrl(theme.bannerUrl ?? null)
         setAccentColor(theme.accentColor ?? '#4e8b82')
         setBgColor(theme.bgColor ?? '#f2f6f5')
+        setFooterNotice(theme.footerNotice ?? '')
       })
       .catch(() => {})
   }, [])
@@ -113,6 +116,19 @@ export default function VisualIdentityPage({ onLogoChange }: Props) {
       flash(t('profile.error.generic'), 'error')
     } finally {
       setSavingName(false)
+    }
+  }
+
+  async function handleSaveFooter(e: React.FormEvent) {
+    e.preventDefault()
+    setSavingFooter(true)
+    try {
+      await updateShopTheme({ footerNotice })
+      flash(t('visual.footerNotice.success'), 'success')
+    } catch {
+      flash(t('profile.error.generic'), 'error')
+    } finally {
+      setSavingFooter(false)
     }
   }
 
@@ -262,6 +278,31 @@ export default function VisualIdentityPage({ onLogoChange }: Props) {
         <Button type="button" size="sm" disabled={savingColor} onClick={handleSaveColor}>
           {savingColor ? t('profile.saving') : t('profile.save')}
         </Button>
+      </section>
+
+      {/* ── Mention pied de page ── */}
+      <section style={sectionStyle}>
+        <h2 style={sectionHeadStyle}>{t('visual.section.footerNotice')}</h2>
+        <form onSubmit={handleSaveFooter}>
+          <textarea
+            value={footerNotice}
+            onChange={e => setFooterNotice(e.target.value)}
+            rows={3}
+            maxLength={500}
+            style={{
+              ...inputStyle,
+              width: '100%',
+              boxSizing: 'border-box',
+              resize: 'vertical',
+              lineHeight: 1.5,
+            }}
+            placeholder={t('visual.footerNotice.placeholder')}
+          />
+          <p style={{ fontSize: 13, color: 'var(--text-muted)', margin: '6px 0 12px' }}>{t('visual.footerNotice.hint')}</p>
+          <Button type="submit" size="sm" disabled={savingFooter}>
+            {savingFooter ? t('profile.saving') : t('profile.save')}
+          </Button>
+        </form>
       </section>
 
       {/* ── Bannière ── */}

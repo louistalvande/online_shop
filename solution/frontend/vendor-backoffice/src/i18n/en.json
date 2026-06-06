@@ -277,6 +277,10 @@
   "reports.topProducts.revenue": "Revenue",
 
   "nav.visualIdentity": "Visual identity",
+  "visual.section.footerNotice": "Footer notice",
+  "visual.footerNotice.placeholder": "© 2025 by Maison Machin — Reproduction of artworks is strictly prohibited",
+  "visual.footerNotice.hint": "Displayed at the bottom of every buyer portal page.",
+  "visual.footerNotice.success": "Footer notice updated.",
   "nav.announcements": "Announcements",
   "nav.campaigns": "Email campaigns",
   "campaigns.title": "Promotional email campaigns",
@@ -344,5 +348,20 @@
   "announcements.error.save": "An error occurred while saving.",
   "announcements.error.delete": "An error occurred while deleting.",
   "announcements.error.textRequired": "Text is required for this content type.",
-  "announcements.error.imageRequired": "An image is required for this content type."
+  "announcements.error.imageRequired": "An image is required for this content type.",
+
+  "nav.legalPages": "Legal pages",
+  "legal.pageTitle": "Legal pages management",
+  "legal.cgv": "Terms of sale",
+  "legal.mentions": "Legal notices",
+  "legal.privacy": "Privacy policy",
+  "legal.return": "Return policy",
+  "legal.about": "About",
+  "legal.reproduction": "Reproduction",
+  "legal.loading": "Loading…",
+  "legal.loadError": "Unable to load content.",
+  "legal.save": "Save",
+  "legal.saving": "Saving…",
+  "legal.saved": "Content saved.",
+  "legal.saveError": "Error while saving."
 }

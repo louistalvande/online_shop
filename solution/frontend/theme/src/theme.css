@@ -119,6 +119,23 @@ button { cursor: pointer; font-family: inherit; }
   font-size: 13px;
   color: var(--text-muted);
 }
+.shell-footer-nav {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 6px 18px;
+  margin-top: 10px;
+}
+.shell-footer-link {
+  color: var(--text-muted);
+  text-decoration: none;
+  font-size: 12px;
+  white-space: nowrap;
+}
+.shell-footer-link:hover {
+  color: var(--accent);
+  text-decoration: underline;
+}
 
 /* ─── LangToggle ─── */
 .lang-menu { position: relative; }

@@ -344,13 +344,124 @@ CREATE INDEX idx_order_lines_order_id ON order_lines (order_id);
 -- Platform settings (US-ADM-10 — maintenance mode toggle)
 CREATE TABLE platform_settings (
     key   VARCHAR(100) NOT NULL PRIMARY KEY,
-    value VARCHAR(500) NOT NULL
+    value TEXT         NOT NULL
 );
 
 INSERT INTO platform_settings (key, value) VALUES ('maintenance_mode', 'false');
 INSERT INTO platform_settings (key, value) VALUES ('shop_accent_color', '#4e8b82');
 INSERT INTO platform_settings (key, value) VALUES ('shop_bg_color', '#f2f6f5');
 INSERT INTO platform_settings (key, value) VALUES ('shop_name', 'Catalogue de dessins');
+INSERT INTO platform_settings (key, value) VALUES ('shop_footer_notice', '© 2025 par Maison Machin — Toute reproduction d''œuvre est strictement interdite');
+INSERT INTO platform_settings (key, value) VALUES ('legal_cgv', 'Conditions Générales de Vente
+
+Article 1 – Objet
+Les présentes CGV régissent les ventes effectuées sur ce site. Toute commande implique leur acceptation sans réserve.
+
+Article 2 – Prix
+Les prix sont indiqués en euros TTC. Nous nous réservons le droit de les modifier à tout moment.
+
+Article 3 – Commandes
+La vente est conclue à la réception de la confirmation de commande par email.
+
+Article 4 – Paiement
+Le paiement s''effectue en ligne par carte bancaire sécurisée ou par virement bancaire.
+
+Article 5 – Livraison
+Les délais de livraison sont donnés à titre indicatif. Nous déclinons toute responsabilité pour les retards imputables au transporteur.
+
+Article 6 – Droit de rétractation
+Vous disposez de 14 jours à compter de la réception pour exercer votre droit de rétractation. Les œuvres sur commande personnalisée sont exclues de ce droit.');
+INSERT INTO platform_settings (key, value) VALUES ('legal_mentions_legales', 'Mentions légales
+
+Éditeur du site
+Ce site est édité par [Nom de l''entreprise], [Forme juridique], immatriculée au RCS sous le numéro SIRET [numéro].
+Siège social : [Adresse complète]
+Email : [Email de contact]
+
+Directeur de la publication
+[Nom du directeur de la publication]
+
+Hébergement
+Ce site est hébergé par [Nom de l''hébergeur], [Adresse de l''hébergeur].
+
+Propriété intellectuelle
+L''ensemble des contenus (textes, images, logo) est protégé par les lois relatives à la propriété intellectuelle. Toute reproduction sans autorisation est interdite.
+
+Données personnelles
+Le traitement de vos données est régi par notre Politique de confidentialité.');
+INSERT INTO platform_settings (key, value) VALUES ('legal_confidentialite', 'Politique de confidentialité
+
+Responsable du traitement
+[Nom de l''entreprise] – [Email de contact]
+
+Données collectées
+Nous collectons les informations fournies lors de votre inscription et de vos commandes : nom, prénom, email, adresse postale, téléphone.
+
+Finalités du traitement
+Vos données sont utilisées pour traiter vos commandes, gérer votre compte et, avec votre consentement, vous envoyer des communications marketing.
+
+Conservation
+Vos données sont conservées 3 ans après votre dernier achat.
+
+Partage
+Vos données ne sont jamais vendues. Elles peuvent être transmises à nos prestataires de livraison dans le seul but d''exécuter votre commande.
+
+Vos droits
+Vous disposez des droits d''accès, rectification, effacement, portabilité et opposition. Contactez-nous par email pour les exercer.');
+INSERT INTO platform_settings (key, value) VALUES ('legal_retour', 'Politique de retour
+
+Délai de rétractation
+Vous disposez de 14 jours à compter de la réception pour retourner un article, sans avoir à justifier de motifs.
+
+Conditions
+Les articles retournés doivent être dans leur état d''origine, non utilisés, dans leur emballage d''origine.
+
+Exclusions
+Les œuvres originales réalisées sur commande personnalisée sont exclues du droit de rétractation.
+
+Procédure
+Contactez notre service client avec votre numéro de commande pour initier un retour.
+
+Frais de retour
+À la charge du client, sauf en cas d''erreur de notre part ou de produit défectueux.
+
+Remboursement
+Effectué dans les 14 jours suivant la réception du retour, par le même moyen de paiement.');
+INSERT INTO platform_settings (key, value) VALUES ('legal_apropos', 'À propos
+
+Notre histoire
+Passionnés par l''art, nous avons créé cette boutique pour rendre les œuvres originales accessibles à tous les amateurs d''art.
+
+Notre sélection
+Chaque œuvre est choisie avec soin. Nous travaillons en collaboration directe avec les artistes pour vous offrir des créations uniques et authentiques.
+
+Authenticité
+Toutes les œuvres sont originales et accompagnées d''un certificat d''authenticité signé par l''artiste.
+
+Notre engagement
+Nous nous engageons à proposer uniquement des œuvres originales, à garantir la qualité de l''emballage et de la livraison, et à soutenir les artistes.
+
+Contact
+Pour toute question ou proposition de collaboration artistique, n''hésitez pas à nous contacter.');
+INSERT INTO platform_settings (key, value) VALUES ('legal_reproduction', 'Reproduction des œuvres — Droits réservés
+
+Toute reproduction d''œuvre est strictement interdite
+
+Les œuvres présentées sur ce site sont des créations originales protégées par le droit d''auteur (Code de la propriété intellectuelle, articles L.111-1 et suivants).
+
+Interdictions
+Sans autorisation écrite préalable de l''auteur ou de l''ayant droit, sont strictement interdits :
+- La reproduction totale ou partielle de toute œuvre
+- La représentation publique de toute œuvre
+- La diffusion sur tout support (internet, réseaux sociaux, publications)
+- La modification, transformation ou adaptation de toute œuvre
+- L''utilisation commerciale de toute œuvre
+
+Sanctions
+Toute reproduction non autorisée constitue une contrefaçon passible de 3 ans d''emprisonnement et 300 000 € d''amende (articles L.335-2 et suivants du Code de la propriété intellectuelle).
+
+Demande d''autorisation
+Pour toute demande de reproduction, contactez-nous en précisant la nature du projet.');
 
 
 -- Scrolling announcements (US-ANN-01 — FS-V11)
