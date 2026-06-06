@@ -9,6 +9,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -109,6 +110,19 @@ public interface AuthController {
     @PostMapping("/mfa/verify")
     ResponseEntity<AuthResponse> verifyMfa(@Valid @RequestBody MfaVerifyRequest request,
                                             HttpServletResponse response);
+
+    /**
+     * Returns the authenticated principal's email and role.
+     * Used by frontend apps to validate that the JWT cookie is still valid on page load.
+     *
+     * @param principal the authenticated principal injected by Spring Security
+     * @return 200 with email and role, or 401 if the token is missing/expired/revoked
+     */
+    @Operation(summary = "Session health check — returns current user email and role")
+    @ApiResponse(responseCode = "200", description = "Authenticated — email and role returned")
+    @ApiResponse(responseCode = "401", description = "JWT missing, expired, or revoked")
+    @GetMapping("/me")
+    ResponseEntity<MeResponse> me(Principal principal);
 
     /**
      * Logs the user out: blacklists the current JWT in Redis and clears the HttpOnly cookie (US-SEC-01).

@@ -14,25 +14,29 @@ interface Props {
 export default function VisualIdentityPage({ onLogoChange }: Props) {
   const { t } = useTranslation()
 
+  const [shopName, setShopName] = useState('')
   const [logoUrl, setLogoUrl] = useState<string | null>(null)
   const [bannerUrl, setBannerUrl] = useState<string | null>(null)
   const [accentColor, setAccentColor] = useState('#4e8b82')
   const [bgColor, setBgColor] = useState('#f2f6f5')
+  const [footerNotice, setFooterNotice] = useState('')
+  const [saving, setSaving] = useState(false)
   const [uploadingLogo, setUploadingLogo] = useState(false)
   const [uploadingBanner, setUploadingBanner] = useState(false)
   const logoInputRef = useRef<HTMLInputElement>(null)
   const bannerInputRef = useRef<HTMLInputElement>(null)
-  const [savingColor, setSavingColor] = useState(false)
   const [successMsg, setSuccessMsg] = useState('')
   const [errorMsg, setErrorMsg] = useState('')
 
   useEffect(() => {
     getShopTheme()
       .then(theme => {
+        setShopName(theme.shopName ?? '')
         setLogoUrl(theme.logoUrl ?? null)
         setBannerUrl(theme.bannerUrl ?? null)
         setAccentColor(theme.accentColor ?? '#4e8b82')
         setBgColor(theme.bgColor ?? '#f2f6f5')
+        setFooterNotice(theme.footerNotice ?? '')
       })
       .catch(() => {})
   }, [])
@@ -98,15 +102,22 @@ export default function VisualIdentityPage({ onLogoChange }: Props) {
     }
   }
 
-  async function handleSaveColor() {
-    setSavingColor(true)
+  async function handleSaveTheme() {
+    if (!shopName.trim()) return
+    setSaving(true)
     try {
-      await updateShopTheme({ accentColor, bgColor })
-      flash(t('profile.theme.success'), 'success')
+      const updated = await updateShopTheme({
+        shopName: shopName.trim(),
+        accentColor,
+        bgColor,
+        footerNotice,
+      })
+      setShopName(updated.shopName ?? shopName)
+      flash(t('visual.save.success'), 'success')
     } catch {
       flash(t('profile.error.generic'), 'error')
     } finally {
-      setSavingColor(false)
+      setSaving(false)
     }
   }
 
@@ -143,6 +154,19 @@ export default function VisualIdentityPage({ onLogoChange }: Props) {
         </div>
       )}
 
+      {/* ── Nom de la boutique ── */}
+      <section style={sectionStyle}>
+        <h2 style={sectionHeadStyle}>{t('visual.section.shopName')}</h2>
+        <input
+          style={{ ...inputStyle, flex: '1 1 240px', maxWidth: 400, display: 'block' }}
+          value={shopName}
+          maxLength={100}
+          onChange={e => setShopName(e.target.value)}
+          placeholder={t('visual.shopName.placeholder')}
+        />
+        <p style={{ fontSize: 13, color: 'var(--text-muted)', marginTop: 8 }}>{t('visual.shopName.hint')}</p>
+      </section>
+
       {/* ── Logo ── */}
       <section style={sectionStyle}>
         <h2 style={sectionHeadStyle}>{t('visual.section.logo')}</h2>
@@ -171,7 +195,6 @@ export default function VisualIdentityPage({ onLogoChange }: Props) {
       <section style={sectionStyle}>
         <h2 style={sectionHeadStyle}>{t('visual.section.color')}</h2>
 
-        {/* Accent color row */}
         <div style={{ marginBottom: 20 }}>
           <p style={{ fontSize: 13, fontWeight: 600, marginBottom: 8, color: 'var(--text)' }}>{t('profile.theme.accentColor')}</p>
           <div style={{ display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap' }}>
@@ -196,7 +219,6 @@ export default function VisualIdentityPage({ onLogoChange }: Props) {
           </div>
         </div>
 
-        {/* Background color row */}
         <div style={{ marginBottom: 20 }}>
           <p style={{ fontSize: 13, fontWeight: 600, marginBottom: 8, color: 'var(--text)' }}>{t('profile.theme.bgColor')}</p>
           <div style={{ display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap' }}>
@@ -221,11 +243,35 @@ export default function VisualIdentityPage({ onLogoChange }: Props) {
           </div>
         </div>
 
-        <p style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 16 }}>{t('profile.theme.hint')}</p>
-        <Button type="button" size="sm" disabled={savingColor} onClick={handleSaveColor}>
-          {savingColor ? t('profile.saving') : t('profile.save')}
-        </Button>
+        <p style={{ fontSize: 13, color: 'var(--text-muted)' }}>{t('profile.theme.hint')}</p>
       </section>
+
+      {/* ── Mention pied de page ── */}
+      <section style={sectionStyle}>
+        <h2 style={sectionHeadStyle}>{t('visual.section.footerNotice')}</h2>
+        <textarea
+          value={footerNotice}
+          onChange={e => setFooterNotice(e.target.value)}
+          rows={3}
+          maxLength={500}
+          style={{
+            ...inputStyle,
+            width: '100%',
+            boxSizing: 'border-box',
+            resize: 'vertical',
+            lineHeight: 1.5,
+          }}
+          placeholder={t('visual.footerNotice.placeholder')}
+        />
+        <p style={{ fontSize: 13, color: 'var(--text-muted)', margin: '6px 0 0' }}>{t('visual.footerNotice.hint')}</p>
+      </section>
+
+      {/* ── Bouton d'enregistrement unique ── */}
+      <div style={{ marginBottom: 48 }}>
+        <Button size="sm" disabled={saving || !shopName.trim()} onClick={handleSaveTheme}>
+          {saving ? t('profile.saving') : t('profile.save')}
+        </Button>
+      </div>
 
       {/* ── Bannière ── */}
       <section style={sectionStyle}>

@@ -55,4 +55,53 @@ public interface SettingsService {
      * @param bgColor the new CSS hex colour (e.g. {@code #f2f6f5})
      */
     void setBgColor(String bgColor);
+
+    /**
+     * Returns the shop name displayed in the buyer-facing header.
+     *
+     * @return the shop name; defaults to {@code "Catalogue de dessins"} if absent
+     */
+    String getShopName();
+
+    /**
+     * Updates the shop name displayed in the buyer-facing header.
+     *
+     * @param shopName the new shop name
+     */
+    void setShopName(String shopName);
+
+    /**
+     * Returns the footer copyright/notice text displayed in the buyer portal footer.
+     *
+     * @return the stored notice text, or the platform default if absent
+     */
+    String getFooterNotice();
+
+    /**
+     * Updates the footer copyright/notice text.
+     *
+     * @param notice the new notice text
+     */
+    void setFooterNotice(String notice);
+
+    /**
+     * Returns the plain-text content of the requested legal page.
+     * Accepted keys: {@code legal_cgv}, {@code legal_mentions_legales},
+     * {@code legal_confidentialite}, {@code legal_retour}, {@code legal_apropos},
+     * {@code legal_reproduction}.
+     *
+     * @param key the platform-setting key identifying the legal page
+     * @return the stored content, or an empty string if no value has been set yet
+     * @throws com.shop.settings.exception.SettingNotFoundException if {@code key} is not a valid legal page key
+     */
+    String getLegalPage(String key);
+
+    /**
+     * Updates the content of a legal page.
+     *
+     * @param key     the platform-setting key identifying the legal page
+     * @param content the new plain-text content
+     * @throws com.shop.settings.exception.SettingNotFoundException if {@code key} is not a valid legal page key
+     */
+    void setLegalPage(String key, String content);
 }

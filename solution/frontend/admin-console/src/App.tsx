@@ -9,9 +9,13 @@ import ProfilePage from './ProfilePage'
 
 export default function App() {
   const [session, setSession] = useState<AdminSession | null>(getSession)
+  const [shopName, setShopName] = useState('')
+  const [logoUrl, setLogoUrl] = useState<string | null>(null)
 
   useEffect(() => {
     getShopTheme().then(t => {
+      if (t.shopName) setShopName(t.shopName)
+      setLogoUrl(t.logoUrl ?? null)
       if (t.accentColor) {
         const hex = t.accentColor
         const n = parseInt(hex.slice(1), 16)
@@ -28,11 +32,11 @@ export default function App() {
   const [showProfile, setShowProfile] = useState(false)
 
   if (!session) {
-    return <LoginPage onLogin={() => setSession(getSession())} />
+    return <LoginPage shopName={shopName} logoUrl={logoUrl} onLogin={() => setSession(getSession())} />
   }
 
   return (
-    <Header session={session} onLogout={() => { logout(); setSession(null) }} onSettings={() => setShowProfile(true)}>
+    <Header session={session} onLogout={() => { logout(); setSession(null) }} onSettings={() => setShowProfile(true)} shopName={shopName} logoUrl={logoUrl}>
       {showProfile
         ? <ProfilePage onBack={() => setShowProfile(false)} />
         : <DashboardPage onUnauthorized={() => setSession(null)} />

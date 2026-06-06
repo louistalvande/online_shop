@@ -28,4 +28,5 @@ public interface ShopConfigController {
     @ApiResponse(responseCode = "400", description = "Invalid hex colour")
     @PatchMapping
     ResponseEntity<ShopThemeResponse> updateTheme(@Valid @RequestBody UpdateShopThemeRequest request);
+
 }

@@ -1,7 +1,11 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Button, Card, AppShell, LangToggle, CartIcon, UserMenu, Snackbar } from '@workspace/theme'
-import { fetchProducts, type BuyerProduct, type CatalogFilters } from './api/catalogApi'
+import { fetchProducts, fetchDistinctCategories, fetchDistinctThemes, type BuyerProduct, type CatalogFilters } from './api/catalogApi'
+import { useShopName } from './hooks/useShopName'
+import { useLogoUrl } from './hooks/useLogoUrl'
+import { useFooterLinks } from './hooks/useFooterLinks'
+import { useFooterNotice } from './hooks/useFooterNotice'
 import { addToCart } from './api/cartApi'
 import { getSession, logout, type BuyerSession } from './api/authApi'
 import LoginModal from './LoginModal'
@@ -15,6 +19,10 @@ function formatPrice(price: number): string {
 
 export default function CatalogPage() {
   const { t, i18n } = useTranslation()
+  const brandName = useShopName()
+  const logoUrl = useLogoUrl()
+  const footerLinks = useFooterLinks()
+  const footerNotice = useFooterNotice()
   const [session, setSession] = useState<BuyerSession | null>(getSession)
 
   const [search, setSearch] = useState('')
@@ -29,6 +37,8 @@ export default function CatalogPage() {
   const [error, setError] = useState(false)
 
   const [pendingSearch, setPendingSearch] = useState('')
+  const [availableCategories, setAvailableCategories] = useState<string[]>([])
+  const [availableThemes, setAvailableThemes] = useState<string[]>([])
 
   const [quantities, setQuantities] = useState<Record<string, number>>({})
   const [addingId, setAddingId] = useState<string | null>(null)
@@ -37,6 +47,11 @@ export default function CatalogPage() {
   const [pendingCartProductId, setPendingCartProductId] = useState<string | null>(null)
   const [snackbar, setSnackbar] = useState<{ message: string; variant: 'success' | 'error' } | null>(null)
   const cartCount = useCartCount()
+
+  useEffect(() => {
+    fetchDistinctCategories().then(setAvailableCategories).catch(() => {})
+    fetchDistinctThemes().then(setAvailableThemes).catch(() => {})
+  }, [])
 
   useEffect(() => {
     if (session && pendingCartProductId) {
@@ -131,6 +146,10 @@ export default function CatalogPage() {
     )}
     <AppShell
       appName={t('app.name')}
+      brandName={brandName}
+      logoUrl={logoUrl}
+      footerLinks={footerLinks}
+      footerNotice={footerNotice}
       navLinks={[
         { label: t('nav.home'), href: '/' },
         { label: t('nav.catalog'), href: '/catalog' },
@@ -139,7 +158,7 @@ export default function CatalogPage() {
         <div className="header-actions">
           <LangToggle
             lang={i18n.language}
-            onToggle={() => i18n.changeLanguage(({ fr: 'en', en: 'es', es: 'fr' } as Record<string, string>)[i18n.language] ?? 'fr')}
+            onChange={lang => i18n.changeLanguage(lang)}
           />
           {session ? (
             <UserMenu
@@ -188,22 +207,30 @@ export default function CatalogPage() {
                 <span className="catalog-filter-hint">{t('catalog.filters.category')}</span>
                 <input
                   type="text"
+                  list="catalog-category-list"
                   value={category}
                   onChange={e => { setCategory(e.target.value); handleFilterChange() }}
                   placeholder={t('catalog.filters.categoryAll')}
                   className="catalog-filter-input"
                 />
+                <datalist id="catalog-category-list">
+                  {availableCategories.map(c => <option key={c} value={c} />)}
+                </datalist>
               </label>
 
               <label className="catalog-filter-label">
                 <span className="catalog-filter-hint">{t('catalog.filters.theme')}</span>
                 <input
                   type="text"
+                  list="catalog-theme-list"
                   value={theme}
                   onChange={e => { setTheme(e.target.value); handleFilterChange() }}
                   placeholder={t('catalog.filters.themeAll')}
                   className="catalog-filter-input"
                 />
+                <datalist id="catalog-theme-list">
+                  {availableThemes.map(th => <option key={th} value={th} />)}
+                </datalist>
               </label>
 
               <Button variant="secondary" size="sm" onClick={handleReset} className="catalog-filter-reset-btn">

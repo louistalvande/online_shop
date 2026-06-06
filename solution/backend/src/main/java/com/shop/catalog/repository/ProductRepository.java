@@ -43,4 +43,22 @@ public interface ProductRepository extends JpaRepository<Product, UUID>, JpaSpec
      */
     @Query("SELECT DISTINCT p.theme FROM Product p WHERE p.theme IS NOT NULL AND p.theme <> '' ORDER BY p.theme")
     List<String> findDistinctThemes();
+
+    /**
+     * Returns all distinct non-blank product type values from published products only,
+     * sorted alphabetically. Used for buyer catalog autocomplete.
+     *
+     * @return sorted list of distinct published product types
+     */
+    @Query("SELECT DISTINCT p.category FROM Product p WHERE p.status = com.shop.catalog.entity.ProductStatus.PUBLISHED AND p.category IS NOT NULL AND p.category <> '' ORDER BY p.category")
+    List<String> findDistinctPublishedTypes();
+
+    /**
+     * Returns all distinct non-blank product theme values from published products only,
+     * sorted alphabetically. Used for buyer catalog autocomplete.
+     *
+     * @return sorted list of distinct published product themes
+     */
+    @Query("SELECT DISTINCT p.theme FROM Product p WHERE p.status = com.shop.catalog.entity.ProductStatus.PUBLISHED AND p.theme IS NOT NULL AND p.theme <> '' ORDER BY p.theme")
+    List<String> findDistinctPublishedThemes();
 }

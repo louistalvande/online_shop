@@ -89,11 +89,11 @@
 .confirm-btn--cancel:hover { background: var(--bg); }
 
 .confirm-btn--primary {
-  background: var(--cta);
+  background: var(--accent);
   color: #fff;
 }
 
-.confirm-btn--primary:hover { background: var(--cta-hover); }
+.confirm-btn--primary:hover { background: var(--accent-hover); }
 
 .confirm-btn--danger {
   background: #c62828;

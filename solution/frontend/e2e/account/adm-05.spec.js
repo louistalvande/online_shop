@@ -25,7 +25,7 @@ test.describe('US-ADM-05 — Change account role', () => {
     await expect(page.getByText('Modifier le compte')).toBeVisible();
     await page.getByLabel('Rôle').selectOption('VENDOR');
     const refreshPromise = page.waitForResponse(res => res.url().includes('/api/admin/accounts') && res.status() === 200);
-    await page.getByRole('button', { name: 'Enregistrer' }).click();
+    await page.getByRole('button', { name: 'Enregistrer', exact: true }).click();
     await refreshPromise;
 
     await expect(page.getByText('Compte mis à jour.')).toBeVisible();
@@ -39,7 +39,7 @@ test.describe('US-ADM-05 — Change account role', () => {
     await page.getByText('Éditer').click();
     await page.getByLabel('Rôle').selectOption('VENDOR');
     const refreshPromise = page.waitForResponse(res => res.url().includes('/api/admin/accounts') && res.status() === 200);
-    await page.getByRole('button', { name: 'Enregistrer' }).click();
+    await page.getByRole('button', { name: 'Enregistrer', exact: true }).click();
     await refreshPromise;
     // Wait for table to reflect the VENDOR change
     await expect(row.getByText('Vendeur')).toBeVisible({ timeout: 10000 });
@@ -49,7 +49,7 @@ test.describe('US-ADM-05 — Change account role', () => {
     await page.getByText('Éditer').click();
     await page.getByLabel('Rôle').selectOption('BUYER');
     const refreshPromise2 = page.waitForResponse(res => res.url().includes('/api/admin/accounts') && res.status() === 200);
-    await page.getByRole('button', { name: 'Enregistrer' }).click();
+    await page.getByRole('button', { name: 'Enregistrer', exact: true }).click();
     await refreshPromise2;
 
     await expect(row.getByText('Acheteur')).toBeVisible({ timeout: 10000 });

@@ -4,10 +4,12 @@ import { Button, Card, PackageIcon } from '@workspace/theme'
 import { login } from './api/authApi'
 
 interface LoginPageProps {
+  shopName?: string
+  logoUrl?: string | null
   onLogin: () => void
 }
 
-export default function LoginPage({ onLogin }: LoginPageProps) {
+export default function LoginPage({ shopName, logoUrl, onLogin }: LoginPageProps) {
   const { t } = useTranslation()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -34,8 +36,11 @@ export default function LoginPage({ onLogin }: LoginPageProps) {
   return (
     <div style={pageStyle}>
       <div style={brandStyle}>
-        <PackageIcon size={32} />
-        <span style={brandNameStyle}>{t('app.name')}</span>
+        {logoUrl
+          ? <img src={logoUrl} alt="" style={logoStyle} />
+          : <PackageIcon size={32} />
+        }
+        <span style={brandNameStyle}>{shopName || t('app.name')}</span>
       </div>
 
       <Card style={cardStyle}>
@@ -96,6 +101,12 @@ const brandStyle: React.CSSProperties = {
 const brandNameStyle: React.CSSProperties = {
   fontWeight: 700,
   fontSize: 18,
+}
+const logoStyle: React.CSSProperties = {
+  width: 32,
+  height: 32,
+  objectFit: 'contain',
+  borderRadius: 4,
 }
 const cardStyle: React.CSSProperties = {
   width: '100%',

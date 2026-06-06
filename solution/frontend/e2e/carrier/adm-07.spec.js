@@ -26,7 +26,7 @@ test.describe('US-ADM-07 — Edit carrier', () => {
     await expect(page.getByText('Modifier le transporteur')).toBeVisible();
     await page.getByLabel('Nom', { exact: true }).clear();
     await page.getByLabel('Nom', { exact: true }).fill(updatedName);
-    await page.getByRole('button', { name: 'Enregistrer' }).click();
+    await page.getByRole('button', { name: 'Enregistrer', exact: true }).click();
 
     await expect(page.getByText('Transporteur mis à jour.')).toBeVisible();
     await expect(page.getByText(updatedName)).toBeVisible();
@@ -40,7 +40,7 @@ test.describe('US-ADM-07 — Edit carrier', () => {
 
     await page.getByLabel('URL de suivi').clear();
     await page.getByLabel('URL de suivi').fill('https://new-track.example.com');
-    await page.getByRole('button', { name: 'Enregistrer' }).click();
+    await page.getByRole('button', { name: 'Enregistrer', exact: true }).click();
 
     await expect(page.getByText('Transporteur mis à jour.')).toBeVisible();
   });
@@ -59,7 +59,7 @@ test.describe('US-ADM-07 — Edit carrier', () => {
       await checked.first().uncheck();
     }
 
-    await page.getByRole('button', { name: 'Enregistrer' }).click();
+    await page.getByRole('button', { name: 'Enregistrer', exact: true }).click();
     await expect(page.getByText('Sélectionnez au moins un pays.')).toBeVisible();
   });
 });

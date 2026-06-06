@@ -7,6 +7,10 @@ import { getSession, logout, type BuyerSession } from './api/authApi'
 import { subscribeToRestock, unsubscribeFromRestock, listSubscriptions } from './api/stockSubscriptionApi'
 import LoginModal from './LoginModal'
 import { useCartCount } from './hooks/useCartCount'
+import { useShopName } from './hooks/useShopName'
+import { useLogoUrl } from './hooks/useLogoUrl'
+import { useFooterLinks } from './hooks/useFooterLinks'
+import { useFooterNotice } from './hooks/useFooterNotice'
 
 function formatPrice(price: number): string {
   return price.toLocaleString('fr-FR', { style: 'currency', currency: 'EUR' })
@@ -18,6 +22,10 @@ interface Props {
 
 export default function ProductDetailPage({ productId }: Props) {
   const { t, i18n } = useTranslation()
+  const brandName = useShopName()
+  const logoUrl = useLogoUrl()
+  const footerLinks = useFooterLinks()
+  const footerNotice = useFooterNotice()
   const [session, setSession] = useState<BuyerSession | null>(getSession)
   const [product, setProduct] = useState<BuyerProduct | null>(null)
   const [loading, setLoading] = useState(true)
@@ -92,6 +100,10 @@ export default function ProductDetailPage({ productId }: Props) {
       )}
       <AppShell
         appName={t('app.name')}
+        brandName={brandName}
+        logoUrl={logoUrl}
+        footerLinks={footerLinks}
+        footerNotice={footerNotice}
         navLinks={[
           { label: t('nav.home'), href: '/' },
           { label: t('nav.catalog'), href: '/catalog' },
@@ -100,7 +112,7 @@ export default function ProductDetailPage({ productId }: Props) {
           <div className="header-actions">
             <LangToggle
               lang={i18n.language}
-              onToggle={() => i18n.changeLanguage(({ fr: 'en', en: 'es', es: 'fr' } as Record<string, string>)[i18n.language] ?? 'fr')}
+              onChange={lang => i18n.changeLanguage(lang)}
             />
             {session ? (
               <UserMenu

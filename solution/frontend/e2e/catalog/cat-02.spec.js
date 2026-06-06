@@ -43,7 +43,7 @@ test.describe('US-CAT-02 — Edit product', () => {
 
     // Update name
     await page.getByLabel('Nom').fill(updatedName);
-    await page.getByRole('button', { name: 'Enregistrer' }).click();
+    await page.getByRole('button', { name: 'Enregistrer', exact: true }).click();
 
     await expect(page.getByRole('heading', { name: 'Modifier le produit' })).not.toBeVisible();
     await expect(page.getByText(updatedName).first()).toBeVisible();

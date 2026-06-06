@@ -1,6 +1,7 @@
 package com.shop.settings.controller.impl;
 
 import com.shop.settings.controller.SettingsController;
+import com.shop.settings.dto.LegalPageResponse;
 import com.shop.settings.dto.MaintenanceStatusResponse;
 import com.shop.settings.dto.SetMaintenanceModeRequest;
 import com.shop.settings.service.SettingsService;
@@ -38,5 +39,12 @@ public class SettingsControllerImpl implements SettingsController {
     @Override
     public ResponseEntity<MaintenanceStatusResponse> setMaintenanceMode(SetMaintenanceModeRequest request) {
         return ResponseEntity.ok(settingsService.setMaintenanceMode(request.getActive()));
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public ResponseEntity<LegalPageResponse> getLegalPage(String key) {
+        String content = settingsService.getLegalPage(key);
+        return ResponseEntity.ok(new LegalPageResponse(key, content));
     }
 }

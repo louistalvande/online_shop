@@ -1,6 +1,10 @@
 import React, { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { AppShell, Button, LangToggle } from '@workspace/theme'
+import { useShopName } from './hooks/useShopName'
+import { useLogoUrl } from './hooks/useLogoUrl'
+import { useFooterLinks } from './hooks/useFooterLinks'
+import { useFooterNotice } from './hooks/useFooterNotice'
 import { getSession, logout } from './api/authApi'
 import {
   getProfile,
@@ -37,6 +41,10 @@ export default function ProfilePage() {
   const { t, i18n } = useTranslation()
   const session = getSession()
   const locale = i18n.language
+  const brandName = useShopName()
+  const logoUrl = useLogoUrl()
+  const footerLinks = useFooterLinks()
+  const footerNotice = useFooterNotice()
 
   const [activeTab, setActiveTab] = useState<Tab>('profile')
   const [profile, setProfile] = useState<ProfileData | null>(null)
@@ -82,8 +90,9 @@ export default function ProfilePage() {
         setFirstName(p.firstName)
         setLastName(p.lastName)
         setPhone(p.phone ?? '')
-        setLanguage(p.language)
         setMarketingConsent(p.marketingConsent)
+        setLanguage(p.language)
+        i18n.changeLanguage(p.language.toLowerCase())
       })
       .catch(() => setLoadError(true))
   }, [])
@@ -216,13 +225,17 @@ export default function ProfilePage() {
   const shell = (content: React.ReactNode) => (
     <AppShell
       appName={t('app.name')}
+      brandName={brandName}
+      logoUrl={logoUrl}
+      footerLinks={footerLinks}
+      footerNotice={footerNotice}
       navLinks={[
         { label: t('nav.home'), href: '/' },
         { label: t('nav.catalog'), href: '/catalog' },
       ]}
       actions={
         <div className="header-actions">
-          <LangToggle lang={i18n.language} onToggle={() => i18n.changeLanguage(({ fr: 'en', en: 'es', es: 'fr' } as Record<string, string>)[i18n.language] ?? 'fr')} />
+          <LangToggle lang={i18n.language} onChange={lang => i18n.changeLanguage(lang)} />
           <Button variant="ghost" size="sm" onClick={() => { logout(); window.dispatchEvent(new Event('session-changed')); window.location.href = '/' }}>
             {t('nav.logout')}
           </Button>

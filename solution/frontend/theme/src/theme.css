@@ -41,10 +41,10 @@ button { cursor: pointer; font-family: inherit; }
 }
 .btn--md, .btn-md { padding: 10px 20px; font-size: 15px; }
 .btn--sm, .btn-sm { padding: 6px 12px; font-size: 13px; }
-.btn--primary, .btn-primary { background: var(--accent); color: var(--btn-text); }
+.btn--primary, .btn-primary { background: var(--accent); color: #fff; }
 .btn--secondary, .btn-secondary { background: var(--surface); color: var(--text); border: 1px solid var(--border); }
 .btn--ghost, .btn-ghost { background: none; color: var(--text); }
-.btn--danger, .btn-danger { background: #c62828; color: var(--btn-text); }
+.btn--danger, .btn-danger { background: #c62828; color: #fff; }
 .btn:disabled { opacity: 0.6; cursor: not-allowed; }
 
 /* ─── Card ─── */
@@ -84,8 +84,8 @@ button { cursor: pointer; font-family: inherit; }
 .shell-brand-logo { height: 36px; width: auto; object-fit: contain; border-radius: 4px; }
 .shell-brand--clickable { cursor: pointer; }
 .shell-brand--clickable:hover { opacity: 0.85; }
-.shell-nav { display: flex; align-items: center; gap: 24px; }
-.shell-nav-link { font-size: 14px; font-weight: 500; color: #fff; }
+.shell-nav { display: flex; align-items: center; gap: 16px; flex-wrap: nowrap; overflow: visible; }
+.shell-nav-link { font-size: 14px; font-weight: 500; color: #fff; white-space: nowrap; }
 .shell-nav-badge {
   margin-left: 6px;
   background: rgba(255, 255, 255, 0.25);
@@ -118,6 +118,23 @@ button { cursor: pointer; font-family: inherit; }
   text-align: center;
   font-size: 13px;
   color: var(--text-muted);
+}
+.shell-footer-nav {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 6px 18px;
+  margin-top: 10px;
+}
+.shell-footer-link {
+  color: var(--text-muted);
+  text-decoration: none;
+  font-size: 12px;
+  white-space: nowrap;
+}
+.shell-footer-link:hover {
+  color: var(--accent);
+  text-decoration: underline;
 }
 
 /* ─── LangToggle ─── */

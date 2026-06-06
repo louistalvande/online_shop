@@ -33,10 +33,12 @@ public class ShopThemeControllerImpl implements ShopThemeController {
     @Override
     public ResponseEntity<ShopThemeResponse> getTheme() {
         return ResponseEntity.ok(new ShopThemeResponse(
+                settingsService.getShopName(),
                 settingsService.getAccentColor(),
                 settingsService.getBgColor(),
                 vendorLogoUploadService.getPublicLogoUrl(),
-                vendorBannerUploadService.getPublicBannerUrl()
+                vendorBannerUploadService.getPublicBannerUrl(),
+                settingsService.getFooterNotice()
         ));
     }
 }

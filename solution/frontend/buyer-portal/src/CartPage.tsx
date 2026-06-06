@@ -4,9 +4,17 @@ import { AppShell, LangToggle, Button, UserMenu } from '@workspace/theme'
 import { getSession, logout, type BuyerSession } from './api/authApi'
 import { getCart, updateCartItem, removeCartItem, type CartData } from './api/cartApi'
 import LoginModal from './LoginModal'
+import { useShopName } from './hooks/useShopName'
+import { useLogoUrl } from './hooks/useLogoUrl'
+import { useFooterLinks } from './hooks/useFooterLinks'
+import { useFooterNotice } from './hooks/useFooterNotice'
 
 export default function CartPage() {
   const { t, i18n } = useTranslation()
+  const brandName = useShopName()
+  const logoUrl = useLogoUrl()
+  const footerLinks = useFooterLinks()
+  const footerNotice = useFooterNotice()
   const [session, setSession] = useState<BuyerSession | null>(getSession)
   const [showLogin, setShowLogin] = useState(false)
   const [cart, setCart] = useState<CartData | null>(null)
@@ -63,7 +71,7 @@ export default function CartPage() {
     <div className="header-actions">
       <LangToggle
         lang={i18n.language}
-        onToggle={() => i18n.changeLanguage(({ fr: 'en', en: 'es', es: 'fr' } as Record<string, string>)[i18n.language] ?? 'fr')}
+        onChange={lang => i18n.changeLanguage(lang)}
       />
       {session ? (
         <UserMenu
@@ -92,6 +100,10 @@ export default function CartPage() {
       )}
       <AppShell
         appName={t('app.name')}
+        brandName={brandName}
+        logoUrl={logoUrl}
+        footerLinks={footerLinks}
+        footerNotice={footerNotice}
         navLinks={[
           { label: t('nav.home'), href: '/' },
           { label: t('nav.catalog'), href: '/catalog' },
