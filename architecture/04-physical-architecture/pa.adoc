@@ -167,6 +167,10 @@ NOTE: Les choix technologiques retenus ci-dessous sont des recommandations archi
 | Module Spring Boot (Java)
 | Composition et envoi de campagnes email : endpoint protégé VENDOR `POST /api/vendor/campaigns/send` (corps : `{ sujet: String, corps: String }`) ; récupération des destinataires via `SELECT email, prenom, nom FROM account WHERE marketing_consent = TRUE AND status = 'ACTIVE'` ; refus avec `400 NO_CONSENTING_BUYERS` si liste vide ; délégation de l'envoi à composant-notification (FS-V17) ; journalisation en table `campaign_log` (date, vendor_id, recipient_count, statut)
 
+| Service SEO
+| Module Spring Boot (Java) + React 18 (react-helmet-async)
+| Entité `ShopSeo` (table `shop_seo`) : `seo_title`, `seo_description`, `seo_keywords`, `og_image_url`, `canonical_url`, `robots_rules TEXT`, `sitemap_frequencies JSONB`, `verification_codes JSONB` ; entité `ProductSeoOverride` (table `product_seo_override`, FK `product_id` unique, nullable) : mêmes colonnes que `ShopSeo` à l'exception de `robots_rules`. Endpoints protégés VENDOR : `PUT /api/vendor/seo/shop`, `PUT /api/vendor/seo/products/{id}`, `DELETE /api/vendor/seo/products/{id}`. Endpoints publics : `GET /api/public/seo/shop` (méta globaux + codes de vérification), `GET /api/public/seo/products/{id}` (méta produit ou repli sur données produit), `GET /sitemap.xml` (généré dynamiquement — liste toutes les `Product` au statut `PUBLISHED`), `GET /robots.txt` (généré à partir de `robots_rules`, `User-agent: *` par défaut `Allow: /`). Côté frontend : `react-helmet-async` injecte les méta tags dans le `<head>` pour chaque page du portail acheteur (FS-V18, FS-V19, FS-V20 / CS-23)
+
 | Service Sécurité
 | Module transverse Spring Security (Java)
 | Spring Security filter chain — BCrypt (coût 12), JJWT, validation `@Valid` des DTOs, filtre CSRF / SameSite, en-têtes HTTP de sécurité (CPA-09..CPA-16) ; MFA TOTP via bibliothèque `dev.samstevens.totp` ; vérification HIBP k-anonymat
@@ -837,6 +841,116 @@ Tableau de bord analytique (FS-V07). Les indicateurs clés (CA, nombre de comman
 include::diagrams/ihm/ihm-bov-rapports.puml[]
 ----
 
+==== Référencement (SEO)
+
+Section de configuration du référencement (FS-V18, FS-V19, FS-V20 / CS-23 / UCSA-18). Organisée en **quatre onglets** : _SEO Global_, _SEO par produit_, _Indexation_, _Outils tiers_. Les modifications sont enregistrées via les endpoints `PUT /api/vendor/seo/shop` et `PUT /api/vendor/seo/products/{id}`. Le `sitemap.xml` et le `robots.txt` sont régénérés dynamiquement à chaque accès à leurs URLs publiques en tenant compte des paramètres sauvegardés.
+
+.Maquette filaire : Back-office Vendeur — Référencement SEO (onglet SEO Global)
+[plantuml, ihm-bov-seo-global, svg]
+----
+@startsalt
+' PA — Back-office Vendeur (composant-seo)
+' Fonctions allouées : FS-V18 (métadonnées SEO boutique), FS-V19 (URL canonique)
+title Back-office Vendeur — Référencement (SEO) — Global
+
+{+
+  {/ SEO Global | SEO par produit | Indexation | Outils tiers }
+  ==
+  Titre (balise <title>)     | "Ma Boutique Photo — Cartes & Posters    "
+  Description (160 car. max) | {SI
+                                 "Photos originales : paysages, portraits,"
+                                 "occasions spéciales. Livraison zone euro."
+                               }
+  Mots-clés (virgule)        | "carte photo, poster, naissance, vacances  "
+  Image Open Graph           | [Téléverser une image]  [Supprimer]
+  --
+  URL canonique              | "https://ma-boutique.fr                    "
+  --
+  [Annuler]  [Enregistrer les paramètres SEO]
+}
+@endsalt
+----
+
+.Maquette filaire : Back-office Vendeur — Référencement SEO (onglet SEO par produit — liste)
+[plantuml, ihm-bov-seo-produit-liste, svg]
+----
+@startsalt
+' PA — Back-office Vendeur (composant-seo)
+' Fonctions allouées : FS-V18 (substitutions SEO par produit)
+title Back-office Vendeur — Référencement (SEO) — SEO par produit
+
+{+
+  {/ SEO Global | <b>SEO par produit | Indexation | Outils tiers }
+  ==
+  Rechercher un produit | "                              " [Rechercher]
+  --
+  {#
+    Image               | Nom du produit                | SEO configuré     | Action
+    <img:placeholder>   | Carte anniversaire aquarelle  | <color:green>Oui  | [Modifier]
+    <img:placeholder>   | Poster paysage montagne       | <color:gray>Non   | [Configurer]
+    <img:placeholder>   | Affiche naissance personnalis | <color:gray>Non   | [Configurer]
+    <img:placeholder>   | Carte vacances été            | <color:green>Oui  | [Modifier]
+    <img:placeholder>   | Poster portrait studio        | <color:gray>Non   | [Configurer]
+  }
+  --
+  _Produits sans SEO : titre, description et 1ère photo utilisés en repli automatique_
+}
+@endsalt
+----
+
+.Maquette filaire : Back-office Vendeur — Référencement SEO (onglet SEO par produit — formulaire)
+[plantuml, ihm-bov-seo-produit-form, svg]
+----
+@startsalt
+' PA — Back-office Vendeur (composant-seo)
+' Fonctions allouées : FS-V18 (substitutions SEO par produit — PUT /api/vendor/seo/products/{id})
+title Back-office Vendeur — SEO par produit : Carte anniversaire aquarelle
+
+{+
+  ← Retour à la liste
+  ==
+  Titre SEO (balise <title>)    | "Carte anniversaire aquarelle — Ma Boutique"
+  Description SEO (160 car.)    | {SI
+                                   "Carte d'anniversaire peinte à l'aquarelle,"
+                                   "impression haute qualité. Livraison zone euro."
+                                 }
+  Mots-clés SEO                 | "carte anniversaire, aquarelle, cadeau        "
+  Image Open Graph              | [Téléverser une image]  [Supprimer]
+  --
+  _Si vides : nom produit, description et 1ère photo utilisés automatiquement_
+  --
+  [Annuler]  [Supprimer les substitutions SEO]  [Enregistrer]
+}
+@endsalt
+----
+
+.Maquette filaire : Back-office Vendeur — Référencement SEO (onglet Indexation + Outils tiers)
+[plantuml, ihm-bov-seo-indexation, svg]
+----
+@startsalt
+' PA — Back-office Vendeur (composant-seo)
+' Fonctions allouées : FS-V19 (robots.txt / sitemap), FS-V20 (codes de vérification)
+title Back-office Vendeur — Référencement (SEO) — Indexation & Outils
+
+{+
+  {/ SEO Global | SEO par produit | Indexation | Outils tiers }
+  ==
+  == Indexation (robots.txt & sitemap.xml)
+  Fréquence d'exploration (produits) | ^mensuelle^
+  Indexer les pages produits          | (X) Oui  ( ) Non
+  Indexer la page catalogue           | (X) Oui  ( ) Non
+  Indexer le panier / compte          | ( ) Oui  (X) Non
+  --
+  == Outils de mesure d'audience
+  Google Search Console (méta-tag)   | "google-site-verification=XXXXXXX   "
+  Google Analytics (GA4 Measurement) | "G-XXXXXXXXXX                        "
+  Bing Webmaster Tools               | "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX     "
+  --
+  [Annuler]  [Enregistrer]
+}
+@endsalt
+----
+
 === Console Administrateur
 
 ==== Connexion
@@ -994,6 +1108,11 @@ include::diagrams/ihm/ihm-admin-form-transporteur.puml[]
 | composant-campagne
 | Conteneur API Spring Boot
 | Spring Boot / Spring Data JPA — endpoint `POST /api/vendor/campaigns/send` (protégé VENDOR), table `campaign_log`, délégation de l'envoi à composant-notification
+
+| Service SEO
+| composant-seo
+| Conteneur API Spring Boot + React (portail acheteur)
+| Spring Boot / Spring Data JPA — tables `shop_seo` et `product_seo_override` ; endpoints VENDOR `PUT /api/vendor/seo/shop`, `PUT /api/vendor/seo/products/{id}`, `DELETE /api/vendor/seo/products/{id}` ; endpoints publics `GET /api/public/seo/shop`, `GET /api/public/seo/products/{id}`, `GET /sitemap.xml`, `GET /robots.txt` ; côté frontend : `react-helmet-async` dans `shop-buyer-portal` pour injection des méta tags dans le `<head>` de chaque page (CS-23)
 
 | Service Sécurité
 | composant-securite
