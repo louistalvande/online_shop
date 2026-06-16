@@ -60,9 +60,14 @@ button { cursor: pointer; font-family: inherit; }
 .shell-header {
   background: var(--accent);
   border-bottom: none;
-  position: sticky;
+  position: fixed;
   top: 0;
-  z-index: 10;
+  left: 0;
+  right: 0;
+  z-index: 100;
+}
+main {
+  padding-top: 120px;
 }
 .shell-inner {
   max-width: 1100px;
