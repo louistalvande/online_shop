@@ -20,6 +20,7 @@ getShopTheme().then(t => {
     document.documentElement.style.setProperty('--accent-hover', darkenHex(t.accentColor, 20))
   }
   if (t.bgColor) document.documentElement.style.setProperty('--bg', t.bgColor)
+  if (t.shopName) document.title = t.shopName
 }).catch(() => {})
 import RegisterPage from './RegisterPage'
 import ActivatePage from './ActivatePage'
