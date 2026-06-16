@@ -517,3 +517,34 @@ CREATE INDEX idx_marketing_campaigns_vendor_id ON marketing_campaigns (vendor_id
 CREATE INDEX idx_marketing_campaigns_sent_at   ON marketing_campaigns (sent_at);
 
 
+-- SEO domain (US-SEO-01 to US-SEO-05)
+
+CREATE TABLE shop_seo (
+    id                     UUID          PRIMARY KEY DEFAULT gen_random_uuid(),
+    seo_title              VARCHAR(255),
+    seo_description        VARCHAR(500),
+    seo_keywords           VARCHAR(500),
+    og_image_url           VARCHAR(500),
+    canonical_url          VARCHAR(500),
+    robots_disallow_paths  TEXT,
+    sitemap_changefreq     VARCHAR(20)   NOT NULL DEFAULT 'weekly',
+    index_products         BOOLEAN       NOT NULL DEFAULT TRUE,
+    index_catalog          BOOLEAN       NOT NULL DEFAULT TRUE,
+    google_verification    VARCHAR(255),
+    ga4_id                 VARCHAR(50),
+    bing_verification      VARCHAR(255),
+    created_at             TIMESTAMP     NOT NULL DEFAULT NOW(),
+    updated_at             TIMESTAMP     NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE product_seo_override (
+    product_id       UUID          PRIMARY KEY REFERENCES products(id) ON DELETE CASCADE,
+    seo_title        VARCHAR(255),
+    seo_description  VARCHAR(500),
+    seo_keywords     VARCHAR(500),
+    og_image_url     VARCHAR(500),
+    created_at       TIMESTAMP     NOT NULL DEFAULT NOW(),
+    updated_at       TIMESTAMP     NOT NULL DEFAULT NOW()
+);
+
+

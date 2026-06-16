@@ -6,6 +6,7 @@ import com.shop.account.exception.UnsupportedBannerImageTypeException;
 import com.shop.account.exception.UnsupportedLogoImageTypeException;
 import com.shop.announcement.exception.AnnouncementNotFoundException;
 import com.shop.campaign.exception.NoConsentingBuyersException;
+import com.shop.seo.exception.SeoNotFoundException;
 import com.shop.announcement.exception.UnsupportedImageTypeException;
 import com.shop.account.exception.LastActiveAddressException;
 import com.shop.report.exception.InvalidPeriodException;
@@ -415,6 +416,21 @@ public class GlobalExceptionHandler {
         String message = messageSource.getMessage("error.order.missing.buyer.iban", null, locale);
         return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY)
                 .body(Map.of("error", "MISSING_BUYER_IBAN", "message", message));
+    }
+
+    /**
+     * Handles missing product SEO override — returns HTTP 404 (US-SEO-02).
+     *
+     * @param ex     the exception
+     * @param locale the request locale
+     * @return a 404 response with a localised error body
+     */
+    @ExceptionHandler(SeoNotFoundException.class)
+    public ResponseEntity<Map<String, String>> handleSeoNotFound(
+            SeoNotFoundException ex, Locale locale) {
+        String message = messageSource.getMessage("error.seo.product.not.found", null, locale);
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(Map.of("error", "SEO_NOT_FOUND", "message", message));
     }
 
     /**

@@ -2,6 +2,8 @@ import { useState, useEffect, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Button, Card, AppShell, LangToggle, CartIcon, UserMenu, Snackbar } from '@workspace/theme'
 import { fetchProducts, fetchDistinctCategories, fetchDistinctThemes, type BuyerProduct, type CatalogFilters } from './api/catalogApi'
+import { getShopSeo, type ShopSeoConfig } from './api/seoApi'
+import { useSeoMeta } from './hooks/useSeoMeta'
 import { useShopName } from './hooks/useShopName'
 import { useLogoUrl } from './hooks/useLogoUrl'
 import { useFooterLinks } from './hooks/useFooterLinks'
@@ -46,9 +48,18 @@ export default function CatalogPage() {
   const [showLogin, setShowLogin] = useState(false)
   const [pendingCartProductId, setPendingCartProductId] = useState<string | null>(null)
   const [snackbar, setSnackbar] = useState<{ message: string; variant: 'success' | 'error' } | null>(null)
+  const [shopSeo, setShopSeo] = useState<ShopSeoConfig | null>(null)
   const cartCount = useCartCount()
 
+  useSeoMeta({
+    title: shopSeo?.seoTitle ? `${shopSeo.seoTitle} — Catalogue` : (brandName || undefined),
+    description: shopSeo?.seoDescription,
+    ogImage: shopSeo?.ogImageUrl,
+    noindex: shopSeo ? !shopSeo.indexCatalog : false,
+  })
+
   useEffect(() => {
+    getShopSeo().then(setShopSeo).catch(() => {})
     fetchDistinctCategories().then(setAvailableCategories).catch(() => {})
     fetchDistinctThemes().then(setAvailableThemes).catch(() => {})
   }, [])

@@ -5,6 +5,9 @@ import { fetchProducts, type BuyerProduct } from './api/catalogApi'
 import { addToCart } from './api/cartApi'
 import { getSession, type BuyerSession } from './api/authApi'
 import { subscribeToRestock } from './api/stockSubscriptionApi'
+import { getShopSeo, type ShopSeoConfig } from './api/seoApi'
+import { useShopName } from './hooks/useShopName'
+import { useSeoMeta } from './hooks/useSeoMeta'
 import LoginModal from './LoginModal'
 import AnnouncementCarousel from './AnnouncementCarousel'
 
@@ -15,6 +18,7 @@ interface Props {
 /** Hero banner + featured catalog for the buyer portal home page. */
 export default function HomePage({ bannerUrl }: Props) {
   const { t } = useTranslation()
+  const shopName = useShopName()
   const [session, setSession] = useState<BuyerSession | null>(getSession)
   const [products, setProducts] = useState<BuyerProduct[]>([])
   const [showLogin, setShowLogin] = useState(false)
@@ -25,6 +29,22 @@ export default function HomePage({ bannerUrl }: Props) {
   const [pendingAlertProductId, setPendingAlertProductId] = useState<string | null>(null)
   const [subscribingId, setSubscribingId] = useState<string | null>(null)
   const [subscribedIds, setSubscribedIds] = useState<Set<string>>(new Set())
+  const [shopSeo, setShopSeo] = useState<ShopSeoConfig | null>(null)
+
+  useEffect(() => {
+    getShopSeo().then(setShopSeo).catch(() => {})
+  }, [])
+
+  useSeoMeta({
+    title: (shopSeo?.seoTitle ?? shopName) || undefined,
+    description: shopSeo?.seoDescription,
+    keywords: shopSeo?.seoKeywords,
+    ogImage: shopSeo?.ogImageUrl,
+    canonical: shopSeo?.canonicalUrl,
+    googleVerification: shopSeo?.googleVerification,
+    bingVerification: shopSeo?.bingVerification,
+    ga4Id: shopSeo?.ga4Id,
+  })
 
   useEffect(() => {
     fetchProducts({ page: 0, size: 8 })
@@ -93,6 +113,7 @@ export default function HomePage({ bannerUrl }: Props) {
 
   return (
     <>
+
       {snackbar && <Snackbar message={snackbar.message} variant={snackbar.variant} onDismiss={() => setSnackbar(null)} />}
       {showLogin && (
         <LoginModal
@@ -114,7 +135,6 @@ export default function HomePage({ bannerUrl }: Props) {
       <AnnouncementCarousel />
 
       <section id="catalogue" className="home-catalog-section">
-        <h2 className="home-catalog-title">{t('home.catalog')}</h2>
         <div className="home-catalog-grid">
           {products.map(p => (
             <Card key={p.id}>

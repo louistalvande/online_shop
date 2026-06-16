@@ -2,12 +2,14 @@ import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { AppShell, Button, LangToggle, CartIcon, UserMenu, Snackbar } from '@workspace/theme'
 import { fetchProduct, type BuyerProduct } from './api/catalogApi'
+import { getProductSeo, type ProductSeoOverride } from './api/seoApi'
 import { addToCart } from './api/cartApi'
 import { getSession, logout, type BuyerSession } from './api/authApi'
 import { subscribeToRestock, unsubscribeFromRestock, listSubscriptions } from './api/stockSubscriptionApi'
 import LoginModal from './LoginModal'
 import { useCartCount } from './hooks/useCartCount'
 import { useShopName } from './hooks/useShopName'
+import { useSeoMeta } from './hooks/useSeoMeta'
 import { useLogoUrl } from './hooks/useLogoUrl'
 import { useFooterLinks } from './hooks/useFooterLinks'
 import { useFooterNotice } from './hooks/useFooterNotice'
@@ -39,6 +41,7 @@ export default function ProductDetailPage({ productId }: Props) {
   const [quantity, setQuantity] = useState(1)
   const [subscribed, setSubscribed] = useState(false)
   const [subscribing, setSubscribing] = useState(false)
+  const [productSeo, setProductSeo] = useState<ProductSeoOverride | null>(null)
   const cartCount = useCartCount()
 
   useEffect(() => {
@@ -53,6 +56,7 @@ export default function ProductDetailPage({ productId }: Props) {
       })
       .catch(() => setError(true))
       .finally(() => setLoading(false))
+    getProductSeo(productId).then(setProductSeo).catch(() => {})
   }, [productId])
 
   useEffect(() => {
@@ -84,6 +88,17 @@ export default function ProductDetailPage({ productId }: Props) {
     if (!session) { setPendingAdd(true); setShowLogin(true); return }
     await doAddToCart()
   }
+
+  const seoTitle = productSeo?.seoTitle ?? product?.name ?? undefined
+  const seoDescription = productSeo?.seoDescription ?? product?.description ?? undefined
+  const ogImage = productSeo?.ogImageUrl ?? undefined
+
+  useSeoMeta({
+    title: seoTitle ?? brandName ?? undefined,
+    description: seoDescription,
+    keywords: productSeo?.seoKeywords,
+    ogImage,
+  })
 
   return (
     <>

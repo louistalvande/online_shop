@@ -44,7 +44,7 @@ export default function ProfilePage() {
         setCountryCode(p.countryCode ?? '')
         setLanguage(p.language)
       })
-      .catch(() => setLoadError(true))
+      .catch(() => { window.location.href = import.meta.env.BASE_URL })
   }, [])
 
   function clearMessages() { setSuccessMsg(''); setErrorMsg('') }
@@ -101,14 +101,7 @@ export default function ProfilePage() {
   const readonlyStyle: React.CSSProperties = { ...inputStyle, background: 'var(--bg)', color: 'var(--text-muted)' }
   const rowStyle: React.CSSProperties = { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }
 
-  if (loadError) {
-    return (
-      <div style={{ maxWidth: 480, margin: '120px auto', textAlign: 'center' }}>
-        <p style={{ color: 'var(--text-muted)' }}>{t('profile.error.load')}</p>
-        <Button onClick={() => window.location.reload()}>{t('profile.retry')}</Button>
-      </div>
-    )
-  }
+  if (!session) return null
 
   return (
     <AppShell
