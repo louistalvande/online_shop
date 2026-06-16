@@ -52,7 +52,7 @@ export async function authedFetch(url: string, init: RequestInit = {}): Promise<
     throw new Error('NOT_AUTHENTICATED')
   }
   const res = await fetch(url, { ...init, credentials: 'include' })
-  if (res.status === 401) {
+  if (res.status === 401 || res.status === 403) {
     localStorage.removeItem(SESSION_KEY)
     window.location.href = import.meta.env.BASE_URL || '/'
     throw new Error('SESSION_EXPIRED')
