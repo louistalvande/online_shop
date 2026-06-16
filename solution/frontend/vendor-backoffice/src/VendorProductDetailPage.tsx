@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { AppShell, Button, LangToggle } from '@workspace/theme'
 import { getProduct, updateProduct, archiveProduct, fetchDistinctTypes, fetchDistinctThemes, type Product, type CreateProductPayload } from './api/productApi'
 import { getSession, logout } from './api/authApi'
+import { getShopTheme } from './api/shopConfigApi'
 
 interface FormState {
   name: string
@@ -47,8 +48,11 @@ export default function VendorProductDetailPage({ productId }: Props) {
   const [currentPhoto, setCurrentPhoto] = useState(0)
   const [existingTypes, setExistingTypes] = useState<string[]>([])
   const [existingThemes, setExistingThemes] = useState<string[]>([])
+  const [logoUrl, setLogoUrl] = useState<string | null>(null)
+  const [shopName, setShopName] = useState('')
 
   useEffect(() => {
+    getShopTheme().then(t => { setLogoUrl(t.logoUrl ?? null); if (t.shopName) setShopName(t.shopName) }).catch(() => {})
     fetchDistinctTypes().then(setExistingTypes).catch(() => {})
     fetchDistinctThemes().then(setExistingThemes).catch(() => {})
   }, [])
@@ -132,7 +136,7 @@ export default function VendorProductDetailPage({ productId }: Props) {
 
   if (!session) {
     return (
-      <AppShell appName={t('app.name')} navLinks={[{ label: t('catalog.title'), href: `${import.meta.env.BASE_URL}catalog` }]} actions={shellActions}>
+      <AppShell appName={t('app.name')} brandName={shopName} logoUrl={logoUrl ?? undefined} navLinks={[{ label: t('catalog.title'), href: `${import.meta.env.BASE_URL}catalog` }]} actions={shellActions}>
         <main style={{ padding: '2rem' }}><p>{t('orders.error.notAuthenticated')}</p></main>
       </AppShell>
     )

@@ -4,6 +4,7 @@ import { Button } from '@workspace/theme'
 import Header from './Header'
 import { getVendorOrder, confirmWirePayment, rejectWirePayment, markInPreparation, shipOrder, acceptReturn, confirmReturn, waiveReturn, confirmWireRefund, refuseCancellationRequest, type OrderData } from './api/orderApi'
 import { getSession, logout } from './api/authApi'
+import { getShopTheme } from './api/shopConfigApi'
 import ConfirmModal from './ConfirmModal'
 
 const STATUS_LABELS: Record<string, string> = {
@@ -44,8 +45,11 @@ export default function OrderDetailPage({ orderId }: Props) {
   const [trackingInput, setTrackingInput] = useState('')
   const [returnIban, setReturnIban] = useState('')
   const [modal, setModal] = useState<ModalConfig | null>(null)
+  const [logoUrl, setLogoUrl] = useState<string | null>(null)
+  const [shopName, setShopName] = useState('')
 
   useEffect(() => {
+    getShopTheme().then(t => { setLogoUrl(t.logoUrl ?? null); if (t.shopName) setShopName(t.shopName) }).catch(() => {})
     if (!session) return
     getVendorOrder(orderId)
       .then(setOrder)
@@ -77,7 +81,7 @@ export default function OrderDetailPage({ orderId }: Props) {
 
   if (!session) {
     return (
-      <Header onLogout={onLogout}>
+      <Header onLogout={onLogout} logoUrl={logoUrl} shopName={shopName}>
         <div style={{ padding: '2rem' }}><p>{t('orders.error.notAuthenticated')}</p></div>
       </Header>
     )

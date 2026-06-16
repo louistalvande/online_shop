@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { listVendorOrders, type OrderData } from './api/orderApi'
 import { getSession, logout } from './api/authApi'
+import { getShopTheme } from './api/shopConfigApi'
 import Header from './Header'
 
 const STATUS_LABELS: Record<string, string> = {
@@ -23,8 +24,11 @@ export default function OrderListPage() {
   const [orders, setOrders] = useState<OrderData[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [logoUrl, setLogoUrl] = useState<string | null>(null)
+  const [shopName, setShopName] = useState('')
 
   useEffect(() => {
+    getShopTheme().then(t => { setLogoUrl(t.logoUrl ?? null); if (t.shopName) setShopName(t.shopName) }).catch(() => {})
     if (!session) return
     listVendorOrders()
       .then(setOrders)
@@ -36,14 +40,14 @@ export default function OrderListPage() {
 
   if (!session) {
     return (
-      <Header onLogout={onLogout}>
+      <Header onLogout={onLogout} logoUrl={logoUrl} shopName={shopName}>
         <div style={{ padding: '2rem' }}><p>{t('orders.error.notAuthenticated')}</p></div>
       </Header>
     )
   }
 
   return (
-    <Header onLogout={onLogout}>
+    <Header onLogout={onLogout} logoUrl={logoUrl} shopName={shopName}>
     <main style={{ padding: '2rem', maxWidth: '1100px', margin: '0 auto' }}>
       <h1>{t('orders.list.title')}</h1>
 
