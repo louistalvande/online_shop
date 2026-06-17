@@ -2,12 +2,14 @@ import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { AppShell, Button, LangToggle, CartIcon, UserMenu, Snackbar } from '@workspace/theme'
 import { fetchProduct, type BuyerProduct } from './api/catalogApi'
+import { getProductSeo, getShopSeo, type ProductSeoOverride, type ShopSeoConfig } from './api/seoApi'
 import { addToCart } from './api/cartApi'
 import { getSession, logout, type BuyerSession } from './api/authApi'
 import { subscribeToRestock, unsubscribeFromRestock, listSubscriptions } from './api/stockSubscriptionApi'
 import LoginModal from './LoginModal'
 import { useCartCount } from './hooks/useCartCount'
 import { useShopName } from './hooks/useShopName'
+import { useSeoMeta } from './hooks/useSeoMeta'
 import { useLogoUrl } from './hooks/useLogoUrl'
 import { useFooterLinks } from './hooks/useFooterLinks'
 import { useFooterNotice } from './hooks/useFooterNotice'
@@ -17,10 +19,10 @@ function formatPrice(price: number): string {
 }
 
 interface Props {
-  productId: string
+  slug: string
 }
 
-export default function ProductDetailPage({ productId }: Props) {
+export default function ProductDetailPage({ slug }: Props) {
   const { t, i18n } = useTranslation()
   const brandName = useShopName()
   const logoUrl = useLogoUrl()
@@ -39,21 +41,25 @@ export default function ProductDetailPage({ productId }: Props) {
   const [quantity, setQuantity] = useState(1)
   const [subscribed, setSubscribed] = useState(false)
   const [subscribing, setSubscribing] = useState(false)
+  const [productSeo, setProductSeo] = useState<ProductSeoOverride | null>(null)
+  const [shopSeo, setShopSeo] = useState<ShopSeoConfig | null>(null)
   const cartCount = useCartCount()
 
   useEffect(() => {
-    fetchProduct(productId)
+    fetchProduct(slug)
       .then(p => {
         setProduct(p)
+        getProductSeo(p.id).then(setProductSeo).catch(() => {})
         if (p.outOfStock && session) {
           listSubscriptions()
-            .then(subs => setSubscribed(subs.some(s => s.productId === productId)))
+            .then(subs => setSubscribed(subs.some(s => s.productId === p.id)))
             .catch(() => {})
         }
       })
       .catch(() => setError(true))
       .finally(() => setLoading(false))
-  }, [productId])
+    getShopSeo().then(setShopSeo).catch(() => {})
+  }, [slug])
 
   useEffect(() => {
     if (session && pendingAdd) {
@@ -67,7 +73,7 @@ export default function ProductDetailPage({ productId }: Props) {
     setAdding(true)
     setCartFeedback(null)
     try {
-      await addToCart(productId, quantity)
+      await addToCart(product!.id, quantity)
       window.dispatchEvent(new Event('cart-updated'))
       setCartFeedback(true)
       setSnackbar({ message: t('cart.added'), variant: 'success' })
@@ -84,6 +90,19 @@ export default function ProductDetailPage({ productId }: Props) {
     if (!session) { setPendingAdd(true); setShowLogin(true); return }
     await doAddToCart()
   }
+
+  const seoTitle = productSeo?.seoTitle ?? product?.name ?? undefined
+  const seoDescription = productSeo?.seoDescription ?? product?.description ?? undefined
+  const ogImage = productSeo?.ogImageUrl ?? undefined
+
+  useSeoMeta({
+    title: seoTitle ?? brandName ?? undefined,
+    description: seoDescription,
+    keywords: productSeo?.seoKeywords,
+    ogImage,
+    canonical: window.location.origin + '/catalog/' + slug,
+    noindex: shopSeo ? !shopSeo.indexProducts : false,
+  })
 
   return (
     <>
@@ -214,7 +233,7 @@ export default function ProductDetailPage({ productId }: Props) {
                         onClick={async () => {
                           setSubscribing(true)
                           try {
-                            await unsubscribeFromRestock(productId)
+                            await unsubscribeFromRestock(product!.id)
                             setSubscribed(false)
                             setSnackbar({ message: t('stock.notify.removed'), variant: 'success' })
                           } catch {
@@ -234,7 +253,7 @@ export default function ProductDetailPage({ productId }: Props) {
                         onClick={async () => {
                           setSubscribing(true)
                           try {
-                            await subscribeToRestock(productId)
+                            await subscribeToRestock(product!.id)
                             setSubscribed(true)
                             setSnackbar({ message: t('stock.notify.success'), variant: 'success' })
                           } catch (err: unknown) {

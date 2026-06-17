@@ -100,6 +100,11 @@ Le système est structuré en cinq couches logiques : *Présentation*, *Applicat
 | Composition et envoi de campagnes email promotionnelles : récupération des acheteurs actifs consentants (`marketing_consent = true`), refus si liste vide, orchestration de l'envoi via Service Notification, journalisation de chaque campagne (date, identifiant vendeur, nombre de destinataires)
 | FS-V17
 
+| *Service SEO*
+| Application
+| Persistance des métadonnées de référencement de la boutique (titre global, description, mots-clés, image Open Graph, URL canonique) et des substitutions par produit (`seo_title`, `seo_description`, `seo_keywords`, `og_image_url` — nullable, repli sur données produit si absent) ; génération et exposition dynamique de `/sitemap.xml` (pages publiées, fréquences configurées par le vendeur) et de `/robots.txt` (règles d'indexation, `Disallow` et `Crawl-delay` configurables) ; gestion et injection des codes de vérification d'outils tiers (Google Search Console, Google Analytics GA4, Bing Webmaster Tools) dans les méta-tags du portail acheteur
+| FS-V18, FS-V19, FS-V20
+
 | *Adaptateur Paiement*
 | Intégration externe
 | Encapsulation du protocole IFS-04 — traduction des appels internes vers l'API du prestataire de paiement et des webhooks entrants
@@ -163,6 +168,7 @@ package "Couche Application" {
   [Service Rapport] as SvcReport
   [Service Annonce] as SvcAnnounce
   [Service Campagne\nMarketing] as SvcCampaign
+  [Service SEO] as SvcSeo
 }
 
 package "Couche Sécurité & Journalisation (transverse)" {
@@ -202,8 +208,10 @@ UI_Vendor --> SvcReport : IFL-07
 UI_Vendor --> SvcAnnounce : IFL-15
 UI_Vendor --> SvcAccount : IFL-17
 UI_Vendor --> SvcCampaign : IFL-18
+UI_Vendor --> SvcSeo : IFL-19
 
 UI_Buyer --> SvcAnnounce : IFL-16
+UI_Buyer --> SvcSeo : IFL-20
 
 UI_Admin --> SvcAccount : IFL-01
 UI_Admin --> SvcAccount : IFL-14 (maintenance)
@@ -233,6 +241,7 @@ SvcReport --> DB : IFL-13
 SvcAnnounce --> DB : IFL-13
 SvcCampaign --> SvcNotif : IFL-09
 SvcCampaign --> DB : IFL-13
+SvcSeo --> DB : IFL-13
 SvcLog --> DB : IFL-13
 
 note "Service Sécurité (FS-S01..S12) et Service Journalisation (FS-S07,S13)\ns'appliquent de façon transverse à tous les services applicatifs" as NoteSecLog
@@ -347,6 +356,18 @@ Les interfaces logiques définissent les contrats d'échange entre composants, i
 | Service Campagne Marketing
 | Soumettre une campagne (objet, corps) pour envoi aux acheteurs consentants ; consulter le nombre de destinataires disponibles avant envoi
 | FS-V17
+
+| *IFL-19*
+| Back-office Vendeur
+| Service SEO
+| CRUD des métadonnées SEO globales de la boutique (titre, description, mots-clés, OG image, URL canonique, règles robots.txt, fréquences sitemap) et des substitutions SEO par produit (`seo_title`, `seo_description`, `seo_keywords`, `og_image_url`) ; CRUD des codes de vérification d'outils tiers
+| FS-V18, FS-V19, FS-V20
+
+| *IFL-20*
+| Portail Acheteur
+| Service SEO
+| Lire les métadonnées SEO à injecter dans le `<head>` de chaque page (méta tags globaux, Open Graph par produit, codes de vérification) ; accéder aux endpoints publics `/sitemap.xml` et `/robots.txt`
+| FS-V18, FS-V19, FS-V20
 |===
 
 == Diagramme de séquence logique — Inscription et activation de compte

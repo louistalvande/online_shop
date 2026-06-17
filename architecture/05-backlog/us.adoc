@@ -603,6 +603,66 @@ a|
 
 |===
 
+== Référencement naturel (SEO)
+
+_Fonctions ARCADIA : FS-V18, FS-V19, FS-V20 — Contrainte SA : CS-23 — UCSA-18 — LA : Service SEO / Back-office Vendeur / Portail Acheteur_
+
+[cols="1,3,4,1", options="header"]
+|===
+| ID | User story | Critères d'acceptation | Statut
+
+| *US-SEO-01*
+| En tant que vendeur, je peux saisir les métadonnées SEO globales de ma boutique (titre, description, mots-clés et image Open Graph) afin d'améliorer la présentation de ma boutique dans les résultats des moteurs de recherche.
+a|
+- [x] Section « Référencement (SEO) » disponible dans le back-office vendeur
+- [x] Onglet « SEO Global » : champs `titre` (255 car. max), `description` (500 car. max), `mots-clés` (500 car. max), `og_image` (upload ou URL)
+- [x] Enregistrement via `PUT /api/vendor/seo/shop` (protégé VENDOR)
+- [x] Les balises `<title>`, `<meta name="description">`, `<meta name="keywords">`, `<meta property="og:image">` sont injectées dans le `<head>` de la page d'accueil du portail acheteur via `useSeoMeta` (DOM natif, sans dépendance externe)
+- [x] Si aucun titre SEO n'est configuré, la balise `<title>` utilise le nom de la boutique comme valeur par défaut
+| Terminée
+
+| *US-SEO-02*
+| En tant que vendeur, je peux saisir des métadonnées SEO spécifiques pour chaque fiche produit (titre, description, mots-clés, image Open Graph) afin d'optimiser l'indexation individuelle de chaque produit.
+a|
+- [x] Onglet « SEO » dans le formulaire d'édition d'un produit : champs `seo_title`, `seo_description`, `seo_keywords`, `og_image_url` (tous facultatifs)
+- [x] Enregistrement via `PUT /api/vendor/seo/products/{id}` (protégé VENDOR) ; suppression des substitutions via `DELETE /api/vendor/seo/products/{id}`
+- [x] Endpoint public `GET /api/public/seo/products/{id}` retourne les métadonnées SEO du produit ; si les champs de substitution sont vides, retourne le nom, la description et la première photo du produit (repli automatique)
+- [x] Les balises méta sont injectées dans le `<head>` de la page de détail produit du portail acheteur via `useSeoMeta` (DOM natif, sans dépendance externe)
+- [x] Les balises `og:url` et `canonical` pointent vers l'URL publique canonique du produit (slug déduit du nom : `/catalog/{slug}`)
+| Terminée
+
+| *US-SEO-03*
+| En tant que vendeur, je peux contrôler l'indexation de ma boutique par les moteurs de recherche : définir les règles du `robots.txt`, configurer la fréquence d'exploration et déclarer l'URL canonique de ma boutique.
+a|
+- [x] Onglet « Indexation » : cases à cocher pages produit, page catalogue, pages compte et page panier (indexation activée/désactivée)
+- [x] Champ « URL canonique » : URL déclarée comme adresse officielle de la boutique ; injectée via `<link rel="canonical">` sur les pages publiques
+- [x] Endpoint `GET /robots.txt` généré dynamiquement à partir des règles configurées (`User-agent: *`, lignes `Disallow:` correspondantes, `Sitemap:`) — Nginx proxy vers `/api/public/robots.txt`
+- [x] Endpoint `GET /sitemap.xml` généré dynamiquement : liste toutes les `Product` au statut `PUBLISHED` avec `<loc>` (slug), `<lastmod>` basé sur `updatedAt` — Nginx proxy vers `/api/public/sitemap.xml`
+- [x] Si aucune règle n'est configurée, `robots.txt` autorise tout (aucun `Disallow:`) et `sitemap.xml` liste toutes les fiches publiées avec fréquence `weekly`
+| Terminée
+
+| *US-SEO-04*
+| En tant que vendeur, je peux connecter ma boutique aux outils de mesure d'audience et de vérification de propriété en saisissant leurs codes d'identification afin de suivre le trafic provenant des moteurs de recherche.
+a|
+- [x] Onglet « Outils tiers » : champs texte pour les codes de vérification Google Search Console (méta-tag), l'identifiant Google Analytics GA4 (format `G-XXXXXXXXXX`) et Bing Webmaster Tools
+- [x] Enregistrement dans les colonnes dédiées de `shop_seo` via `PUT /api/vendor/seo/shop`
+- [x] Endpoint public `GET /api/public/seo/shop` retourne les codes de vérification dans sa réponse
+- [x] Injection des balises dans le `<head>` de toutes les pages du portail acheteur via DOM natif dans `main.tsx` : `<meta name="google-site-verification">`, `<meta name="msvalidate.01">`, `<script async gtag>`
+- [x] Les codes sont purement injectés côté HTML ; aucune donnée utilisateur n'est transmise à ces services sans action explicite de l'acheteur
+| Terminée
+
+| *US-SEO-05*
+| En tant que moteur de recherche, je peux accéder au `sitemap.xml` et au `robots.txt` de la boutique depuis leurs URLs standard afin d'explorer et d'indexer ses pages.
+a|
+- [x] `GET /sitemap.xml` accessible sans authentification (Nginx proxy → `/api/public/sitemap.xml`), retourne `Content-Type: application/xml`
+- [x] `GET /robots.txt` accessible sans authentification (Nginx proxy → `/api/public/robots.txt`), retourne `Content-Type: text/plain`
+- [x] `sitemap.xml` respecte le schéma Sitemap Protocol 0.9 (`<urlset xmlns="...">`, balises `<url>`, `<loc>`, `<lastmod>`, `<changefreq>`, `<priority>`)
+- [x] Mise à jour immédiate : générés dynamiquement à chaque requête, aucun cache applicatif
+- [x] Headers `Cache-Control: public, max-age=3600` présents sur les deux endpoints
+| Terminée
+
+|===
+
 == Sécurité (ANSSI)
 
 _Fonctions ARCADIA : FS-S01..S13 — Contraintes SA : CS-11..CS-21 — Contraintes PA : CPA-09..CPA-17 — LA : Service Sécurité / Service Journalisation_
@@ -719,6 +779,9 @@ a|
 | FS-P03 | Déclencher un remboursement | US-CAN-02, US-CAN-03, US-CAN-04
 | FS-A05 | Basculer en mode maintenance | US-ADM-10
 | FS-V11 | Gérer les annonces défilantes | US-ANN-01
+| FS-V18 | Configurer les métadonnées SEO (boutique + produits) | US-SEO-01, US-SEO-02
+| FS-V19 | Contrôler l'indexation (robots.txt, sitemap.xml, URL canonique) | US-SEO-03, US-SEO-05
+| FS-V20 | Connecter les outils de mesure d'audience | US-SEO-04
 | FS-B09 (acheteur post-expédition) | Demander annulation après expédition | US-CAN-06
 | FS-S01 | Politique de mots de passe | US-SEC-01 (partiellement)
 | FS-S03 | Gestion des sessions et révocation | US-SEC-01

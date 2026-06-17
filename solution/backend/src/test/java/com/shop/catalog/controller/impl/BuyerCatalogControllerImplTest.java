@@ -38,6 +38,7 @@ class BuyerCatalogControllerImplTest {
     MockMvc mvc;
 
     private static final UUID PRODUCT_ID = UUID.randomUUID();
+    private static final String PRODUCT_SLUG = "aquarelle-foret";
 
     @BeforeEach
     void setUp() {
@@ -126,26 +127,26 @@ class BuyerCatalogControllerImplTest {
                 .andExpect(jsonPath("$.totalElements").value(0));
     }
 
-    /** GET /buyer/products/{id} returns 200 when product exists. */
+    /** GET /buyer/products/{slug} returns 200 when product exists. */
     @Test
     void getProduct_returns200_whenFound() throws Exception {
-        given(productService.getPublishedProduct(PRODUCT_ID))
+        given(productService.getPublishedProduct(PRODUCT_SLUG))
                 .willReturn(buildResponse(PRODUCT_ID, "Aquarelle forêt", false));
 
-        mvc.perform(get("/api/buyer/products/{id}", PRODUCT_ID))
+        mvc.perform(get("/api/buyer/products/{slug}", PRODUCT_SLUG))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(PRODUCT_ID.toString()))
                 .andExpect(jsonPath("$.name").value("Aquarelle forêt"));
     }
 
-    /** GET /buyer/products/{id} returns 404 when product not found. */
+    /** GET /buyer/products/{slug} returns 404 when product not found. */
     @Test
     void getProduct_returns404_whenNotFound() throws Exception {
         given(messageSource.getMessage(anyString(), any(), any(Locale.class))).willReturn("not found");
-        given(productService.getPublishedProduct(PRODUCT_ID))
-                .willThrow(new ProductNotFoundException(PRODUCT_ID));
+        given(productService.getPublishedProduct(PRODUCT_SLUG))
+                .willThrow(new ProductNotFoundException());
 
-        mvc.perform(get("/api/buyer/products/{id}", PRODUCT_ID))
+        mvc.perform(get("/api/buyer/products/{slug}", PRODUCT_SLUG))
                 .andExpect(status().isNotFound());
     }
 }

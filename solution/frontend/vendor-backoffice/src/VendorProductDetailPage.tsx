@@ -3,6 +3,8 @@ import { useTranslation } from 'react-i18next'
 import { AppShell, Button, LangToggle } from '@workspace/theme'
 import { getProduct, updateProduct, archiveProduct, fetchDistinctTypes, fetchDistinctThemes, type Product, type CreateProductPayload } from './api/productApi'
 import { getSession, logout } from './api/authApi'
+import { getShopTheme } from './api/shopConfigApi'
+import { getProductSeo, saveProductSeo, deleteProductSeo, type ProductSeoOverride } from './api/seoApi'
 
 interface FormState {
   name: string
@@ -36,6 +38,7 @@ interface Props {
 export default function VendorProductDetailPage({ productId }: Props) {
   const { t, i18n } = useTranslation()
   const session = getSession()
+  const [activeTab, setActiveTab] = useState<'details' | 'seo'>('details')
   const [product, setProduct] = useState<Product | null>(null)
   const [loading, setLoading] = useState(true)
   const [loadError, setLoadError] = useState<string | null>(null)
@@ -47,8 +50,16 @@ export default function VendorProductDetailPage({ productId }: Props) {
   const [currentPhoto, setCurrentPhoto] = useState(0)
   const [existingTypes, setExistingTypes] = useState<string[]>([])
   const [existingThemes, setExistingThemes] = useState<string[]>([])
+  const [logoUrl, setLogoUrl] = useState<string | null>(null)
+  const [shopName, setShopName] = useState('')
+  const [seoOverride, setSeoOverride] = useState<Omit<ProductSeoOverride, 'productId'>>({
+    seoTitle: null, seoDescription: null, seoKeywords: null, ogImageUrl: null,
+  })
+  const [seoSaving, setSeoSaving] = useState(false)
+  const [seoFeedback, setSeoFeedback] = useState<'saved' | 'error' | null>(null)
 
   useEffect(() => {
+    getShopTheme().then(t => { setLogoUrl(t.logoUrl ?? null); if (t.shopName) setShopName(t.shopName) }).catch(() => {})
     fetchDistinctTypes().then(setExistingTypes).catch(() => {})
     fetchDistinctThemes().then(setExistingThemes).catch(() => {})
   }, [])
@@ -59,6 +70,9 @@ export default function VendorProductDetailPage({ productId }: Props) {
       .then(p => { setProduct(p); setForm(toForm(p)) })
       .catch(() => setLoadError(t('catalog.error.load')))
       .finally(() => setLoading(false))
+    getProductSeo(productId)
+      .then(o => { if (o) setSeoOverride({ seoTitle: o.seoTitle, seoDescription: o.seoDescription, seoKeywords: o.seoKeywords, ogImageUrl: o.ogImageUrl }) })
+      .catch(() => {})
   }, [productId])
 
   function setField(key: keyof FormState, value: string) {
@@ -127,12 +141,40 @@ export default function VendorProductDetailPage({ productId }: Props) {
     </div>
   )
 
+  async function handleSaveSeo() {
+    setSeoSaving(true)
+    setSeoFeedback(null)
+    try {
+      const saved = await saveProductSeo(productId, seoOverride)
+      setSeoOverride({ seoTitle: saved.seoTitle, seoDescription: saved.seoDescription, seoKeywords: saved.seoKeywords, ogImageUrl: saved.ogImageUrl })
+      setSeoFeedback('saved')
+    } catch {
+      setSeoFeedback('error')
+    } finally {
+      setSeoSaving(false)
+      setTimeout(() => setSeoFeedback(null), 3000)
+    }
+  }
+
+  async function handleResetSeo() {
+    if (!window.confirm(t('seo.products.resetConfirm'))) return
+    try {
+      await deleteProductSeo(productId)
+      setSeoOverride({ seoTitle: null, seoDescription: null, seoKeywords: null, ogImageUrl: null })
+      setSeoFeedback('saved')
+    } catch {
+      setSeoFeedback('error')
+    } finally {
+      setTimeout(() => setSeoFeedback(null), 3000)
+    }
+  }
+
   const labelStyle: React.CSSProperties = { display: 'block', fontSize: 13, fontWeight: 600, color: 'var(--text-muted)', marginBottom: 4 }
   const inputStyle: React.CSSProperties = { width: '100%', padding: '8px 12px', border: '1px solid var(--border)', borderRadius: 6, fontSize: 14, boxSizing: 'border-box', background: 'var(--surface)', color: 'var(--text)' }
 
   if (!session) {
     return (
-      <AppShell appName={t('app.name')} navLinks={[{ label: t('catalog.title'), href: `${import.meta.env.BASE_URL}catalog` }]} actions={shellActions}>
+      <AppShell appName={t('app.name')} brandName={shopName} logoUrl={logoUrl ?? undefined} navLinks={[{ label: t('catalog.title'), href: `${import.meta.env.BASE_URL}catalog` }]} actions={shellActions}>
         <main style={{ padding: '2rem' }}><p>{t('orders.error.notAuthenticated')}</p></main>
       </AppShell>
     )
@@ -152,7 +194,7 @@ export default function VendorProductDetailPage({ productId }: Props) {
 
         {product && form && (
           <>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 24, marginBottom: 32 }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 24, marginBottom: 16 }}>
               <h1 style={{ fontFamily: 'var(--font-serif)', fontSize: 26, fontWeight: 700, margin: 0 }}>
                 {product.name}
               </h1>
@@ -163,7 +205,63 @@ export default function VendorProductDetailPage({ productId }: Props) {
               )}
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '280px 1fr', gap: 48, alignItems: 'start' }}>
+            {/* Tab bar */}
+            <div style={{ display: 'flex', borderBottom: '1px solid var(--border)', marginBottom: 24 }}>
+              {(['details', 'seo'] as const).map(tab => (
+                <button
+                  key={tab}
+                  onClick={() => setActiveTab(tab)}
+                  style={{
+                    padding: '8px 20px',
+                    border: 'none',
+                    borderBottom: activeTab === tab ? '2px solid var(--accent, #6366f1)' : '2px solid transparent',
+                    background: 'none',
+                    cursor: 'pointer',
+                    fontWeight: activeTab === tab ? 700 : 400,
+                    color: activeTab === tab ? 'var(--accent, #6366f1)' : 'var(--text-muted)',
+                    fontSize: 14,
+                  }}
+                >
+                  {t(`seo.tab.${tab}`)}
+                </button>
+              ))}
+            </div>
+
+            {/* SEO tab */}
+            {activeTab === 'seo' && (
+              <div style={{ maxWidth: 600 }}>
+                <div style={{ marginBottom: 16 }}>
+                  <label style={labelStyle}>{t('seo.title')}</label>
+                  <input style={inputStyle} value={seoOverride.seoTitle ?? ''} maxLength={255}
+                    onChange={e => setSeoOverride({ ...seoOverride, seoTitle: e.target.value || null })} />
+                </div>
+                <div style={{ marginBottom: 16 }}>
+                  <label style={labelStyle}>{t('seo.description')}</label>
+                  <textarea style={{ ...inputStyle, minHeight: 80, resize: 'vertical' }} value={seoOverride.seoDescription ?? ''}
+                    onChange={e => setSeoOverride({ ...seoOverride, seoDescription: e.target.value || null })} />
+                </div>
+                <div style={{ marginBottom: 16 }}>
+                  <label style={labelStyle}>{t('seo.keywords')}</label>
+                  <input style={inputStyle} value={seoOverride.seoKeywords ?? ''} maxLength={500}
+                    onChange={e => setSeoOverride({ ...seoOverride, seoKeywords: e.target.value || null })} />
+                </div>
+                <div style={{ marginBottom: 20 }}>
+                  <label style={labelStyle}>{t('seo.products.ogImage')}</label>
+                  <input style={inputStyle} value={seoOverride.ogImageUrl ?? ''}
+                    onChange={e => setSeoOverride({ ...seoOverride, ogImageUrl: e.target.value || null })} />
+                </div>
+                {seoFeedback === 'saved' && <p style={{ color: '#1a7a2e', fontSize: 13, marginBottom: 8 }}>{t('seo.products.saveDone')}</p>}
+                {seoFeedback === 'error' && <p style={{ color: '#c0392b', fontSize: 13, marginBottom: 8 }}>{t('seo.saveError')}</p>}
+                <div style={{ display: 'flex', gap: 12 }}>
+                  <Button variant="primary" disabled={seoSaving} onClick={handleSaveSeo}>
+                    {seoSaving ? t('seo.saving') : t('seo.save')}
+                  </Button>
+                  <Button variant="secondary" onClick={handleResetSeo}>{t('seo.products.reset')}</Button>
+                </div>
+              </div>
+            )}
+
+            {activeTab === 'details' && <div style={{ display: 'grid', gridTemplateColumns: '280px 1fr', gap: 48, alignItems: 'start' }}>
               {/* Photo preview */}
               <div>
                 {photoList.length > 0 ? (
@@ -287,7 +385,7 @@ export default function VendorProductDetailPage({ productId }: Props) {
                   </Button>
                 </div>
               </form>
-            </div>
+            </div>}
           </>
         )}
       </div>

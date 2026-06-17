@@ -89,3 +89,5 @@ shop:
   bank:
     iban: ${SHOP_BANK_IBAN:FR7630006000011234567890189}
     bic: ${SHOP_BANK_BIC:BNPAFRPPXXX}
+  public:
+    base-url: ${SHOP_PUBLIC_BASE_URL:http://localhost:5173}

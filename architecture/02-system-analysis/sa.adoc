@@ -157,6 +157,10 @@ Un compte suspendu ou supprimé ne peut pas s'authentifier. Les messages d'erreu
 | CS-22
 | Consentement marketing explicite (COp-07 / RGPD-CONS-001..004)
 | Le système doit collecter, stocker et respecter le consentement marketing de chaque acheteur : case à cocher non pré-cochée à l'inscription, modifiable depuis l'espace compte, horodatée. Seuls les acheteurs consentants (`consentement_marketing = true`) peuvent être inclus dans un export à des fins de campagne.
+
+| CS-23
+| Référencement naturel — SEO (COp-09 / BES-VND-018..020)
+| Le système doit exposer des balises méta SEO (`<title>`, `<meta name="description">`, `<meta name="keywords">`, balises Open Graph) individuellement pour la page d'accueil et pour chaque fiche produit publiée ; générer dynamiquement un fichier `sitemap.xml` listant toutes les pages indexables avec les fréquences de mise à jour configurées par le vendeur ; exposer un fichier `robots.txt` configurable définissant les règles d'indexation et l'URL canonique ; permettre l'injection de codes de vérification de propriété (balises `<meta>`) pour les outils de mesure d'audience et de référencement. Si le vendeur n'a pas renseigné de métadonnées spécifiques à un produit, le système utilise le nom, la description et la première photo du produit comme valeurs de repli.
 |===
 
 == Capacités système
@@ -206,6 +210,11 @@ Les capacités système raffinent les capacités opérationnelles (CAP-xxx) de l
 | Assurer la communication transactionnelle et marketing
 | CAP-008
 | Via IFS-06 (déclenché par FS-B01, FS-V04, FS-V05, FS-V08, FS-V17, FS-P01..P03)
+
+| CAPS-009
+| Assurer le référencement naturel et la mesure d'audience
+| CAP-009
+| FS-V18, FS-V19, FS-V20
 |===
 
 === Diagramme Mission — Capacités — Fonctions
@@ -258,6 +267,9 @@ wbsDiagram {
 
 ** CAPS-008 — Communication <<caps>>
 ***_ IFS-06 (FS-B01, V04, V05, V08, V17...) <<funcs>>
+
+** CAPS-009 — SEO & Audience <<caps>>
+***_ FS-V18, V19, V20 <<funcs>>
 @endwbs
 ----
 
@@ -301,6 +313,9 @@ Les fonctions système (FS) sont dérivées des cas d'utilisation opérationnels
 | FS-V13 | Exporter le catalogue produits au format CSV (toutes les fiches actives et archivées) avec colonnes `id,nom,description,prix,categorie,quantite,seuil_alerte,statut` ; le fichier est réutilisable directement pour un import de mise à jour de stock (FS-V12) | UC_V1
 | FS-V15 | Exporter la liste des acheteurs ayant donné leur consentement marketing (`consentement_marketing = true`) au format CSV (email, prénom, nom), destiné à l'import dans un outil de mailing externe (CS-22 / RGPD-CONS-003) | UC_B_MKTG
 | FS-V17 | Permettre au vendeur de composer et envoyer une campagne email promotionnelle depuis le back-office, à destination de l'ensemble des acheteurs actifs ayant consenti (`consentement_marketing = true`). Le vendeur saisit un objet et un corps de message ; le système envoie l'email à chaque acheteur consentant via le service de messagerie (IFS-06). L'envoi est refusé si aucun acheteur consentant actif n'existe. Chaque envoi est journalisé (date, nombre de destinataires) | UC_V12
+| FS-V18 | Permettre au vendeur de saisir et enregistrer les métadonnées de référencement de la boutique (titre global, description, mots-clés, image Open Graph) et, de manière spécifique, pour chaque fiche produit (titre, description, mots-clés, image OG individuelle). Si les champs produit sont vides, le système utilise le nom, la description et la première photo du produit comme valeurs de repli automatique (CS-23 / BES-VND-018) | UC_V13
+| FS-V19 | Générer et exposer dynamiquement le fichier `sitemap.xml` listant toutes les pages indexables (page d'accueil, fiches produits publiées) avec les fréquences de mise à jour configurées par le vendeur ; générer et exposer le fichier `robots.txt` selon les règles d'indexation définies par le vendeur ; enregistrer et appliquer l'URL canonique déclarée pour la boutique afin d'éviter le contenu dupliqué (CS-23 / BES-VND-019) | UC_V13
+| FS-V20 | Permettre au vendeur d'enregistrer les codes de vérification de propriété (balises `<meta>` ou identifiants) pour les outils de mesure d'audience et de référencement de son choix (Google Search Console, Google Analytics GA4, Bing Webmaster Tools, etc.) et les injecter dans le `<head>` des pages du portail acheteur (CS-23 / BES-VND-020) | UC_V13
 |===
 
 === Expérience d'achat (Acheteur)
@@ -414,6 +429,7 @@ rectangle "Système — Application e-commerce" {
     usecase (UCSA-13\nConfirmer la réception\nd'un virement bancaire) as UC13
     usecase (UCSA-15\nGérer les annonces\ndéfilantes) as UC15
     usecase (UCSA-16\nPersonnaliser\nl'identité visuelle) as UC16
+    usecase (UCSA-18\nConfigurer le\nréférencement — SEO) as UC18
   }
 
   package "Expérience d'achat" {
@@ -443,6 +459,8 @@ Vendor --> UC09
 Vendor --> UC11
 Vendor --> UC13
 Vendor --> UC15
+Vendor --> UC16
+Vendor --> UC18
 Vendor --> UC06 : virement inverse
 
 Buyer --> UC01
@@ -1106,6 +1124,47 @@ a|
 | FS-V17, CS-22, RGPD-CONS-001, RGPD-CONS-003, IFS-06
 |===
 
+=== UCSA-18 : Configurer le référencement de la boutique (SEO)
+
+[cols="1,3", options="header"]
+|===
+| Champ | Description
+
+| *Identifiant*
+| UCSA-18
+
+| *Acteurs*
+| Vendeur (principal)
+
+| *Préconditions*
+| Vendeur authentifié
+
+| *Déclencheur*
+| Le vendeur accède à la section « Référencement (SEO) » du back-office
+
+| *Scénario nominal*
+a|
+. Le vendeur accède à l'onglet « SEO Global » et saisit le titre, la description, les mots-clés et l'image Open Graph de la boutique (FS-V18).
+. Le système valide et enregistre les données ; les balises méta sont immédiatement exposées sur la page d'accueil du portail acheteur.
+. Le vendeur déclare l'URL canonique de sa boutique afin d'éviter tout problème de contenu dupliqué (FS-V19).
+. Le vendeur configure les règles d'indexation (FS-V19) : autorise ou exclut certaines sections dans le `robots.txt`, définit la fréquence de réexploration souhaitée dans le `sitemap.xml`.
+. Le système génère et expose dynamiquement les fichiers `/sitemap.xml` et `/robots.txt` en fonction des paramètres enregistrés.
+. Le vendeur saisit un ou plusieurs codes de vérification d'outils tiers (FS-V20) : méta tag Google Search Console, identifiant Google Analytics GA4, etc. ; le système les injecte dans le `<head>` du portail acheteur.
+. Pour configurer les métadonnées SEO d'une fiche produit, le vendeur accède au formulaire d'édition du produit, saisit des champs SEO spécifiques (titre, description, mots-clés, image OG) ; si ces champs sont laissés vides, le système utilise le nom, la description et la première photo du produit comme valeurs de repli (FS-V18).
+
+| *Scénarios alternatifs*
+a|
+* *3a.* URL canonique non renseignée : le système utilise l'URL de déploiement comme valeur par défaut.
+* *4a.* Règles `robots.txt` non configurées : la valeur par défaut autorise l'indexation de toutes les pages.
+* *7a.* Le vendeur efface les champs SEO d'un produit : le repli automatique sur les données produit est réactivé.
+
+| *Postconditions*
+| Métadonnées SEO persistées en base ; `sitemap.xml` et `robots.txt` régénérés dynamiquement ; codes de vérification injectés dans les pages du portail acheteur.
+
+| *Exigences liées*
+| FS-V18, FS-V19, FS-V20, CS-23, COp-09
+|===
+
 == Diagramme d'activité système — Flux de commande complet
 
 Ce diagramme modélise le flux système de bout en bout, depuis la connexion de l'acheteur jusqu'à la clôture de la commande, en faisant apparaître les échanges avec les systèmes externes.
@@ -1601,4 +1660,6 @@ La matrice ci-dessous assure la couverture complète de chaque besoin opération
 | — | Activation de compte par lien email | CS-07, FS-B01, FS-B10 | UCSA-01
 | UC_B_MKTG | Gérer le consentement marketing acheteur (BES-ACH-016) | FS-B13, FS-V15 | —
 | UC_V12 | Envoyer une campagne email promotionnelle aux acheteurs consentants (BES-VND-017) | FS-V17 | UCSA-17
+| UC_V13 | Configurer le référencement de la boutique (BES-VND-018..020) | FS-V18, FS-V19, FS-V20, CS-23 | UCSA-18
+| COp-09 | Référencement naturel — indexation individuelle boutique et produits | CS-23, FS-V18, FS-V19, FS-V20 | UCSA-18
 |===

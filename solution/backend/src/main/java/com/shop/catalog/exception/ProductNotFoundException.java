@@ -5,6 +5,11 @@ import java.util.UUID;
 /** Thrown when a product does not exist or does not belong to the requesting vendor. */
 public class ProductNotFoundException extends RuntimeException {
 
+    /** Constructs the exception when the identifier type is not a UUID (e.g. slug lookup). */
+    public ProductNotFoundException() {
+        super("Product not found");
+    }
+
     /**
      * Constructs the exception for the given product UUID.
      *

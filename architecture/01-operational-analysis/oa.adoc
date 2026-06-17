@@ -84,6 +84,10 @@ Les contraintes suivantes sont issues du contexte d'usage réel des acteurs et s
 | COp-08
 | Interface multilingue (FR / EN / ES)
 | Les trois interfaces utilisateur (portail acheteur, espace vendeur, console d'administration) sont disponibles en **français** (langue par défaut), en **anglais** et en **espagnol**. Chaque compte dispose d'une préférence de langue de notification indépendante de la langue de navigation. La sélection de langue est accessible depuis toutes les pages via un sélecteur visible dans l'en-tête. _(CS-10 / FS-A06)_
+
+| COp-09
+| Référencement naturel (SEO)
+| La boutique et chacune de ses fiches produits doivent être indexables individuellement par les moteurs de recherche, afin de permettre à des acheteurs potentiels de les découvrir via une recherche web. Les informations communiquées aux moteurs de recherche doivent refléter fidèlement le contenu de chaque page. L'ensemble des paramètres de référencement (métadonnées, indexation, URL canonique, outils d'audience) sont sous le contrôle du vendeur. _(BES-VND-018, BES-VND-019, BES-VND-020)_
 |===
 
 === Capacités opérationnelles
@@ -133,6 +137,11 @@ Les capacités expriment ce que la boutique doit être en mesure d'accomplir pou
 | Communication transactionnelle
 | Délivrer les emails d'activation, de confirmation de commande, d'expédition et de remboursement
 | Acheteur, Service de messagerie
+
+| CAP-009
+| Référencement naturel et mesure d'audience
+| Configurer les métadonnées SEO de la boutique et des fiches produits, contrôler l'indexation par les moteurs de recherche (robots.txt, sitemap.xml, URL canonique) et connecter les outils de mesure d'audience et de vérification de propriété
+| Vendeur
 |===
 
 == Diagrammes de cas d'utilisation opérationnels
@@ -230,6 +239,7 @@ rectangle "Application e-commerce" {
   package "Vitrine" {
     usecase (Gérer les annonces\ndéfilantes) as UC_V9
     usecase (Personnaliser\nl'identité visuelle) as UC_V11
+    usecase (Configurer le\nréférencement — SEO) as UC_V13
   }
 }
 
@@ -244,6 +254,7 @@ Vendor --> UC_V6
 Vendor --> UC_V8
 Vendor --> UC_V9
 Vendor --> UC_V11
+Vendor --> UC_V13
 UC_V0 ..> UC_V_AUTH : <<include>>
 UC_V1 ..> UC_V_AUTH : <<include>>
 UC_V2 ..> UC_V_AUTH : <<include>>
@@ -254,6 +265,7 @@ UC_V8 ..> UC_V_AUTH : <<include>>
 UC_V9 ..> UC_V_AUTH : <<include>>
 UC_V10 ..> UC_V_AUTH : <<include>>
 UC_V11 ..> UC_V_AUTH : <<include>>
+UC_V13 ..> UC_V_AUTH : <<include>>
 UC_V10 ..> UC_V2 : <<extend>>
 UC_V4 --> Carrier
 ----
@@ -573,6 +585,10 @@ NOTE: Le diagramme de séquence détaillant les échanges entre acteurs et syst�
 | UC_V11
 | Personnaliser l'identité visuelle de la boutique
 | Téléverser et modifier le logo affiché dans l'en-tête du portail acheteur et du back-office ; gérer toutes les images du carrousel et des bannières via les annonces défilantes (UC_V9) ; les modifications prennent effet immédiatement sur le portail acheteur
+
+| UC_V13
+| Configurer le référencement de la boutique
+| Saisir les métadonnées de présentation dans les moteurs de recherche (titre, description, mots-clés, image Open Graph) au niveau de la boutique et par fiche produit ; générer le sitemap.xml et le robots.txt ; déclarer l'URL canonique de la boutique ; saisir les codes de vérification de propriété pour les outils de mesure d'audience (COp-09)
 |===
 
 === Acheteur

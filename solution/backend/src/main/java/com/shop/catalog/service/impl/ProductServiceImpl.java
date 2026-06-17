@@ -30,10 +30,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.text.Normalizer;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Optional;
 import java.util.UUID;
 
 /** {@link ProductService} implementation. */
@@ -69,6 +71,7 @@ public class ProductServiceImpl implements ProductService {
     public ProductResponse createProduct(CreateProductRequest request) {
         Product product = new Product();
         product.setName(request.getName());
+        product.setSlug(uniqueSlug(request.getName(), null));
         product.setDescription(request.getDescription());
         product.setPriceExclTax(request.getPriceExclTax());
         product.setCategory(request.getCategory());
@@ -111,6 +114,7 @@ public class ProductServiceImpl implements ProductService {
         int previousQuantity = product.getQuantity();
 
         product.setName(request.getName());
+        product.setSlug(uniqueSlug(request.getName(), productId));
         product.setDescription(request.getDescription());
         product.setPriceExclTax(request.getPriceExclTax());
         product.setCategory(request.getCategory());
@@ -256,10 +260,10 @@ public class ProductServiceImpl implements ProductService {
     /** {@inheritDoc} */
     @Override
     @Transactional(readOnly = true)
-    public BuyerProductResponse getPublishedProduct(UUID productId) {
-        Product product = productRepository.findById(productId)
+    public BuyerProductResponse getPublishedProduct(String slug) {
+        Product product = productRepository.findBySlug(slug)
                 .filter(p -> p.getStatus() == ProductStatus.PUBLISHED)
-                .orElseThrow(() -> new ProductNotFoundException(productId));
+                .orElseThrow(ProductNotFoundException::new);
         return BuyerProductResponse.from(product);
     }
 
@@ -465,6 +469,7 @@ public class ProductServiceImpl implements ProductService {
 
                 Product product = new Product();
                 product.setName(nom);
+                product.setSlug(uniqueSlug(nom, null));
                 product.setDescription(description.isBlank() ? null : description);
                 product.setPriceExclTax(prix);
                 product.setCategory(categorie.isBlank() ? null : categorie);
@@ -489,6 +494,44 @@ public class ProductServiceImpl implements ProductService {
     // -------------------------------------------------------------------------
     // Helpers
     // -------------------------------------------------------------------------
+
+    /**
+     * Converts a product name to a URL-friendly slug (lowercase ASCII, hyphens only).
+     *
+     * @param name the raw product name
+     * @return the normalized slug
+     */
+    private static String slugify(String name) {
+        String normalized = Normalizer.normalize(name, Normalizer.Form.NFD)
+                .replaceAll("\\p{InCombiningDiacriticalMarks}+", "");
+        String slug = normalized.toLowerCase(Locale.ROOT)
+                .replaceAll("[^a-z0-9]+", "-")
+                .replaceAll("^-+|-+$", "");
+        return slug.isEmpty() ? "produit" : slug;
+    }
+
+    /**
+     * Returns a slug derived from {@code name} that is unique in the products table.
+     * Appends {@code -2}, {@code -3}, … until a free candidate is found.
+     * When {@code excludeId} is non-null the product with that id is excluded from the
+     * uniqueness check (used on update so the product does not conflict with itself).
+     *
+     * @param name      the product name to slugify
+     * @param excludeId UUID of the product being updated, or {@code null} on creation
+     * @return a unique slug
+     */
+    private String uniqueSlug(String name, UUID excludeId) {
+        String base = slugify(name);
+        String candidate = base;
+        int suffix = 2;
+        while (true) {
+            Optional<Product> existing = productRepository.findBySlug(candidate);
+            if (existing.isEmpty() || (excludeId != null && existing.get().getId().equals(excludeId))) {
+                return candidate;
+            }
+            candidate = base + "-" + suffix++;
+        }
+    }
 
     private void applyPhotos(Product product, List<String> photoUrls) {
         for (int i = 0; i < photoUrls.size(); i++) {

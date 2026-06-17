@@ -27,12 +27,16 @@ export function AppShell({ appName, brandName, logoUrl, onLogoClick, navLinks = 
           >
             {logoUrl
               ? <img src={logoUrl} alt={appName} className="shell-brand-logo" />
-              : <GalleryIcon size={32} />
+              : (
+                <>
+                  <GalleryIcon size={32} />
+                  <div>
+                    <div className="shell-brand-name">{brandName ?? ''}</div>
+                    <div className="shell-brand-sub">{appName}</div>
+                  </div>
+                </>
+              )
             }
-            <div>
-              <div className="shell-brand-name">{brandName ?? ''}</div>
-              <div className="shell-brand-sub">{appName}</div>
-            </div>
           </div>
           <nav className="shell-nav">
             {navLinks.map(l => (

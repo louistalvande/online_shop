@@ -12,9 +12,10 @@ import ReportsPage from './ReportsPage'
 import VisualIdentityPage from './VisualIdentityPage'
 import LegalPagesPage from './LegalPagesPage'
 import CampaignsPage from './CampaignsPage'
+import SeoPage from './SeoPage'
 import MaintenancePage from './MaintenancePage'
 
-const VALID_PAGES: Page[] = ['dashboard', 'catalog', 'reports', 'campaigns', 'visual-identity', 'legal-pages']
+const VALID_PAGES: Page[] = ['dashboard', 'catalog', 'reports', 'campaigns', 'visual-identity', 'legal-pages', 'seo']
 
 function pageFromUrl(): Page {
   const base = import.meta.env.BASE_URL.replace(/\/$/, '')
@@ -114,6 +115,7 @@ export default function App() {
       {page === 'campaigns' && <CampaignsPage />}
       {page === 'visual-identity' && <VisualIdentityPage onLogoChange={url => setLogoUrl(url)} />}
       {page === 'legal-pages' && <LegalPagesPage />}
+      {page === 'seo' && <SeoPage />}
     </Header>
   )
 }

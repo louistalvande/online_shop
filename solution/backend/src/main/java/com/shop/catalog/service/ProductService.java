@@ -105,12 +105,12 @@ public interface ProductService {
     /**
      * Returns a single published product visible to buyers (US-SHP-01).
      *
-     * @param productId the product UUID
+     * @param slug the URL-friendly product slug
      * @return the buyer-facing product response
      * @throws com.shop.catalog.exception.ProductNotFoundException if the product does not exist
      *         or is not published
      */
-    BuyerProductResponse getPublishedProduct(UUID productId);
+    BuyerProductResponse getPublishedProduct(String slug);
 
     /**
      * Returns all distinct non-blank product type values, sorted alphabetically (US-CAT-01).
