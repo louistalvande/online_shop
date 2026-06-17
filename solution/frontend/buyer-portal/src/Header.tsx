@@ -1,5 +1,6 @@
+import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { AppShell, Button, CartIcon, LangToggle, UserMenu } from '@workspace/theme'
+import { AppShell, Button, CartIcon, LangToggle, UserMenu, SearchIcon } from '@workspace/theme'
 import type { BuyerSession } from './api/authApi'
 import { useCartCount } from './hooks/useCartCount'
 import { useShopName } from './hooks/useShopName'
@@ -20,6 +21,13 @@ export default function Header({ session, onShowLogin, onLogout, children, logoU
   const brandName = useShopName()
   const footerLinks = useFooterLinks()
   const footerNotice = useFooterNotice()
+  const [quickSearch, setQuickSearch] = useState('')
+
+  function handleQuickSearch(e: React.FormEvent) {
+    e.preventDefault()
+    const q = quickSearch.trim()
+    window.location.href = q ? `/catalog?q=${encodeURIComponent(q)}` : '/catalog'
+  }
 
   return (
     <AppShell
@@ -28,12 +36,27 @@ export default function Header({ session, onShowLogin, onLogout, children, logoU
       logoUrl={logoUrl ?? undefined}
       footerLinks={footerLinks}
       footerNotice={footerNotice}
-      navLinks={[
+      centeredBrand
+      leftNavLinks={[
         { label: t('nav.home'), href: '/' },
+      ]}
+      navLinks={[
         { label: t('nav.catalog'), href: '/catalog' },
       ]}
       actions={
         <div className="header-actions">
+          <form className="quick-search quick-search--header" onSubmit={handleQuickSearch}>
+            <button type="submit" className="quick-search-btn" aria-label={t('catalog.search.submit')}>
+              <SearchIcon size={18} />
+            </button>
+            <input
+              type="search"
+              className="quick-search-input"
+              value={quickSearch}
+              onChange={e => setQuickSearch(e.target.value)}
+              placeholder={t('catalog.search.placeholder')}
+            />
+          </form>
           <LangToggle lang={i18n.language} onChange={lang => i18n.changeLanguage(lang)} />
           {session ? (
             <UserMenu

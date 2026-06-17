@@ -138,3 +138,12 @@ export function CheckCircleIcon({ size = 16, ...p }: IconProps) {
     </svg>
   )
 }
+
+export function SearchIcon({ size = 18, ...p }: IconProps) {
+  return (
+    <svg {...base(size)} {...p}>
+      <circle cx="11" cy="11" r="7" />
+      <line x1="16.5" y1="16.5" x2="22" y2="22" />
+    </svg>
+  )
+}

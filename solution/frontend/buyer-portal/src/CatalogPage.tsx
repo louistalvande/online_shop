@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Button, Card, AppShell, LangToggle, CartIcon, UserMenu, Snackbar } from '@workspace/theme'
+import { Button, Card, AppShell, LangToggle, CartIcon, UserMenu, Snackbar, SearchIcon } from '@workspace/theme'
 import { fetchProducts, fetchDistinctCategories, fetchDistinctThemes, type BuyerProduct, type CatalogFilters } from './api/catalogApi'
 import { getShopSeo, type ShopSeoConfig } from './api/seoApi'
 import { useSeoMeta } from './hooks/useSeoMeta'
@@ -27,7 +27,7 @@ export default function CatalogPage() {
   const footerNotice = useFooterNotice()
   const [session, setSession] = useState<BuyerSession | null>(getSession)
 
-  const [search, setSearch] = useState('')
+  const [search, setSearch] = useState(() => new URLSearchParams(window.location.search).get('q') ?? '')
   const [category, setCategory] = useState('')
   const [theme, setTheme] = useState('')
   const [page, setPage] = useState(0)
@@ -38,7 +38,7 @@ export default function CatalogPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(false)
 
-  const [pendingSearch, setPendingSearch] = useState('')
+  const [pendingSearch, setPendingSearch] = useState(() => new URLSearchParams(window.location.search).get('q') ?? '')
   const [availableCategories, setAvailableCategories] = useState<string[]>([])
   const [availableThemes, setAvailableThemes] = useState<string[]>([])
 
@@ -163,8 +163,11 @@ export default function CatalogPage() {
       logoUrl={logoUrl}
       footerLinks={footerLinks}
       footerNotice={footerNotice}
-      navLinks={[
+      centeredBrand
+      leftNavLinks={[
         { label: t('nav.home'), href: '/' },
+      ]}
+      navLinks={[
         { label: t('nav.catalog'), href: '/catalog' },
       ]}
       actions={
@@ -207,7 +210,7 @@ export default function CatalogPage() {
             aria-label={t('catalog.search.placeholder')}
             className="catalog-search-input"
           />
-          <Button type="submit">{t('catalog.search.submit')}</Button>
+          <Button type="submit" variant="primary" size="sm" aria-label={t('catalog.search.submit')}><SearchIcon size={16} /></Button>
         </form>
 
         <div className="catalog-grid-layout">
@@ -263,7 +266,6 @@ export default function CatalogPage() {
             {!loading && !error && products.length === 0 && (
               <div className="catalog-empty">
                 <p className="catalog-empty-text">{t('catalog.noResults')}</p>
-                <Button variant="secondary" onClick={handleReset}>{t('catalog.filters.reset')}</Button>
               </div>
             )}
             {!loading && products.length > 0 && (
