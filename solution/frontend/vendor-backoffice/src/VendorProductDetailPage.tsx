@@ -59,7 +59,19 @@ export default function VendorProductDetailPage({ productId }: Props) {
   const [seoFeedback, setSeoFeedback] = useState<'saved' | 'error' | null>(null)
 
   useEffect(() => {
-    getShopTheme().then(t => { setLogoUrl(t.logoUrl ?? null); if (t.shopName) setShopName(t.shopName) }).catch(() => {})
+    getShopTheme().then(t => {
+      setLogoUrl(t.logoUrl ?? null)
+      if (t.shopName) setShopName(t.shopName)
+      if (t.accentColor) {
+        const hex = t.accentColor
+        const n = parseInt(hex.slice(1), 16)
+        const darken = (v: number) => Math.max(0, v - 20).toString(16).padStart(2, '0')
+        const hover = '#' + darken(n >> 16) + darken((n >> 8) & 0xff) + darken(n & 0xff)
+        document.documentElement.style.setProperty('--accent', hex)
+        document.documentElement.style.setProperty('--accent-hover', hover)
+      }
+      if (t.bgColor) document.documentElement.style.setProperty('--bg', t.bgColor)
+    }).catch(() => {})
     fetchDistinctTypes().then(setExistingTypes).catch(() => {})
     fetchDistinctThemes().then(setExistingThemes).catch(() => {})
   }, [])
@@ -183,7 +195,7 @@ export default function VendorProductDetailPage({ productId }: Props) {
   const photoList = form?.photoUrls.split('\n').map(u => u.trim()).filter(Boolean) ?? []
 
   return (
-    <AppShell appName={t('app.name')} navLinks={[{ label: t('catalog.title'), href: `${import.meta.env.BASE_URL}catalog` }]} actions={shellActions}>
+    <AppShell appName={t('app.name')} brandName={shopName} logoUrl={logoUrl ?? undefined} navLinks={[{ label: t('catalog.title'), href: `${import.meta.env.BASE_URL}catalog` }]} actions={shellActions}>
       <div style={{ maxWidth: 960, margin: '0 auto', padding: '32px 24px 64px' }}>
         <a href={`${import.meta.env.BASE_URL}catalog`} style={{ fontSize: 14, color: 'var(--accent)', textDecoration: 'none' }}>
           ← {t('catalog.title')}
