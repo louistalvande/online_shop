@@ -121,10 +121,17 @@ export default function VisualIdentityPage({ onLogoChange }: Props) {
     }
   }
 
-  const sectionStyle: React.CSSProperties = { marginBottom: 48 }
+  const sectionStyle: React.CSSProperties = {
+    marginBottom: 24,
+    padding: '28px 32px',
+    background: 'var(--surface)',
+    border: '1px solid var(--border)',
+    borderRadius: 12,
+    boxShadow: 'var(--shadow)',
+  }
   const sectionHeadStyle: React.CSSProperties = {
-    fontSize: 17, fontWeight: 700, margin: '0 0 16px',
-    paddingBottom: 12, borderBottom: '1px solid var(--border)',
+    fontSize: 17, fontWeight: 700, margin: '0 0 20px',
+    paddingBottom: 14, borderBottom: '2px solid var(--border)',
   }
   const inputStyle: React.CSSProperties = {
     padding: '8px 12px', border: '1px solid var(--border)',
@@ -263,15 +270,13 @@ export default function VisualIdentityPage({ onLogoChange }: Props) {
           }}
           placeholder={t('visual.footerNotice.placeholder')}
         />
-        <p style={{ fontSize: 13, color: 'var(--text-muted)', margin: '6px 0 0' }}>{t('visual.footerNotice.hint')}</p>
+        <p style={{ fontSize: 13, color: 'var(--text-muted)', margin: '6px 0 16px' }}>{t('visual.footerNotice.hint')}</p>
+        <div style={{ display: 'flex', justifyContent: 'flex-end', borderTop: '1px solid var(--border)', paddingTop: 20, marginTop: 8 }}>
+          <Button size="sm" disabled={saving || !shopName.trim()} onClick={handleSaveTheme}>
+            {saving ? t('profile.saving') : t('profile.save')}
+          </Button>
+        </div>
       </section>
-
-      {/* ── Bouton d'enregistrement unique ── */}
-      <div style={{ marginBottom: 48 }}>
-        <Button size="sm" disabled={saving || !shopName.trim()} onClick={handleSaveTheme}>
-          {saving ? t('profile.saving') : t('profile.save')}
-        </Button>
-      </div>
 
       {/* ── Bannière ── */}
       <section style={sectionStyle}>
