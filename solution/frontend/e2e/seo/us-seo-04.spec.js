@@ -68,5 +68,54 @@ test.describe('US-SEO-04 — Indexation control', () => {
 
     await expect(page.getByLabel('Indexer les pages produits')).toBeVisible();
     await expect(page.getByLabel('Indexer la page catalogue')).toBeVisible();
+    await expect(page.getByLabel('Indexer les pages compte')).toBeVisible();
+    await expect(page.getByLabel('Indexer la page panier')).toBeVisible();
+  });
+
+  // --- nominal: indexAccount/indexCart flags saved via API ---
+
+  test('nominal — API saves indexAccount and indexCart flags', async ({ page }) => {
+    const res = await page.request.put(`${API_URL}/api/vendor/seo`, {
+      headers: { Authorization: `Bearer ${vendorToken}`, 'Content-Type': 'application/json' },
+      data: { indexAccount: false, indexCart: false },
+    });
+    expect(res.ok()).toBeTruthy();
+    const body = await res.json();
+    expect(body.indexAccount).toBe(false);
+    expect(body.indexCart).toBe(false);
+  });
+
+  // --- nominal: robots.txt disallows /account and /cart when index flags are false ---
+
+  test('nominal — robots.txt disallows /account and /cart when index flags are false', async ({ page }) => {
+    await page.request.put(`${API_URL}/api/vendor/seo`, {
+      headers: { Authorization: `Bearer ${vendorToken}`, 'Content-Type': 'application/json' },
+      data: { indexAccount: false, indexCart: false },
+    });
+
+    const res = await page.request.get(`${API_URL}/api/public/robots.txt`);
+    const body = await res.text();
+    expect(body).toContain('Disallow: /account');
+    expect(body).toContain('Disallow: /cart');
+  });
+
+  // --- nominal: sitemap.xml has Cache-Control: public header ---
+
+  test('nominal — sitemap.xml response includes Cache-Control: public, max-age=3600', async ({ page }) => {
+    const res = await page.request.get(`${API_URL}/api/public/sitemap.xml`);
+    expect(res.ok()).toBeTruthy();
+    const cacheControl = res.headers()['cache-control'];
+    expect(cacheControl).toContain('max-age=3600');
+    expect(cacheControl).toContain('public');
+  });
+
+  // --- nominal: robots.txt has Cache-Control: public header ---
+
+  test('nominal — robots.txt response includes Cache-Control: public, max-age=3600', async ({ page }) => {
+    const res = await page.request.get(`${API_URL}/api/public/robots.txt`);
+    expect(res.ok()).toBeTruthy();
+    const cacheControl = res.headers()['cache-control'];
+    expect(cacheControl).toContain('max-age=3600');
+    expect(cacheControl).toContain('public');
   });
 });

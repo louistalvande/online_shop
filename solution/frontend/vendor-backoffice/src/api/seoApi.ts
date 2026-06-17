@@ -10,6 +10,8 @@ export interface ShopSeoConfig {
   sitemapChangefreq: string
   indexProducts: boolean
   indexCatalog: boolean
+  indexAccount: boolean
+  indexCart: boolean
   googleVerification: string | null
   ga4Id: string | null
   bingVerification: string | null

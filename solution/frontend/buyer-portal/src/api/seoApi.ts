@@ -6,6 +6,8 @@ export interface ShopSeoConfig {
   canonicalUrl: string | null
   indexProducts: boolean
   indexCatalog: boolean
+  indexAccount: boolean
+  indexCart: boolean
   googleVerification: string | null
   ga4Id: string | null
   bingVerification: string | null

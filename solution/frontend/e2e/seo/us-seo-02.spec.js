@@ -121,4 +121,35 @@ test.describe('US-SEO-02 — Per-product SEO override', () => {
     await expect(page.getByText(product.name)).toBeVisible();
     await expect(page.getByRole('button', { name: 'Modifier' }).first()).toBeVisible();
   });
+
+  // --- UI: inline SEO tab on product detail page ---
+
+  test('nominal — SEO tab is accessible on the product detail page', async ({ page }) => {
+    await injectVendorSession(page, VENDOR_EMAIL, vendorToken);
+    await page.goto(`/vendor/catalog/${product.id}`);
+
+    await expect(page.getByRole('button', { name: 'SEO' })).toBeVisible();
+    await page.getByRole('button', { name: 'SEO' }).click();
+
+    await expect(page.getByLabel('Titre SEO')).toBeVisible();
+    await expect(page.getByLabel('Description')).toBeVisible();
+    await expect(page.getByLabel('Mots-clés')).toBeVisible();
+  });
+
+  test('nominal — SEO override saved from product detail page SEO tab', async ({ page }) => {
+    await injectVendorSession(page, VENDOR_EMAIL, vendorToken);
+    await page.goto(`/vendor/catalog/${product.id}`);
+    await page.getByRole('button', { name: 'SEO' }).click();
+
+    await page.getByLabel('Titre SEO').fill('Inline SEO title');
+    await page.getByRole('button', { name: 'Enregistrer' }).click();
+
+    await expect(page.getByText('Configuration SEO enregistrée.')).toBeVisible();
+
+    const res = await page.request.get(`${API_URL}/api/vendor/seo/products/${product.id}`, {
+      headers: { Authorization: `Bearer ${vendorToken}` },
+    });
+    expect(res.ok()).toBeTruthy();
+    expect((await res.json()).seoTitle).toBe('Inline SEO title');
+  });
 });

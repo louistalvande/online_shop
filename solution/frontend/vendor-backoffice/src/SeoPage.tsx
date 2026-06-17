@@ -335,6 +335,20 @@ export default function SeoPage() {
                 onChange={e => setConfig({ ...config, indexCatalog: e.target.checked })}
               />
             </Field>
+            <Field label={t('seo.indexAccount')}>
+              <input
+                type="checkbox"
+                checked={config.indexAccount}
+                onChange={e => setConfig({ ...config, indexAccount: e.target.checked })}
+              />
+            </Field>
+            <Field label={t('seo.indexCart')}>
+              <input
+                type="checkbox"
+                checked={config.indexCart}
+                onChange={e => setConfig({ ...config, indexCart: e.target.checked })}
+              />
+            </Field>
             <Field label={t('seo.robotsDisallow')}>
               <textarea
                 style={{ ...inputStyle, minHeight: 120, resize: 'vertical', fontFamily: 'monospace' }}

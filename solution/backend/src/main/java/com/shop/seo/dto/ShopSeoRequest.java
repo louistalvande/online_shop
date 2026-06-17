@@ -32,6 +32,12 @@ public class ShopSeoRequest {
     @Schema(description = "Whether the catalog listing page should be indexed by search engines")
     private Boolean indexCatalog;
 
+    @Schema(description = "Whether account pages should be indexed by search engines")
+    private Boolean indexAccount;
+
+    @Schema(description = "Whether the cart page should be indexed by search engines")
+    private Boolean indexCart;
+
     @Schema(description = "Google Search Console site verification token")
     private String googleVerification;
 
@@ -94,6 +100,18 @@ public class ShopSeoRequest {
 
     /** Sets whether the catalog page is indexed. @param indexCatalog the flag */
     public void setIndexCatalog(Boolean indexCatalog) { this.indexCatalog = indexCatalog; }
+
+    /** Returns whether account pages are indexed. */
+    public Boolean getIndexAccount() { return indexAccount; }
+
+    /** Sets whether account pages are indexed. @param indexAccount the flag */
+    public void setIndexAccount(Boolean indexAccount) { this.indexAccount = indexAccount; }
+
+    /** Returns whether the cart page is indexed. */
+    public Boolean getIndexCart() { return indexCart; }
+
+    /** Sets whether the cart page is indexed. @param indexCart the flag */
+    public void setIndexCart(Boolean indexCart) { this.indexCart = indexCart; }
 
     /** Returns the Google verification token. */
     public String getGoogleVerification() { return googleVerification; }

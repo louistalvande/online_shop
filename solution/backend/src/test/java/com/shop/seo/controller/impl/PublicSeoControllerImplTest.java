@@ -71,6 +71,8 @@ class PublicSeoControllerImplTest {
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getBody()).isEqualTo("<urlset/>");
+        assertThat(response.getHeaders().getCacheControl()).contains("max-age=3600");
+        assertThat(response.getHeaders().getCacheControl()).contains("public");
     }
 
     @Test
@@ -80,6 +82,7 @@ class PublicSeoControllerImplTest {
         ResponseEntity<String> response = controller.getSitemap("");
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(response.getHeaders().getCacheControl()).contains("max-age=3600");
     }
 
     @Test
@@ -90,5 +93,7 @@ class PublicSeoControllerImplTest {
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getBody()).contains("User-agent");
+        assertThat(response.getHeaders().getCacheControl()).contains("max-age=3600");
+        assertThat(response.getHeaders().getCacheControl()).contains("public");
     }
 }

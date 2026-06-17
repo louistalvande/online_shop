@@ -33,6 +33,12 @@ public class ShopSeoResponse {
     @Schema(description = "Whether the catalog page is indexed")
     private boolean indexCatalog;
 
+    @Schema(description = "Whether account pages are indexed")
+    private boolean indexAccount;
+
+    @Schema(description = "Whether the cart page is indexed")
+    private boolean indexCart;
+
     @Schema(description = "Google Search Console site verification token")
     private String googleVerification;
 
@@ -59,6 +65,8 @@ public class ShopSeoResponse {
         r.sitemapChangefreq = entity.getSitemapChangefreq();
         r.indexProducts = entity.isIndexProducts();
         r.indexCatalog = entity.isIndexCatalog();
+        r.indexAccount = entity.isIndexAccount();
+        r.indexCart = entity.isIndexCart();
         r.googleVerification = entity.getGoogleVerification();
         r.ga4Id = entity.getGa4Id();
         r.bingVerification = entity.getBingVerification();
@@ -91,6 +99,12 @@ public class ShopSeoResponse {
 
     /** Returns whether the catalog page is indexed. */
     public boolean isIndexCatalog() { return indexCatalog; }
+
+    /** Returns whether account pages are indexed. */
+    public boolean isIndexAccount() { return indexAccount; }
+
+    /** Returns whether the cart page is indexed. */
+    public boolean isIndexCart() { return indexCart; }
 
     /** Returns the Google verification token. */
     public String getGoogleVerification() { return googleVerification; }

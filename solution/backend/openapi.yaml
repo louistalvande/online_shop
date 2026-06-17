@@ -3002,6 +3002,12 @@ components:
           type: boolean
           description: Whether the catalog listing page should be indexed by search
             engines
+        indexAccount:
+          type: boolean
+          description: Whether account pages should be indexed by search engines
+        indexCart:
+          type: boolean
+          description: Whether the cart page should be indexed by search engines
         googleVerification:
           type: string
           description: Google Search Console site verification token
@@ -3042,6 +3048,12 @@ components:
         indexCatalog:
           type: boolean
           description: Whether the catalog page is indexed
+        indexAccount:
+          type: boolean
+          description: Whether account pages are indexed
+        indexCart:
+          type: boolean
+          description: Whether the cart page is indexed
         googleVerification:
           type: string
           description: Google Search Console site verification token
@@ -4681,14 +4693,14 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/SortObject"
-        pageSize:
-          type: integer
-          format: int32
         paged:
           type: boolean
         unpaged:
           type: boolean
         pageNumber:
+          type: integer
+          format: int32
+        pageSize:
           type: integer
           format: int32
     SortObject:

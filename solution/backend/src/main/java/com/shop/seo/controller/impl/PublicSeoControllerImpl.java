@@ -5,10 +5,12 @@ import com.shop.seo.dto.ProductSeoResponse;
 import com.shop.seo.dto.ShopSeoResponse;
 import com.shop.seo.service.SeoService;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.CacheControl;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 /** {@link PublicSeoController} implementation. */
 @RestController
@@ -48,12 +50,16 @@ public class PublicSeoControllerImpl implements PublicSeoController {
     @Override
     public ResponseEntity<String> getSitemap(String baseUrl) {
         String effectiveBase = (baseUrl != null && !baseUrl.isBlank()) ? baseUrl : defaultBaseUrl;
-        return ResponseEntity.ok(seoService.generateSitemap(effectiveBase));
+        return ResponseEntity.ok()
+                .cacheControl(CacheControl.maxAge(1, TimeUnit.HOURS).cachePublic())
+                .body(seoService.generateSitemap(effectiveBase));
     }
 
     /** {@inheritDoc} */
     @Override
     public ResponseEntity<String> getRobots() {
-        return ResponseEntity.ok(seoService.generateRobots());
+        return ResponseEntity.ok()
+                .cacheControl(CacheControl.maxAge(1, TimeUnit.HOURS).cachePublic())
+                .body(seoService.generateRobots());
     }
 }

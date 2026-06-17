@@ -50,6 +50,14 @@ public class ShopSeo {
     @Column(name = "index_catalog", nullable = false)
     private boolean indexCatalog = true;
 
+    /** Whether the account pages should be indexed by search engines. */
+    @Column(name = "index_account", nullable = false)
+    private boolean indexAccount = true;
+
+    /** Whether the cart page should be indexed by search engines. */
+    @Column(name = "index_cart", nullable = false)
+    private boolean indexCart = true;
+
     /** Google Search Console site verification token. */
     @Column(name = "google_verification", length = 255)
     private String googleVerification;
@@ -129,6 +137,18 @@ public class ShopSeo {
 
     /** Sets whether the catalog page is indexed. @param indexCatalog true to allow indexation */
     public void setIndexCatalog(boolean indexCatalog) { this.indexCatalog = indexCatalog; }
+
+    /** Returns whether the account pages are indexed. */
+    public boolean isIndexAccount() { return indexAccount; }
+
+    /** Sets whether the account pages are indexed. @param indexAccount true to allow indexation */
+    public void setIndexAccount(boolean indexAccount) { this.indexAccount = indexAccount; }
+
+    /** Returns whether the cart page is indexed. */
+    public boolean isIndexCart() { return indexCart; }
+
+    /** Sets whether the cart page is indexed. @param indexCart true to allow indexation */
+    public void setIndexCart(boolean indexCart) { this.indexCart = indexCart; }
 
     /** Returns the Google Search Console verification token. */
     public String getGoogleVerification() { return googleVerification; }

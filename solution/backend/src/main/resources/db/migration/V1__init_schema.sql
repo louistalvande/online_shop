@@ -532,6 +532,8 @@ CREATE TABLE shop_seo (
     sitemap_changefreq     VARCHAR(20)   NOT NULL DEFAULT 'weekly',
     index_products         BOOLEAN       NOT NULL DEFAULT TRUE,
     index_catalog          BOOLEAN       NOT NULL DEFAULT TRUE,
+    index_account          BOOLEAN       NOT NULL DEFAULT TRUE,
+    index_cart             BOOLEAN       NOT NULL DEFAULT TRUE,
     google_verification    VARCHAR(255),
     ga4_id                 VARCHAR(50),
     bing_verification      VARCHAR(255),

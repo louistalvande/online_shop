@@ -132,9 +132,11 @@ public class SeoServiceImpl implements SeoService {
               .append("<changefreq>").append(freq).append("</changefreq></url>\n");
         }
         if (seo.isIndexProducts()) {
-            productRepository.findAll().forEach(p ->
-                sb.append("  <url><loc>").append(baseUrl).append("/catalog/").append(p.getId())
-                  .append("</loc><changefreq>").append(freq).append("</changefreq></url>\n"));
+            productRepository.findAll().forEach(p -> {
+                String id = p.getSlug() != null ? p.getSlug() : p.getId().toString();
+                sb.append("  <url><loc>").append(baseUrl).append("/catalog/").append(id)
+                  .append("</loc><changefreq>").append(freq).append("</changefreq></url>\n");
+            });
         }
         sb.append("</urlset>");
         return sb.toString();
@@ -152,6 +154,12 @@ public class SeoServiceImpl implements SeoService {
         }
         if (!seo.isIndexCatalog()) {
             sb.append("Disallow: /catalog\n");
+        }
+        if (!seo.isIndexAccount()) {
+            sb.append("Disallow: /account\n");
+        }
+        if (!seo.isIndexCart()) {
+            sb.append("Disallow: /cart\n");
         }
         String disallowPaths = seo.getRobotsDisallowPaths();
         if (disallowPaths != null && !disallowPaths.isBlank()) {
@@ -181,6 +189,12 @@ public class SeoServiceImpl implements SeoService {
         }
         if (request.getIndexCatalog() != null) {
             entity.setIndexCatalog(request.getIndexCatalog());
+        }
+        if (request.getIndexAccount() != null) {
+            entity.setIndexAccount(request.getIndexAccount());
+        }
+        if (request.getIndexCart() != null) {
+            entity.setIndexCart(request.getIndexCart());
         }
         entity.setGoogleVerification(request.getGoogleVerification());
         entity.setGa4Id(request.getGa4Id());

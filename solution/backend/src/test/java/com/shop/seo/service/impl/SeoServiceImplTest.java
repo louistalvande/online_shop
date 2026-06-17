@@ -182,6 +182,7 @@ class SeoServiceImplTest {
         entity.setSitemapChangefreq("weekly");
         given(shopSeoRepository.findAll()).willReturn(List.of(entity));
         Product p = new Product();
+        p.setSlug("test-product");
         given(productRepository.findAll()).willReturn(List.of(p));
 
         String sitemap = service.generateSitemap("https://shop.example.com");
@@ -229,5 +230,20 @@ class SeoServiceImplTest {
         String robots = service.generateRobots();
 
         assertThat(robots).contains("Disallow: /catalog/");
+    }
+
+    @Test
+    void generateRobots_disallowsAccountAndCart_whenIndexFalse() {
+        ShopSeo entity = new ShopSeo();
+        entity.setIndexProducts(true);
+        entity.setIndexCatalog(true);
+        entity.setIndexAccount(false);
+        entity.setIndexCart(false);
+        given(shopSeoRepository.findAll()).willReturn(List.of(entity));
+
+        String robots = service.generateRobots();
+
+        assertThat(robots).contains("Disallow: /account");
+        assertThat(robots).contains("Disallow: /cart");
     }
 }
