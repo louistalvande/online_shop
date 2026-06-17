@@ -14,6 +14,26 @@ tags:
   description: Vendor order management
 - name: Vendor Catalog
   description: Product management for vendors
+- name: Profile
+  description: "Self-service profile management (US-PRF-01, US-PRF-02)"
+- name: Public
+  description: Reference data for checkout (no authentication required)
+- name: Vendor — Campaigns
+  description: Marketing email campaign endpoints for authenticated vendors
+- name: Vendor — Legal Pages
+  description: Legal page content management (vendor only)
+- name: Public SEO
+  description: Public SEO endpoints for the buyer portal and crawlers
+- name: Admin — Carriers
+  description: Carrier management for administrators
+- name: Marketing Consent
+  description: Vendor mailing list export (US-PRF-05)
+- name: Vendor Announcements
+  description: Image upload for announcement creation
+- name: Delivery Addresses
+  description: Buyer delivery address book (US-PRF-03)
+- name: Vendor SEO
+  description: SEO configuration for the shop and individual products
 - name: Admin — Accounts
   description: Account management for administrators
 - name: Admin — Settings
@@ -22,10 +42,6 @@ tags:
   description: CRUD and reordering of vendor announcements
 - name: Vendor — Shop Config
   description: Global shop theme management (FS-V16)
-- name: Profile
-  description: "Self-service profile management (US-PRF-01, US-PRF-02)"
-- name: Public
-  description: Reference data for checkout (no authentication required)
 - name: Shop Theme
   description: Public shop theme — no authentication required (FS-V16)
 - name: Admin — Countries
@@ -36,10 +52,6 @@ tags:
   description: Security audit log — admin access only (US-SEC-05)
 - name: Auth
   description: Authentication — shared across all actors
-- name: Admin — Carriers
-  description: Carrier management for administrators
-- name: Marketing Consent
-  description: Vendor mailing list export (US-PRF-05)
 - name: Orders
   description: Buyer order lifecycle
 - name: Buyer — Cart
@@ -48,11 +60,112 @@ tags:
   description: Product catalog browsing for buyers and visitors
 - name: Vendor - Reports
   description: Vendor sales reporting endpoints
-- name: Vendor Announcements
-  description: Image upload for announcement creation
-- name: Delivery Addresses
-  description: Buyer delivery address book (US-PRF-03)
 paths:
+  /api/vendor/seo:
+    get:
+      tags:
+      - Vendor SEO
+      summary: Get shop-wide SEO configuration
+      operationId: getShopSeo
+      responses:
+        "200":
+          description: Configuration returned
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ShopSeoResponse"
+    put:
+      tags:
+      - Vendor SEO
+      summary: Save shop-wide SEO configuration
+      operationId: saveShopSeo
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ShopSeoRequest"
+        required: true
+      responses:
+        "200":
+          description: Configuration saved
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ShopSeoResponse"
+  /api/vendor/seo/products/{productId}:
+    get:
+      tags:
+      - Vendor SEO
+      summary: Get SEO override for a product
+      operationId: getProductSeo
+      parameters:
+      - name: productId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "404":
+          description: No override found for this product
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ProductSeoResponse"
+        "200":
+          description: Override returned
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ProductSeoResponse"
+    put:
+      tags:
+      - Vendor SEO
+      summary: Save SEO override for a product
+      operationId: saveProductSeo
+      parameters:
+      - name: productId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ProductSeoRequest"
+        required: true
+      responses:
+        "404":
+          description: Product not found
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ProductSeoResponse"
+        "200":
+          description: Override saved
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ProductSeoResponse"
+    delete:
+      tags:
+      - Vendor SEO
+      summary: Delete SEO override for a product
+      operationId: deleteProductSeo
+      parameters:
+      - name: productId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "404":
+          description: No override found for this product
+        "204":
+          description: Override deleted
   /api/vendor/products/{id}:
     get:
       tags:
@@ -601,6 +714,37 @@ paths:
             '*/*':
               schema:
                 $ref: "#/components/schemas/OrderResponse"
+  /api/vendor/campaigns/send:
+    post:
+      tags:
+      - Vendor — Campaigns
+      summary: Send a marketing email campaign to consenting buyers
+      operationId: sendCampaign
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SendCampaignRequest"
+        required: true
+      responses:
+        "400":
+          description: No consenting buyers (NO_CONSENTING_BUYERS) or validation error
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/CampaignSentResponse"
+        "403":
+          description: Not a vendor account
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/CampaignSentResponse"
+        "200":
+          description: Campaign sent
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/CampaignSentResponse"
   /api/vendor/announcements:
     get:
       tags:
@@ -1391,7 +1535,7 @@ paths:
     patch:
       tags:
       - Vendor — Shop Config
-      summary: Update shop accent colour (FS-V16)
+      summary: Update shop theme colours (FS-V16)
       operationId: updateTheme
       requestBody:
         content:
@@ -1507,6 +1651,37 @@ paths:
             '*/*':
               schema:
                 $ref: "#/components/schemas/BulkStockUpdateResponse"
+  /api/vendor/legal/{key}:
+    patch:
+      tags:
+      - Vendor — Legal Pages
+      summary: Update legal page content (vendor)
+      operationId: updateLegalPage
+      parameters:
+      - name: key
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateLegalPageRequest"
+        required: true
+      responses:
+        "200":
+          description: Content updated
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/LegalPageResponse"
+        "404":
+          description: Unknown legal page key
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/LegalPageResponse"
   /api/vendor/announcements/{id}/move-up:
     patch:
       tags:
@@ -2206,6 +2381,25 @@ paths:
               schema:
                 type: string
                 format: byte
+  /api/vendor/campaigns/recipients/count:
+    get:
+      tags:
+      - Vendor — Campaigns
+      summary: Get number of consenting buyers
+      operationId: getRecipientsCount
+      responses:
+        "200":
+          description: Count returned
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/CampaignRecipientsCountResponse"
+        "403":
+          description: Not a vendor account
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/CampaignRecipientsCountResponse"
   /api/vendor/alerts:
     get:
       tags:
@@ -2234,6 +2428,78 @@ paths:
             '*/*':
               schema:
                 $ref: "#/components/schemas/ShopThemeResponse"
+  /api/public/sitemap.xml:
+    get:
+      tags:
+      - Public SEO
+      summary: Generate sitemap.xml
+      operationId: getSitemap
+      parameters:
+      - name: baseUrl
+        in: query
+        required: false
+        schema:
+          type: string
+          default: ""
+      responses:
+        "200":
+          description: Sitemap generated
+          content:
+            application/xml:
+              schema:
+                type: string
+  /api/public/seo:
+    get:
+      tags:
+      - Public SEO
+      summary: Get public shop SEO configuration
+      operationId: getPublicShopSeo
+      responses:
+        "200":
+          description: Configuration returned
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ShopSeoResponse"
+  /api/public/seo/products/{productId}:
+    get:
+      tags:
+      - Public SEO
+      summary: Get public SEO override for a product
+      operationId: getPublicProductSeo
+      parameters:
+      - name: productId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "204":
+          description: No override for this product
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ProductSeoResponse"
+        "200":
+          description: Override returned
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ProductSeoResponse"
+  /api/public/robots.txt:
+    get:
+      tags:
+      - Public SEO
+      summary: Generate robots.txt
+      operationId: getRobots
+      responses:
+        "200":
+          description: robots.txt generated
+          content:
+            text/plain:
+              schema:
+                type: string
   /api/public/maintenance:
     get:
       tags:
@@ -2247,6 +2513,31 @@ paths:
             '*/*':
               schema:
                 $ref: "#/components/schemas/MaintenanceStatusResponse"
+  /api/public/legal/{key}:
+    get:
+      tags:
+      - Admin — Settings
+      summary: Get legal page content (public)
+      operationId: getLegalPage
+      parameters:
+      - name: key
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: Content returned
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/LegalPageResponse"
+        "404":
+          description: Unknown legal page key
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/LegalPageResponse"
   /api/orders/{orderId}:
     get:
       tags:
@@ -2369,19 +2660,18 @@ paths:
             '*/*':
               schema:
                 $ref: "#/components/schemas/PageBuyerProductResponse"
-  /api/buyer/products/{id}:
+  /api/buyer/products/{slug}:
     get:
       tags:
       - Buyer — Catalog
-      summary: Get a published product
+      summary: Get a published product by slug
       operationId: getProduct_1
       parameters:
-      - name: id
+      - name: slug
         in: path
         required: true
         schema:
           type: string
-          format: uuid
       responses:
         "404":
           description: Product not found or not published
@@ -2395,6 +2685,55 @@ paths:
             '*/*':
               schema:
                 $ref: "#/components/schemas/BuyerProductResponse"
+  /api/buyer/products/distinct-types:
+    get:
+      tags:
+      - Buyer — Catalog
+      summary: List distinct published product types for filter autocomplete
+      operationId: listDistinctTypes_1
+      responses:
+        "200":
+          description: Distinct types returned
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  type: string
+  /api/buyer/products/distinct-themes:
+    get:
+      tags:
+      - Buyer — Catalog
+      summary: List distinct published product themes for filter autocomplete
+      operationId: listDistinctThemes_1
+      responses:
+        "200":
+          description: Distinct themes returned
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  type: string
+  /api/auth/me:
+    get:
+      tags:
+      - Auth
+      summary: Session health check — returns current user email and role
+      operationId: me
+      responses:
+        "401":
+          description: "JWT missing, expired, or revoked"
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/MeResponse"
+        "200":
+          description: Authenticated — email and role returned
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/MeResponse"
   /api/announcements:
     get:
       tags:
@@ -2631,6 +2970,122 @@ paths:
           description: Subscription not found
 components:
   schemas:
+    ShopSeoRequest:
+      type: object
+      properties:
+        seoTitle:
+          type: string
+          description: HTML title tag for the shop home page
+        seoDescription:
+          type: string
+          description: Meta description for the shop home page
+        seoKeywords:
+          type: string
+          description: Comma-separated meta keywords for the shop home page
+        ogImageUrl:
+          type: string
+          description: Open Graph image URL used when sharing on social networks
+        canonicalUrl:
+          type: string
+          description: Canonical URL for the shop home page
+        robotsDisallowPaths:
+          type: string
+          description: Newline-separated paths to disallow in robots.txt
+        sitemapChangefreq:
+          type: string
+          description: "Sitemap change-frequency hint (daily, weekly, monthly…)"
+          example: weekly
+        indexProducts:
+          type: boolean
+          description: Whether product detail pages should be indexed by search engines
+        indexCatalog:
+          type: boolean
+          description: Whether the catalog listing page should be indexed by search
+            engines
+        googleVerification:
+          type: string
+          description: Google Search Console site verification token
+        ga4Id:
+          type: string
+          description: Google Analytics 4 measurement ID (G-XXXXXXXXXX)
+        bingVerification:
+          type: string
+          description: Bing Webmaster Tools site verification token
+    ShopSeoResponse:
+      type: object
+      properties:
+        seoTitle:
+          type: string
+          description: HTML title tag for the shop home page
+        seoDescription:
+          type: string
+          description: Meta description for the shop home page
+        seoKeywords:
+          type: string
+          description: Comma-separated meta keywords for the shop home page
+        ogImageUrl:
+          type: string
+          description: Open Graph image URL
+        canonicalUrl:
+          type: string
+          description: Canonical URL for the shop home page
+        robotsDisallowPaths:
+          type: string
+          description: Newline-separated paths to disallow in robots.txt
+        sitemapChangefreq:
+          type: string
+          description: Sitemap change-frequency hint
+          example: weekly
+        indexProducts:
+          type: boolean
+          description: Whether product pages are indexed
+        indexCatalog:
+          type: boolean
+          description: Whether the catalog page is indexed
+        googleVerification:
+          type: string
+          description: Google Search Console site verification token
+        ga4Id:
+          type: string
+          description: Google Analytics 4 measurement ID
+        bingVerification:
+          type: string
+          description: Bing Webmaster Tools site verification token
+    ProductSeoRequest:
+      type: object
+      properties:
+        seoTitle:
+          type: string
+          description: Custom SEO title for the product detail page (overrides product
+            name)
+        seoDescription:
+          type: string
+          description: Custom meta description for the product detail page
+        seoKeywords:
+          type: string
+          description: Custom meta keywords for the product detail page
+        ogImageUrl:
+          type: string
+          description: Custom Open Graph image URL for the product detail page
+    ProductSeoResponse:
+      type: object
+      properties:
+        productId:
+          type: string
+          description: Product UUID
+          format: uuid
+        seoTitle:
+          type: string
+          description: Custom SEO title (null means fall back to product name)
+        seoDescription:
+          type: string
+          description: Custom meta description
+        seoKeywords:
+          type: string
+          description: Custom meta keywords
+        ogImageUrl:
+          type: string
+          description: Custom Open Graph image URL
     UpdateProductRequest:
       required:
       - name
@@ -2690,6 +3145,9 @@ components:
           type: string
           description: Product UUID
           format: uuid
+        slug:
+          type: string
+          description: URL-friendly slug used in public product URLs
         name:
           type: string
           description: Product display name
@@ -3142,6 +3600,37 @@ components:
           type: string
           description: Tracking number from the carrier receipt
           example: 1Z999AA10123456784
+    SendCampaignRequest:
+      required:
+      - body
+      - subject
+      type: object
+      properties:
+        subject:
+          maxLength: 200
+          minLength: 0
+          type: string
+          description: Email subject line
+          example: Summer sale — up to 30% off
+        body:
+          type: string
+          description: Email body text
+          example: "Dear customer, discover our latest offers…"
+    CampaignSentResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Campaign identifier
+          format: uuid
+        recipientCount:
+          type: integer
+          description: Number of recipients who received the email
+          format: int32
+        sentAt:
+          type: string
+          description: UTC timestamp when the campaign was dispatched
+          format: date-time
     CreateAnnouncementRequest:
       required:
       - contentType
@@ -3702,20 +4191,38 @@ components:
             description: Explicit list of email addresses whose passwords must be
               revoked
     UpdateShopThemeRequest:
-      required:
-      - accentColor
       type: object
       properties:
+        shopName:
+          type: string
+          description: New shop name displayed in the buyer-facing header; null =
+            no change
         accentColor:
           pattern: "^#[0-9a-fA-F]{6}$"
           type: string
-          description: "New shop accent colour — 6-digit CSS hex (e.g. #4e8b82)"
+          description: "New shop accent colour — 6-digit CSS hex (e.g. #4e8b82); null\
+            \ = no change"
+        bgColor:
+          pattern: "^#[0-9a-fA-F]{6}$"
+          type: string
+          description: "New shop background colour — 6-digit CSS hex (e.g. #f2f6f5);\
+            \ null = no change"
+        footerNotice:
+          type: string
+          description: New footer copyright / notice text; null = no change
     ShopThemeResponse:
       type: object
       properties:
+        shopName:
+          type: string
+          description: Shop name displayed in the buyer-facing header; never null
         accentColor:
           type: string
           description: CSS hex accent colour for --accent; never null — defaults to
+            the platform value
+        bgColor:
+          type: string
+          description: CSS hex background colour for --bg; never null — defaults to
             the platform value
         logoUrl:
           type: string
@@ -3725,6 +4232,10 @@ components:
           type: string
           description: Public URL of the vendor hero banner; null if no banner has
             been uploaded
+        footerNotice:
+          type: string
+          description: Footer copyright / notice text displayed in the buyer portal
+            footer
     UpdateStockRequest:
       required:
       - quantity
@@ -3810,6 +4321,23 @@ components:
         product:
           $ref: "#/components/schemas/ProductResponse"
       description: Per-product update results
+    UpdateLegalPageRequest:
+      required:
+      - content
+      type: object
+      properties:
+        content:
+          type: string
+          description: New plain-text content for the legal page
+    LegalPageResponse:
+      type: object
+      properties:
+        key:
+          type: string
+          description: Identifier of the legal page (e.g. legal_cgv)
+        content:
+          type: string
+          description: Plain-text content of the legal page
     StockAlertResponse:
       type: object
       properties:
@@ -4050,6 +4578,13 @@ components:
           type: number
           description: Total revenue generated by this product including VAT.
       description: Up to 10 top-selling products ranked by quantity sold.
+    CampaignRecipientsCountResponse:
+      type: object
+      properties:
+        count:
+          type: integer
+          description: Number of active buyers with marketing consent
+          format: int32
     Pageable:
       type: object
       properties:
@@ -4072,6 +4607,9 @@ components:
           type: string
           description: Product UUID
           format: uuid
+        slug:
+          type: string
+          description: URL-friendly slug used in public product URLs
         name:
           type: string
           description: Product display name
@@ -4126,11 +4664,11 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/SortObject"
+        pageable:
+          $ref: "#/components/schemas/PageableObject"
         numberOfElements:
           type: integer
           format: int32
-        pageable:
-          $ref: "#/components/schemas/PageableObject"
         empty:
           type: boolean
     PageableObject:
@@ -4166,6 +4704,15 @@ components:
           type: string
         ignoreCase:
           type: boolean
+    MeResponse:
+      type: object
+      properties:
+        email:
+          type: string
+          description: Authenticated user's email address
+        role:
+          type: string
+          description: "Authenticated user's role (BUYER, VENDOR, ADMIN)"
     CountryResponse:
       type: object
       properties:
