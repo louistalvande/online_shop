@@ -4,6 +4,7 @@ import './index.css'
 import './i18n'
 import App from './App'
 import { getShopTheme } from './api/themeApi'
+import { getShopSeo } from './api/seoApi'
 import { getSession, validateSession } from './api/authApi'
 
 function darkenHex(hex: string, amount: number): string {
@@ -21,6 +22,30 @@ getShopTheme().then(t => {
   }
   if (t.bgColor) document.documentElement.style.setProperty('--bg', t.bgColor)
   if (t.shopName) document.title = t.shopName
+}).catch(() => {})
+
+getShopSeo().then(seo => {
+  if (seo.googleVerification) {
+    const el = document.createElement('meta')
+    el.setAttribute('name', 'google-site-verification')
+    el.content = seo.googleVerification
+    document.head.appendChild(el)
+  }
+  if (seo.bingVerification) {
+    const el = document.createElement('meta')
+    el.setAttribute('name', 'msvalidate.01')
+    el.content = seo.bingVerification
+    document.head.appendChild(el)
+  }
+  if (seo.ga4Id) {
+    const s1 = document.createElement('script')
+    s1.async = true
+    s1.src = `https://www.googletagmanager.com/gtag/js?id=${seo.ga4Id}`
+    document.head.appendChild(s1)
+    const s2 = document.createElement('script')
+    s2.text = `window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','${seo.ga4Id}');`
+    document.head.appendChild(s2)
+  }
 }).catch(() => {})
 import RegisterPage from './RegisterPage'
 import ActivatePage from './ActivatePage'

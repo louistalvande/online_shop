@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { AppShell, Button, LangToggle, CartIcon, UserMenu, Snackbar } from '@workspace/theme'
 import { fetchProduct, type BuyerProduct } from './api/catalogApi'
-import { getProductSeo, type ProductSeoOverride } from './api/seoApi'
+import { getProductSeo, getShopSeo, type ProductSeoOverride, type ShopSeoConfig } from './api/seoApi'
 import { addToCart } from './api/cartApi'
 import { getSession, logout, type BuyerSession } from './api/authApi'
 import { subscribeToRestock, unsubscribeFromRestock, listSubscriptions } from './api/stockSubscriptionApi'
@@ -42,6 +42,7 @@ export default function ProductDetailPage({ productId }: Props) {
   const [subscribed, setSubscribed] = useState(false)
   const [subscribing, setSubscribing] = useState(false)
   const [productSeo, setProductSeo] = useState<ProductSeoOverride | null>(null)
+  const [shopSeo, setShopSeo] = useState<ShopSeoConfig | null>(null)
   const cartCount = useCartCount()
 
   useEffect(() => {
@@ -57,6 +58,7 @@ export default function ProductDetailPage({ productId }: Props) {
       .catch(() => setError(true))
       .finally(() => setLoading(false))
     getProductSeo(productId).then(setProductSeo).catch(() => {})
+    getShopSeo().then(setShopSeo).catch(() => {})
   }, [productId])
 
   useEffect(() => {
@@ -98,6 +100,8 @@ export default function ProductDetailPage({ productId }: Props) {
     description: seoDescription,
     keywords: productSeo?.seoKeywords,
     ogImage,
+    canonical: window.location.origin + '/catalog/' + productId,
+    noindex: shopSeo ? !shopSeo.indexProducts : false,
   })
 
   return (

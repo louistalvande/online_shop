@@ -54,7 +54,9 @@ export default function CatalogPage() {
   useSeoMeta({
     title: shopSeo?.seoTitle ? `${shopSeo.seoTitle} — Catalogue` : (brandName || undefined),
     description: shopSeo?.seoDescription,
+    keywords: shopSeo?.seoKeywords,
     ogImage: shopSeo?.ogImageUrl,
+    canonical: window.location.origin + '/catalog',
     noindex: shopSeo ? !shopSeo.indexCatalog : false,
   })
 

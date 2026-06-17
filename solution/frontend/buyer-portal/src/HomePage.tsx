@@ -41,9 +41,6 @@ export default function HomePage({ bannerUrl }: Props) {
     keywords: shopSeo?.seoKeywords,
     ogImage: shopSeo?.ogImageUrl,
     canonical: shopSeo?.canonicalUrl,
-    googleVerification: shopSeo?.googleVerification,
-    bingVerification: shopSeo?.bingVerification,
-    ga4Id: shopSeo?.ga4Id,
   })
 
   useEffect(() => {
