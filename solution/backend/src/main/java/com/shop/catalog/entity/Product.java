@@ -17,6 +17,10 @@ public class Product {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
+    /** URL-friendly slug derived from the product name, used as the public identifier in URLs. */
+    @Column(nullable = false, unique = true, length = 200)
+    private String slug;
+
     /** Display name of the product. */
     @Column(nullable = false, length = 200)
     private String name;
@@ -78,6 +82,12 @@ public class Product {
 
     /** @return the product UUID */
     public UUID getId() { return id; }
+
+    /** @return the URL-friendly slug */
+    public String getSlug() { return slug; }
+
+    /** @param slug the URL-friendly slug */
+    public void setSlug(String slug) { this.slug = slug; }
 
     /** @return the product display name */
     public String getName() { return name; }

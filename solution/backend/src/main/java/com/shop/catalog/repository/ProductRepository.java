@@ -7,10 +7,19 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 /** Data access layer for {@link Product} entities. */
 public interface ProductRepository extends JpaRepository<Product, UUID>, JpaSpecificationExecutor<Product> {
+
+    /**
+     * Finds a product by its URL slug.
+     *
+     * @param slug the URL-friendly slug
+     * @return the product if found
+     */
+    Optional<Product> findBySlug(String slug);
 
     /**
      * Returns all products ordered by creation date descending (vendor back-office listing).

@@ -2,6 +2,7 @@ import { authedFetch } from './authApi'
 
 export interface Product {
   id: string
+  slug: string
   vendorId: string
   name: string
   description: string | null

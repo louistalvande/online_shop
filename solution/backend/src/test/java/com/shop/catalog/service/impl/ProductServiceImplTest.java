@@ -57,9 +57,12 @@ class ProductServiceImplTest {
                 subscriptionRepository, notificationService);
     }
 
+    private static final String PRODUCT_SLUG = "aquarelle";
+
     private Product publishedProduct() {
         Product p = new Product();
         p.setName("Aquarelle");
+        p.setSlug(PRODUCT_SLUG);
         p.setDescription("Belle aquarelle");
         p.setPriceExclTax(new BigDecimal("29.90"));
         p.setCategory("Aquarelle");
@@ -244,9 +247,9 @@ class ProductServiceImplTest {
     /** getPublishedProduct must return buyer DTO for a published product. */
     @Test
     void getPublishedProduct_returnsDto_whenPublished() {
-        given(productRepository.findById(PRODUCT_ID)).willReturn(Optional.of(publishedProduct()));
+        given(productRepository.findBySlug(PRODUCT_SLUG)).willReturn(Optional.of(publishedProduct()));
 
-        BuyerProductResponse result = service.getPublishedProduct(PRODUCT_ID);
+        BuyerProductResponse result = service.getPublishedProduct(PRODUCT_SLUG);
 
         assertThat(result.getName()).isEqualTo("Aquarelle");
         assertThat(result.isOutOfStock()).isFalse();
@@ -257,18 +260,18 @@ class ProductServiceImplTest {
     void getPublishedProduct_throws_whenArchived() {
         Product archived = publishedProduct();
         archived.setStatus(ProductStatus.ARCHIVED);
-        given(productRepository.findById(PRODUCT_ID)).willReturn(Optional.of(archived));
+        given(productRepository.findBySlug(PRODUCT_SLUG)).willReturn(Optional.of(archived));
 
-        assertThatThrownBy(() -> service.getPublishedProduct(PRODUCT_ID))
+        assertThatThrownBy(() -> service.getPublishedProduct(PRODUCT_SLUG))
                 .isInstanceOf(ProductNotFoundException.class);
     }
 
     /** getPublishedProduct must throw when the product does not exist. */
     @Test
     void getPublishedProduct_throws_whenNotFound() {
-        given(productRepository.findById(PRODUCT_ID)).willReturn(Optional.empty());
+        given(productRepository.findBySlug(PRODUCT_SLUG)).willReturn(Optional.empty());
 
-        assertThatThrownBy(() -> service.getPublishedProduct(PRODUCT_ID))
+        assertThatThrownBy(() -> service.getPublishedProduct(PRODUCT_SLUG))
                 .isInstanceOf(ProductNotFoundException.class);
     }
 

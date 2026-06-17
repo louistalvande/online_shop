@@ -1,5 +1,6 @@
 export interface BuyerProduct {
   id: string
+  slug: string
   name: string
   description: string | null
   priceExclTax: number

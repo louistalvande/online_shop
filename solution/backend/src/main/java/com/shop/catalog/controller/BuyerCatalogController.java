@@ -13,7 +13,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
 import java.util.List;
-import java.util.UUID;
 
 /** Public buyer-facing endpoints for browsing the product catalog (US-SHP-01, US-SHP-02). */
 @Tag(name = "Buyer — Catalog", description = "Product catalog browsing for buyers and visitors")
@@ -43,17 +42,17 @@ public interface BuyerCatalogController {
             @SortDefault(sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable);
 
     /**
-     * Returns a single published product (US-SHP-01).
+     * Returns a single published product by its URL slug (US-SHP-01).
      * Accessible without authentication.
      *
-     * @param id the product UUID
+     * @param slug the product URL slug
      * @return the product with HTTP 200
      */
-    @Operation(summary = "Get a published product")
+    @Operation(summary = "Get a published product by slug")
     @ApiResponse(responseCode = "200", description = "Product returned")
     @ApiResponse(responseCode = "404", description = "Product not found or not published")
-    @GetMapping("/products/{id}")
-    ResponseEntity<BuyerProductResponse> getProduct(@PathVariable UUID id);
+    @GetMapping("/products/{slug}")
+    ResponseEntity<BuyerProductResponse> getProduct(@PathVariable String slug);
 
     /**
      * Returns all distinct non-blank product type values from published products,

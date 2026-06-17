@@ -19,10 +19,10 @@ function formatPrice(price: number): string {
 }
 
 interface Props {
-  productId: string
+  slug: string
 }
 
-export default function ProductDetailPage({ productId }: Props) {
+export default function ProductDetailPage({ slug }: Props) {
   const { t, i18n } = useTranslation()
   const brandName = useShopName()
   const logoUrl = useLogoUrl()
@@ -46,20 +46,20 @@ export default function ProductDetailPage({ productId }: Props) {
   const cartCount = useCartCount()
 
   useEffect(() => {
-    fetchProduct(productId)
+    fetchProduct(slug)
       .then(p => {
         setProduct(p)
+        getProductSeo(p.id).then(setProductSeo).catch(() => {})
         if (p.outOfStock && session) {
           listSubscriptions()
-            .then(subs => setSubscribed(subs.some(s => s.productId === productId)))
+            .then(subs => setSubscribed(subs.some(s => s.productId === p.id)))
             .catch(() => {})
         }
       })
       .catch(() => setError(true))
       .finally(() => setLoading(false))
-    getProductSeo(productId).then(setProductSeo).catch(() => {})
     getShopSeo().then(setShopSeo).catch(() => {})
-  }, [productId])
+  }, [slug])
 
   useEffect(() => {
     if (session && pendingAdd) {
@@ -73,7 +73,7 @@ export default function ProductDetailPage({ productId }: Props) {
     setAdding(true)
     setCartFeedback(null)
     try {
-      await addToCart(productId, quantity)
+      await addToCart(product!.id, quantity)
       window.dispatchEvent(new Event('cart-updated'))
       setCartFeedback(true)
       setSnackbar({ message: t('cart.added'), variant: 'success' })
@@ -100,7 +100,7 @@ export default function ProductDetailPage({ productId }: Props) {
     description: seoDescription,
     keywords: productSeo?.seoKeywords,
     ogImage,
-    canonical: window.location.origin + '/catalog/' + productId,
+    canonical: window.location.origin + '/catalog/' + slug,
     noindex: shopSeo ? !shopSeo.indexProducts : false,
   })
 
@@ -233,7 +233,7 @@ export default function ProductDetailPage({ productId }: Props) {
                         onClick={async () => {
                           setSubscribing(true)
                           try {
-                            await unsubscribeFromRestock(productId)
+                            await unsubscribeFromRestock(product!.id)
                             setSubscribed(false)
                             setSnackbar({ message: t('stock.notify.removed'), variant: 'success' })
                           } catch {
@@ -253,7 +253,7 @@ export default function ProductDetailPage({ productId }: Props) {
                         onClick={async () => {
                           setSubscribing(true)
                           try {
-                            await subscribeToRestock(productId)
+                            await subscribeToRestock(product!.id)
                             setSubscribed(true)
                             setSnackbar({ message: t('stock.notify.success'), variant: 'success' })
                           } catch (err: unknown) {

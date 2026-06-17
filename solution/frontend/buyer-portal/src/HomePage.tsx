@@ -135,7 +135,7 @@ export default function HomePage({ bannerUrl }: Props) {
         <div className="home-catalog-grid">
           {products.map(p => (
             <Card key={p.id}>
-              <a href={`/catalog/${p.id}`} style={{ textDecoration: 'none', color: 'inherit', display: 'block' }}>
+              <a href={`/catalog/${p.slug}`} style={{ textDecoration: 'none', color: 'inherit', display: 'block' }}>
                 {p.photoUrls.length > 0 ? (
                   <img src={p.photoUrls[0]} alt={p.name} className="catalog-product-image" />
                 ) : (

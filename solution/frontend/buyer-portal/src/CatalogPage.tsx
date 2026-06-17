@@ -274,7 +274,7 @@ export default function CatalogPage() {
                 <div className="catalog-product-grid">
                   {products.map(p => (
                     <Card key={p.id}>
-                      <a href={`/catalog/${p.id}`} style={{ textDecoration: 'none', color: 'inherit', display: 'block' }}>
+                      <a href={`/catalog/${p.slug}`} style={{ textDecoration: 'none', color: 'inherit', display: 'block' }}>
                         {p.photoUrls.length > 0 ? (
                           <img
                             src={p.photoUrls[0]}

@@ -217,6 +217,7 @@ CREATE INDEX idx_audit_log_occurred_at ON audit_log (occurred_at);
 
 CREATE TABLE products (
     id                    UUID          PRIMARY KEY DEFAULT gen_random_uuid(),
+    slug                  VARCHAR(200)  NOT NULL,
     name                  VARCHAR(200)  NOT NULL,
     description           TEXT,
     price_excl_tax        NUMERIC(10,2) NOT NULL,
@@ -229,7 +230,8 @@ CREATE TABLE products (
     updated_at            TIMESTAMP     NOT NULL DEFAULT NOW()
 );
 
-CREATE INDEX idx_products_status    ON products (status);
+CREATE UNIQUE INDEX idx_products_slug   ON products (slug);
+CREATE INDEX        idx_products_status ON products (status);
 
 CREATE TABLE product_photos (
     id         UUID         PRIMARY KEY DEFAULT gen_random_uuid(),

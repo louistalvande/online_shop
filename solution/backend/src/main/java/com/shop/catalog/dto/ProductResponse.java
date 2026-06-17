@@ -15,6 +15,9 @@ public class ProductResponse {
     @Schema(description = "Product UUID")
     private UUID id;
 
+    @Schema(description = "URL-friendly slug used in public product URLs")
+    private String slug;
+
     @Schema(description = "Product display name")
     private String name;
 
@@ -63,6 +66,7 @@ public class ProductResponse {
     public static ProductResponse from(Product p) {
         ProductResponse r = new ProductResponse();
         r.id = p.getId();
+        r.slug = p.getSlug();
         r.name = p.getName();
         r.description = p.getDescription();
         r.priceExclTax = p.getPriceExclTax();
@@ -83,6 +87,9 @@ public class ProductResponse {
 
     /** @return the product UUID */
     public UUID getId() { return id; }
+
+    /** @return the URL-friendly slug */
+    public String getSlug() { return slug; }
 
     /** @return the product display name */
     public String getName() { return name; }

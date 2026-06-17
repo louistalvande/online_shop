@@ -95,7 +95,7 @@ function Root() {
   if (path === '/profile') return <AuthGuard><ProfilePage /></AuthGuard>
   if (path === '/catalog') return <CatalogPage />
   const catalogDetailMatch = path.match(/^\/catalog\/([^/]+)$/)
-  if (catalogDetailMatch) return <ProductDetailPage productId={catalogDetailMatch[1]} />
+  if (catalogDetailMatch) return <ProductDetailPage slug={catalogDetailMatch[1]} />
   if (path === '/cart') return <CartPage />
   if (path === '/checkout') return <AuthGuard><CheckoutPage /></AuthGuard>
   if (path === '/my-orders') return <AuthGuard><OrderListPage /></AuthGuard>
