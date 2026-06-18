@@ -1,7 +1,7 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { AppShell, Button, LangToggle } from '@workspace/theme'
-import { getProduct, updateProduct, archiveProduct, fetchDistinctTypes, fetchDistinctThemes, type Product, type CreateProductPayload } from './api/productApi'
+import { getProduct, updateProduct, archiveProduct, fetchDistinctTypes, fetchDistinctThemes, uploadProductImage, type Product, type CreateProductPayload } from './api/productApi'
 import { getSession, logout } from './api/authApi'
 import { getShopTheme } from './api/shopConfigApi'
 import { getProductSeo, saveProductSeo, deleteProductSeo, type ProductSeoOverride } from './api/seoApi'
@@ -57,6 +57,8 @@ export default function VendorProductDetailPage({ productId }: Props) {
   })
   const [seoSaving, setSeoSaving] = useState(false)
   const [seoFeedback, setSeoFeedback] = useState<'saved' | 'error' | null>(null)
+  const [uploadingPhoto, setUploadingPhoto] = useState(false)
+  const photoUploadRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
     getShopTheme().then(t => {
@@ -178,6 +180,23 @@ export default function VendorProductDetailPage({ productId }: Props) {
       setSeoFeedback('error')
     } finally {
       setTimeout(() => setSeoFeedback(null), 3000)
+    }
+  }
+
+  async function handlePhotoUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setUploadingPhoto(true)
+    try {
+      const url = await uploadProductImage(file)
+      const current = form?.photoUrls ?? ''
+      const updated = current.trim() ? current.trim() + '\n' + url : url
+      setField('photoUrls', updated)
+    } catch {
+      // silent — user can retry
+    } finally {
+      setUploadingPhoto(false)
+      e.target.value = ''
     }
   }
 
@@ -375,11 +394,57 @@ export default function VendorProductDetailPage({ productId }: Props) {
                 </div>
 
                 <div>
-                  <label htmlFor="pd-photos" style={labelStyle}>{t('catalog.form.photoUrls')}</label>
-                  <textarea id="pd-photos" style={{ ...inputStyle, minHeight: 64, resize: 'vertical', fontSize: 12 }}
-                    placeholder={t('catalog.form.photoUrlsPlaceholder')}
-                    value={form.photoUrls}
-                    onChange={e => { setField('photoUrls', e.target.value); setCurrentPhoto(0) }} />
+                  <label style={labelStyle}>{t('catalog.form.photos')}</label>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, alignItems: 'center' }}>
+                    {photoList.map((url, i) => (
+                      <div key={i} style={{ position: 'relative', flexShrink: 0 }}>
+                        <img
+                          src={url}
+                          alt=""
+                          onClick={() => setCurrentPhoto(i)}
+                          style={{
+                            width: 80, height: 80, objectFit: 'cover', borderRadius: 6, display: 'block',
+                            border: i === currentPhoto ? '2px solid var(--accent)' : '2px solid var(--border)',
+                            cursor: 'pointer',
+                          }}
+                        />
+                        <button
+                          type="button"
+                          aria-label={t('catalog.form.removePhoto')}
+                          onClick={() => {
+                            const updated = photoList.filter((_, idx) => idx !== i)
+                            setField('photoUrls', updated.join('\n'))
+                            setCurrentPhoto(c => Math.min(c, Math.max(0, updated.length - 1)))
+                          }}
+                          style={{
+                            position: 'absolute', top: -7, right: -7,
+                            width: 22, height: 22, borderRadius: '50%',
+                            background: '#c62828', color: '#fff', border: 'none',
+                            cursor: 'pointer', fontSize: 14, fontWeight: 700,
+                            display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 0,
+                          }}
+                        >×</button>
+                      </div>
+                    ))}
+                    <button
+                      type="button"
+                      aria-label={t('catalog.form.addPhoto')}
+                      disabled={uploadingPhoto}
+                      onClick={() => photoUploadRef.current?.click()}
+                      style={{
+                        width: 80, height: 80, borderRadius: 6, flexShrink: 0,
+                        border: '2px dashed var(--border)', background: 'var(--bg)',
+                        cursor: uploadingPhoto ? 'wait' : 'pointer',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        color: 'var(--accent)', fontSize: 28, fontWeight: 300,
+                      }}
+                    >{uploadingPhoto ? '…' : '+'}</button>
+                    <input ref={photoUploadRef} type="file" accept="image/jpeg,image/png,image/webp"
+                      style={{ display: 'none' }} onChange={handlePhotoUpload} />
+                  </div>
+                  {photoList.length === 0 && (
+                    <p style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 6 }}>{t('catalog.form.noPhotos')}</p>
+                  )}
                 </div>
 
                 {formError && <p style={{ color: '#c0392b', fontSize: 13, margin: 0 }}>{formError}</p>}
