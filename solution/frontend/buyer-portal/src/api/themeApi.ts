@@ -10,12 +10,18 @@ export interface ShopTheme {
 let _inflight: Promise<ShopTheme> | null = null
 let _cached: ShopTheme | null = null
 
+const STORAGE_KEY = 'shop_theme_v1'
+
 export async function getShopTheme(): Promise<ShopTheme> {
   if (_cached) return _cached
   if (!_inflight) {
     _inflight = fetch('/api/public/theme')
       .then(res => { if (!res.ok) throw new Error('Failed to fetch shop theme'); return res.json() as Promise<ShopTheme> })
-      .then(t => { _cached = t; return t })
+      .then(t => {
+        _cached = t
+        try { localStorage.setItem(STORAGE_KEY, JSON.stringify(t)) } catch {}
+        return t
+      })
       .finally(() => { _inflight = null })
   }
   return _inflight
