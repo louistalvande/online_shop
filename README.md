@@ -142,6 +142,21 @@ Une fois l'ensemble des cas d'utilisation développés et validés, la documenta
 
 L'objectif est de fournir une documentation claire, accessible et maintenable, cohérente avec l'état final de l'application livrée.
 
+### Manuel utilisateur
+
+Le manuel utilisateur couvre les trois portails de la plateforme (acheteur, vendeur, administrateur) avec les captures d'écran de chaque interface.
+
+- **Source AsciiDoc** : [`solution/user_manual/manuel-utilisateur.adoc`](solution/user_manual/manuel-utilisateur.adoc)
+- **PDF généré** : [`manuel-utilisateur.pdf`](manuel-utilisateur.pdf)
+
+**Prérequis** : Ruby + `asciidoctor-pdf` + `asciidoctor-diagram` (inclus dans le `Gemfile` de ce projet).
+
+```bash
+asciidoctor-pdf -r asciidoctor-diagram -a toc \
+  -o manuel-utilisateur.pdf \
+  solution/user_manual/manuel-utilisateur.adoc
+```
+
 ---
 
 <a name="english"></a>
@@ -255,3 +270,18 @@ Once all use cases have been developed and validated, user documentation is prod
 - where applicable, an administrator guide intended for shop managers (catalogue management, order processing, user administration, etc.).
 
 The goal is to deliver documentation that is clear, accessible, and maintainable, consistent with the final state of the delivered application.
+
+### User Manual
+
+The user manual covers all three portals (buyer, vendor, administrator) with screenshots of each interface.
+
+- **AsciiDoc source**: [`solution/user_manual/manuel-utilisateur.adoc`](solution/user_manual/manuel-utilisateur.adoc)
+- **Generated PDF**: [`manuel-utilisateur.pdf`](manuel-utilisateur.pdf)
+
+**Prerequisites**: Ruby + `asciidoctor-pdf` + `asciidoctor-diagram` (included in this project's `Gemfile`).
+
+```bash
+asciidoctor-pdf -r asciidoctor-diagram -a toc \
+  -o manuel-utilisateur.pdf \
+  solution/user_manual/manuel-utilisateur.adoc
+```

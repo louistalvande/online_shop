@@ -1,0 +1,1512 @@
+= Manuel Utilisateur — Boutique en ligne
+:doctype: book
+:toc: left
+:toc-title: Sommaire
+:toclevels: 2
+:icons: font
+:lang: fr
+:encoding: UTF-8
+:pdf-page-size: A4
+:pdf-page-layout: portrait
+:pdf-page-margin: [2cm, 1.8cm, 2cm, 1.8cm]
+:chapter-signifier: Partie
+:part-signifier: Partie
+:figure-caption: Écran
+:table-caption: Tableau
+:appendix-caption: Annexe
+:note-caption: 💡 Note
+:warning-caption: ⚠️ Attention
+:tip-caption: 💡 Conseil
+:imagesoutdir: .asciidoctor/diagrams
+
+[colophon]
+== À propos de ce manuel
+
+Ce document décrit l'utilisation de la boutique en ligne à travers ses trois espaces :
+
+* *Portail Acheteur* — navigation, panier, commande, suivi, compte
+* *Back-office Vendeur* — catalogue, commandes, expéditions, personnalisation
+* *Console Administrateur* — comptes utilisateurs, transporteurs, maintenance
+
+Les captures d'écran reproduisent fidèlement les interfaces de chaque portail.
+Les exemples de données (noms, montants, références) sont fictifs.
+
+'''
+
+= Portail Acheteur
+
+== Créer un compte et se connecter
+
+=== Inscription
+
+Pour accéder à la boutique en tant qu'acheteur, commencez par créer votre compte.
+
+.Procédure
+. Depuis la page d'accueil, cliquez sur *S'inscrire*.
+. Renseignez votre prénom, nom, adresse email et un mot de passe.
++
+NOTE: Le mot de passe doit contenir au minimum 12 caractères, dont une majuscule, un chiffre et un caractère spécial.
+. Cliquez sur *Créer mon compte*.
+. Consultez votre messagerie : un email d'activation vous est envoyé dans les minutes suivantes.
+
+[plantuml, "pa-inscription", format=png]
+....
+@startsalt
+' Composant PA : front-acheteur (Portail Acheteur)
+' Fonctions allouées : Service Compte — FS-B01 (inscription), FS-B10 (activation par email)
+title Portail Acheteur — Inscription
+
+{+
+  == Créer un compte
+  Prénom          | "                    "
+  Nom             | "                    "
+  Email           | "                    "
+  Mot de passe    | "                    "
+  Confirmer       | "                    "
+  --
+  {
+    <i>Minimum 12 caractères — majuscule, chiffre et caractère spécial requis.
+  }
+  --
+  [Créer mon compte]
+  ==
+  Après inscription, vous recevrez un email
+  contenant un lien d'activation (valable 24 h).
+  ==
+  Déjà un compte ? [Se connecter]
+}
+@endsalt
+....
+
+=== Activation du compte
+
+Une fois l'email reçu, vous devez définir votre mot de passe pour activer le compte.
+
+.Procédure
+. Cliquez sur le lien d'activation dans l'email (valable 24 h).
+. Définissez votre mot de passe sur la page qui s'ouvre.
+. Cliquez sur *Activer mon compte*.
+
+WARNING: Si le lien est expiré, retournez sur la page de connexion et cliquez sur *Renvoyer l'email d'activation*.
+
+[plantuml, "pa-activation", format=png]
+....
+@startuml ihm-pa-activation
+salt
+
+{+
+  == Activation de votre compte
+
+  {
+    <b>Définissez votre mot de passe
+    <i>Ce lien vous a été envoyé par email suite à la création de votre compte.
+  }
+  --
+  Mot de passe *          | "                         "
+  Confirmer le mot de passe * | "                     "
+  --
+  {
+    <i>Minimum 12 caractères — majuscule, chiffre et caractère spécial requis.
+  }
+  --
+  [Activer mon compte]
+}
+
+@enduml
+....
+
+=== Connexion
+
+.Procédure
+. Rendez-vous sur la page d'accueil et cliquez sur *Se connecter*.
+. Saisissez votre adresse email et votre mot de passe.
+. Cochez *Se souvenir de moi* pour rester connecté sur cet appareil.
+. Cliquez sur *Se connecter*.
+
+TIP: Si vous avez oublié votre mot de passe, cliquez sur *Mot de passe oublié ?* pour recevoir un email de réinitialisation.
+
+[plantuml, "pa-connexion", format=png]
+....
+@startsalt
+title Portail Acheteur — Connexion
+
+{+
+  == Se connecter
+  Email          | "                    "
+  Mot de passe   | "                    "
+  --
+  [ ] Se souvenir de moi
+  --
+  [Se connecter]
+  --
+  [Mot de passe oublié ?]
+  ==
+  Pas encore de compte ? [S'inscrire]
+}
+@endsalt
+....
+
+== Naviguer dans le catalogue
+
+=== Page d'accueil
+
+La page d'accueil présente la bannière de la boutique, le carrousel d'annonces promotionnelles et une sélection de produits mis en avant.
+
+.Procédure
+. Cliquez sur le logo ou sur *Accueil* dans la barre de navigation pour revenir à la page d'accueil.
+. Le carrousel défile automatiquement — les flèches `<` et `>` permettent de naviguer manuellement.
+. Cliquez sur *Voir tout le catalogue* pour accéder à l'ensemble des produits.
+
+[plantuml, "pa-accueil", format=png]
+....
+@startuml ihm-pa-accueil
+salt
+{+
+  [Logo]  Catalogue de dessins  |  ^FR / EN / ES^  ^Mon compte ▼^  [Panier (3)]
+  ==
+  {+
+    [                  image bannière pleine largeur                  ]
+  }
+  ==
+  {+
+    [<]  |  {
+             [      image      ]
+             Soldes d'été : -20% sur tout !
+           }  |  [>]
+    --
+    ● ○ ○
+  }
+  ==
+  Nos produits
+  --
+  {
+    {+
+      [img]
+      Chaussures cuir brun
+      45,00 €
+      [Ajouter au panier]
+    }  |
+    {+
+      [img]
+      Veste laine grise
+      89,00 €
+      [Ajouter au panier]
+    }  |
+    {+
+      [img]
+      Sac à dos toile
+      <s>35,00 €</s> Rupture
+      [Indisponible]
+    }
+  }
+  --
+  [Voir tout le catalogue]
+}
+@enduml
+....
+
+=== Catalogue produits
+
+Le catalogue permet de filtrer et de parcourir tous les produits disponibles.
+
+.Procédure
+. Cliquez sur *Catalogue* dans la barre de navigation.
+. Utilisez les champs *Catégorie* et *Thème / occasion* pour affiner l'affichage.
+. Utilisez la barre de recherche pour trouver un produit par mot-clé.
+. Ajustez la quantité avec les boutons `[−]` et `[+]`, puis cliquez sur *Ajouter au panier*.
+. Les produits en rupture de stock affichent le bouton *Indisponible* — ils ne sont pas commandables.
+
+[plantuml, "pa-catalogue", format=png]
+....
+@startsalt
+title Portail Acheteur — Catalogue produits
+
+{+
+  {
+    "Rechercher un produit...           " | [Rechercher]
+  }
+  --
+  {
+    {+
+      == Filtres
+      Catégorie        | "               "
+      Thème / occasion | "               "
+      --
+      [Réinitialiser]
+    }
+    |
+    {
+      {
+        {+
+          [image]
+          Chaussures cuir brun
+          89,00 €
+          [-] 1 [+] [panier]
+        }
+        |
+        {+
+          [image]
+          Veste laine grise
+          149,00 €
+          [-] 1 [+] [panier]
+        }
+        |
+        {+
+          [image]
+          Sac à dos toile
+          59,00 €
+          [Indisponible]
+        }
+      }
+      {
+        {+
+          [image]
+          Ceinture daim noir
+          34,00 €
+          [-] 1 [+] [panier]
+        }
+        |
+        {+
+          [image]
+          Chapeau feutre beige
+          45,00 €
+          [-] 1 [+] [panier]
+        }
+        |
+        {+
+          [image]
+          Écharpe cachemire
+          79,00 €
+          [-] 1 [+] [panier]
+        }
+      }
+      --
+      [< Précédent]  Page 1/4  [Suivant >]
+    }
+  }
+}
+@endsalt
+....
+
+=== Fiche produit
+
+La fiche produit affiche les photos, la description complète, le prix et la disponibilité.
+
+.Procédure
+. Cliquez sur le nom ou l'image d'un produit dans le catalogue.
+. Consultez les photos (plusieurs angles disponibles).
+. Sélectionnez la quantité souhaitée.
+. Cliquez sur *Ajouter au panier*.
+
+[plantuml, "pa-detail-produit", format=png]
+....
+@startsalt
+title Portail Acheteur — Détail produit
+
+{+
+  [Logo] Accueil | Catalogue | ^FR / EN / ES^ | ^Mon compte ▼^ | [Panier (1)]
+  ==
+  Catalogue > Sport > Chaussures sport
+  ==
+  {
+    [ Photo ]
+    [ Photo ]
+  } |
+  {
+    **Chaussures sport**
+    Catégorie : Sport
+    --
+    Prix : **49,90 €**
+    --
+    Disponibilité : En stock (12 unités)
+    --
+    Quantité : [-] "1" [+]
+    --
+    [Ajouter au panier]
+  }
+  ==
+  Description
+  Chaussure de sport légère et respirante, idéale pour
+  la course à pied et les activités en salle.
+}
+@endsalt
+....
+
+== Gérer son panier
+
+Le panier conserve vos articles entre les sessions.
+Vous pouvez modifier les quantités ou retirer des articles avant de valider votre commande.
+
+.Procédure
+. Cliquez sur l'icône *Panier* en haut à droite pour accéder à votre panier.
+. Modifiez les quantités en saisissant directement la valeur dans le champ de chaque ligne.
+. Cliquez sur *[Retirer]* pour supprimer un article.
+. Cliquez sur *Continuer mes achats* pour revenir au catalogue sans perdre le panier.
+. Cliquez sur *Valider le panier* pour démarrer le tunnel d'achat.
+
+NOTE: Le contenu du panier est automatiquement sauvegardé — vous le retrouvez intact à la prochaine connexion.
+
+[plantuml, "pa-panier", format=png]
+....
+@startsalt
+title Portail Acheteur — Panier
+
+{+
+  == Mon panier (3 articles)
+  {#
+    Produit              | Qté          | Prix unit. | Sous-total | Action
+    Chaussures cuir brun | "1         " | 89,00 €    | 89,00 €    | [Retirer]
+    Veste laine grise    | "1         " | 149,00 €   | 149,00 €   | [Retirer]
+    Ceinture daim noir   | "2         " | 34,00 €    | 68,00 €    | [Retirer]
+  }
+  ==
+  **Total : 306,00 €**
+  --
+  [Continuer mes achats]   [Valider le panier]
+  ==
+  Votre panier est sauvegardé automatiquement.
+}
+@endsalt
+....
+
+== Passer une commande
+
+=== Étape 1 — Adresse et mode de livraison
+
+.Procédure
+. Depuis votre panier, cliquez sur *Valider le panier*.
+. Sélectionnez une adresse de livraison parmi celles enregistrées dans votre carnet, ou cliquez sur *Utiliser une nouvelle adresse*.
+. Choisissez un mode de livraison parmi les transporteurs disponibles.
+. Cliquez sur *Continuer vers le paiement*.
+
+NOTE: Seules les adresses situées en zone euro sont acceptées.
+
+[plantuml, "pa-tunnel-adresse", format=png]
+....
+@startsalt
+title Portail Acheteur — Tunnel d'achat : Adresse et livraison (étape 1/3)
+
+{+
+  == Adresse de livraison
+  (X) <b>Domicile — 12 rue des Lilas, 75001 Paris, France
+  ( ) Bureau — 5 avenue de la République, 69001 Lyon, France
+  --
+  [+ Utiliser une nouvelle adresse]
+  --
+  == Mode de livraison
+  (X) La Poste — Colissimo (3-5 jours)    — 5,90 €
+  ( ) Chronopost (1-2 jours)              — 9,90 €
+  ( ) DHL Express (24h)                   — 14,90 €
+  --
+  [Retour au panier]   [Continuer vers le paiement]
+}
+@endsalt
+....
+
+=== Étape 2 — Paiement
+
+Deux modes de paiement sont disponibles : carte bancaire et virement bancaire.
+
+.Procédure — Carte bancaire
+. Sélectionnez *Carte bancaire*.
+. Saisissez le numéro de carte, la date d'expiration et le CVV.
+. Cliquez sur *Confirmer et payer*. Le débit est immédiat.
+
+.Procédure — Virement bancaire
+. Sélectionnez *Virement bancaire*.
+. Cliquez sur *Confirmer et payer*.
+. Les coordonnées IBAN vous sont communiquées sur la page de confirmation.
+. Effectuez le virement depuis votre banque. La commande est traitée après réception des fonds.
+
+WARNING: Les données de carte bancaire sont transmises directement à Stripe et ne transitent jamais en clair sur nos serveurs.
+
+[plantuml, "pa-tunnel-paiement", format=png]
+....
+@startsalt
+title Portail Acheteur — Tunnel d'achat : Paiement (étape 2/3)
+
+{+
+  == Récapitulatif
+  {#
+    3 articles | 306,00 €
+    Livraison  | 5,90 €
+    **Total**  | **311,90 €**
+  }
+  ==
+  == Mode de paiement
+  (X) Carte bancaire
+      Numéro       | "                    "
+      Expiration   | "MM/AA"
+      CVV          | "   "
+  --
+  ( ) Virement bancaire
+      Les coordonnées bancaires vous seront
+      communiquées après validation. La commande
+      sera traitée à réception des fonds.
+  --
+  [Retour]   [Confirmer et payer]
+}
+@endsalt
+....
+
+=== Confirmation de commande
+
+Après validation, un email de confirmation est envoyé à votre adresse. La page de confirmation affiche le récapitulatif et la date de livraison estimée.
+
+[plantuml, "pa-confirmation-commande", format=png]
+....
+@startsalt
+title Portail Acheteur — Confirmation de commande
+
+{+
+  == Commande confirmée
+  Référence      | CMD-2025-0042
+  Statut         | En attente de préparation
+  Date           | 12/01/2025 à 14h37
+  --
+  == Récapitulatif
+  {#
+    3 articles | 306,00 €
+    Livraison  | 5,90 €
+    Total      | 311,90 €
+    Paiement   | Carte — autorisé
+  }
+  --
+  Livraison estimée : entre le 15 et le 17 janvier 2025
+  --
+  Un email de confirmation a été envoyé à
+  marie.dupont@email.com
+  ==
+  [Suivre ma commande]   [Retour au catalogue]
+}
+@endsalt
+....
+
+== Suivre et annuler une commande
+
+=== Suivi de commande
+
+.Procédure
+. Connectez-vous, puis cliquez sur *Mon compte* → onglet *Mes commandes*.
+. Cliquez sur une référence de commande pour en voir le détail.
+. Une fois la commande expédiée, le numéro de suivi et un lien vers le site du transporteur apparaissent.
+
+[plantuml, "pa-suivi-commande", format=png]
+....
+@startuml ihm-pa-suivi-commande
+salt
+title Portail Acheteur — Suivi de commande (en attente de traitement)
+
+{+
+  == Commande CMD-2025-0042
+  Statut    | En attente de traitement
+  Transporteur | La Poste — Colissimo
+  --
+  == Détail de la commande
+  {#
+    Produit              | Qté | Prix unit.
+    Chaussures cuir brun | 1   | 89,00 €
+    Veste laine grise    | 1   | 149,00 €
+    Ceinture daim noir   | 2   | 34,00 €
+  }
+  Total TTC : 373,10 €
+  ==
+  [Annuler la commande]
+  ==
+  {
+    <i>Un problème avec votre commande ? Contactez notre support par email.
+  }
+}
+@enduml
+....
+
+=== Annulation avant expédition
+
+Vous pouvez annuler une commande tant qu'elle n'a pas encore été expédiée.
+
+.Procédure
+. Depuis le détail de commande, cliquez sur *Annuler la commande*.
+. Sélectionnez un motif (facultatif).
+. Cliquez sur *Confirmer l'annulation*.
+. Le remboursement est déclenché automatiquement (3 à 5 jours ouvrés sur votre carte bancaire).
+
+.Procédure — Remboursement par virement (paiement initial en virement)
+. Suivez les étapes ci-dessus.
+. Renseignez votre IBAN dans le champ prévu pour recevoir le remboursement.
+
+[plantuml, "pa-annulation", format=png]
+....
+@startsalt
+title Portail Acheteur — Annuler une commande
+
+{+
+  == Annuler la commande #CMD-2025-0042
+  {#
+    Produit             | Qté | Sous-total
+    Chaussures sport    | 1   | 49,90 €
+    Veste imperméable   | 1   | 89,00 €
+    Total TTC           |     | 172,78 €
+  }
+  ==
+  Statut actuel : **En préparation**
+  La commande n'est pas encore expédiée.
+  --
+  Motif d'annulation (optionnel)
+  ^Sélectionner un motif^
+  --
+  Le remboursement sera déclenché automatiquement
+  après confirmation du vendeur.
+  --
+  [Retour]   [Confirmer l'annulation]
+}
+@endsalt
+....
+
+[plantuml, "pa-annulation-virement", format=png]
+....
+@startsalt
+title Portail Acheteur — Annuler une commande (paiement par virement)
+
+{+
+  == Annuler la commande #CMD-2025-0042
+  {#
+    Produit             | Qté | Sous-total
+    Chaussures sport    | 1   | 49,90 €
+    Veste imperméable   | 1   | 89,00 €
+    Total TTC           |     | 172,78 €
+  }
+  ==
+  Statut actuel : **En préparation**
+  La commande n'est pas encore expédiée.
+  --
+  Motif d'annulation (optionnel)
+  ^Sélectionner un motif^
+  --
+  == Coordonnées bancaires de remboursement
+  Cette commande a été réglée par virement bancaire.
+  Veuillez indiquer votre IBAN pour recevoir le remboursement.
+  IBAN *  | "FR76                               "
+  --
+  [Retour]   [Confirmer l'annulation]
+}
+
+@endsalt
+....
+
+=== Annulation après expédition
+
+Si votre commande a déjà été expédiée, vous pouvez soumettre une demande d'annulation au vendeur.
+
+.Procédure
+. Depuis le détail de commande, cliquez sur *Annuler la commande*.
+. Rédigez un message expliquant votre demande.
+. Cliquez sur *Envoyer la demande*.
+. Le vendeur accepte ou refuse sous 48 h. Vous serez notifié par email.
+
+NOTE: En cas d'acceptation avec condition de renvoi, vous devez retourner le colis avant d'être remboursé.
+
+[plantuml, "pa-annulation-post-expedition", format=png]
+....
+@startsalt
+title Portail Acheteur — Demande d'annulation après expédition
+
+{+
+  == Demande d'annulation — Commande #CMD-2025-0039
+  Statut : Expédiée le 12/01/2025
+  ==
+  Veuillez expliquer la situation au vendeur :
+  {SI
+  "                                        "
+  "                                        "
+  "                                        "
+  }
+  <i>Ce message sera transmis au vendeur avec votre demande.</i>
+  --
+  [Annuler]   [Envoyer la demande]
+}
+@endsalt
+....
+
+== Mon compte
+
+=== Informations personnelles
+
+.Procédure
+. Cliquez sur votre prénom dans la barre de navigation, puis sur *Mon compte*.
+. L'onglet *Mon profil* affiche vos informations personnelles modifiables.
+. Modifiez les champs souhaités et cliquez sur *Enregistrer les modifications*.
+
+[plantuml, "pa-mon-compte", format=png]
+....
+@startsalt
+title Portail Acheteur — Mon compte (onglet Informations personnelles)
+
+{+
+  {/ Mes commandes | <b>Mon profil | Mes adresses | Sécurité }
+  ==
+  == Informations personnelles
+  Prénom       | "Marie               "
+  Nom          | "Dupont              "
+  Email        | "marie@email.fr      "
+  Téléphone    | "                    "
+  Langue       | ^Français^
+  --
+  [Annuler]   [Enregistrer les modifications]
+}
+@endsalt
+....
+
+=== Carnet d'adresses
+
+.Procédure — Ajouter une adresse
+. Cliquez sur l'onglet *Mes adresses*.
+. Cliquez sur *+ Ajouter une adresse*.
+. Remplissez le formulaire (libellé, destinataire, adresse, ville, code postal, pays en zone euro).
+. Cochez *Définir comme adresse par défaut* si nécessaire.
+. Cliquez sur *Enregistrer*.
+
+[plantuml, "pa-adresses", format=png]
+....
+@startsalt
+title Portail Acheteur — Mon compte (onglet Mes adresses)
+
+{+
+  {/ Mes commandes | Mon profil | <b>Mes adresses | Sécurité }
+  ==
+  == Mes adresses de livraison
+  {#
+    .           | Libellé      | Adresse                        | Ville   | Pays   | Par défaut | Actions
+    (X)         | Domicile     | 12 rue des Lilas               | Paris   | France | <b>★       | [Modifier] [Supprimer]
+    ( )         | Bureau       | 5 avenue de la République      | Lyon    | France | ☆          | [Modifier] [Supprimer] [Définir par défaut]
+  }
+  --
+  [+ Ajouter une adresse]
+}
+@endsalt
+....
+
+[plantuml, "pa-adresse-form", format=png]
+....
+@startuml ihm-pa-adresse-form
+salt
+title Portail Acheteur — Ajouter / Modifier une adresse
+
+{+
+  == Nouvelle adresse
+  Libellé (ex. Domicile)   | "                    "
+  Nom du destinataire      | "                    "
+  Adresse                  | "                    "
+  Ville                    | "                    "
+  Code postal              | "                    "
+  Pays (zone euro)         | ^France              ^
+  --
+  [ ] Définir comme adresse par défaut
+  --
+  [Annuler]   [Enregistrer]
+}
+@enduml
+....
+
+'''
+
+= Back-office Vendeur
+
+== Tableau de bord
+
+Le tableau de bord est la première page affichée à la connexion.
+Il présente les indicateurs clés de l'activité et les dernières commandes à traiter.
+
+.Procédure
+. Connectez-vous au back-office vendeur.
+. Les compteurs en haut de page indiquent le nombre de commandes par statut.
+. La liste *Dernières commandes* affiche les commandes récentes avec un accès rapide aux actions disponibles.
+
+[plantuml, "bov-tableau-de-bord", format=png]
+....
+@startsalt
+title Back-office Vendeur — Tableau de bord
+
+{+
+  == Tableau de bord
+  {
+    {+
+      En attente
+      **4**
+    }
+    |
+    {+
+      En préparation
+      **2**
+    }
+    |
+    {+
+      Expédiées
+      **11**
+    }
+    |
+    {+
+      Virement en attente
+      **1**
+    }
+  }
+  ==
+  == Dernières commandes
+  {#
+    Réf.            | Acheteur       | Montant   | Statut              | Actions
+    CMD-2025-0042   | M. Dupont      | 373,10 €  | En attente          | [Traiter]
+    CMD-2025-0041   | C. Bernard     | 129,00 €  | Virement en attente | [Confirmer]
+    CMD-2025-0040   | L. Martin      | 89,00 €   | En préparation      | [Expédier]
+    CMD-2025-0039   | R. Petit       | 248,50 €  | Expédiée            | [Voir]
+  }
+  ==
+  [Voir toutes les commandes]   [Rapports de ventes]
+}
+@endsalt
+....
+
+== Gérer le catalogue
+
+=== Liste des produits
+
+.Procédure
+. Cliquez sur *Catalogue* dans la barre de navigation.
+. La liste affiche tous vos produits avec leur stock actuel, le seuil d'alerte et leur statut.
+. Les produits en *Alerte !* ou *Rupture !* sont signalés pour action immédiate.
+
+[plantuml, "bov-catalogue", format=png]
+....
+@startsalt
+title Back-office Vendeur — Gestion du catalogue
+
+{+
+  [+ Nouveau produit]
+  --
+  {#
+    Produit              | Stock | Seuil | Statut    | Actions
+    Chaussures cuir brun | 12    | 5     | Publié    | [Modifier] [Archiver]
+    Veste laine grise    | 3     | 5     | Alerte !  | [Modifier] [Archiver]
+    Sac à dos toile      | 0     | 3     | Rupture ! | [Modifier] [Archiver]
+    Ceinture daim noir   | 27    | 5     | Publié    | [Modifier] [Archiver]
+    Écharpe laine        | —     | —     | Archivé   | [Réactiver]
+  }
+  --
+  [< Précédent]  Page 1/3  [Suivant >]
+}
+@endsalt
+....
+
+=== Créer ou modifier un produit
+
+.Procédure
+. Cliquez sur *+ Nouveau produit* (création) ou *[Modifier]* sur la ligne d'un produit existant.
+. Renseignez le nom, le type, le thème, la description et le prix.
+. Ajoutez des photos avec le bouton *[Ajouter une photo]*.
+. Définissez la quantité disponible et le seuil d'alerte de stock.
+. Choisissez le statut : *Publié* (visible sur le portail acheteur) ou *Archivé*.
+. Cliquez sur *Enregistrer les modifications*.
+
+NOTE: L'archivage d'un produit est bloqué s'il est référencé dans une commande active.
+
+[plantuml, "bov-produit", format=png]
+....
+@startsalt
+title Back-office Vendeur — Édition d'un produit
+
+{+
+  == Modifier le produit
+  Nom              | "Chaussures cuir brun       "
+  Type de produit  | "Chaussures            " (combobox)
+  Thème / occasion | "Casual                " (combobox)
+  Description      | {SI
+                     "Chaussures en cuir pleine fleur,
+                      doublure cuir, semelle Goodyear."
+                   }
+  Prix (€)       | "89,00               "
+  --
+  Photos         | [Ajouter une photo]
+                   [photo1.jpg] [photo2.jpg]
+  --
+  == Stock
+  Quantité disponible | "12  "
+  Seuil d'alerte      | "5   "
+  --
+  == Statut
+  (X) Publié
+  ( ) Archivé
+  --
+  [Annuler]   [Enregistrer les modifications]
+}
+@endsalt
+....
+
+=== Import CSV
+
+L'import CSV permet d'ajouter ou de mettre à jour plusieurs produits en une seule opération.
+
+.Procédure
+. Depuis la page *Catalogue*, cliquez sur *Importer un CSV*.
+. Préparez votre fichier CSV avec les colonnes : `nom`, `description`, `prix`, `categorie`, `quantite`, `seuil_alerte`.
++
+NOTE: Les colonnes `nom` et `prix` sont obligatoires.
+. Sélectionnez le fichier et cliquez sur *Importer*.
+. Le résultat indique le nombre de produits créés et les éventuelles erreurs avec leur ligne correspondante.
+
+[plantuml, "bov-csv-import", format=png]
+....
+@startsalt
+title Back-office Vendeur — Import CSV produits
+
+{+
+  == Importer des produits via CSV
+  Format attendu : nom,description,prix,categorie,quantite,seuil_alerte
+  Colonnes obligatoires : nom et prix.
+  --
+  {
+    [Sélectionner un fichier CSV]  |  catalogue_produits.csv
+  }
+  --
+  == Résultat de l'import
+  3 produit(s) créé(s), 1 erreur(s).
+  --
+  {#
+    Ligne  | Statut   | Détail
+    2      | Créé     | Aquarelle forêt d'automne
+    3      | Créé     | Huile sur toile — paysage
+    4      | Erreur   | Le prix est obligatoire
+    5      | Créé     | Pastel sur papier
+  }
+  --
+  [Fermer]
+}
+
+@endsalt
+....
+
+=== Annonces défilantes
+
+Les annonces défilantes apparaissent sur la page d'accueil du portail acheteur.
+
+.Procédure
+. Dans le menu *Paramètres*, accédez à *Annonces*.
+. Cliquez sur *+ Ajouter une annonce* pour en créer une nouvelle.
+. Pour chaque annonce, définissez le type (texte, image ou texte + image), le contenu et l'ordre d'affichage.
+. Utilisez les boutons `[↑]` et `[↓]` pour réordonner les annonces.
+. Cliquez sur *Enregistrer* sur chaque annonce modifiée.
+
+[plantuml, "bov-annonces", format=png]
+....
+@startuml ihm-bov-annonces
+salt
+{+
+  {+
+    == Annonce 1
+    Type    | (X) Texte  ( ) Image  ( ) Texte + image
+    --
+    Texte * | "Soldes d'été : -20% sur tout !         "
+    Lien    | "/catalogue?promo=1                      "
+    Ordre   | "1  "
+    --
+    [↑] [↓]  [Enregistrer]  [Supprimer]
+  }
+  --
+  {+
+    == Annonce 2
+    Type    | ( ) Texte  ( ) Image  (X) Texte + image
+    --
+    Texte * | "Livraison offerte dès 50 €              "
+    Image * | [banniere-ete.jpg ✓]
+    Lien    | "/catalogue                              "
+    Ordre   | "2  "
+    --
+    [↑] [↓]  [Enregistrer]  [Supprimer]
+  }
+  --
+  {+
+    == Annonce 3
+    Type    | ( ) Texte  (X) Image  ( ) Texte + image
+    --
+    Image * | [Choisir un fichier]  aucun fichier sélectionné
+    Lien    | "                                         "
+    Ordre   | "3  "
+    --
+    [↑] [↓]  [Enregistrer]  [Supprimer]
+  }
+  ==
+  [+ Ajouter une annonce]
+}
+@enduml
+....
+
+[plantuml, "bov-annonce-form", format=png]
+....
+@startuml ihm-bov-annonce-form
+salt
+{+
+  == Nouvelle annonce
+  Type de contenu | (X) Texte  ( ) Image  ( ) Texte + image
+  --
+  Texte *         | "                                        "
+  --
+  Image *         | [Choisir un fichier]  aucun fichier sélectionné
+  --
+  Lien (au clic)  | "/catalogue                             "
+  Ordre           | "1            "
+  --
+  [Annuler]  [Enregistrer]
+}
+@enduml
+....
+
+== Traiter les commandes
+
+=== Détail d'une commande
+
+.Procédure
+. Depuis le tableau de bord ou la liste des commandes, cliquez sur *[Traiter]* ou *[Voir]*.
+. Vérifiez les informations : articles commandés, adresse de livraison, mode de paiement.
+. Cliquez sur *Marquer en préparation* pour indiquer que la commande est en cours de préparation.
+. Une fois le colis prêt, cliquez sur *Déclarer l'expédition*.
+
+[plantuml, "bov-detail-commande", format=png]
+....
+@startuml ihm-bov-detail-commande
+salt
+
+{+
+  == Commande CMD-2025-0042 — En attente
+  --
+  == Paiement
+  Mode : Carte bancaire | Statut : Autorisé
+  --
+  == Lignes de commande
+  {#
+    Produit              | Qté | Prix unit. | Sous-total
+    Chaussures cuir brun | 1   | 89,00 €    | 89,00 €
+    Veste laine grise    | 1   | 149,00 €   | 149,00 €
+    Ceinture daim noir   | 2   | 34,00 €    | 68,00 €
+  }
+  Livraison : 5,90 €  |  **Total TTC : 373,10 €**
+  --
+  == Livraison
+  Acheteur : **Marie Dupont** — marie.dupont@email.com
+  Destinataire : **Jean Martin**
+  12 rue des Lilas, 75011 Paris, France
+  Mode : La Poste — Colissimo
+  --
+  [Marquer en préparation]   [Déclarer l'expédition]
+  [Traiter une annulation]
+}
+@enduml
+....
+
+=== Confirmer un virement bancaire
+
+Lorsqu'un acheteur a choisi le paiement par virement, vous devez confirmer la réception des fonds avant de traiter la commande.
+
+.Procédure
+. Depuis le tableau de bord, cliquez sur *[Confirmer]* dans la colonne *Virement en attente*.
+. Vérifiez votre relevé bancaire que le montant et la référence correspondent.
+. Cliquez sur *Confirmer la réception* pour démarrer la préparation.
+. Cliquez sur *Rejeter le virement* si les fonds ne sont pas reçus — la commande est annulée automatiquement.
+
+WARNING: Ne confirmez que si vous avez bien reçu le virement sur votre compte bancaire.
+
+[plantuml, "bov-virement", format=png]
+....
+@startsalt
+title Back-office Vendeur — Confirmation de virement bancaire
+
+{+
+  == Commandes en attente de virement (1)
+  {#
+    Réf.          | Acheteur    | Montant   | Date commande | Actions
+    CMD-2025-0041 | C. Bernard  | 129,00 €  | 11/01/2025    | [Confirmer] [Rejeter]
+  }
+  ==
+  == Confirmer CMD-2025-0041
+  Vérifiez votre relevé bancaire avant de confirmer.
+  --
+  Montant attendu  : 129,00 €
+  Référence libellé : CMD-2025-0041
+  --
+  Confirmer déclenche la prise en charge de la commande
+  et notifie l'acheteur.
+  Rejeter annule la commande et libère le stock réservé.
+  --
+  [Rejeter le virement]   [Confirmer la réception]
+}
+@endsalt
+....
+
+=== Traitement des annulations après expédition
+
+Lorsqu'un acheteur soumet une demande d'annulation après expédition, vous recevez une notification et devez statuer.
+
+.Procédure
+. Accédez à la commande concernée — elle affiche le message de l'acheteur.
+. Choisissez l'une des trois options :
++
+--
+* *Accepter avec condition de renvoi* — l'acheteur doit retourner le colis ; le remboursement est effectué à réception.
+* *Accepter sans condition de renvoi* — remboursement immédiat sans retour.
+* *Refuser la demande* — la commande reprend son état *Expédiée*.
+--
+. Cliquez sur *Valider la décision*.
+
+[plantuml, "bov-annulation-post-expedition", format=png]
+....
+@startsalt
+title Back-office Vendeur — Annulation après expédition
+
+{+
+  == Demande d'annulation — Commande #CMD-2025-0039
+  Acheteur : Bernard Claire — Expédiée le 12/01/2025
+  Message de l'acheteur : « Article non conforme à la description »
+  ==
+  Choisissez le traitement de cette demande :
+  --
+  (X) Accepter avec condition de renvoi
+      L'acheteur doit renvoyer le colis.
+      Le remboursement sera déclenché à réception du retour.
+      La commande passe en état « En attente retour ».
+  --
+  ( ) Accepter sans condition de renvoi
+      Remboursement immédiat sans retour du colis.
+      La commande passe directement en état « Annulée ».
+  --
+  ( ) Refuser la demande
+      La commande repasse en état « Expédiée ».
+      L'acheteur sera notifié du refus.
+  --
+  [Annuler]   [Valider la décision]
+}
+@endsalt
+....
+
+== Déclarer une expédition
+
+Une fois le colis déposé chez le transporteur, déclarez l'expédition dans le back-office.
+
+.Procédure
+. Depuis le détail de commande, cliquez sur *Déclarer l'expédition*.
+. Sélectionnez le transporteur utilisé.
+. Saisissez le numéro de suivi figurant sur le reçu de dépôt.
+. Cliquez sur *Enregistrer l'expédition*.
+. La commande passe en statut *Expédiée* et l'acheteur reçoit un email avec le numéro de suivi.
+
+NOTE: Le numéro de suivi est fourni par le transporteur sur le reçu de dépôt — il n'est jamais généré automatiquement par la plateforme.
+
+[plantuml, "bov-expedition", format=png]
+....
+@startsalt
+title Back-office Vendeur — Déclaration d'expédition
+
+{+
+  == Déclarer l'expédition — CMD-2025-0042
+  Acheteur : Marie Dupont
+  Adresse  : 12 rue des Lilas, 75011 Paris, France
+  --
+  Transporteur     | ^La Poste — Colissimo^
+  --
+  Numéro de suivi  | "                         "
+  (Reportez ici le numéro figurant sur le reçu de dépôt)
+  --
+  [Annuler]   [Enregistrer l'expédition]
+  ==
+  La commande passera en statut « Expédiée ».
+  L'acheteur sera notifié par email avec le numéro de suivi.
+}
+@endsalt
+....
+
+== Identité visuelle
+
+Personnalisez l'apparence du portail acheteur avec votre logo, votre bannière hero et vos couleurs.
+
+.Procédure
+. Dans le menu principal, cliquez sur votre prénom, puis *Paramètres* → onglet *Identité visuelle*.
+. Téléversez votre logo (JPEG, PNG ou WebP) — il s'affiche dans l'en-tête des deux portails.
+. Téléversez une image de bannière hero pour la page d'accueil (format paysage recommandé, 1 200 × 400 px minimum).
+. Définissez la couleur principale et la couleur de fond en saisissant les valeurs hexadécimales.
+. Cliquez sur *Enregistrer*. Les modifications sont visibles immédiatement sur le portail acheteur.
+
+[plantuml, "bov-logo", format=png]
+....
+@startsalt
+title Back-office Vendeur — Identité visuelle (FS-V16)
+
+{+
+  {/ Informations | Sécurité | <b>Identité visuelle | Adresse }
+  ==
+  Logo de la boutique
+  --
+  Aperçu actuel :
+  {
+    [      logo.png (64×64)      ]
+  }
+  [ Choisir un fichier… ]   Formats : JPEG · PNG · WebP
+  [  Supprimer le logo  ]
+  <i>Affiché dans l'en-tête des deux portails.
+  ==
+  Bannière hero (page d'accueil)
+  --
+  Aperçu actuel :
+  {
+    [      banner.png (bannière pleine largeur)      ]
+  }
+  [ Choisir un fichier… ]   Formats : JPEG · PNG · WebP
+  [  Supprimer la bannière  ]
+  <i>Affichée en section supérieure de la page d'accueil du portail acheteur.
+  ==
+  Couleurs de la boutique
+  --
+  Couleur principale :  | [#4e8b82  ] "Hex : #4e8b82"
+  [  Réinitialiser  ]
+  <i>Appliquée aux boutons et éléments actifs du portail acheteur.
+  --
+  Couleur de fond :     | [#f2f6f5  ] "Hex : #f2f6f5"
+  [  Réinitialiser  ]
+  <i>Appliquée au fond de page du portail acheteur.
+  ==
+  [ Enregistrer ]   [ Annuler ]
+}
+
+@endsalt
+....
+
+== Campagne email promotionnelle
+
+Envoyez une campagne email aux acheteurs ayant consenti à recevoir vos communications marketing.
+
+.Procédure
+. Dans le menu, cliquez sur *Paramètres* → *Campagnes email*.
+. Le nombre de destinataires consentants est affiché automatiquement.
+. Rédigez l'objet et le corps du message.
+. Cliquez sur *Envoyer la campagne*.
+
+NOTE: Seuls les acheteurs ayant activé la case *J'accepte de recevoir vos offres* dans leur profil figurent dans la liste de destinataires. Cette liste est exportable depuis l'onglet *Export mailing* de vos paramètres.
+
+[plantuml, "bov-campagne", format=png]
+....
+@startsalt
+title Back-office Vendeur — Campagne email promotionnelle
+
+{+
+  == Nouvelle campagne email
+  --
+  {#
+    Destinataires consentants | <b>42 acheteurs actifs
+  }
+  --
+  Objet   | "Nos nouveautés de juin                 "
+  --
+  Message | {SI
+             "                                         "
+             "                                         "
+             "                                         "
+           }
+  --
+  [ Annuler ]  [ Envoyer la campagne ]
+}
+
+@endsalt
+....
+
+== Rapports de ventes
+
+Consultez vos performances commerciales et exportez les données pour vos analyses.
+
+.Procédure
+. Cliquez sur *Rapports* dans la barre de navigation (ou depuis le tableau de bord).
+. Sélectionnez la période via les champs *Du* et *Au*, puis cliquez sur *Appliquer*.
+. Les indicateurs (chiffre d'affaires, nombre de commandes, panier moyen, taux d'annulation) se mettent à jour.
+. La liste *Produits les plus vendus* classe vos articles par quantité vendue.
+. Cliquez sur *Exporter en CSV* pour télécharger les données.
+
+[plantuml, "bov-rapports", format=png]
+....
+@startuml ihm-bov-rapports
+salt
+title Back-office Vendeur — Rapports de ventes
+
+{+
+  == Rapports de ventes
+  Du | "2025-01-01" | Au | "2025-01-31" | [Appliquer]
+  --
+  {
+    {+
+      Chiffre d'affaires
+      **8 420,00 €**
+    }
+    |
+    {+
+      Commandes
+      **34**
+    }
+    |
+    {+
+      Panier moyen
+      **247,65 €**
+    }
+    |
+    {+
+      Taux d'annulation
+      **5,9 %**
+    }
+  }
+  ==
+  == Produits les plus vendus
+  {#
+    Rang | Produit              | Qté vendue | CA généré
+    1    | Chaussures cuir brun | 18         | 1 602,00 €
+    2    | Veste laine grise    | 12         | 1 788,00 €
+    3    | Ceinture daim noir   | 24         | 816,00 €
+  }
+  ==
+  [Exporter en CSV]
+}
+@enduml
+....
+
+'''
+
+= Console Administrateur
+
+== Connexion
+
+La console administrateur est accessible uniquement aux comptes de rôle *Administrateur*.
+
+.Procédure
+. Ouvrez l'URL de la console administrateur.
+. Saisissez votre adresse email et mot de passe administrateur.
+. Cliquez sur *Se connecter*.
+
+WARNING: L'accès à la console est réservé aux administrateurs. Toute tentative de connexion avec un compte acheteur ou vendeur est rejetée.
+
+[plantuml, "admin-connexion", format=png]
+....
+@startsalt
+title Console Administrateur — Connexion
+
+{+
+  == Connexion administrateur
+  --
+  Adresse email  | "admin@onlineshop.com"
+  Mot de passe   | "**************      "
+  --
+  [      Se connecter      ]
+  --
+  <i>Accès réservé aux administrateurs</i>
+}
+
+@endsalt
+....
+
+== Gestion des comptes
+
+=== Liste des comptes
+
+.Procédure
+. Depuis la console, cliquez sur *Comptes*.
+. Utilisez les filtres *Rôle* et *Statut* pour cibler un sous-ensemble d'utilisateurs.
+. Cliquez sur *[Modifier]* pour modifier un compte, *[Suspendre]* pour le bloquer temporairement, ou *[Supprimer]* pour le supprimer définitivement.
+
+WARNING: La suppression d'un compte est irréversible. Un avertissement est affiché avant confirmation.
+
+[plantuml, "admin-comptes", format=png]
+....
+@startsalt
+title Console Admin — Gestion des comptes
+
+{+
+  [+ Créer un compte]
+  --
+  Rôle   | ^Tous^    Statut | ^Tous^   | [Filtrer]
+  --
+  {#
+    Email                    | Nom            | Rôle     | Statut    | Actions
+    marie.dupont@email.com   | Marie Dupont   | Acheteur | Actif     | [Modifier] [Suspendre] [Supprimer]
+    c.bernard@email.com      | C. Bernard     | Acheteur | Actif     | [Modifier] [Suspendre] [Supprimer]
+    vendor@boutique.fr       | La Boutique    | Vendeur  | Actif     | [Modifier] [Suspendre] [Supprimer]
+    new.user@email.com       | Paul Lefebvre  | Acheteur | En attente| [Modifier] [Supprimer]
+    old.user@email.com       | Anne Martin    | Acheteur | Suspendu  | [Modifier] [Réactiver] [Supprimer]
+  }
+  --
+  [< Précédent]  Page 1/2  [Suivant >]
+}
+@endsalt
+....
+
+=== Créer un compte
+
+Les comptes acheteur et vendeur sont créés par l'administrateur — il n'existe pas d'inscription publique pour les vendeurs.
+
+.Procédure
+. Cliquez sur *+ Créer un compte*.
+. Renseignez le prénom, nom, email, rôle et langue préférée.
+. Cliquez sur *Créer le compte*.
+. Un email d'activation est envoyé automatiquement à l'adresse indiquée, dans la langue choisie.
+. Le compte reste en statut *En attente* jusqu'à ce que le destinataire clique sur le lien d'activation.
+
+[plantuml, "admin-form-compte", format=png]
+....
+@startuml ihm-admin-form-compte
+salt
+
+{+
+  == Créer un compte
+  --
+  Prénom *  | "                    "
+  Nom *     | "                    "
+  Email *   | "                    "
+  Rôle *    | ^Acheteur            ^
+  Langue *  | ^Français            ^
+  --
+  {
+    <i>Un email d'activation sera envoyé automatiquement dans la langue choisie.
+    <i>Le compte sera actif après validation par le destinataire.
+  }
+  --
+  [Annuler]                    | [Créer le compte]
+}
+
+@enduml
+....
+
+=== Modifier un compte
+
+.Procédure
+. Depuis la liste des comptes, cliquez sur *[Modifier]* sur la ligne concernée.
+. Modifiez le prénom, le nom, le rôle ou la langue.
+. Cliquez sur *Enregistrer*.
+
+[plantuml, "admin-detail-compte", format=png]
+....
+@startsalt
+title Console Admin — Fiche d'un compte
+
+{+
+  == Informations du compte
+  Email   | "marie.dupont@email.com"
+  Statut  | Actif
+  Créé le | 2026-01-15
+  --
+  == Informations modifiables
+  Prénom  | "Marie          "
+  Nom     | "Dupont         "
+  Rôle    | ^Acheteur^
+  --
+  == Préférences de notification
+  Langue  | ^Français^
+  --
+  [Annuler]                    | [Enregistrer]
+}
+@endsalt
+....
+
+== Gestion des transporteurs
+
+=== Liste des transporteurs
+
+.Procédure
+. Cliquez sur *Transporteurs* dans la navigation.
+. La liste affiche tous les transporteurs configurés avec leur statut.
+. Un transporteur *Inactif* n'apparaît pas dans le tunnel d'achat acheteur.
+
+NOTE: La désactivation d'un transporteur ne supprime pas les expéditions existantes qui le référencent.
+
+[plantuml, "admin-transporteurs", format=png]
+....
+@startsalt
+title Console Admin — Gestion des transporteurs
+
+{+
+  [+ Ajouter un transporteur]
+  --
+  {#
+    Nom          | Pays couverts    | URL de suivi              | Statut   | Actions
+    La Poste     | FR, BE, DE, ES…  | laposte.fr/suivi          | Actif    | [Modifier] [Désactiver]
+    Chronopost   | FR, BE, LU       | chronopost.fr/tracking    | Actif    | [Modifier] [Désactiver]
+    DHL Express  | Tous zone euro   | dhl.fr/tracking           | Actif    | [Modifier] [Désactiver]
+    UPS          | Tous zone euro   | ups.com/track             | Inactif  | [Modifier] [Activer] [Supprimer]
+  }
+}
+@endsalt
+....
+
+=== Ajouter ou modifier un transporteur
+
+.Procédure
+. Cliquez sur *+ Ajouter un transporteur* (ou *[Modifier]* sur un transporteur existant).
+. Renseignez le nom et l'URL de suivi (lien vers le site de suivi du transporteur).
+. Cochez les pays de la zone euro couverts.
+. Définissez le statut *Actif* ou *Inactif*.
+. Cliquez sur *Enregistrer*.
+
+NOTE: L'URL de suivi est un lien sortant affiché à l'acheteur — la plateforme ne communique pas avec l'API du transporteur.
+
+[plantuml, "admin-form-transporteur", format=png]
+....
+@startsalt
+title Console Admin — Ajout / édition d'un transporteur
+
+{+
+  == Transporteur
+  Nom               | "Colissimo           "
+  URL de suivi      | "colissimo.fr/suivi  "
+  --
+  == Pays couverts (zone euro)
+  [X] France        [X] Allemagne   [X] Espagne
+  [X] Italie        [X] Belgique    [ ] Pologne
+  [ ] Roumanie      [ ] Pays-Bas    [ ] Portugal
+  --
+  Actif             | (X) Oui   ( ) Non
+  --
+  [Annuler]   [Enregistrer]
+}
+@endsalt
+....
+
+== Mode maintenance
+
+Le mode maintenance désactive l'accès au portail acheteur pour effectuer des opérations techniques.
+Les vendeurs et les administrateurs conservent leur accès pendant la maintenance.
+
+.Procédure — Activer la maintenance
+. Dans la console, cliquez sur *Maintenance*.
+. Basculez le toggle sur *Activé*.
+. Personnalisez le message affiché aux visiteurs si nécessaire.
+. Cliquez sur *Enregistrer les modifications*.
+
+.Procédure — Désactiver la maintenance
+. Retournez sur *Maintenance*.
+. Basculez le toggle sur *Désactivé*.
+. Cliquez sur *Enregistrer les modifications*.
+
+WARNING: La désactivation est immédiate et rend le portail acheteur de nouveau accessible. Assurez-vous que les travaux sont entièrement terminés avant de désactiver.
+
+[plantuml, "admin-maintenance", format=png]
+....
+@startsalt
+title Console Admin — Mode maintenance
+
+{+
+  == Administration de la plateforme
+  --
+  Mode maintenance | (X) Activé  ( ) Désactivé
+  --
+  {#
+    État actuel     | <b>MAINTENANCE ACTIVE
+    Depuis          | 2026-05-22 14:37 UTC
+    Acteurs bloqués | Acheteurs, Vendeurs
+  }
+  --
+  Message affiché aux visiteurs :
+  {SI
+    "Site temporairement indisponible. Merci de réessayer ultérieurement."
+  }
+  --
+  [Annuler]  [Enregistrer les modifications]
+}
+@endsalt
+....
