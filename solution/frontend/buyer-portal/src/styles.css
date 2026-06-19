@@ -277,6 +277,52 @@
 
 .carousel-dot--active { background: var(--accent); }
 
+/* ─── Quick search (header) ─── */
+.quick-search {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  overflow: hidden;
+}
+.quick-search--header {
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.quick-search--header:hover,
+.quick-search--header:focus-within {
+  border-color: rgba(255, 255, 255, 0.85);
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.15);
+}
+.quick-search-btn {
+  background: none;
+  border: none;
+  padding: 6px 10px;
+  cursor: pointer;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+.quick-search-input {
+  width: 0;
+  opacity: 0;
+  border: none;
+  background: none;
+  padding: 0;
+  font-size: 13px;
+  font-family: inherit;
+  color: #fff;
+  outline: none;
+  transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.2s ease, padding 0.3s ease;
+}
+.quick-search-input::placeholder { color: rgba(255, 255, 255, 0.55); }
+.quick-search--header:hover .quick-search-input,
+.quick-search--header:focus-within .quick-search-input {
+  width: 200px;
+  opacity: 1;
+  padding: 6px 12px 6px 0;
+}
+
 /* ─── HomePage ─── */
 .home-banner {
   width: 100%;

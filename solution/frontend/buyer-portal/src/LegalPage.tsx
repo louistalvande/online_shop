@@ -32,8 +32,11 @@ export default function LegalPage({ pageKey }: Props) {
       appName={t('app.name')}
       brandName={brandName}
       logoUrl={logoUrl}
-      navLinks={[
+      centeredBrand
+      leftNavLinks={[
         { label: t('nav.home'), href: '/' },
+      ]}
+      navLinks={[
         { label: t('nav.catalog'), href: '/catalog' },
       ]}
       footerLinks={footerLinks}

@@ -104,8 +104,11 @@ export default function CartPage() {
         logoUrl={logoUrl}
         footerLinks={footerLinks}
         footerNotice={footerNotice}
-        navLinks={[
+        centeredBrand
+        leftNavLinks={[
           { label: t('nav.home'), href: '/' },
+        ]}
+        navLinks={[
           { label: t('nav.catalog'), href: '/catalog' },
         ]}
         actions={headerActions}
