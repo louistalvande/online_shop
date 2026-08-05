@@ -97,7 +97,11 @@ NOTE: Les choix technologiques retenus ci-dessous sont des recommandations archi
 
 | CPA-17
 | Gestion de l'expiration et révocation des mots de passe (CS-18, CS-19 / SEC-PWD-003..006)
-| La colonne `password_expires_at` de la table `account` est `NULL` pour les comptes Acheteur (pas d'expiration) et définie à `NOW() + INTERVAL '2 years'` pour les comptes Administrateur (configurable entre 1 et 3 ans). En cas de compromission avérée, un flag `password_revoked` est positionné à `true` ; la connexion est alors redirigée vers la réinitialisation obligatoire. Le lien de réinitialisation est un UUID v4 à usage unique (invalidé dès utilisation ou après 1 h) stocké dans Redis.
+| La colonne `password_expires_at` de la table `accounts` est `NULL` pour les comptes Acheteur (pas d'expiration) et définie à `NOW() + INTERVAL '2 years'` pour les comptes Administrateur (configurable entre 1 et 3 ans). En cas de compromission avérée, un flag `password_revoked` est positionné à `true` ; la connexion est alors redirigée vers la réinitialisation obligatoire. Le lien de réinitialisation est un token UUID v4 à usage unique, persisté dans la table PostgreSQL `password_reset_tokens` (`token`, `account_id` FK, `expires_at TIMESTAMPTZ`, `used BOOLEAN`) — invalidé en positionnant `used = true` dès utilisation, ou implicitement à `expires_at` (1 h).
+
+| CPA-18
+| Avertissement client avant expiration de session (CS-24 / COp-10)
+| `JwtFilter` (Service Sécurité) ajoute l'en-tête de réponse `X-Session-Expires-At` (epoch millis UTC) sur chaque requête authentifiée, reflétant l'expiration du jeton courant après application éventuelle de la rotation glissante (CS-08 / CPA-08). Aucun nouvel endpoint n'est requis : l'en-tête est présent sur `GET /api/auth/me` comme sur tout appel authentifié suivant. Le hook React partagé `useSessionWatchdog` (`@workspace/theme`) interroge périodiquement `GET /api/auth/me`, lit cet en-tête et pilote la transition d'état `idle` → `warning` (2 min avant expiration) → `expired`.
 |===
 
 == Pile technologique retenue
@@ -129,11 +133,11 @@ NOTE: Les choix technologiques retenus ci-dessous sont des recommandations archi
 
 | Service Compte
 | Module Spring Boot (Java)
-| Authentification JWT — Spring Security + JJWT (CS-08 / CPA-08), hachage BCrypt, gestion des tokens d'activation (CS-07) ; CRUD carnet d'adresses de livraison — entité `delivery_address` (FK vers `account`, suppression logique) ; endpoints REST `/api/profile/addresses` (FS-B11) ; gestion du consentement marketing — colonnes `marketing_consent BOOLEAN DEFAULT FALSE` et `marketing_consent_date TIMESTAMPTZ` sur la table `account` ; endpoint `PUT /api/profile/marketing-consent` (FS-B13) ; identité visuelle (FS-V16) — logo (`POST/DELETE /api/me/logo`, fichier fixe `vendor-logo.png` dans `uploads/logos/`), bannière hero (`POST/DELETE /api/me/banner`, fichier fixe `vendor-banner.{ext}` dans `uploads/banners/`), couleur d'accentuation stockée dans `platform_settings` clé `shop_accent_color` (`PATCH /api/vendor/shop/theme`) ; API publique de thème `GET /api/public/theme` retourne `{ logoUrl, bannerUrl, accentColor }`
+| Authentification JWT — Spring Security + JJWT (CS-08 / CPA-08), hachage BCrypt, gestion des tokens d'activation (CS-07) ; CRUD carnet d'adresses de livraison — entité `delivery_address` (FK vers `accounts`, suppression logique) ; endpoints REST `/api/profile/addresses` (FS-B11) ; gestion du consentement marketing — colonnes `marketing_consent BOOLEAN DEFAULT FALSE` et `marketing_consent_updated_at TIMESTAMPTZ` sur la table `accounts` ; endpoint `PUT /api/profile/marketing-consent` (FS-B13) ; identité visuelle (FS-V16) — logo (`POST/DELETE /api/me/logo`, fichier fixe `vendor-logo.png` dans `uploads/logos/`), bannière hero (`POST/DELETE /api/me/banner`, fichier fixe `vendor-banner.{ext}` dans `uploads/banners/`), couleur d'accentuation stockée dans `platform_settings` clé `shop_accent_color` (`PATCH /api/vendor/shop/theme`) ; API publique de thème `GET /api/public/theme` retourne `{ logoUrl, bannerUrl, accentColor }` ; abonnement aux alertes de remise en stock — entité `BackInStockSubscription` (table `back_in_stock_subscriptions` : `buyer_id` FK, `product_id` FK, `created_at`, contrainte d'unicité buyer+product) ; endpoints `POST/DELETE/GET /api/profile/stock-subscriptions` (FS-B*)
 
 | Service Catalogue
 | Module Spring Boot (Java)
-| CRUD produits et stock, recherche textuelle via Hibernate / PostgreSQL full-text search
+| CRUD produits et stock, recherche textuelle via Hibernate / PostgreSQL full-text search ; historique des alertes de seuil de stock — entité `StockAlert` (table `stock_alerts` : `product_id` FK, `triggered_at`, `quantity_at_alert`, `resolved_at` nullable, `notified_at` nullable, `acknowledged` BOOLEAN)
 
 | Service Panier
 | Module Spring Boot (Java) + Redis
@@ -153,11 +157,11 @@ NOTE: Les choix technologiques retenus ci-dessous sont des recommandations archi
 
 | Service Notification
 | Module Spring Boot (Java)
-| Envoi des emails transactionnels via SendGrid Java SDK ; sélection du template par langue du destinataire (`compte.langue` — CS-10) ; bascule en console-logging si `SENDGRID_API_KEY` absent (développement)
+| Envoi des emails transactionnels via SendGrid Java SDK ; sélection du template par langue du destinataire (`compte.langue` — CS-10) ; bascule en console-logging si `SENDGRID_API_KEY` absent (développement) ; personnalisation du template — entité `EmailSettings` (table `email_settings`, singleton) : `shop_name`, `footer_text`. Le logo et la couleur d'accentuation ne sont pas dupliqués dans cette table : ils sont lus à l'envoi depuis les mêmes réglages que l'identité visuelle du vendeur (`platform_settings` clé `shop_accent_color`, logo `vendor-logo.png`)
 
 | Service Rapport
 | Module Spring Boot (Java)
-| Requêtes JPQL agrégées, génération de statistiques de ventes ; export CSV des acheteurs consentants — requête `SELECT email, prenom, nom FROM account WHERE marketing_consent = TRUE`, endpoint protégé VENDOR `GET /api/vendor/export-mailing` (FS-V15 / CS-22)
+| Requêtes JPQL agrégées, génération de statistiques de ventes ; export CSV des acheteurs consentants — requête `SELECT email, first_name, last_name FROM accounts WHERE marketing_consent = TRUE`, endpoint protégé VENDOR `GET /api/vendor/export-mailing` (FS-V15 / CS-22)
 
 | Service Annonce
 | Module Spring Boot (Java)
@@ -165,15 +169,15 @@ NOTE: Les choix technologiques retenus ci-dessous sont des recommandations archi
 
 | Service Campagne Marketing
 | Module Spring Boot (Java)
-| Composition et envoi de campagnes email : endpoint protégé VENDOR `POST /api/vendor/campaigns/send` (corps : `{ sujet: String, corps: String }`) ; récupération des destinataires via `SELECT email, prenom, nom FROM account WHERE marketing_consent = TRUE AND status = 'ACTIVE'` ; refus avec `400 NO_CONSENTING_BUYERS` si liste vide ; délégation de l'envoi à composant-notification (FS-V17) ; journalisation en table `campaign_log` (date, vendor_id, recipient_count, statut)
+| Composition et envoi de campagnes email trilingues : endpoint protégé VENDOR `POST /api/vendor/campaigns/send` (corps : `{ subjectFr, bodyFr, subjectEn, bodyEn, subjectEs, bodyEs : String }`, les six champs obligatoires) ; récupération des destinataires via `SELECT email, first_name, last_name, language FROM accounts WHERE marketing_consent = TRUE AND status = 'ACTIVE'` ; chaque destinataire reçoit l'objet/corps correspondant à sa colonne `language` (repli sur `fr` si non renseignée) ; refus avec `400 NO_CONSENTING_BUYERS` si liste vide ; délégation de l'envoi à composant-notification (FS-V17) ; journalisation en table `marketing_campaigns` (`vendor_id` FK, `subject_fr`/`body_fr`/`subject_en`/`body_en`/`subject_es`/`body_es`, `recipient_count`, `failed_count`, `status`, `sent_at`)
 
 | Service SEO
 | Module Spring Boot (Java) + React 18 (react-helmet-async)
-| Entité `ShopSeo` (table `shop_seo`) : `seo_title`, `seo_description`, `seo_keywords`, `og_image_url`, `canonical_url`, `robots_rules TEXT`, `sitemap_frequencies JSONB`, `verification_codes JSONB` ; entité `ProductSeoOverride` (table `product_seo_override`, FK `product_id` unique, nullable) : mêmes colonnes que `ShopSeo` à l'exception de `robots_rules`. Endpoints protégés VENDOR : `PUT /api/vendor/seo/shop`, `PUT /api/vendor/seo/products/{id}`, `DELETE /api/vendor/seo/products/{id}`. Endpoints publics : `GET /api/public/seo/shop` (méta globaux + codes de vérification), `GET /api/public/seo/products/{id}` (méta produit ou repli sur données produit), `GET /sitemap.xml` (généré dynamiquement — liste toutes les `Product` au statut `PUBLISHED`), `GET /robots.txt` (généré à partir de `robots_rules`, `User-agent: *` par défaut `Allow: /`). Côté frontend : `react-helmet-async` injecte les méta tags dans le `<head>` pour chaque page du portail acheteur (FS-V18, FS-V19, FS-V20 / CS-23)
+| Entité `ShopSeo` (table `shop_seo`, singleton) : `seo_title`, `seo_description`, `seo_keywords`, `og_image_url`, `canonical_url`, `robots_disallow_paths TEXT`, `sitemap_changefreq VARCHAR(20)` (ex. `weekly`), quatre indicateurs d'indexation indépendants `index_products`, `index_catalog`, `index_account`, `index_cart` (BOOLEAN), et trois codes de vérification d'audience distincts `google_verification`, `ga4_id`, `bing_verification` ; entité `ProductSeoOverride` (table `product_seo_override`, FK `product_id` unique, nullable) : seulement `seo_title`, `seo_description`, `seo_keywords`, `og_image_url` — ni indicateurs d'indexation, ni codes de vérification, ni `robots_disallow_paths`/`sitemap_changefreq` (ces réglages sont globaux à la boutique uniquement). Endpoints protégés VENDOR : `PUT /api/vendor/seo/shop`, `PUT /api/vendor/seo/products/{id}`, `DELETE /api/vendor/seo/products/{id}`. Endpoints publics : `GET /api/public/seo/shop` (méta globaux + codes de vérification), `GET /api/public/seo/products/{id}` (méta produit ou repli sur données produit), `GET /sitemap.xml` (généré dynamiquement — liste toutes les `Product` au statut `PUBLISHED`), `GET /robots.txt` (généré à partir de `robots_disallow_paths`, `User-agent: *` par défaut `Allow: /`). Côté frontend : `react-helmet-async` injecte les méta tags dans le `<head>` pour chaque page du portail acheteur (FS-V18, FS-V19, FS-V20 / CS-23)
 
 | Service Sécurité
 | Module transverse Spring Security (Java)
-| Spring Security filter chain — BCrypt (coût 12), JJWT, validation `@Valid` des DTOs, filtre CSRF / SameSite, en-têtes HTTP de sécurité (CPA-09..CPA-16) ; MFA TOTP via bibliothèque `dev.samstevens.totp` ; vérification HIBP k-anonymat
+| Spring Security filter chain — BCrypt (coût 12), JJWT, validation `@Valid` des DTOs, filtre CSRF / SameSite, en-têtes HTTP de sécurité (CPA-09..CPA-16) ; MFA TOTP via bibliothèque `dev.samstevens.totp` ; vérification HIBP k-anonymat ; ajout de l'en-tête `X-Session-Expires-At` sur chaque réponse authentifiée (CPA-18)
 
 | Service Journalisation
 | Module Spring AOP (Java) + PostgreSQL
@@ -317,12 +321,10 @@ alt Card payment
 
   alt Payment authorized
     Stripe --> PayMod : 200 OK {payment_intent_id, status: "succeeded"}
-    PayMod -> PG : INSERT INTO payments {status: authorized, stripe_ref, ...}\n(CPA-07 — CS-06)
+    note right : Pas de table payments séparée — le résultat Stripe est\npersisté directement sur la commande (CPA-07 — CS-06)
+    PayMod -> PG : UPDATE orders SET stripe_payment_intent_id = ?, status = pending WHERE id = order_id
     PG --> PayMod : OK
     PayMod --> API : payment confirmed
-
-    API -> PG : UPDATE orders SET status = pending WHERE id = order_id
-    PG --> API : OK
 
     API -> NotifMod : notify(customer_id, "order_confirmed", order_id)
     NotifMod -> Mail : POST /v3/mail/send\n{to, template_id: "order_confirmation", ...}
@@ -339,7 +341,6 @@ alt Card payment
 
   else Payment declined
     Stripe --> PayMod : 402 {error.code, error.message}
-    PayMod -> PG : INSERT INTO payments {status: declined, ...}
     PayMod -> CatalogMod : releaseStock(lines[])
     CatalogMod -> PG : ROLLBACK stock reservation
     PayMod --> API : payment declined
@@ -353,12 +354,11 @@ else Wire transfer payment (CS-02 / FS-V09)
   PG --> CatalogMod : OK
   CatalogMod --> API : stock pre-reserved
 
-  API -> PG : INSERT INTO orders {status: pending_wire_transfer, ...}
+  API -> PG : INSERT INTO orders {status: pending_wire_transfer, payment_method: WIRE_TRANSFER, buyer_iban, ...}
   PG --> API : order_id
 
   API -> PayMod : registerPendingTransfer(amount, order_id)
-  PayMod -> PG : INSERT INTO payments {status: pending_wire_transfer, mode: wire, ...}\n(CPA-07 — CS-06)
-  PG --> PayMod : OK
+  note right : Pas de table payments séparée — l'état du virement est\nporté par la commande elle-même (CPA-07 — CS-06)
   PayMod --> API : transfer registered pending
 
   API -> NotifMod : notify(customer_id, "wire_transfer_pending", {bank_details})
@@ -378,12 +378,9 @@ else Wire transfer payment (CS-02 / FS-V09)
   SPAVendor -> API : POST /orders/{id}/confirm-transfer\nAuthorization: Bearer {JWT vendor}
 
   API -> PayMod : confirmTransfer(order_id)
-  PayMod -> PG : UPDATE payments SET status = authorized WHERE order_id = ?
+  PayMod -> PG : UPDATE orders SET status = pending WHERE id = order_id
   PG --> PayMod : OK
   PayMod --> API : transfer confirmed
-
-  API -> PG : UPDATE orders SET status = pending WHERE id = order_id
-  PG --> API : OK
 
   API -> NotifMod : notify(customer_id, "order_confirmed", order_id)
   NotifMod -> Mail : POST /v3/mail/send {to, template_id: "order_confirmation", ...}
@@ -427,8 +424,8 @@ note right : tracking_number entered from physical receipt\n(FS-V05 / CS-05)
 API -> PG : SELECT * FROM orders WHERE id = ? AND status = in_preparation
 PG --> API : order
 
-API -> PG : INSERT INTO shipments {tracking_number, carrier_id, shipment_date, ...}
-API -> PG : UPDATE orders SET status = shipped WHERE id = ?
+note right : Pas de table shipments séparée — carrier_id / carrier_name /\ncarrier_tracking_url sont déjà sur la commande depuis sa création ;\nseul tracking_number est ajouté ici
+API -> PG : UPDATE orders SET tracking_number = ?, status = shipped WHERE id = ?
 PG --> API : OK
 
 API -> NotifMod : notify(customer_id, "order_shipped",\n{tracking_number, carrier_tracking_url})
@@ -441,8 +438,8 @@ API --> SPA : 200 OK {tracking_number, status: "shipped"}
 == Tracking consultation by buyer ==
 participant "SPA React\n(buyer portal)" as SPABuyer
 SPABuyer -> API : GET /orders/{id}/tracking\nAuthorization: Bearer {JWT buyer}
-API -> PG : SELECT tracking_number, tracking_url FROM shipments WHERE order_id = ?
-PG --> API : {tracking_number, tracking_url}
+API -> PG : SELECT tracking_number, carrier_tracking_url FROM orders WHERE id = ?
+PG --> API : {tracking_number, carrier_tracking_url}
 API --> SPABuyer : 200 OK {tracking_number, carrier_tracking_url}
 note right : Buyer clicks the link\nto track the parcel (IFS-05 — outbound)
 ----
@@ -528,7 +525,7 @@ include::diagrams/ihm/ihm-pa-catalogue.puml[]
 
 ==== Détail produit
 
-Page de détail d'un produit (FS-B03 / FS-B04 / FS-B14). Affiche le prix (TTC), la disponibilité issue du stock fusionné dans `Produit`, et un sélecteur de quantité. L'ajout au panier est bloqué si le stock est à zéro.
+Page de détail d'un produit (FS-B03 / FS-B04 / FS-B14). Affiche le prix, la disponibilité issue du stock fusionné dans `Produit`, et un sélecteur de quantité. L'ajout au panier est bloqué si le stock est à zéro.
 
 Lorsque le stock est à zéro et que l'acheteur est authentifié, un bouton **« M'alerter quand disponible »** est affiché sous le bouton « Indisponible » (FS-B14 / BES-ACH-015). Ce bouton appelle `POST /api/profile/stock-subscriptions` et bascule ensuite en **« Alerte activée ✓ »** permettant l'annulation. Un acheteur non connecté est invité à se connecter avant de s'abonner.
 
@@ -823,7 +820,7 @@ include::diagrams/ihm/ihm-bov-logo.puml[]
 
 ==== Campagne email promotionnelle
 
-Formulaire de composition et d'envoi d'une campagne marketing (FS-V17 / US-MKTG-01). Le nombre de destinataires potentiels est affiché avant envoi ; le bouton « Envoyer » est désactivé si aucun acheteur consentant n'est disponible.
+Formulaire de composition et d'envoi d'une campagne marketing (FS-V17 / US-MKTG-01). Le nombre de destinataires potentiels est affiché avant envoi ; le bouton « Envoyer » est désactivé si aucun acheteur consentant n'est disponible. La saisie de l'objet et du message se fait via trois onglets de langue (français, anglais, espagnol), chacun obligatoire ; chaque acheteur reçoit à l'envoi la version correspondant à sa langue de compte. Un aperçu en direct de l'email (logo, couleur, pied de page issus des paramètres email du vendeur — FS-V16) est affiché à côté du formulaire et se met à jour à la saisie.
 
 .Maquette filaire : Back-office Vendeur — Campagne email promotionnelle
 [plantuml, ihm-bov-campagne, svg]
@@ -939,7 +936,8 @@ title Back-office Vendeur — Référencement (SEO) — Indexation & Outils
   Fréquence d'exploration (produits) | ^mensuelle^
   Indexer les pages produits          | (X) Oui  ( ) Non
   Indexer la page catalogue           | (X) Oui  ( ) Non
-  Indexer le panier / compte          | ( ) Oui  (X) Non
+  Indexer la page compte               | ( ) Oui  (X) Non
+  Indexer la page panier               | ( ) Oui  (X) Non
   --
   == Outils de mesure d'audience
   Google Search Console (méta-tag)   | "google-site-verification=XXXXXXX   "
@@ -1022,6 +1020,26 @@ Formulaire d'ajout et d'édition d'un transporteur (FS-A03). Les pays couverts s
 ----
 include::diagrams/ihm/ihm-admin-form-transporteur.puml[]
 ----
+
+=== Composant partagé — Avertissement d'expiration de session
+
+Le hook `useSessionWatchdog` et la modale `SessionExpiryModal` sont mutualisés dans `@workspace/theme` et utilisés à l'identique par les trois SPA (portail acheteur, back-office vendeur, console admin), conformément à CS-24 / CPA-18. Aucune maquette filaire dédiée par portail n'est nécessaire : le composant est visuellement neutre et se superpose à l'écran courant sous forme de modale bloquante.
+
+Endpoints REST concernés (Service Compte / Service Sécurité — FS-S14) :
+
+[cols="2,4", options="header"]
+|===
+| Méthode + Route | Description
+
+| `GET /api/auth/me`
+| Retourne le profil de l'utilisateur authentifié. Porte désormais l'en-tête de réponse `X-Session-Expires-At` (epoch millis) sur toute requête authentifiée réussie, reflétant l'expiration du jeton courant — y compris après rotation glissante si l'appel intervient dans la seconde moitié de la durée de vie du jeton (US-SEC-01). Interrogé périodiquement par `useSessionWatchdog`.
+|===
+
+NOTE: L'en-tête `X-Session-Expires-At` est ajouté par `JwtFilter` sur *toute* réponse authentifiée (pas seulement `/api/auth/me`) ; l'endpoint ci-dessus est celui utilisé par le polling du watchdog.
+
+État _Avertissement_ — affiché 2 minutes avant expiration du jeton courant : message « Votre session va bientôt expirer » avec deux actions, « Rester connecté » (relance `GET /api/auth/me`, ce qui déclenche la rotation glissante et referme la modale) et « Se déconnecter » (invalidation immédiate côté serveur).
+
+État _Expiré_ — affiché à échéance si aucune action n'a été prise : message « Session expirée » avec l'action unique « Se reconnecter ». Sur le portail acheteur, ce bouton rouvre la modale de connexion existante sans quitter la page courante. Sur le back-office vendeur et la console d'administration, l'effacement de l'état de session local suffit : ces deux applications affichent déjà automatiquement `<LoginPage>` dès que la session est nulle.
 
 == Matrice de traçabilité LA → PA
 
@@ -1107,7 +1125,7 @@ include::diagrams/ihm/ihm-admin-form-transporteur.puml[]
 | Service Campagne Marketing
 | composant-campagne
 | Conteneur API Spring Boot
-| Spring Boot / Spring Data JPA — endpoint `POST /api/vendor/campaigns/send` (protégé VENDOR), table `campaign_log`, délégation de l'envoi à composant-notification
+| Spring Boot / Spring Data JPA — endpoint `POST /api/vendor/campaigns/send` (protégé VENDOR), table `marketing_campaigns`, délégation de l'envoi à composant-notification
 
 | Service SEO
 | composant-seo
