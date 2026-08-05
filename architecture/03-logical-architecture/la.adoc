@@ -97,7 +97,7 @@ Le système est structuré en cinq couches logiques : *Présentation*, *Applicat
 
 | *Service Campagne Marketing*
 | Application
-| Composition et envoi de campagnes email promotionnelles : récupération des acheteurs actifs consentants (`marketing_consent = true`), refus si liste vide, orchestration de l'envoi via Service Notification, journalisation de chaque campagne (date, identifiant vendeur, nombre de destinataires)
+| Composition et envoi de campagnes email promotionnelles trilingues (français/anglais/espagnol) : récupération des acheteurs actifs consentants (`marketing_consent = true`), refus si liste vide, sélection de la version (objet/corps) correspondant à la langue de compte de chaque destinataire, orchestration de l'envoi via Service Notification, journalisation de chaque campagne (date, identifiant vendeur, nombre de destinataires)
 | FS-V17
 
 | *Service SEO*
@@ -122,8 +122,8 @@ Le système est structuré en cinq couches logiques : *Présentation*, *Applicat
 
 | *Service Sécurité*
 | Infrastructure
-| Contrôle transverse d'authentification et d'autorisation : validation de la politique de mots de passe (longueur min, complexité, pas de longueur max, sel ≥ 128 bits), vérification des mots de passe compromis (liste HIBP), gestion de l'expiration selon le rôle, détection des attaques par force brute (temporisation), gestion du cycle de vie des sessions, MFA pour Vendeur/Admin (TOTP — pas de SMS), révocation de mots de passe compromis, émission de liens de réinitialisation à usage unique, protection CSRF, application des en-têtes de sécurité HTTP (CSP, HSTS, X-Frame-Options), validation et assainissement des entrées
-| FS-S01, FS-S02, FS-S03, FS-S04, FS-S05, FS-S06, FS-S08, FS-S09, FS-S10, FS-S11, FS-S12
+| Contrôle transverse d'authentification et d'autorisation : validation de la politique de mots de passe (longueur min, complexité, pas de longueur max, sel ≥ 128 bits), vérification des mots de passe compromis (liste HIBP), gestion de l'expiration selon le rôle, détection des attaques par force brute (temporisation), gestion du cycle de vie des sessions, MFA pour Vendeur/Admin (TOTP — pas de SMS), révocation de mots de passe compromis, émission de liens de réinitialisation à usage unique, protection CSRF, application des en-têtes de sécurité HTTP (CSP, HSTS, X-Frame-Options), validation et assainissement des entrées ; exposition de l'expiration du jeton de session courant à chaque réponse authentifiée (en-tête `X-Session-Expires-At`) pour permettre au client d'avertir l'utilisateur avant expiration
+| FS-S01, FS-S02, FS-S03, FS-S04, FS-S05, FS-S06, FS-S08, FS-S09, FS-S10, FS-S11, FS-S12, FS-S14
 
 | *Service Journalisation*
 | Infrastructure
@@ -354,7 +354,7 @@ Les interfaces logiques définissent les contrats d'échange entre composants, i
 | *IFL-18*
 | Back-office Vendeur
 | Service Campagne Marketing
-| Soumettre une campagne (objet, corps) pour envoi aux acheteurs consentants ; consulter le nombre de destinataires disponibles avant envoi
+| Soumettre une campagne (objet, corps en français/anglais/espagnol) pour envoi aux acheteurs consentants, chacun recevant la version de sa langue de compte ; consulter le nombre de destinataires disponibles avant envoi
 | FS-V17
 
 | *IFL-19*
@@ -848,8 +848,12 @@ package "Entités techniques (LA)" #FFF8E8 {
   class CampagneMarketing {
     + id : UUID
     + vendorId : UUID
-    + subject : String
-    + body : Text
+    + subjectFr : String
+    + bodyFr : Text
+    + subjectEn : String
+    + bodyEn : Text
+    + subjectEs : String
+    + bodyEs : Text
     + recipientCount : Integer
     + status : Enum {SUCCESS, PARTIAL, FAILED}
     + sentAt : OffsetDateTime
@@ -946,4 +950,5 @@ end note
 | FS-S11 | Révoquer les mots de passe compromis et désactiver les comptes non renouvelés | Service Sécurité | transverse
 | FS-S12 | Émettre un lien de réinitialisation à usage unique | Service Sécurité | transverse
 | FS-S13 | Détecter les comportements d'auth anormaux | Service Journalisation | IFL-13
+| FS-S14 | Exposer l'expiration du jeton de session (en-tête `X-Session-Expires-At`) | Service Sécurité | transverse
 |===

@@ -88,6 +88,10 @@ Les contraintes suivantes sont issues du contexte d'usage réel des acteurs et s
 | COp-09
 | Référencement naturel (SEO)
 | La boutique et chacune de ses fiches produits doivent être indexables individuellement par les moteurs de recherche, afin de permettre à des acheteurs potentiels de les découvrir via une recherche web. Les informations communiquées aux moteurs de recherche doivent refléter fidèlement le contenu de chaque page. L'ensemble des paramètres de référencement (métadonnées, indexation, URL canonique, outils d'audience) sont sous le contrôle du vendeur. _(BES-VND-018, BES-VND-019, BES-VND-020)_
+
+| COp-10
+| Avertissement avant expiration de session
+| Chaque acteur authentifié (administrateur, vendeur, acheteur) doit être prévenu quelques minutes avant l'expiration de sa session par inactivité et doit pouvoir la prolonger sans ressaisir ses identifiants, simplement en confirmant vouloir rester connecté. Si la session expire malgré tout, l'acteur est invité à se reconnecter sans perdre le contexte de la page consultée. _(SEC-AUTH-004)_
 |===
 
 === Capacités opérationnelles
