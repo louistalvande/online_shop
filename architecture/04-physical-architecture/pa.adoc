@@ -749,14 +749,16 @@ include::diagrams/ihm/ihm-bov-catalogue.puml[]
 
 ==== Export CSV du catalogue
 
-Déclenchement d'un téléchargement navigateur du catalogue complet (FS-V13 / US-CAT-07). Un clic sur le bouton « Exporter CSV » appelle `GET /api/vendor/products/export` avec le JWT en en-tête `Authorization`. Le backend retourne un fichier `text/csv; charset=UTF-8` avec BOM UTF-8 (compatibilité tableur) et l'en-tête `Content-Disposition: attachment; filename="catalogue_export_YYYYMMDD.csv"`. Le frontend reçoit le blob, crée une URL objet et déclenche le téléchargement sans navigation. L'export inclut toutes les fiches (publiées et archivées) ; colonnes : `id,nom,description,prix,categorie,quantite,seuil_alerte,statut`. La présence de la colonne `id` permet de réutiliser directement le fichier exporté pour une mise à jour de stock en masse via l'import CSV (US-CAT-06).
+Déclenchement d'un téléchargement navigateur du catalogue complet (FS-V13 / US-CAT-07). Un clic sur le bouton « Exporter CSV » appelle `GET /api/vendor/products/export` avec le JWT en en-tête `Authorization`. Le backend retourne un fichier `text/csv; charset=UTF-8` avec BOM UTF-8 (compatibilité tableur) et l'en-tête `Content-Disposition: attachment; filename="catalogue_export_YYYYMMDD.csv"`. Le frontend reçoit le blob, crée une URL objet et déclenche le téléchargement sans navigation. L'export inclut toutes les fiches (publiées et archivées) ; colonnes : `id,nom,description,prix,categorie,quantite,seuil_alerte,titre_seo,description_seo,mots_cles_seo,image_og,statut`. Les colonnes SEO reprennent la substitution SEO courante de chaque produit (vides si aucune substitution n'existe, CS-23). La présence de la colonne `id` permet de réutiliser directement le fichier exporté pour une mise à jour en masse via l'import CSV (US-CAT-06), y compris pour paramétrer le référencement d'un catalogue important (US-SEO-02) sans passer par le formulaire produit par produit.
 
 ==== Import CSV de produits
 
-Modale d'import en masse depuis un fichier CSV (FS-V12 / US-CAT-06). Le vendeur sélectionne un fichier `.csv` structuré selon l'en-tête `id,nom,description,prix,categorie,quantite,seuil_alerte`. L'en-tête de l'export (avec colonne `statut` supplémentaire) est également accepté pour permettre le cycle export → réimport. Deux comportements selon la présence de l'`id` :
+Modale d'import en masse depuis un fichier CSV (FS-V12 / US-CAT-06). Le vendeur sélectionne un fichier `.csv` structuré selon l'en-tête `id,nom,description,prix,categorie,quantite,seuil_alerte,titre_seo,description_seo,mots_cles_seo,image_og`. L'en-tête de l'export (avec colonne `statut` supplémentaire) est également accepté pour permettre le cycle export → réimport. Deux comportements selon la présence de l'`id` :
 
 * **`id` vide** → création d'un nouveau produit (`nom` et `prix` obligatoires).
-* **`id` renseigné** → mise à jour du stock uniquement (`quantite` et `seuil_alerte`) sur le produit existant ; les autres champs sont ignorés.
+* **`id` renseigné** → mise à jour du stock (`quantite` et `seuil_alerte`) sur le produit existant ; les autres colonnes catalogue (`nom`, `description`, `prix`, `categorie`) sont ignorées.
+
+Dans les deux cas, les colonnes SEO (`titre_seo`, `description_seo`, `mots_cles_seo`, `image_og`) sont appliquées à la substitution SEO du produit (créée si besoin) : une cellule renseignée écrit la substitution, une cellule vide l'efface (repli automatique sur nom/description/1ère photo, CS-23).
 
 L'import est partiel : les lignes valides sont traitées même si d'autres sont en erreur. Un rapport ligne par ligne (statut `Créé` / `Mis à jour` / `Erreur` + message) est affiché après traitement. L'endpoint backend est `POST /api/vendor/products/import` (`multipart/form-data`) ; il retourne HTTP 400 si l'en-tête CSV est invalide ou le fichier vide.
 
@@ -840,7 +842,7 @@ include::diagrams/ihm/ihm-bov-rapports.puml[]
 
 ==== Référencement (SEO)
 
-Section de configuration du référencement (FS-V18, FS-V19, FS-V20 / CS-23 / UCSA-18). Organisée en **quatre onglets** : _SEO Global_, _SEO par produit_, _Indexation_, _Outils tiers_. Les modifications sont enregistrées via les endpoints `PUT /api/vendor/seo/shop` et `PUT /api/vendor/seo/products/{id}`. Le `sitemap.xml` et le `robots.txt` sont régénérés dynamiquement à chaque accès à leurs URLs publiques en tenant compte des paramètres sauvegardés.
+Section de configuration du référencement (FS-V18, FS-V19, FS-V20 / CS-23 / UCSA-18). Organisée en **quatre onglets** : _SEO Global_, _SEO par produit_, _Indexation_, _Outils tiers_. Les modifications sont enregistrées via les endpoints `PUT /api/vendor/seo` et `PUT /api/vendor/seo/products/{id}`. Le `sitemap.xml` et le `robots.txt` sont régénérés dynamiquement à chaque accès à leurs URLs publiques en tenant compte des paramètres sauvegardés. Pour paramétrer le SEO en masse, le vendeur utilise l'export/import CSV du catalogue (voir section « Gestion du catalogue » ci-dessous), qui inclut désormais les colonnes SEO.
 
 .Maquette filaire : Back-office Vendeur — Référencement SEO (onglet SEO Global)
 [plantuml, ihm-bov-seo-global, svg]
@@ -1130,7 +1132,7 @@ NOTE: L'en-tête `X-Session-Expires-At` est ajouté par `JwtFilter` sur *toute* 
 | Service SEO
 | composant-seo
 | Conteneur API Spring Boot + React (portail acheteur)
-| Spring Boot / Spring Data JPA — tables `shop_seo` et `product_seo_override` ; endpoints VENDOR `PUT /api/vendor/seo/shop`, `PUT /api/vendor/seo/products/{id}`, `DELETE /api/vendor/seo/products/{id}` ; endpoints publics `GET /api/public/seo/shop`, `GET /api/public/seo/products/{id}`, `GET /sitemap.xml`, `GET /robots.txt` ; côté frontend : `react-helmet-async` dans `shop-buyer-portal` pour injection des méta tags dans le `<head>` de chaque page (CS-23)
+| Spring Boot / Spring Data JPA — tables `shop_seo` et `product_seo_override` ; endpoints VENDOR `GET/PUT /api/vendor/seo`, `GET/PUT/DELETE /api/vendor/seo/products/{id}` ; endpoints publics `GET /api/public/seo`, `GET /api/public/seo/products/{id}`, `GET /sitemap.xml`, `GET /robots.txt` ; côté frontend : hook `useSeoMeta` (injection DOM native dans `shop-buyer-portal`, sans dépendance externe) pour les méta tags dans le `<head>` de chaque page (CS-23)
 
 | Service Sécurité
 | composant-securite

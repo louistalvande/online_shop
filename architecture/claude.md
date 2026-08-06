@@ -49,7 +49,10 @@ Chaque niveau doit être traité dans son propre fichier AsciiDoc et son propre 
 │   ├── pa.adoc
 │   └── diagrams/
 │       ├── pa-deployment.puml
-│       └── pa-component.puml
+│       ├── pa-component.puml
+│       └── ihm/                ← Salt wireframes (subdirectory used when >3 files)
+│           ├── ihm-pa-connexion.puml
+│           └── ihm-bov-catalogue.puml
 └── glossary.adoc
 ```
 
@@ -66,7 +69,6 @@ Chaque niveau doit être traité dans son propre fichier AsciiDoc et son propre 
 :toclevels: 3
 :sectnums:
 :imagesdir: diagrams
-:plantuml-format: svg
 ```
 
 ### Inclusion d'un diagramme PlantUML
@@ -217,7 +219,7 @@ package "Sous-système B" {
 
 ## Maquettes IHM avec Salt (PlantUML)
 
-Salt est le sous-langage de maquettage filaire intégré à PlantUML. Les fichiers `.puml` Salt sont stockés dans le même répertoire `diagrams/` que les autres diagrammes, avec le préfixe `ihm-`.
+Salt est le sous-langage de maquettage filaire intégré à PlantUML. Les fichiers `.puml` Salt sont stockés dans le sous-répertoire `diagrams/ihm/`, avec le préfixe `ihm-`.
 
 ### Quand utiliser Salt dans un doc ARCADIA
 
@@ -227,24 +229,26 @@ Les maquettes Salt appartiennent exclusivement au niveau **PA**, rattachées au 
 ### Nommage des fichiers
 
 ```
-diagrams/ihm-<niveau>-<nom-fonctionnel>.puml
+diagrams/ihm/ihm-<portail>-<nom-fonctionnel>.puml
 ```
 
-Exemples : `ihm-sa-saisie-commande.puml`, `ihm-la-tableau-de-bord.puml`
+Portails : `pa` (portail acheteur), `bov` (back-office vendeur), `admin` (console admin)
+
+Exemples : `ihm-pa-connexion.puml`, `ihm-bov-catalogue.puml`, `ihm-admin-comptes.puml`
 
 ### Inclusion dans AsciiDoc
 
 ```asciidoc
 ==== Maquette IHM — [Nom de l'écran]
 
-.Maquette filaire : [Nom de l'écran] — niveau [SA/LA/PA]
-[plantuml, ihm-sa-nom-ecran, svg]
+.Maquette filaire : [Nom de l'écran]
+[plantuml, ihm-pa-nom-ecran, png]
 ----
-include::diagrams/ihm-sa-nom-ecran.puml[]
+include::diagrams/ihm/ihm-pa-nom-ecran.puml[]
 ----
 
 // Relier explicitement la maquette à un élément ARCADIA identifié :
-// Cette maquette illustre la fonction SA-FNC-00x « Nom de la fonction ».
+// Cette maquette illustre la fonction LA-CMP-00x « Nom de la fonction ».
 ```
 
 ### Style global Salt

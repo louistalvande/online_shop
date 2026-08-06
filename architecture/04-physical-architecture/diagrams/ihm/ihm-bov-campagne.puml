@@ -10,13 +10,35 @@ title PA-PHY-002 — Campagne email promotionnelle (FS-V17)
     Destinataires consentants | <b>42 acheteurs actifs
   }
   --
-  Objet   | "Nos nouveautés de juin                 "
-  --
-  Message | {SI
-             "                                         "
-             "                                         "
-             "                                         "
-           }
+  {SI
+    {+
+      { [Français] | [English] | [Español] }
+      --
+      Objet   | "Nos nouveautés de juin                 "
+      --
+      Message | {SI
+                 "                                         "
+                 "                                         "
+                 "                                         "
+               }
+      --
+      Chaque acheteur reçoit la version correspondant à sa langue de compte.
+    } | {+
+      Aperçu de l'email
+      --
+      {#
+        <&image> [Logo boutique]
+        --
+        Objet : Nos nouveautés de juin
+        --
+        📢
+        --
+        Nos nouveautés de juin...
+        --
+        © Ma boutique
+      }
+    }
+  }
   --
   [ Annuler ]  [ Envoyer la campagne ]
 }

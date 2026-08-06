@@ -251,12 +251,13 @@ a|
 | Terminée
 
 | *US-CAT-06*
-| En tant que vendeur, je peux importer des produits ou mettre à jour leur stock depuis un fichier CSV afin de créer ou réapprovisionner plusieurs fiches en une seule opération.
+| En tant que vendeur, je peux importer des produits, mettre à jour leur stock et paramétrer leur référencement SEO depuis un fichier CSV afin de créer, réapprovisionner ou référencer plusieurs fiches en une seule opération.
 a|
 - [x] Un bouton « Importer CSV » est disponible dans la section gestion du catalogue du back-office vendeur
-- [x] Le fichier CSV respecte un en-tête défini : `id,nom,description,prix,categorie,quantite,seuil_alerte` ; l'en-tête de l'export (avec colonne `statut` supplémentaire) est également accepté pour permettre le cycle export → réimport
-- [x] Si la colonne `id` est renseignée sur une ligne, seul le stock du produit existant est mis à jour (`quantite` et `seuil_alerte`) ; les autres champs sont ignorés
+- [x] Le fichier CSV respecte un en-tête défini : `id,nom,description,prix,categorie,quantite,seuil_alerte,titre_seo,description_seo,mots_cles_seo,image_og` ; l'en-tête de l'export (avec colonne `statut` supplémentaire) est également accepté pour permettre le cycle export → réimport
+- [x] Si la colonne `id` est renseignée sur une ligne, seul le stock du produit existant est mis à jour (`quantite` et `seuil_alerte`) ; les colonnes catalogue restantes (`nom`, `description`, `prix`, `categorie`) sont ignorées
 - [x] Si la colonne `id` est vide, une nouvelle fiche produit est créée ; les colonnes obligatoires sont alors `nom` et `prix`
+- [x] Dans les deux cas (création ou mise à jour), les colonnes `titre_seo`, `description_seo`, `mots_cles_seo`, `image_og` sont appliquées à la substitution SEO du produit (créée si nécessaire, US-SEO-02) ; une colonne vide efface la substitution correspondante (repli automatique sur nom/description/1ère photo, CS-23)
 - [x] Le système valide le format de l'en-tête avant traitement ; en cas d'en-tête invalide, l'import est rejeté en totalité
 - [x] Un rapport ligne par ligne est affiché après traitement : créé / mis à jour / erreur avec message explicite
 - [x] Les lignes valides sont traitées même si d'autres lignes sont en erreur (import partiel)
@@ -264,10 +265,11 @@ a|
 | Terminée
 
 | *US-CAT-07*
-| En tant que vendeur, je peux exporter le catalogue produits partagé au format CSV afin de le consulter ou le réimporter ultérieurement.
+| En tant que vendeur, je peux exporter le catalogue produits partagé, avec leurs métadonnées SEO, au format CSV afin de le consulter ou le réimporter ultérieurement.
 a|
 - [x] Un bouton « Exporter CSV » est disponible dans la section gestion du catalogue du back-office vendeur
-- [x] Le fichier généré contient toutes les fiches produits (publiées et archivées) avec les colonnes : `id,nom,description,prix,categorie,quantite,seuil_alerte,statut` (la colonne `id` permet de réutiliser le fichier pour une mise à jour de stock via l'import CSV)
+- [x] Le fichier généré contient toutes les fiches produits (publiées et archivées) avec les colonnes : `id,nom,description,prix,categorie,quantite,seuil_alerte,titre_seo,description_seo,mots_cles_seo,image_og,statut` (la colonne `id` permet de réutiliser le fichier pour une mise à jour via l'import CSV)
+- [x] Les colonnes SEO reprennent la substitution SEO courante de chaque produit ; elles sont vides si aucune substitution n'existe pour ce produit
 - [x] Le fichier est téléchargé directement par le navigateur avec le nom `catalogue_export_YYYYMMDD.csv`
 - [x] L'encodage du fichier est UTF-8 avec BOM pour compatibilité tableur
 - [x] L'export est accessible uniquement aux comptes vendeur authentifiés (FS-V02 / CS-01)

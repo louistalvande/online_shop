@@ -142,12 +142,12 @@ Each SPA communicates exclusively with the backend REST API. The IHM wireframes 
 
 ## Internationalisation (i18n)
 
-All three SPAs must support **French (fr) Spanish (es) and English (en)**. French is the default locale.
+All three SPAs must support **French (fr), Spanish (es) and English (en)**. French is the default locale.
 
 ### Frontend
 
 - Use **react-i18next** (`i18next` + `react-i18next`).
-- Translation files: `src/i18n/fr.json` and `src/i18n/en.json` in each SPA.
+- Translation files: `src/i18n/fr.json`, `src/i18n/es.json` and `src/i18n/en.json` in each SPA.
 - All user-visible strings must go through `t("key")` — no hardcoded UI text.
 - A language toggle must be visible on every app (e.g., header).
 - Keys are in English, dot-notation, grouped by feature: `order.status.pending`, `auth.login.submit`, etc.
@@ -155,7 +155,7 @@ All three SPAs must support **French (fr) Spanish (es) and English (en)**. Frenc
 ### Backend
 
 - User-facing error messages (returned in API responses) must be localised via Spring's `MessageSource`.
-- Message files: `src/main/resources/messages.properties` (default = French), `messages_en.properties`.
+- Message files: `src/main/resources/messages.properties` (default = French), `messages_es.properties`, `messages_en.properties`.
 - The client sends its locale in the `Accept-Language` header; the backend resolves the appropriate message.
 - Internal log messages stay in English only.
 
@@ -169,170 +169,18 @@ Each SPA has its own container: `buyer-portal`, `vendor-backoffice`, `admin-cons
 
 ### Dev Dockerfiles
 
-Each service has a `Dockerfile.dev` alongside its regular `Dockerfile`.
-
-**`backend/Dockerfile.dev`**
-```dockerfile
-FROM maven:3.9-eclipse-temurin-21
-RUN apt-get update && apt-get install -y openssh-server \
-    && mkdir /var/run/sshd \
-    && echo 'root:dev' | chpasswd \
-    && sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config
-WORKDIR /workspace
-EXPOSE 22 8080
-CMD ["/usr/sbin/sshd", "-D"]
-```
-
-**`frontend/Dockerfile.dev`** (shared by all three SPA containers)
-
-Takes a build arg `NGINX_CONF` pointing to the per-SPA nginx config relative to the `./frontend` build context.
-
-```dockerfile
-FROM node:20
-ARG NGINX_CONF
-RUN apt-get update && apt-get install -y openssh-server nginx \
-    && mkdir /var/run/sshd \
-    && echo 'root:dev' | chpasswd \
-    && sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config
-COPY ${NGINX_CONF} /etc/nginx/nginx.conf
-WORKDIR /workspace
-EXPOSE 22 80
-CMD sh -c "nginx && exec /usr/sbin/sshd -D"
-```
-
-**`frontend/<spa>/nginx.dev.conf`** (one per SPA — only the server_name differs)
-
-Each SPA container runs a single Nginx that proxies to its own Vite dev server on port 5173. WebSocket connections (used by Vite HMR) are forwarded as well. The `/api` location proxies API calls directly to the backend container.
-
-```nginx
-events {}
-
-http {
-  server {
-    listen 80;
-    server_name <spa>.localhost _;
-
-    location /api {
-      proxy_pass http://backend:8080;
-      proxy_http_version 1.1;
-      proxy_set_header Host $host;
-    }
-    location / {
-      proxy_pass http://localhost:5173;
-      proxy_http_version 1.1;
-      proxy_set_header Upgrade $http_upgrade;
-      proxy_set_header Connection "upgrade";
-      proxy_set_header Host $host;
-    }
-  }
-}
-```
+See `backend/Dockerfile.dev` and `frontend/Dockerfile.dev` (shared by all three SPA containers, takes `NGINX_CONF` build arg). Per-SPA nginx configs: `frontend/<spa>/nginx.dev.conf` — proxies `/api` to `backend:8080` and `/` to the Vite dev server on port 5173 with WebSocket upgrade for HMR.
 
 ### `docker-compose.dev.yml`
 
-Source directories are bind-mounted into `/workspace` so edits made inside the container are reflected on the host (and vice versa).
+See `solution/docker-compose.dev.yml`. Port map:
 
-```yaml
-name: shop
-
-services:
-  db:
-    image: postgres:16
-    environment:
-      POSTGRES_DB: shop
-      POSTGRES_USER: shop
-      POSTGRES_PASSWORD: dev
-    ports:
-      - "5432:5432"
-
-  redis:
-    image: redis:7
-    ports:
-      - "6379:6379"
-
-  backend:
-    build:
-      context: ./backend
-      dockerfile: Dockerfile.dev
-    ports:
-      - "8080:8080"   # Spring Boot
-      - "2222:22"     # SSH
-    volumes:
-      - ./backend:/workspace
-    depends_on:
-      - db
-      - redis
-
-  buyer-portal:
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile.dev
-      args:
-        NGINX_CONF: buyer-portal/nginx.dev.conf
-    ports:
-      - "5173:80"     # http://buyer.localhost:5173
-      - "2223:22"     # SSH
-    volumes:
-      - ./frontend:/workspace
-    depends_on:
-      - backend
-
-  vendor-backoffice:
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile.dev
-      args:
-        NGINX_CONF: vendor-backoffice/nginx.dev.conf
-    ports:
-      - "5174:80"     # http://vendor.localhost:5174
-      - "2224:22"     # SSH
-    volumes:
-      - ./frontend:/workspace
-    depends_on:
-      - backend
-
-  admin-console:
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile.dev
-      args:
-        NGINX_CONF: admin-console/nginx.dev.conf
-    ports:
-      - "5175:80"     # http://admin.localhost:5175
-      - "2225:22"     # SSH
-    volumes:
-      - ./frontend:/workspace
-    depends_on:
-      - backend
-```
-
-### VS Code SSH config (`~/.ssh/config`)
-
-```
-Host shop-backend
-  HostName localhost
-  Port 2222
-  User root
-  StrictHostKeyChecking no
-
-Host shop-buyer-portal
-  HostName localhost
-  Port 2223
-  User root
-  StrictHostKeyChecking no
-
-Host shop-vendor-backoffice
-  HostName localhost
-  Port 2224
-  User root
-  StrictHostKeyChecking no
-
-Host shop-admin-console
-  HostName localhost
-  Port 2225
-  User root
-  StrictHostKeyChecking no
-```
+| Service | HTTP | SSH |
+|---|---|---|
+| backend | 8080 | 2222 |
+| buyer-portal | 5173 | 2223 |
+| vendor-backoffice | 5174 | 2224 |
+| admin-console | 5175 | 2225 |
 
 ### Workflow
 
@@ -368,7 +216,7 @@ cd backend
 ./mvnw spring-boot:run
 
 # Regenerate openapi.yaml
-./mvnw springdoc-openapi:generate
+./mvnw test -Popenapi
 
 # Frontend (local, no Docker)
 cd frontend/buyer-portal   # or vendor-backoffice / admin-console
@@ -398,7 +246,7 @@ docker compose up --build
 - At the end of the code generation, review the entire changes, test if it compiles, and fix or improve if possible.
 - Never deviate from the domain model and business rules defined in the architecture — read it first.
 - **All code and all comments must be in English** — class names, method names, variables, field names, inline comments, Javadoc, SQL columns, API paths, Git commit messages.
-- User-facing strings (UI labels, email templates, API error messages) must be localised in both **fr** and **en** — never hardcoded in a single language.
+- User-facing strings (UI labels, email templates, API error messages) must be localised in **fr**, **es**, and **en** — never hardcoded in a single language.
 - **Every public method and every public field must have a Javadoc comment.** Minimum: one sentence describing what it does. For methods: document parameters (`@param`), return value (`@return`), and checked exceptions (`@throws`) when present. Private/package-private members do not require Javadoc.
 - Flyway migration scripts must be sequential: `V1__init_schema.sql`, `V2__...`, etc.
 - **Before the first release**, fold all schema changes into the existing latest migration file instead of creating a new version. A new `Vn__` file is only justified once the previous version has been applied to a deployed environment and cannot be modified.
