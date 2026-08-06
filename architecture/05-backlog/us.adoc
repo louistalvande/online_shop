@@ -267,8 +267,9 @@ a|
 | *US-CAT-07*
 | En tant que vendeur, je peux exporter le catalogue produits partagé, avec leurs métadonnées SEO, au format CSV afin de le consulter ou le réimporter ultérieurement.
 a|
-- [x] Un bouton « Exporter CSV » est disponible dans la section gestion du catalogue du back-office vendeur
-- [x] Le fichier généré contient toutes les fiches produits (publiées et archivées) avec les colonnes : `id,nom,description,prix,categorie,quantite,seuil_alerte,titre_seo,description_seo,mots_cles_seo,image_og,statut` (la colonne `id` permet de réutiliser le fichier pour une mise à jour via l'import CSV)
+- [x] Un bouton « Exporter CSV » est disponible dans la section gestion du catalogue du back-office vendeur et ouvre une modale de sélection des colonnes optionnelles avant l'export
+- [x] Les colonnes `id`, `nom` et `prix` sont toujours incluses (la colonne `id` permet de réutiliser le fichier pour une mise à jour via l'import CSV) ; le vendeur choisit lesquelles des colonnes optionnelles ajouter parmi `description,categorie,quantite,seuil_alerte,titre_seo,description_seo,mots_cles_seo,image_og,statut`, toutes cochées par défaut (équivalent à l'export historique complet)
+- [x] Le fichier généré contient toutes les fiches produits (publiées et archivées)
 - [x] Les colonnes SEO reprennent la substitution SEO courante de chaque produit ; elles sont vides si aucune substitution n'existe pour ce produit
 - [x] Le fichier est téléchargé directement par le navigateur avec le nom `catalogue_export_YYYYMMDD.csv`
 - [x] L'encodage du fichier est UTF-8 avec BOM pour compatibilité tableur
