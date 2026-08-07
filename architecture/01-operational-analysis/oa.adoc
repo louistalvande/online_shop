@@ -139,8 +139,8 @@ Les capacités expriment ce que la boutique doit être en mesure d'accomplir pou
 
 | CAP-008
 | Communication transactionnelle
-| Délivrer les emails d'activation, de confirmation de commande, d'expédition et de remboursement
-| Acheteur, Service de messagerie
+| Délivrer les emails d'activation, de confirmation de commande, d'expédition, de remboursement et de suspension de compte
+| Acheteur, Vendeur, Service de messagerie
 
 | CAP-009
 | Référencement naturel et mesure d'audience

@@ -965,7 +965,7 @@ include::diagrams/ihm/ihm-admin-connexion.puml[]
 
 ==== Gestion des comptes
 
-Liste de tous les comptes utilisateurs (FS-A01 / FS-A02). Les filtres par rôle et par statut permettent de cibler rapidement les comptes en attente d'activation ou suspendus. Les actions disponibles varient selon le statut : un compte suspendu peut être réactivé ; un compte en attente peut être supprimé.
+Liste de tous les comptes utilisateurs (FS-A01 / FS-A02). Les filtres par rôle et par statut permettent de cibler rapidement les comptes en attente d'activation ou suspendus. Les actions disponibles varient selon le statut : un compte suspendu peut être réactivé ; un compte en attente peut être supprimé. Lorsqu'un compte actif est suspendu, le système envoie automatiquement au titulaire un email l'informant de la suspension, dans sa langue de notification (COp-11).
 
 .Maquette filaire : Console Admin — Gestion des comptes
 [plantuml, ihm-admin-comptes, svg]

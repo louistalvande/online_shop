@@ -39,6 +39,7 @@ a|
 - [x] Action disponible uniquement sur les comptes au statut `actif`
 - [x] Compte passe en statut `suspendu` ; l'utilisateur ne peut plus se connecter
 - [x] Action réversible (voir US-ADM-03)
+- [x] Le titulaire du compte reçoit un email l'informant de la suspension, dans sa langue de notification (COp-11)
 | Terminée
 
 | *US-ADM-03*

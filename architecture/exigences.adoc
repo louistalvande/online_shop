@@ -281,6 +281,10 @@ Les contraintes suivantes s'imposent indépendamment des acteurs et de toute dé
 | COp-10
 | Avertissement avant expiration de session
 | Un acteur authentifié (administrateur, vendeur ou acheteur) doit être averti quelques minutes avant l'expiration de sa session par inactivité, et doit pouvoir la prolonger en poursuivant simplement son activité, sans ressaisir ses identifiants tant que la session est encore valide. À expiration effective, l'acteur doit être invité à se reconnecter sans perdre le contexte de sa page courante. _(SEC-AUTH-004)_
+
+| COp-11
+| Notification de suspension par email
+| Lorsqu'un administrateur suspend le compte d'un acheteur ou d'un vendeur, le titulaire du compte reçoit un email l'informant de la suspension, dans sa langue de notification. _(BES-ADM-002)_
 |===
 
 ---

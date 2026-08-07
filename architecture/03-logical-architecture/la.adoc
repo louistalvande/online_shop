@@ -659,7 +659,7 @@ En_attente_activation --> Actif : SvcAccount.activerCompte(token)\n[token valide
 
 En_attente_activation --> En_attente_activation : SvcAccount.renvoyerToken()\n[token expiré — nouveau token généré]
 
-Actif --> Suspendu : SvcAccount.suspendre()\n[Admin]
+Actif --> Suspendu : SvcAccount.suspendre()\n[Admin]\n+ envoi email notification (COp-11)
 
 Suspendu --> Actif : SvcAccount.reactiver()\n[Admin]
 
