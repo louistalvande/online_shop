@@ -372,7 +372,7 @@ Les fonctions système (FS) sont dérivées des cas d'utilisation opérationnels
 | FS-S08 | Proposer et enforcer l'authentification multifacteur (MFA) pour les comptes Vendeur et Administrateur ; interdire le SMS comme facteur | CS-17
 | FS-S09 | Rejeter tout mot de passe figurant dans une liste de mots de passe compromis connus lors de la création ou du renouvellement | CS-18
 | FS-S10 | Gérer l'expiration des mots de passe selon le rôle : sans expiration pour l'Acheteur, entre 1 et 3 ans pour l'Administrateur | CS-18
-| FS-S11 | Révoquer immédiatement les mots de passe suspectés ou avérés compromis et désactiver les comptes non renouvelés | CS-18
+| FS-S11 | Révoquer immédiatement les mots de passe suspectés ou avérés compromis et désactiver les comptes non renouvelés ; le titulaire est notifié par email de cette suspension automatique et de son motif (COp-11) | CS-18
 | FS-S12 | Émettre un lien de réinitialisation de mot de passe temporaire et à usage unique ; ne jamais transmettre le mot de passe en clair | CS-19
 | FS-S13 | Détecter les comportements d'authentification anormaux (tentatives répétées, connexions inhabituelles) à partir des journaux | CS-21
 | FS-S14 | Exposer l'expiration du jeton de session courant (en-tête HTTP `X-Session-Expires-At`) sur chaque réponse authentifiée, afin de permettre au client d'avertir l'utilisateur avant expiration et de déclencher un renouvellement silencieux via une nouvelle requête authentifiée | CS-24

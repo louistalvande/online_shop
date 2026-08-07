@@ -284,7 +284,7 @@ Les contraintes suivantes s'imposent indépendamment des acteurs et de toute dé
 
 | COp-11
 | Notification de suspension par email
-| Lorsqu'un administrateur suspend le compte d'un acheteur ou d'un vendeur, le titulaire du compte reçoit un email l'informant de la suspension, dans sa langue de notification. _(BES-ADM-002)_
+| Lorsqu'un compte d'acheteur ou de vendeur est suspendu — que ce soit par action directe d'un administrateur (BES-ADM-002) ou automatiquement à l'issue du délai de 24 h suivant une révocation de mot de passe non renouvelée (FS-S11 / US-SEC-04) — le titulaire du compte reçoit un email l'informant de la suspension et de son motif, dans sa langue de notification. Si une adresse de contact a été configurée (`EmailSettings.contact_email`), l'email invite le titulaire à s'y adresser en cas d'erreur.
 |===
 
 ---
