@@ -188,7 +188,7 @@ Les capacités système raffinent les capacités opérationnelles (CAP-xxx) de l
 | CAPS-003
 | Fournir une expérience d'achat complète
 | CAP-003
-| FS-B03, FS-B04, FS-B05, FS-B06, FS-B11
+| FS-B03, FS-B04, FS-B05, FS-B06, FS-B11, FS-V21
 
 | CAPS-004
 | Traiter les paiements
@@ -255,6 +255,7 @@ wbsDiagram {
 
 ** CAPS-003 — Expérience d'achat <<caps>>
 ***_ FS-B03, B04, B05, B06, B11 <<funcs>>
+***_ FS-V21 <<funcs>>
 
 ** CAPS-004 — Paiements <<caps>>
 ***_ FS-P01, P02, P03 <<funcs>>
@@ -320,6 +321,7 @@ Les fonctions système (FS) sont dérivées des cas d'utilisation opérationnels
 | FS-V18 | Permettre au vendeur de saisir et enregistrer les métadonnées de référencement de la boutique (titre global, description, mots-clés, image Open Graph) et, de manière spécifique, pour chaque fiche produit (titre, description, mots-clés, image OG individuelle). Si les champs produit sont vides, le système utilise le nom, la description et la première photo du produit comme valeurs de repli automatique (CS-23 / BES-VND-018) | UC_V13
 | FS-V19 | Générer et exposer dynamiquement le fichier `sitemap.xml` listant toutes les pages indexables (page d'accueil, fiches produits publiées) avec les fréquences de mise à jour configurées par le vendeur ; générer et exposer le fichier `robots.txt` selon les règles d'indexation définies par le vendeur ; enregistrer et appliquer l'URL canonique déclarée pour la boutique afin d'éviter le contenu dupliqué (CS-23 / BES-VND-019) | UC_V13
 | FS-V20 | Permettre au vendeur d'enregistrer les codes de vérification de propriété (balises `<meta>` ou identifiants) pour les outils de mesure d'audience et de référencement de son choix (Google Search Console, Google Analytics GA4, Bing Webmaster Tools, etc.) et les injecter dans le `<head>` des pages du portail acheteur (CS-23 / BES-VND-020) | UC_V13
+| FS-V21 | Configurer des paliers de frais de port progressifs appliqués automatiquement au tunnel d'achat : le vendeur définit une liste de paliers, chacun borné par un seuil minimum de sous-total TTC panier (le premier palier débutant à 0) et un seuil maximum optionnel (illimité si absent), auquel est associé un montant de frais de port fixe ; les paliers ne doivent pas se chevaucher ; si aucun palier n'est configuré, ou si le sous-total ne correspond à aucun palier, les frais de port appliqués sont nuls | UC_V14
 |===
 
 === Expérience d'achat (Acheteur)
@@ -334,7 +336,7 @@ Les fonctions système (FS) sont dérivées des cas d'utilisation opérationnels
 | FS-B03 | Afficher et filtrer le catalogue produits disponibles | UC_B1
 | FS-B04 | Gérer le panier (ajout, modification de quantité, suppression) | UC_B2
 | FS-B05 | Sauvegarder et restaurer le panier entre sessions (CS-03) | UC_B2B
-| FS-B06 | Orchestrer le tunnel d'achat (sélection d'une adresse du carnet ou saisie d'une nouvelle, mode de livraison, validation) | UC_B3 / UC_B4B
+| FS-B06 | Orchestrer le tunnel d'achat (sélection d'une adresse du carnet ou saisie d'une nouvelle, mode de livraison, validation) ; le système calcule automatiquement les frais de port dus selon les paliers progressifs configurés par le vendeur (FS-V21) et les ajoute au sous-total pour obtenir le montant total de la commande avant paiement | UC_B3 / UC_B4B
 | FS-B07 | Soumettre le paiement au prestataire externe — carte ou virement (CS-02) | UC_B4
 | FS-B08 | Afficher le numéro de suivi et le lien vers le site du transporteur dans l'espace commandes | UC_B5
 | FS-B09 | Permettre l'annulation d'une commande avant expédition | UC_B6
@@ -1175,6 +1177,43 @@ a|
 | FS-V18, FS-V19, FS-V20, CS-23, COp-09
 |===
 
+[cols="1,3", options="header"]
+|===
+| Champ | Description
+
+| *Identifiant*
+| UCSA-19
+
+| *Acteurs*
+| Vendeur (principal), Acheteur (bénéficiaire)
+
+| *Préconditions*
+| Vendeur authentifié
+
+| *Déclencheur*
+| Le vendeur accède à la section « Frais de port » du back-office
+
+| *Scénario nominal*
+a|
+. Le vendeur accède à la section « Frais de port » et consulte la liste des paliers existants, triés par seuil minimum croissant (FS-V21).
+. Le vendeur ajoute un palier en saisissant un seuil minimum de sous-total TTC, un seuil maximum optionnel et un montant de frais de port fixe.
+. Le système valide que le palier ne chevauche aucun palier existant et l'enregistre.
+. Le vendeur peut modifier ou supprimer un palier existant.
+. Lors du tunnel d'achat, le système détermine le palier correspondant au sous-total TTC courant du panier de l'acheteur et ajoute le montant de frais de port associé au total de la commande avant paiement (FS-B06).
+
+| *Scénarios alternatifs*
+a|
+* *2a.* Le seuil maximum est laissé vide : le palier s'applique à tout sous-total supérieur ou égal au seuil minimum, sans limite haute.
+* *3a.* Le palier saisi chevauche un palier existant : le système refuse l'enregistrement et affiche une erreur de validation.
+* *5a.* Aucun palier n'est configuré, ou le sous-total ne correspond à aucun palier : les frais de port appliqués sont nuls.
+
+| *Postconditions*
+| Paliers de frais de port persistés en base ; frais de port appliqués automatiquement à chaque nouvelle commande selon le sous-total du panier.
+
+| *Exigences liées*
+| FS-V21, FS-B06
+|===
+
 == Diagramme d'activité système — Flux de commande complet
 
 Ce diagramme modélise le flux système de bout en bout, depuis la connexion de l'acheteur jusqu'à la clôture de la commande, en faisant apparaître les échanges avec les systèmes externes.
@@ -1409,6 +1448,7 @@ note right : Panier sauvegardé en base\npour la prochaine session (CS-03)
 == Tunnel d'achat et paiement (UCSA-05) ==
 Buyer -> Sys : POST /commandes {panier_id, adresse_zone_euro, mode_livraison, mode_paiement}
 note right : CS-04 — adresse validée zone euro\nCS-02 — carte ou virement
+Sys -> Sys : Calcule le sous-total du panier\net détermine les frais de port\nselon les paliers configurés (FS-V21)\nmontant_total = sous_total + frais_port
 
 alt Paiement par carte
   Sys -> Payment : POST /authorize {montant, mode: carte, références}
@@ -1531,9 +1571,18 @@ class LigneCommande {
 class Commande {
   + id : UUID
   + modeLivraison : String
+  + sousTotal : Decimal
+  + montantFraisPort : Decimal
   + montantTotal : Decimal
   + statut : Enum {paiement_en_attente_virement,\nen_attente, en_préparation,\nexpédiée, demande_annulation,\nen_attente_retour, livrée, annulée}
   + dateCommande : DateTime
+}
+
+class PalierFraisPort {
+  + id : UUID
+  + seuilMinimum : Decimal
+  + seuilMaximum : Decimal
+  + montantFraisPort : Decimal
 }
 
 class Paiement {
@@ -1583,6 +1632,7 @@ Commande "1" *-- "1" Paiement : réglée par
 Commande "1" *-- "0..1" Expédition : donne lieu à
 Commande "1" --> "1" AdresseLivraison : livrée à
 Expédition "0..*" --> "1" Transporteur : acheminée par
+Commande "0..*" ..> "0..1" PalierFraisPort : frais calculés via
 
 note bottom of Commande
   CS-04 : AdresseLivraison.paysZoneEuro
@@ -1592,6 +1642,12 @@ end note
 note bottom of Paiement
   CS-02 : mode ∈ {carte, virement}
   CS-06 : tous les paiements sont journalisés
+end note
+
+note bottom of PalierFraisPort
+  FS-V21 : paliers non chevauchants,\nordonnés par seuilMinimum croissant ;
+  le montant est capturé sur la Commande
+  (PalierFraisPort n'est pas référencé par FK)
 end note
 ----
 
@@ -1671,6 +1727,7 @@ La matrice ci-dessous assure la couverture complète de chaque besoin opération
 | UC_B_MKTG | Gérer le consentement marketing acheteur (BES-ACH-016) | FS-B13, FS-V15 | —
 | UC_V12 | Envoyer une campagne email promotionnelle aux acheteurs consentants (BES-VND-017) | FS-V17 | UCSA-17
 | UC_V13 | Configurer le référencement de la boutique (BES-VND-018..020) | FS-V18, FS-V19, FS-V20, CS-23 | UCSA-18
+| UC_V14 | Configurer les paliers de frais de port progressifs | FS-V21 | UCSA-19
 | COp-09 | Référencement naturel — indexation individuelle boutique et produits | CS-23, FS-V18, FS-V19, FS-V20 | UCSA-18
 | COp-10 | Avertissement avant expiration de session | CS-24, FS-S14 | —
 |===

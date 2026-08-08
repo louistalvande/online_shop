@@ -62,8 +62,8 @@ Le système est structuré en cinq couches logiques : *Présentation*, *Applicat
 
 | *Service Commande*
 | Application
-| Orchestration du tunnel d'achat, création et cycle de vie des commandes (états : `paiement_en_attente_virement`, `en_attente`, `en_préparation`, `expédiée`, `demande_annulation`, `en_attente_retour`, `remboursement_virement_en_cours`, `livrée`, `annulée`), gestion des annulations avant et après expédition (avec ou sans condition de renvoi)
-| FS-B06, FS-B09, FS-V04, FS-V07, FS-V08
+| Orchestration du tunnel d'achat, création et cycle de vie des commandes (états : `paiement_en_attente_virement`, `en_attente`, `en_préparation`, `expédiée`, `demande_annulation`, `en_attente_retour`, `remboursement_virement_en_cours`, `livrée`, `annulée`), gestion des annulations avant et après expédition (avec ou sans condition de renvoi), gestion des paliers de frais de port progressifs (CRUD vendeur, paliers non chevauchants triés par seuil minimum), calcul automatique du montant de frais de port applicable au sous-total du panier lors de la création de la commande (frais nuls si aucun palier ne correspond)
+| FS-B06, FS-B09, FS-V04, FS-V07, FS-V08, FS-V21
 
 | *Service Panier*
 | Application
@@ -276,8 +276,8 @@ Les interfaces logiques définissent les contrats d'échange entre composants, i
 | *IFL-04*
 | Portails (UI)
 | Service Commande
-| Créer une commande, lister les commandes, mettre à jour le statut, demander une annulation (avec flag `condition_renvoi` pour les annulations post-expédition), confirmer retour reçu
-| FS-B06, FS-B09, FS-V04, FS-V08
+| Créer une commande, lister les commandes, mettre à jour le statut, demander une annulation (avec flag `condition_renvoi` pour les annulations post-expédition), confirmer retour reçu, gérer les paliers de frais de port (CRUD vendeur), obtenir les paliers actifs (lecture publique pour le tunnel d'achat)
+| FS-B06, FS-B09, FS-V04, FS-V08, FS-V21
 
 | *IFL-05*
 | Portails (UI) / Service Commande
@@ -756,6 +756,8 @@ package "Entités métier (SA)" #F0F8FF {
     + carrierName : String
     + carrierTrackingUrl : URL
     + trackingNumber : String
+    + sousTotal : Decimal
+    + montantFraisPort : Decimal
     + montantTotal : Decimal
     + modePaiement : Enum {CARD, WIRE_TRANSFER}
     + stripePaymentIntentId : String
@@ -780,6 +782,13 @@ package "Entités métier (SA)" #F0F8FF {
     + paysSupportés : List<CodeISO>
     + urlSuivi : URL
     + actif : Boolean
+  }
+
+  class PalierFraisPort {
+    + id : UUID
+    + seuilMinimum : Decimal
+    + seuilMaximum : Decimal
+    + montantFraisPort : Decimal
   }
 
   class Annonce {
@@ -879,6 +888,7 @@ CompteUtilisateur "1" --> "0..1" Panier : possède
 CompteUtilisateur "1" --> "0..*" Commande : passe
 CompteUtilisateur "1" --> "0..*" CampagneMarketing : envoie
 Commande "0..*" --> "1" AdresseLivraison : livrée à
+Commande "0..*" ..> "0..1" PalierFraisPort : frais calculés via
 Panier "1" *-- "0..*" LignePanier : contient
 LignePanier "0..*" --> "1" Produit : référence
 Commande "1" *-- "1..*" LigneCommande : contient
@@ -939,6 +949,7 @@ end note
 | FS-V10 | Confirmer l'émission d'un virement inverse de remboursement | Service Paiement | IFL-08, IFL-13
 | FS-V11 | Gérer les annonces défilantes de la page d'accueil | Service Annonce | IFL-15, IFL-16, IFL-13
 | FS-V17 | Composer et envoyer une campagne email promotionnelle aux acheteurs consentants | Service Campagne Marketing, Service Notification, Adaptateur Messagerie, Référentiel de données | IFL-18, IFL-09, IFL-12, IFL-13
+| FS-V21 | Configurer des paliers de frais de port progressifs | Service Commande, Référentiel | IFL-04, IFL-13
 | FS-S01 | Enforcer la politique de mots de passe | Service Sécurité | transverse
 | FS-S02 | Détecter les tentatives d'auth répétées (force brute) | Service Sécurité | transverse
 | FS-S03 | Invalider la session à la déconnexion et après inactivité | Service Sécurité | transverse

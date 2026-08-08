@@ -145,7 +145,7 @@ NOTE: Les choix technologiques retenus ci-dessous sont des recommandations archi
 
 | Service Commande
 | Module Spring Boot (Java)
-| Orchestration transactionnelle (Spring Data JPA / Hibernate), gestion du cycle de vie des commandes
+| Orchestration transactionnelle (Spring Data JPA / Hibernate), gestion du cycle de vie des commandes ; entité `ShippingFeeTier` (table `shipping_fee_tiers`) pour les paliers de frais de port progressifs configurés par le vendeur (FS-V21)
 
 | Service Paiement
 | Module Spring Boot (Java)
@@ -306,13 +306,18 @@ note right : HTTPS (CPA-02)\nCS-04 : EU delivery address validated
 API -> Redis : GET cart:{customer_id}
 Redis --> API : cart lines
 
+API -> PG : SELECT * FROM shipping_fee_tiers ORDER BY min_subtotal ASC
+PG --> API : tiers
+API -> API : subtotal = sum(lines.price * qty)\nshippingFee = matchingTier(tiers, subtotal)?.feeAmount ?? 0\ntotal = subtotal + shippingFee
+note right : FS-V21 — 0 € si aucun palier configuré\nou si le sous-total ne correspond à aucun palier
+
 alt Card payment
   API -> CatalogMod : reserveStock(lines[])
   CatalogMod -> PG : BEGIN ; UPDATE stock SET qty = qty - n WHERE id = ?
   PG --> CatalogMod : OK
   CatalogMod --> API : stock reserved
 
-  API -> PG : INSERT INTO orders {status: pending, ...}
+  API -> PG : INSERT INTO orders {status: pending, subtotal, shipping_fee, total, ...}
   PG --> API : order_id
 
   API -> PayMod : submitPayment(amount, mode:card, order_id)
@@ -822,6 +827,38 @@ L'API publique `GET /api/public/theme` retourne les cinq champs `{ logoUrl, bann
 include::diagrams/ihm/ihm-bov-logo.puml[]
 ----
 
+==== Frais de port progressifs
+
+Configuration des paliers de frais de port appliqués au tunnel d'achat (FS-V21 / UCSA-19). La section « Frais de port » du back-office affiche la liste des paliers existants, triés par seuil minimum croissant. Chaque palier est défini par un seuil minimum de sous-total TTC panier, un seuil maximum optionnel (illimité si laissé vide) et un montant de frais de port fixe. Le vendeur crée, modifie et supprime des paliers via les endpoints `POST/PUT/DELETE /api/vendor/shipping-fee-tiers`. À la création ou à la modification, le backend refuse (`400`) tout palier dont l'intervalle `[seuilMinimum, seuilMaximum)` chevauche un palier existant. Lors de la création d'une commande, le Service Commande interroge `shipping_fee_tiers`, détermine le palier dont l'intervalle contient le sous-total courant du panier et ajoute son `feeAmount` au sous-total pour obtenir le montant total ; si aucun palier n'est configuré ou si aucun ne correspond, les frais de port sont nuls. Le récapitulatif du tunnel d'achat (étape « Paiement », voir wireframe ci-dessus) affiche la ligne « Livraison » avec le montant ainsi calculé, obtenu via l'endpoint public `GET /api/public/shipping-fee-tiers`.
+
+Endpoints REST exposés (Service Commande — FS-V21) :
+
+[cols="2,4", options="header"]
+|===
+| Méthode + Route | Description
+
+| `GET /api/vendor/shipping-fee-tiers`
+| Retourne la liste des paliers, triés par `minSubtotal` croissant. Accès VENDOR.
+
+| `POST /api/vendor/shipping-fee-tiers`
+| Crée un palier. Corps : `{ minSubtotal, maxSubtotal, feeAmount }` (`maxSubtotal` nullable = illimité). Retourne `400` si l'intervalle chevauche un palier existant.
+
+| `PUT /api/vendor/shipping-fee-tiers/{id}`
+| Met à jour un palier existant. Mêmes règles de validation que la création (chevauchement vérifié hors le palier modifié lui-même).
+
+| `DELETE /api/vendor/shipping-fee-tiers/{id}`
+| Supprime un palier.
+
+| `GET /api/public/shipping-fee-tiers`
+| Endpoint public (sans authentification), utilisé par le portail acheteur pour calculer et afficher les frais de port avant validation de la commande.
+|===
+
+.Maquette filaire : Back-office Vendeur — Frais de port progressifs
+[plantuml, ihm-bov-frais-port, svg]
+----
+include::diagrams/ihm/ihm-bov-frais-port.puml[]
+----
+
 ==== Campagne email promotionnelle
 
 Formulaire de composition et d'envoi d'une campagne marketing (FS-V17 / US-MKTG-01). Le nombre de destinataires potentiels est affiché avant envoi ; le bouton « Envoyer » est désactivé si aucun acheteur consentant n'est disponible. La saisie de l'objet et du message se fait via trois onglets de langue (français, anglais, espagnol), chacun obligatoire ; chaque acheteur reçoit à l'envoi la version correspondant à sa langue de compte. Un aperçu en direct de l'email (logo, couleur, pied de page issus des paramètres email du vendeur — FS-V16) est affiché à côté du formulaire et se met à jour à la saisie.
@@ -1084,7 +1121,7 @@ NOTE: L'en-tête `X-Session-Expires-At` est ajouté par `JwtFilter` sur *toute* 
 | Service Commande
 | composant-commande
 | Conteneur API Spring Boot
-| Spring Boot / Spring Data JPA / Hibernate
+| Spring Boot / Spring Data JPA / Hibernate — entité `ShippingFeeTier`, endpoints VENDOR `GET/POST/PUT/DELETE /api/vendor/shipping-fee-tiers`, endpoint public `GET /api/public/shipping-fee-tiers`
 
 | Service Paiement
 | composant-paiement

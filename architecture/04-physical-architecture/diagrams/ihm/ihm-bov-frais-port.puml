@@ -1,0 +1,35 @@
+@startuml ihm-bov-frais-port
+' Composant PA : front-vendeur (Back-office Vendeur)
+' Fonctions allouées : FS-V21 (CRUD paliers de frais de port progressifs)
+salt
+{+
+  {+
+    == Palier 1
+    Seuil minimum  | "0,00    " €
+    Seuil maximum  | "50,00   " €
+    Frais de port  | "5,90    " €
+    --
+    [Enregistrer]  [Supprimer]
+  }
+  --
+  {+
+    == Palier 2
+    Seuil minimum  | "50,00   " €
+    Seuil maximum  | "100,00  " €
+    Frais de port  | "2,90    " €
+    --
+    [Enregistrer]  [Supprimer]
+  }
+  --
+  {+
+    == Palier 3
+    Seuil minimum  | "100,00  " €
+    Seuil maximum  | "(illimité)"
+    Frais de port  | "0,00    " €
+    --
+    [Enregistrer]  [Supprimer]
+  }
+  ==
+  [+ Ajouter un palier]
+}
+@enduml

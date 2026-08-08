@@ -429,6 +429,35 @@ a|
 
 |===
 
+== Frais de port progressifs
+
+_Fonctions ARCADIA : FS-V21, FS-B06 — UCSA-19 — LA : Service Commande_
+
+[cols="1,3,4,1", options="header"]
+|===
+| ID | User story | Critères d'acceptation | Statut
+
+| *US-LIV-01*
+| En tant que vendeur, je configure des paliers de frais de port progressifs qui s'appliquent automatiquement au tunnel d'achat selon le sous-total du panier de l'acheteur.
+a|
+- [ ] Section « Frais de port » dans le back-office listant les paliers existants, triés par seuil minimum croissant
+- [ ] Création d'un palier via `POST /api/vendor/shipping-fee-tiers` : seuil minimum, seuil maximum (optionnel, illimité si vide), montant de frais de port
+- [ ] Modification via `PUT /api/vendor/shipping-fee-tiers/{id}` et suppression via `DELETE /api/vendor/shipping-fee-tiers/{id}`
+- [ ] Le système refuse (`400`) l'enregistrement d'un palier dont l'intervalle chevauche un palier existant
+- [ ] Si aucun palier n'est configuré, aucun frais de port n'est appliqué aux commandes
+| À faire
+
+| *US-LIV-02*
+| En tant qu'acheteur, je vois le montant des frais de port calculé s'ajouter au sous-total de mon panier avant de valider ma commande.
+a|
+- [ ] Le récapitulatif du tunnel d'achat (étape paiement) affiche une ligne « Livraison » avec le montant issu de `GET /api/public/shipping-fee-tiers` et le sous-total courant du panier
+- [ ] Le total affiché (sous-total + frais de port) correspond au montant effectivement débité
+- [ ] Si le sous-total ne correspond à aucun palier configuré, la ligne « Livraison » affiche `0,00 €`
+- [ ] Le montant du sous-total et des frais de port est conservé sur la commande et visible dans le détail de commande de l'acheteur et du vendeur
+| À faire
+
+|===
+
 == Gestion des commandes — Vendeur
 
 _Fonctions ARCADIA : FS-V04, FS-V09 — UCSA-07, UCSA-13 — LA : Service Commande / Service Paiement_
@@ -778,7 +807,7 @@ a|
 | FS-B14 | Alerte de remise en stock | US-SHP-03
 | FS-B04 | Gérer le panier | US-CRT-01
 | FS-B05 | Persister et restaurer le panier | US-CRT-02
-| FS-B06 | Orchestrer le tunnel d'achat | US-ORD-01, US-ORD-02
+| FS-B06 | Orchestrer le tunnel d'achat | US-ORD-01, US-ORD-02, US-LIV-02
 | FS-B07 | Soumettre le paiement (carte ou virement) | US-ORD-03, US-ORD-04
 | FS-B08 | Afficher le suivi de livraison | US-EXP-02
 | FS-B09 | Annuler une commande (acheteur) | US-CAN-01
@@ -792,6 +821,7 @@ a|
 | FS-V03 | Gérer les stocks et alertes | US-CAT-04, US-CAT-05
 | FS-V14 | Mise à jour en masse des stocks | US-CAT-08
 | FS-V16 | Configurer l'identité visuelle (logo, bannière, couleurs) | US-VIS-01
+| FS-V21 | Configurer les paliers de frais de port progressifs | US-LIV-01, US-LIV-02
 | FS-V04 | Traiter les commandes reçues | US-VND-01
 | FS-V05 | Déclarer l'expédition avec numéro de suivi | US-EXP-01
 | FS-V07 | Consulter les rapports de ventes | US-RPT-01
