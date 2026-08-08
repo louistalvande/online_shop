@@ -859,6 +859,32 @@ Endpoints REST exposés (Service Commande — FS-V21) :
 include::diagrams/ihm/ihm-bov-frais-port.puml[]
 ----
 
+==== Réglages TVA
+
+Configuration du taux de TVA appliqué aux prix de la boutique (FS-V23 / UCSA-20 / CS-09). La section « Réglages TVA » du back-office affiche le taux actuellement configuré et permet au vendeur de le modifier (0 à 100%, 0% par défaut). Le backend refuse (`400`) tout taux négatif ou supérieur à 100%. Le taux configuré est utilisé par le Service Compte pour convertir en TTC les prix hors taxe saisis par le vendeur, partout où un prix est affiché ou facturé (catalogue, panier, tunnel d'achat) : `prixTTC = prixHT × (1 + taux / 100)`. Lorsque le taux est à 0%, le récapitulatif du tunnel d'achat (portail acheteur) affiche la mention légale « TVA non applicable, art. 293 B du CGI », obtenue via l'endpoint public `GET /api/public/vat-rate`.
+
+Endpoints REST exposés (Service Compte — FS-V23) :
+
+[cols="2,4", options="header"]
+|===
+| Méthode + Route | Description
+
+| `GET /api/vendor/settings/vat`
+| Retourne le taux de TVA actuellement configuré (`{ rate }`). Accès VENDOR.
+
+| `PUT /api/vendor/settings/vat`
+| Met à jour le taux de TVA. Corps : `{ rate }` (0 à 100). Retourne `400` si le taux est hors bornes.
+
+| `GET /api/public/vat-rate`
+| Endpoint public (sans authentification), utilisé par le portail acheteur pour afficher la mention d'exonération lorsque le taux est nul.
+|===
+
+.Maquette filaire : Back-office Vendeur — Réglages TVA
+[plantuml, ihm-bov-tva, svg]
+----
+include::diagrams/ihm/ihm-bov-tva.puml[]
+----
+
 ==== Campagne email promotionnelle
 
 Formulaire de composition et d'envoi d'une campagne marketing (FS-V17 / US-MKTG-01). Le nombre de destinataires potentiels est affiché avant envoi ; le bouton « Envoyer » est désactivé si aucun acheteur consentant n'est disponible. La saisie de l'objet et du message se fait via trois onglets de langue (français, anglais, espagnol), chacun obligatoire ; chaque acheteur reçoit à l'envoi la version correspondant à sa langue de compte. Un aperçu en direct de l'email (logo, couleur, pied de page issus des paramètres email du vendeur — FS-V16) est affiché à côté du formulaire et se met à jour à la saisie.

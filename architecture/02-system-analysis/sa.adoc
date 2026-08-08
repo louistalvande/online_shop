@@ -103,8 +103,8 @@ Les contraintes opérationnelles (COp) de l'OA sont traduites en contraintes sys
 Un compte suspendu ou supprimé ne peut pas s'authentifier. Les messages d'erreur ne distinguent pas un email inconnu d'un mot de passe incorrect (sécurité contre l'énumération de comptes).
 
 | CS-09
-| Prix TTC — pas de TVA
-| Tous les prix affichés sur la boutique sont exprimés en TTC. Aucune TVA n'est calculée ni affichée en sus ; le prix saisi par le vendeur est le prix final payé par l'acheteur.
+| Prix TTC — taux de TVA configurable
+| Tous les prix affichés sur la boutique sont exprimés en TTC. Le taux de TVA appliqué est configurable par le vendeur (0 à 100%), avec un taux par défaut de 0% correspondant à une franchise en base de TVA (ex. auto-entrepreneur, art. 293 B du CGI) : dans ce cas, aucune TVA n'est calculée ni affichée en sus et le prix saisi par le vendeur est le prix final payé par l'acheteur. Si un taux positif est configuré, le prix TTC affiché et facturé est le prix hors taxe saisi par le vendeur majoré de ce taux.
 
 | CS-10
 | Préférence de langue par compte
@@ -255,7 +255,7 @@ wbsDiagram {
 
 ** CAPS-003 — Expérience d'achat <<caps>>
 ***_ FS-B03, B04, B05, B06, B11 <<funcs>>
-***_ FS-V21 <<funcs>>
+***_ FS-V21, V23 <<funcs>>
 
 ** CAPS-004 — Paiements <<caps>>
 ***_ FS-P01, P02, P03 <<funcs>>
@@ -322,6 +322,7 @@ Les fonctions système (FS) sont dérivées des cas d'utilisation opérationnels
 | FS-V19 | Générer et exposer dynamiquement le fichier `sitemap.xml` listant toutes les pages indexables (page d'accueil, fiches produits publiées) avec les fréquences de mise à jour configurées par le vendeur ; générer et exposer le fichier `robots.txt` selon les règles d'indexation définies par le vendeur ; enregistrer et appliquer l'URL canonique déclarée pour la boutique afin d'éviter le contenu dupliqué (CS-23 / BES-VND-019) | UC_V13
 | FS-V20 | Permettre au vendeur d'enregistrer les codes de vérification de propriété (balises `<meta>` ou identifiants) pour les outils de mesure d'audience et de référencement de son choix (Google Search Console, Google Analytics GA4, Bing Webmaster Tools, etc.) et les injecter dans le `<head>` des pages du portail acheteur (CS-23 / BES-VND-020) | UC_V13
 | FS-V21 | Configurer des paliers de frais de port progressifs appliqués automatiquement au tunnel d'achat : le vendeur définit une liste de paliers, chacun borné par un seuil minimum de sous-total TTC panier (le premier palier débutant à 0) et un seuil maximum optionnel (illimité si absent), auquel est associé un montant de frais de port fixe ; les paliers ne doivent pas se chevaucher ; si aucun palier n'est configuré, ou si le sous-total ne correspond à aucun palier, les frais de port appliqués sont nuls | UC_V14
+| FS-V23 | Configurer le taux de TVA appliqué aux prix affichés et facturés (0 à 100%, 0% par défaut correspondant à une franchise en base de TVA — CS-09) ; le taux configuré convertit le prix hors taxe saisi par le vendeur en prix TTC affiché à l'acheteur dans le catalogue, le panier et le tunnel d'achat, et détermine le montant effectivement facturé | UC_V15
 |===
 
 === Expérience d'achat (Acheteur)
@@ -1177,6 +1178,8 @@ a|
 | FS-V18, FS-V19, FS-V20, CS-23, COp-09
 |===
 
+=== UCSA-19 : Configurer les paliers de frais de port progressifs
+
 [cols="1,3", options="header"]
 |===
 | Champ | Description
@@ -1212,6 +1215,43 @@ a|
 
 | *Exigences liées*
 | FS-V21, FS-B06
+|===
+
+=== UCSA-20 : Configurer le taux de TVA
+
+[cols="1,3", options="header"]
+|===
+| Champ | Description
+
+| *Identifiant*
+| UCSA-20
+
+| *Acteurs*
+| Vendeur (principal), Acheteur (bénéficiaire)
+
+| *Préconditions*
+| Vendeur authentifié
+
+| *Déclencheur*
+| Le vendeur accède à la section « Réglages TVA » du back-office
+
+| *Scénario nominal*
+a|
+. Le vendeur accède à la section « Réglages TVA » et consulte le taux actuellement configuré (0% par défaut, CS-09).
+. Le vendeur saisit un nouveau taux de TVA compris entre 0 et 100%.
+. Le système valide le taux et l'enregistre.
+. Le catalogue, le panier et le tunnel d'achat appliquent immédiatement le nouveau taux pour convertir les prix hors taxe saisis par le vendeur en prix TTC (FS-V23).
+. Si le taux configuré est 0%, le tunnel d'achat affiche la mention « TVA non applicable, art. 293 B du CGI » à l'acheteur.
+
+| *Scénarios alternatifs*
+a|
+* *3a.* Le taux saisi est négatif ou supérieur à 100% : le système refuse l'enregistrement et affiche une erreur de validation.
+
+| *Postconditions*
+| Taux de TVA persisté en base ; prix TTC du catalogue, du panier et du tunnel d'achat recalculés selon le nouveau taux.
+
+| *Exigences liées*
+| FS-V23, CS-09
 |===
 
 == Diagramme d'activité système — Flux de commande complet
@@ -1728,6 +1768,7 @@ La matrice ci-dessous assure la couverture complète de chaque besoin opération
 | UC_V12 | Envoyer une campagne email promotionnelle aux acheteurs consentants (BES-VND-017) | FS-V17 | UCSA-17
 | UC_V13 | Configurer le référencement de la boutique (BES-VND-018..020) | FS-V18, FS-V19, FS-V20, CS-23 | UCSA-18
 | UC_V14 | Configurer les paliers de frais de port progressifs | FS-V21 | UCSA-19
+| UC_V15 | Configurer le taux de TVA | FS-V23, CS-09 | UCSA-20
 | COp-09 | Référencement naturel — indexation individuelle boutique et produits | CS-23, FS-V18, FS-V19, FS-V20 | UCSA-18
 | COp-10 | Avertissement avant expiration de session | CS-24, FS-S14 | —
 |===

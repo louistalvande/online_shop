@@ -169,6 +169,10 @@ NOTE: L'administrateur n'a pas accès aux données personnelles des comptes (nom
 | BES-VND-020
 | Le vendeur a besoin de connecter sa boutique aux outils de mesure d'audience et de vérification de propriété de son choix, afin de suivre le trafic provenant des moteurs de recherche et d'accéder aux données de référencement de sa boutique.
 | UC_V13, Activités vendeur
+
+| BES-VND-021
+| Le vendeur a besoin de configurer le taux de TVA appliqué aux prix de sa boutique, avec un taux nul par défaut, afin de refléter son régime fiscal réel (franchise en base de TVA d'un auto-entrepreneur, ou taux applicable s'il est assujetti).
+| UC_V15, Activités vendeur
 |===
 
 ---

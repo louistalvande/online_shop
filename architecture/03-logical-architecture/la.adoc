@@ -52,8 +52,8 @@ Le système est structuré en cinq couches logiques : *Présentation*, *Applicat
 
 | *Service Compte*
 | Application
-| Inscription, activation par token email, authentification, gestion du profil, gestion du carnet d'adresses de livraison, gestion des rôles, gestion des images de l'identité visuelle (logo et bannière hero — fichiers stockés sur le système de fichiers, URL publique dérivée), gestion des couleurs de l'identité visuelle (accentuation, fond et texte — persistées dans `platform_settings`, avec conservation du jeu de couleurs précédent pour permettre l'annulation de la dernière modification), exposition d'une API publique de thème (`logoUrl`, `bannerUrl`, `accentColor`, `bgColor`, `textColor`)
-| FS-B01, FS-B02, FS-B10, FS-B11, FS-A01, FS-A02, FS-V16
+| Inscription, activation par token email, authentification, gestion du profil, gestion du carnet d'adresses de livraison, gestion des rôles, gestion des images de l'identité visuelle (logo et bannière hero — fichiers stockés sur le système de fichiers, URL publique dérivée), gestion des couleurs de l'identité visuelle (accentuation, fond et texte — persistées dans `platform_settings`, avec conservation du jeu de couleurs précédent pour permettre l'annulation de la dernière modification), exposition d'une API publique de thème (`logoUrl`, `bannerUrl`, `accentColor`, `bgColor`, `textColor`), configuration du taux de TVA appliqué aux prix (0 à 100%, 0% par défaut — persisté dans `platform_settings`), exposition d'une API publique du taux de TVA courant
+| FS-B01, FS-B02, FS-B10, FS-B11, FS-A01, FS-A02, FS-V16, FS-V23
 
 | *Service Catalogue*
 | Application
@@ -950,6 +950,7 @@ end note
 | FS-V11 | Gérer les annonces défilantes de la page d'accueil | Service Annonce | IFL-15, IFL-16, IFL-13
 | FS-V17 | Composer et envoyer une campagne email promotionnelle aux acheteurs consentants | Service Campagne Marketing, Service Notification, Adaptateur Messagerie, Référentiel de données | IFL-18, IFL-09, IFL-12, IFL-13
 | FS-V21 | Configurer des paliers de frais de port progressifs | Service Commande, Référentiel | IFL-04, IFL-13
+| FS-V23 | Configurer le taux de TVA appliqué aux prix | Service Compte, Référentiel | IFL-01, IFL-13
 | FS-S01 | Enforcer la politique de mots de passe | Service Sécurité | transverse
 | FS-S02 | Détecter les tentatives d'auth répétées (force brute) | Service Sécurité | transverse
 | FS-S03 | Invalider la session à la déconnexion et après inactivité | Service Sécurité | transverse

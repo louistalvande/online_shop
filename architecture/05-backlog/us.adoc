@@ -458,6 +458,34 @@ a|
 
 |===
 
+== Taux de TVA
+
+_Fonctions ARCADIA : FS-V23, CS-09 — UCSA-20 — LA : Service Compte_
+
+[cols="1,3,4,1", options="header"]
+|===
+| ID | User story | Critères d'acceptation | Statut
+
+| *US-TVA-01*
+| En tant que vendeur, je configure le taux de TVA appliqué aux prix de ma boutique, avec un taux nul par défaut.
+a|
+- [ ] Section « Réglages TVA » dans le back-office affichant le taux actuellement configuré
+- [ ] Modification via `PUT /api/vendor/settings/vat` : taux compris entre 0 et 100%
+- [ ] Le système refuse (`400`) un taux négatif ou supérieur à 100%
+- [ ] Si aucun taux n'est configuré, le taux appliqué est 0% (CS-09)
+- [ ] Le nouveau taux s'applique immédiatement aux prix affichés dans le catalogue, le panier et le tunnel d'achat
+| À faire
+
+| *US-TVA-02*
+| En tant qu'acheteur, je vois un prix TTC cohérent avec le taux de TVA configuré par le vendeur, et une mention d'exonération lorsqu'aucune TVA n'est appliquée.
+a|
+- [ ] Le prix TTC affiché dans le catalogue, le panier et le tunnel d'achat correspond au prix hors taxe saisi par le vendeur majoré du taux configuré, obtenu via `GET /api/public/vat-rate`
+- [ ] Si le taux configuré est 0%, le récapitulatif du tunnel d'achat affiche la mention « TVA non applicable, art. 293 B du CGI »
+- [ ] Le montant effectivement facturé correspond au prix TTC affiché
+| À faire
+
+|===
+
 == Gestion des commandes — Vendeur
 
 _Fonctions ARCADIA : FS-V04, FS-V09 — UCSA-07, UCSA-13 — LA : Service Commande / Service Paiement_
@@ -822,6 +850,7 @@ a|
 | FS-V14 | Mise à jour en masse des stocks | US-CAT-08
 | FS-V16 | Configurer l'identité visuelle (logo, bannière, couleurs) | US-VIS-01
 | FS-V21 | Configurer les paliers de frais de port progressifs | US-LIV-01, US-LIV-02
+| FS-V23 | Configurer le taux de TVA appliqué aux prix | US-TVA-01, US-TVA-02
 | FS-V04 | Traiter les commandes reçues | US-VND-01
 | FS-V05 | Déclarer l'expédition avec numéro de suivi | US-EXP-01
 | FS-V07 | Consulter les rapports de ventes | US-RPT-01

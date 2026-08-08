@@ -1,0 +1,15 @@
+@startuml ihm-bov-tva
+' Composant PA : front-vendeur (Back-office Vendeur)
+' Fonctions allouées : FS-V23 (configuration du taux de TVA)
+salt
+{+
+  {+
+    == Réglages TVA
+    Taux de TVA (%) | "0,00" %
+    .
+    "0% : mention \"TVA non applicable, art. 293 B du CGI\" affichée à l'acheteur au tunnel d'achat."
+    --
+    [Enregistrer]
+  }
+}
+@enduml
