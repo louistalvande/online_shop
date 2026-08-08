@@ -312,7 +312,7 @@ Les fonctions système (FS) sont dérivées des cas d'utilisation opérationnels
 | FS-V09 | Confirmer manuellement la réception d'un virement bancaire et déclencher la prise en charge de la commande correspondante | —
 | FS-V10 | Confirmer l'émission d'un virement inverse de remboursement vers l'acheteur à la suite d'une annulation de commande réglée par virement bancaire | UC_V7
 | FS-V11 | Créer, modifier, réordonner et supprimer les annonces défilantes affichées sur la page d'accueil ; chaque annonce comporte un contenu texte, une image ou les deux, et un lien de redirection optionnel au clic | UC_V9
-| FS-V16 | Configurer l'identité visuelle de la boutique : (1) téléverser et gérer le logo affiché dans l'en-tête des deux portails, (2) téléverser et gérer une bannière hero affichée en section supérieure de la page d'accueil du portail acheteur, (3) définir la couleur d'accentuation de l'interface, (4) définir la couleur de fond de l'interface ; la suppression d'une image restaure l'état par défaut ; toute modification est répercutée immédiatement sur le portail acheteur | UC_V11
+| FS-V16 | Configurer l'identité visuelle de la boutique : (1) téléverser et gérer le logo affiché dans l'en-tête des deux portails, (2) téléverser et gérer une bannière hero affichée en section supérieure de la page d'accueil du portail acheteur, (3) définir la couleur d'accentuation de l'interface, (4) définir la couleur de fond de l'interface, (5) définir la couleur du texte de l'interface ; la suppression d'une image restaure l'état par défaut ; toute modification est répercutée immédiatement sur le portail acheteur ; le système conserve le jeu de couleurs précédent (un seul niveau d'historique) et permet au vendeur d'annuler sa dernière modification de couleurs en un clic | UC_V11
 | FS-V12 | Importer des produits depuis un fichier CSV : validation du format (`id,nom,description,prix,categorie,quantite,seuil_alerte,titre_seo,description_seo,mots_cles_seo,image_og`) ; si `id` vide → création d'une nouvelle fiche ; si `id` renseigné → mise à jour du stock (`quantite`, `seuil_alerte`) ; dans les deux cas, les colonnes SEO renseignées créent ou mettent à jour la substitution SEO du produit (`seo_title`, `seo_description`, `seo_keywords`, `og_image_url`), une colonne SEO vide effaçant la substitution correspondante (repli automatique, CS-23 / BES-VND-018) ; rapport ligne par ligne (Créé / Mis à jour / Erreur) | UC_V1
 | FS-V13 | Exporter le catalogue produits au format CSV (toutes les fiches actives et archivées) avec colonnes `id,nom,description,prix,categorie,quantite,seuil_alerte,titre_seo,description_seo,mots_cles_seo,image_og,statut`, incluant la substitution SEO courante de chaque produit (colonnes SEO vides si aucune substitution) ; le fichier est réutilisable directement pour un import de mise à jour (FS-V12) | UC_V1
 | FS-V15 | Exporter la liste des acheteurs ayant donné leur consentement marketing (`consentement_marketing = true`) au format CSV (email, prénom, nom), destiné à l'import dans un outil de mailing externe (CS-22 / RGPD-CONS-003) | UC_B_MKTG
@@ -1070,6 +1070,8 @@ a|
 . *Bannière hero* — Il téléverse une image (JPEG, PNG ou WebP) ; le système valide le fichier, le stocke et affiche la bannière en section supérieure de la page d'accueil du portail acheteur (FS-V16).
 . *Couleur d'accentuation* — Il sélectionne une couleur via le sélecteur ou saisit un code hexadécimal ; le système persiste la valeur et l'applique immédiatement à l'interface (FS-V16).
 . *Couleur de fond* — Il sélectionne la couleur de fond via le sélecteur ou saisit un code hexadécimal ; le système persiste la valeur (`shop_bg_color`) et l'applique immédiatement au portail acheteur (FS-V16).
+. *Couleur du texte* — Il sélectionne la couleur du texte via le sélecteur ou saisit un code hexadécimal ; le système persiste la valeur (`shop_text_color`) et l'applique immédiatement au portail acheteur (FS-V16).
+. Avant d'enregistrer les nouvelles couleurs, le système sauvegarde le jeu de couleurs actuellement en vigueur comme unique valeur d'historique (écrasant, le cas échéant, l'historique précédent).
 . Toute modification est répercutée immédiatement sur le portail acheteur sans rechargement.
 . Pour les images du carrousel, le vendeur accède à la section « Annonces défilantes » et suit le scénario UCSA-15 (FS-V11).
 
@@ -1080,6 +1082,8 @@ a|
 * *3b.* Le vendeur supprime la bannière hero : la section hero revient à son état par défaut (titre et sous-titre uniquement).
 * *4a.* Le vendeur réinitialise la couleur d'accentuation : la valeur par défaut (`#4e8b82`) est restaurée.
 * *5a.* Le vendeur réinitialise la couleur de fond : la valeur par défaut (`#f2f6f5`) est restaurée.
+* *6a.* Le vendeur réinitialise la couleur du texte : la valeur par défaut (`#374151`) est restaurée.
+* *7a.* Le vendeur clique sur « Annuler la dernière modification » : le jeu de couleurs sauvegardé à l'étape 7 est restauré et redevient la configuration active ; l'ancienne configuration (celle qu'on vient de quitter) devient la nouvelle valeur d'historique. Si aucun historique n'existe (aucune modification n'a encore été enregistrée), le bouton est désactivé.
 
 | *Postconditions*
 | Les éléments visuels modifiés (logo, bannière, couleurs) sont visibles immédiatement sur le portail acheteur et le back-office vendeur.

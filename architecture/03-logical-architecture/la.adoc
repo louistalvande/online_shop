@@ -52,7 +52,7 @@ Le système est structuré en cinq couches logiques : *Présentation*, *Applicat
 
 | *Service Compte*
 | Application
-| Inscription, activation par token email, authentification, gestion du profil, gestion du carnet d'adresses de livraison, gestion des rôles, gestion des images de l'identité visuelle (logo et bannière hero — fichiers stockés sur le système de fichiers, URL publique dérivée), gestion des couleurs de l'identité visuelle (accentuation et fond — persistées dans `platform_settings`), exposition d'une API publique de thème (`logoUrl`, `bannerUrl`, `accentColor`, `bgColor`)
+| Inscription, activation par token email, authentification, gestion du profil, gestion du carnet d'adresses de livraison, gestion des rôles, gestion des images de l'identité visuelle (logo et bannière hero — fichiers stockés sur le système de fichiers, URL publique dérivée), gestion des couleurs de l'identité visuelle (accentuation, fond et texte — persistées dans `platform_settings`, avec conservation du jeu de couleurs précédent pour permettre l'annulation de la dernière modification), exposition d'une API publique de thème (`logoUrl`, `bannerUrl`, `accentColor`, `bgColor`, `textColor`)
 | FS-B01, FS-B02, FS-B10, FS-B11, FS-A01, FS-A02, FS-V16
 
 | *Service Catalogue*
@@ -865,7 +865,9 @@ package "Entités techniques (LA)" #FFF8E8 {
   }
   note right of ParametrePlateforme
     Table platform_settings —
-    maintenance_mode, shop_accent_color, shop_bg_color.
+    maintenance_mode, shop_accent_color, shop_bg_color, shop_text_color,
+    shop_accent_color_previous, shop_bg_color_previous, shop_text_color_previous
+    (historique à un seul niveau pour l'annulation).
   end note
 
 }

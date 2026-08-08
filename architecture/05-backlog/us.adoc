@@ -409,7 +409,7 @@ _Fonctions ARCADIA : FS-V16 — UCSA-16 — LA : Service Compte / Service Param�
 | ID | User story | Critères d'acceptation | Statut
 
 | *US-VIS-01*
-| En tant que vendeur, je peux personnaliser l'identité visuelle de ma boutique (logo, bannière hero, couleur d'accentuation et couleur de fond) depuis mon back-office.
+| En tant que vendeur, je peux personnaliser l'identité visuelle de ma boutique (logo, bannière hero, couleur d'accentuation, couleur de fond et couleur de texte) depuis mon back-office.
 a|
 - [x] Upload logo (JPEG, PNG, WebP ≤ 5 Mo) via `POST /api/me/logo` ; logo affiché dans l'en-tête des deux portails
 - [x] Suppression logo via `DELETE /api/me/logo` ; icône par défaut restaurée
@@ -417,9 +417,12 @@ a|
 - [x] Suppression bannière via `DELETE /api/me/banner` ; section hero masquée
 - [x] Sélecteur + saisie hexadécimale pour la couleur d'accentuation (`--accent`) ; valeur persistée dans `platform_settings` (clé `shop_accent_color`, défaut `#4e8b82`)
 - [x] Sélecteur + saisie hexadécimale pour la couleur de fond (`--bg`) ; valeur persistée dans `platform_settings` (clé `shop_bg_color`, défaut `#f2f6f5`)
+- [x] Sélecteur + saisie hexadécimale pour la couleur de texte (`--text`) ; valeur persistée dans `platform_settings` (clé `shop_text_color`, défaut `#374151`)
 - [x] Bouton « Réinitialiser » individuel pour chaque couleur ; restaure la valeur par défaut
-- [x] Un seul bouton « Enregistrer » sauvegarde les deux couleurs simultanément
-- [x] `GET /api/public/theme` retourne `{ logoUrl, bannerUrl, accentColor, bgColor }` ; le portail acheteur applique les variables CSS `--accent`, `--accent-hover` et `--bg` au démarrage
+- [x] Un seul bouton « Enregistrer » sauvegarde les trois couleurs simultanément
+- [x] Avant d'enregistrer, le système sauvegarde le jeu de couleurs actuellement actif comme unique valeur d'historique (`shop_accent_color_previous`, `shop_bg_color_previous`, `shop_text_color_previous` — écrase l'historique précédent s'il existe)
+- [x] Bouton « Annuler la dernière modification » : appelle `POST /api/vendor/shop/theme/undo` (sans corps) qui échange les valeurs courantes et précédentes ; désactivé (ou erreur `409`) si aucun historique n'existe
+- [x] `GET /api/public/theme` retourne `{ logoUrl, bannerUrl, accentColor, bgColor, textColor }` ; le portail acheteur applique les variables CSS `--accent`, `--accent-hover`, `--bg` et `--text` au démarrage
 - [x] Formats non supportés pour les images → message d'erreur ; image courante conservée
 - [x] Toute modification est répercutée immédiatement sans interruption de service
 | Terminée
