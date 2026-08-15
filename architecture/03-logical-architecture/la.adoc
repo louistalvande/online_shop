@@ -37,8 +37,8 @@ Le système est structuré en cinq couches logiques : *Présentation*, *Applicat
 
 | *Portail Acheteur*
 | Présentation
-| Interface web responsive — catalogue, panier, tunnel d'achat, suivi de commande, profil acheteur
-| FS-B01..B10
+| Interface web responsive — catalogue, panier, tunnel d'achat, suivi de commande, profil acheteur, dépôt et consultation des avis produit
+| FS-B01..B10, FS-B15, FS-B16
 
 | *Back-office Vendeur*
 | Présentation
@@ -62,8 +62,8 @@ Le système est structuré en cinq couches logiques : *Présentation*, *Applicat
 
 | *Service Commande*
 | Application
-| Orchestration du tunnel d'achat, création et cycle de vie des commandes (états : `paiement_en_attente_virement`, `en_attente`, `en_préparation`, `expédiée`, `demande_annulation`, `en_attente_retour`, `remboursement_virement_en_cours`, `livrée`, `annulée`), gestion des annulations avant et après expédition (avec ou sans condition de renvoi), gestion des paliers de frais de port progressifs (CRUD vendeur, paliers non chevauchants triés par seuil minimum), calcul automatique du montant de frais de port applicable au sous-total du panier lors de la création de la commande (frais nuls si aucun palier ne correspond)
-| FS-B06, FS-B09, FS-V04, FS-V07, FS-V08, FS-V21
+| Orchestration du tunnel d'achat, création et cycle de vie des commandes (états : `paiement_en_attente_virement`, `en_attente`, `en_préparation`, `expédiée`, `demande_annulation`, `en_attente_retour`, `remboursement_virement_en_cours`, `livrée`, `annulée`), gestion des annulations avant et après expédition (avec ou sans condition de renvoi), gestion des paliers de frais de port progressifs (CRUD vendeur, paliers non chevauchants triés par seuil minimum), calcul automatique du montant de frais de port applicable au sous-total du panier lors de la création de la commande (frais nuls si aucun palier ne correspond), traitement planifié (`@Scheduled`) transitionnant automatiquement les commandes `expédiée` vers `livrée` après un délai configurable depuis la date d'expédition (`app.order-delivery-delay-days`, défaut 10 j)
+| FS-B06, FS-B09, FS-V04, FS-V07, FS-V08, FS-V21, FS-S15
 
 | *Service Panier*
 | Application
@@ -80,10 +80,15 @@ Le système est structuré en cinq couches logiques : *Présentation*, *Applicat
 | Déclaration d'expédition avec saisie obligatoire du numéro de suivi récupéré lors du dépôt physique, enregistrement et exposition du numéro de suivi à l'acheteur, gestion des retours de colis (état `en_attente_retour`)
 | FS-V05, FS-C01, FS-B08
 
+| *Service Avis*
+| Application
+| Soumission d'un avis (note 1-5 obligatoire, commentaire optionnel) sur un produit contenu dans une commande de l'acheteur au statut `livrée`, avec vérification d'unicité (un avis par couple acheteur/produit — CS-25) ; modification unique de l'avis puis verrouillage définitif ; calcul de la note moyenne et de la liste paginée des avis d'un produit ; traitement planifié (`@Scheduled`) identifiant les commandes `livrée` depuis un délai configurable (`app.review-reminder-delay-days`, défaut 7 j) sans rappel déjà envoyé, et déclenchant l'email de rappel via Service Notification
+| FS-B15, FS-B16, FS-S16
+
 | *Service Notification*
 | Application
 | Émission de toutes les notifications sortantes (email d'activation, confirmations, alertes) ; sélection de la langue du template selon la préférence `langue` du compte destinataire (CS-10)
-| FS-B01 (token), FS-B10 (activation), FS-A06, notifications liées à FS-V04, FS-P02, FS-V05
+| FS-B01 (token), FS-B10 (activation), FS-A06, notifications liées à FS-V04, FS-P02, FS-V05, FS-S16 (rappel de dépôt d'avis)
 
 | *Service Rapport*
 | Application
@@ -169,6 +174,7 @@ package "Couche Application" {
   [Service Annonce] as SvcAnnounce
   [Service Campagne\nMarketing] as SvcCampaign
   [Service SEO] as SvcSeo
+  [Service Avis] as SvcReview
 }
 
 package "Couche Sécurité & Journalisation (transverse)" {
@@ -212,6 +218,7 @@ UI_Vendor --> SvcSeo : IFL-19
 
 UI_Buyer --> SvcAnnounce : IFL-16
 UI_Buyer --> SvcSeo : IFL-20
+UI_Buyer --> SvcReview : IFL-21
 
 UI_Admin --> SvcAccount : IFL-01
 UI_Admin --> SvcAccount : IFL-14 (maintenance)
@@ -243,6 +250,9 @@ SvcCampaign --> SvcNotif : IFL-09
 SvcCampaign --> DB : IFL-13
 SvcSeo --> DB : IFL-13
 SvcLog --> DB : IFL-13
+SvcReview --> SvcOrder : IFL-04 (vérification éligibilité)
+SvcReview --> SvcNotif : IFL-09 (rappel planifié — FS-S16)
+SvcReview --> DB : IFL-13
 
 note "Service Sécurité (FS-S01..S12) et Service Journalisation (FS-S07,S13)\ns'appliquent de façon transverse à tous les services applicatifs" as NoteSecLog
 ----
@@ -368,6 +378,12 @@ Les interfaces logiques définissent les contrats d'échange entre composants, i
 | Service SEO
 | Lire les métadonnées SEO à injecter dans le `<head>` de chaque page (méta tags globaux, Open Graph par produit, codes de vérification) ; accéder aux endpoints publics `/sitemap.xml` et `/robots.txt`
 | FS-V18, FS-V19, FS-V20
+
+| *IFL-21*
+| Portail Acheteur
+| Service Avis
+| Soumettre un avis (note 1-5, commentaire optionnel) sur un produit reçu, modifier une fois son propre avis, lire la note moyenne et la liste paginée des avis d'un produit
+| FS-B15, FS-B16
 |===
 
 == Diagramme de séquence logique — Inscription et activation de compte
@@ -591,7 +607,7 @@ En_attente --> En_preparation : SvcOrder.mettreAJourStatut()\n[Vendeur prend en 
 
 En_preparation --> Expediee : SvcShipping.declarerExpedition()\n[colis remis au transporteur + numéro de suivi saisi]
 
-Expediee --> Livree : SvcOrder.confirmerReception()\n[acheteur confirme la réception]
+Expediee --> Livree : SvcOrder.transitionnerLivraisonAutomatique()\n[traitement planifié — FS-S15 / CS-26 ;\ndélai app.order-delivery-delay-days écoulé\ndepuis dateExpédition, défaut 10 j]
 
 Livree --> [*]
 
@@ -640,6 +656,14 @@ end note
 note right of Expediee
   Numéro de suivi exposé à l'acheteur
   via lien site transporteur (IFS-05)
+end note
+
+note right of Livree
+  SvcReview.planifierRappelAvis() : traitement planifié
+  (FS-S16 / CS-26) déclenchant l'email de rappel de
+  dépôt d'avis après app.review-reminder-delay-days
+  (défaut 7 j), une seule fois par commande
+  (dateRappelAvisEnvoyé)
 end note
 ----
 
@@ -764,11 +788,16 @@ package "Entités métier (SA)" #F0F8FF {
     + ibanAcheteur : String
     + statut : Enum {paiement_en_attente_virement,\nen_attente, en_préparation,\nexpédiée, demande_annulation,\nen_attente_retour,\nremboursement_virement_en_cours,\nlivrée, annulée}
     + dateCommande : DateTime
+    + dateLivraison : DateTime
+    + dateRappelAvisEnvoyé : DateTime
   }
   note right of Commande
     Paiement et expédition sont des champs
     embarqués dans Commande — pas d'entités
     séparées (choix d'implémentation).
+    dateLivraison et dateRappelAvisEnvoyé sont renseignés
+    par les traitements planifiés FS-S15 / FS-S16 (CS-26) ;
+    dateRappelAvisEnvoyé évite tout second envoi du rappel.
   end note
 
   class LigneCommande {
@@ -820,6 +849,24 @@ package "Entités métier (SA)" #F0F8FF {
     + acknowledged : Boolean
     + createdAt : DateTime
   }
+
+  class Avis {
+    + id : UUID
+    + buyerId : UUID
+    + productId : UUID
+    + orderId : UUID
+    + note : Integer
+    + commentaire : Text
+    + dateCreation : DateTime
+    + dateModification : DateTime
+  }
+  note right of Avis
+    CS-25 : unique par (buyerId, productId) ;
+    orderId doit référencer une Commande de ce buyerId,
+    contenant ce productId, au statut livrée (FS-B15).
+    dateModification reste null jusqu'à l'unique
+    modification autorisée, puis l'avis est verrouillé.
+  end note
 
 }
 
@@ -895,6 +942,9 @@ Commande "1" *-- "1..*" LigneCommande : contient
 LigneCommande "0..*" --> "1" Produit : référence
 AbonnementStockRetour "0..*" --> "1" Produit : surveille
 AlerteStock "0..*" --> "1" Produit : concerne
+Avis "0..*" --> "1" Produit : porte sur
+Avis "0..*" --> "1" CompteUtilisateur : rédigé par
+Avis "0..*" --> "1" Commande : prouvé par
 
 note bottom of TokenActivation
   CS-07 : TTL 24h
@@ -951,6 +1001,8 @@ end note
 | FS-V17 | Composer et envoyer une campagne email promotionnelle aux acheteurs consentants | Service Campagne Marketing, Service Notification, Adaptateur Messagerie, Référentiel de données | IFL-18, IFL-09, IFL-12, IFL-13
 | FS-V21 | Configurer des paliers de frais de port progressifs | Service Commande, Référentiel | IFL-04, IFL-13
 | FS-V23 | Configurer le taux de TVA appliqué aux prix | Service Compte, Référentiel | IFL-01, IFL-13
+| FS-B15 | Soumettre un avis sur un produit reçu (unique, une modification autorisée — CS-25) | Service Avis, Service Commande, Référentiel | IFL-21, IFL-04, IFL-13
+| FS-B16 | Consulter la note moyenne et la liste des avis d'un produit | Service Avis, Référentiel | IFL-21, IFL-13
 | FS-S01 | Enforcer la politique de mots de passe | Service Sécurité | transverse
 | FS-S02 | Détecter les tentatives d'auth répétées (force brute) | Service Sécurité | transverse
 | FS-S03 | Invalider la session à la déconnexion et après inactivité | Service Sécurité | transverse
@@ -965,4 +1017,6 @@ end note
 | FS-S12 | Émettre un lien de réinitialisation à usage unique | Service Sécurité | transverse
 | FS-S13 | Détecter les comportements d'auth anormaux | Service Journalisation | IFL-13
 | FS-S14 | Exposer l'expiration du jeton de session (en-tête `X-Session-Expires-At`) | Service Sécurité | transverse
+| FS-S15 | Traitement planifié — transitionner automatiquement `expédiée` → `livrée` après délai configurable (CS-26) | Service Commande | IFL-13
+| FS-S16 | Traitement planifié — déclencher le rappel de dépôt d'avis après délai configurable (CS-26) | Service Avis, Service Notification, Adaptateur Messagerie | IFL-21, IFL-09, IFL-12, IFL-13
 |===

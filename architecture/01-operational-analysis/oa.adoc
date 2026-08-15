@@ -146,6 +146,11 @@ Les capacités expriment ce que la boutique doit être en mesure d'accomplir pou
 | Référencement naturel et mesure d'audience
 | Configurer les métadonnées SEO de la boutique et des fiches produits, contrôler l'indexation par les moteurs de recherche (robots.txt, sitemap.xml, URL canonique) et connecter les outils de mesure d'audience et de vérification de propriété
 | Vendeur
+
+| CAP-010
+| Recueillir les avis clients sur les produits
+| Permettre à l'acheteur de noter (1 à 5 étoiles) et commenter un produit reçu, avec une modification possible une seule fois après le dépôt initial ; afficher la note moyenne et la liste des avis sur la fiche produit
+| Acheteur
 |===
 
 == Diagrammes de cas d'utilisation opérationnels
@@ -320,6 +325,9 @@ rectangle "Application e-commerce" {
     usecase (Suivre la livraison) as UC_B5
     usecase (Demander une annulation\naprès expédition) as UC_B7
   }
+  package "Avis produit" {
+    usecase (Laisser un avis sur\nun produit reçu) as UC_B9
+  }
 }
 
 Buyer --> UC_B0
@@ -337,6 +345,7 @@ Buyer --> UC_B4
 Buyer --> UC_B5
 Buyer --> UC_B6
 Buyer --> UC_B7
+Buyer --> UC_B9
 
 UC_B_ACC ..> UC_B_AUTH : <<include>>
 UC_B_ADDR ..> UC_B_AUTH : <<include>>
@@ -348,11 +357,13 @@ UC_B4 ..> UC_B_AUTH : <<include>>
 UC_B5 ..> UC_B_AUTH : <<include>>
 UC_B6 ..> UC_B_AUTH : <<include>>
 UC_B7 ..> UC_B_AUTH : <<include>>
+UC_B9 ..> UC_B_AUTH : <<include>>
 
 UC_B0 --> Mail
 Mail --> UC_B0B
 UC_B4 --> Payment
 Carrier --> UC_B5
+Mail --> UC_B9 : rappel (7 j après livraison)
 ----
 
 == Diagramme d'activité opérationnel — Flux d'achat et de traitement
@@ -656,6 +667,10 @@ NOTE: Le diagramme de séquence détaillant les échanges entre acteurs et syst�
 | UC_B8
 | S'abonner à une alerte de remise en stock
 | Depuis la fiche d'un produit indisponible (`quantity == 0`), s'abonner à une notification email déclenchée automatiquement lorsque le vendeur remet le produit en stock ; gérer et annuler ses abonnements actifs depuis l'espace compte (BES-ACH-015 / COp-08)
+
+| UC_B9
+| Laisser un avis sur un produit reçu
+| Depuis la fiche d'un produit livré ou depuis le détail de la commande correspondante, déposer une note (1 à 5 étoiles, obligatoire) et un commentaire (optionnel) ; l'avis n'est possible qu'une fois par produit acheté et n'est modifiable qu'une seule fois après son dépôt initial. Un rappel par email invite l'acheteur à déposer un avis quelques jours après la livraison (BES-ACH-017 / CAP-010)
 
 | UC_B_MKTG
 | Gérer son consentement marketing

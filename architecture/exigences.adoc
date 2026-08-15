@@ -246,6 +246,10 @@ NOTE: L'administrateur n'a pas accès aux données personnelles des comptes (nom
 | BES-ACH-016
 | L'acheteur a besoin de donner ou retirer son consentement aux emails promotionnels du vendeur, à l'inscription (case non pré-cochée) et depuis son espace compte. Le retrait de consentement prend effet immédiatement et ne conditionne pas l'accès aux fonctionnalités de la boutique.
 | UC_B_ACC, Activités acheteur, RGPD-CONS-002
+
+| BES-ACH-017
+| L'acheteur a besoin de laisser un avis (note de 1 à 5 étoiles, obligatoire ; commentaire, optionnel) sur un produit qu'il a reçu, afin de partager son expérience avec les autres acheteurs. Cet avis n'est possible qu'une fois par produit acheté, et n'est modifiable qu'une seule fois après son dépôt initial.
+| UC_B9, Activités acheteur
 |===
 
 ---
@@ -343,6 +347,7 @@ Le tableau ci-dessous relie chaque besoin opérationnel aux activités et cas d'
 | BES-ACH-014 | Acheteur | UC_V9 — Affichage des annonces adapté à l'orientation des images
 | BES-ACH-015 | Acheteur | UC_B1 — S'abonner à une alerte de remise en stock
 | BES-ACH-016 | Acheteur | UC_B_ACC — Gérer le consentement aux emails promotionnels du vendeur ; RGPD-CONS-002
+| BES-ACH-017 | Acheteur | UC_B9 — Laisser un avis sur un produit reçu
 | COp-09 | — | Besoin de visibilité en ligne de la boutique ; BES-VND-018, BES-VND-019, BES-VND-020
 |===
 

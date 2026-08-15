@@ -5,6 +5,8 @@ salt
 ' IFS-05 : lien sortant vers le site de suivi du transporteur (pas d'API système)
 ' Règle annulation simple (US-CAN-01) : AWAITING_PROCESSING uniquement
 ' Règle annulation soumise à approbation vendeur (US-CAN-06) : IN_PREPARATION ou SHIPPED
+' Variante « commande livrée » avec CTA avis produit (FS-B15 / CS-25) :
+' voir ihm-pa-suivi-commande-livree.puml
 title Portail Acheteur — Suivi de commande (en attente de traitement)
 
 {+

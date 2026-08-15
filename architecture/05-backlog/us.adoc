@@ -538,6 +538,45 @@ a|
 
 |===
 
+== Avis produit
+
+_Fonctions ARCADIA : FS-B15, FS-B16, FS-S15, FS-S16, CS-25, CS-26 — LA : Service Avis_
+
+[cols="1,3,4,1", options="header"]
+|===
+| ID | User story | Critères d'acceptation | Statut
+
+| *US-REV-01*
+| En tant qu'acheteur, je peux laisser un avis (note de 1 à 5 étoiles, commentaire optionnel) sur un produit que j'ai reçu.
+a|
+- [x] Le bouton « Laisser un avis » n'est proposé, par ligne produit, que sur les commandes de l'acheteur au statut `livrée` (page de suivi de commande)
+- [x] Formulaire : sélecteur de note 1 à 5 étoiles (obligatoire) + champ commentaire (optionnel)
+- [x] Soumission via `POST /api/reviews` avec `{ orderId, productId, rating, comment? }`
+- [x] Erreur `409 REVIEW_NOT_ELIGIBLE` si la commande n'appartient pas à l'acheteur, ne contient pas le produit, ou n'est pas au statut `livrée`
+- [x] Erreur `409 REVIEW_DUPLICATE` si l'acheteur a déjà déposé un avis pour ce produit (CS-25)
+- [x] Erreur `400` si la note soumise est hors de la plage 1-5
+- [x] Avis enregistré avec `dateCreation` horodatée et `dateModification` nulle
+| Terminée
+
+| *US-REV-02*
+| En tant qu'acheteur, je peux modifier mon avis sur un produit, une seule fois, après l'avoir déposé.
+a|
+- [x] Bouton « Modifier mon avis » affiché à la place de « Laisser un avis » tant qu'aucune modification n'a encore été effectuée (`dateModification` nulle)
+- [x] Modification via `PUT /api/reviews/{id}` : note et/ou commentaire mis à jour, `dateModification` horodatée
+- [x] Une deuxième tentative de modification est rejetée (`409 REVIEW_ALREADY_EDITED`) — le bouton disparaît et l'avis est affiché en lecture seule (CS-25)
+| Terminée
+
+| *US-REV-03*
+| En tant qu'acheteur, je peux consulter la note moyenne et la liste des avis d'un produit depuis sa fiche.
+a|
+- [x] Section « Avis clients » affichée sous la description du produit
+- [x] Note moyenne et nombre total d'avis obtenus via `GET /api/products/{id}/reviews/summary`
+- [x] Liste paginée des avis (note, commentaire, auteur, date) obtenue via `GET /api/products/{id}/reviews`, triée du plus récent au plus ancien
+- [x] Accès public — aucune authentification requise pour consulter les avis
+| Terminée
+
+|===
+
 == Annulation de commande
 
 _Fonctions ARCADIA : FS-B09, FS-V08, FS-P03 — UCSA-06 — LA : Service Commande / Service Paiement_
@@ -840,6 +879,8 @@ a|
 | FS-B08 | Afficher le suivi de livraison | US-EXP-02
 | FS-B09 | Annuler une commande (acheteur) | US-CAN-01
 | FS-B10 | Activer le compte via token | US-REG-02, US-REG-03
+| FS-B15 | Soumettre un avis sur un produit reçu | US-REV-01, US-REV-02
+| FS-B16 | Consulter les avis d'un produit | US-REV-03
 | FS-V01 | Mise à jour du profil vendeur | US-PRF-02
 | FS-V02 | Gérer le catalogue produits | US-CAT-01, US-CAT-02, US-CAT-03
 | FS-V12 | Importer de nouveaux produits depuis un fichier CSV | US-CAT-06
@@ -874,4 +915,6 @@ a|
 | FS-S11 | Révocation en masse des mots de passe | US-SEC-04
 | FS-S08 | MFA Vendeur/Admin (chiffrement secret TOTP) | US-SEC-07
 | FS-S14 | Exposer l'expiration du jeton de session courant | US-SEC-08
+| FS-S15 | Transition automatique d'une commande vers le statut livrée (planifiée) | US-REV-01
+| FS-S16 | Planifier l'envoi du rappel de dépôt d'avis (planifiée) | US-REV-01, US-REV-02, US-REV-03
 |===

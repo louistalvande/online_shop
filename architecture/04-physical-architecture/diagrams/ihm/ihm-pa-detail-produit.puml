@@ -1,6 +1,6 @@
 @startsalt
 ' Composant PA : front-acheteur (Portail Acheteur)
-' Fonctions allouées : Service Catalogue — FS-B03 ; Service Panier — FS-B04
+' Fonctions allouées : Service Catalogue — FS-B03 ; Service Panier — FS-B04 ; Service Avis — FS-B16
 title Portail Acheteur — Détail produit
 
 {+
@@ -29,5 +29,20 @@ title Portail Acheteur — Détail produit
   Description
   Chaussure de sport légère et respirante, idéale pour
   la course à pied et les activités en salle.
+  ==
+  Avis clients (FS-B16)
+  ★★★★☆ **4,2 / 5** — 18 avis
+  --
+  {
+    ★★★★★  Alice D. — 12/03/2026
+    "Très confortables, livraison rapide."
+    --
+    ★★★★☆  Marc L. — 28/02/2026
+    "Bonne qualité, un peu petit en taille."
+    --
+    [Voir tous les avis]
+  }
+  <i>Le dépôt et la modification d'un avis se font
+  depuis le suivi de la commande livrée correspondante.
 }
 @endsalt

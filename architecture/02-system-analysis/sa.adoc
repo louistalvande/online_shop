@@ -165,6 +165,14 @@ Un compte suspendu ou supprimé ne peut pas s'authentifier. Les messages d'erreu
 | CS-24
 | Avertissement de fin de session (COp-10)
 | Le système doit exposer, sur chaque réponse HTTP authentifiée, l'instant d'expiration du jeton de session courant (en-tête `X-Session-Expires-At`, epoch millis) reflétant la rotation glissante en cours (CS-08). Le client doit pouvoir avertir l'utilisateur avant expiration effective et lui permettre de prolonger sa session sans ressaisir ses identifiants tant que le jeton est encore valide.
+
+| CS-25
+| Unicité et modification unique de l'avis produit (BES-ACH-017)
+| Un acheteur ne peut déposer qu'un seul avis par couple (compte acheteur, produit), rattaché à une commande ayant atteint le statut `livrée` et contenant ce produit. L'acheteur peut modifier la note et/ou le commentaire de son avis une seule fois après le dépôt initial (`dateModification` renseignée) ; toute tentative de modification ultérieure est rejetée par le système.
+
+| CS-26
+| Délais configurables du cycle de vie post-expédition (BES-ACH-017)
+| Le délai après lequel une commande `expédiée` transite automatiquement vers `livrée` (par défaut 10 jours à compter de la date d'expédition) et le délai après lequel le rappel de dépôt d'avis est envoyé à l'acheteur (par défaut 7 jours à compter du passage en `livrée`) sont tous deux des valeurs configurables de la plateforme, et non des constantes figées dans le code.
 |===
 
 == Capacités système
@@ -219,6 +227,11 @@ Les capacités système raffinent les capacités opérationnelles (CAP-xxx) de l
 | Assurer le référencement naturel et la mesure d'audience
 | CAP-009
 | FS-V18, FS-V19, FS-V20
+
+| CAPS-010
+| Recueillir les avis clients sur les produits
+| CAP-010
+| FS-B15, FS-B16, FS-S15, FS-S16
 |===
 
 === Diagramme Mission — Capacités — Fonctions
@@ -275,6 +288,10 @@ wbsDiagram {
 
 ** CAPS-009 — SEO & Audience <<caps>>
 ***_ FS-V18, V19, V20 <<funcs>>
+
+** CAPS-010 — Avis produit <<caps>>
+***_ FS-B15, B16 <<funcs>>
+***_ FS-S15, S16 <<funcs>>
 @endwbs
 ----
 
@@ -345,6 +362,8 @@ Les fonctions système (FS) sont dérivées des cas d'utilisation opérationnels
 | FS-B12 | Permettre à l'acheteur de soumettre une demande d'annulation depuis son espace commandes pour une commande en état `expédiée`, en saisissant un message expliquant la situation au vendeur ; la commande passe en état `demande_annulation` et le vendeur est notifié | UC_B7
 | FS-B13 | Collecter le consentement marketing de l'acheteur à l'inscription (case opt-in non pré-cochée) et permettre sa modification depuis l'espace compte ; horodater chaque changement de statut | UC_B_MKTG
 | FS-B14 | Permettre à un acheteur authentifié de s'abonner à une alerte de remise en stock pour un produit indisponible (`quantity == 0`) ; envoyer automatiquement un email dans la langue de préférence du compte dès que le stock redevient positif ; permettre à l'acheteur de consulter et d'annuler ses abonnements actifs depuis son espace compte (BES-ACH-015 / CS-10) | UC_B1
+| FS-B15 | Permettre à un acheteur authentifié de soumettre un avis (note de 1 à 5 étoiles obligatoire, commentaire optionnel) sur un produit contenu dans une commande à lui appartenant ayant atteint le statut `livrée` ; refuser la soumission si l'acheteur a déjà déposé un avis sur ce produit ; permettre une unique modification ultérieure de la note et/ou du commentaire, au-delà de laquelle l'avis est définitivement verrouillé (BES-ACH-017 / CS-25) | UC_B9
+| FS-B16 | Afficher sur la fiche produit la note moyenne, le nombre total d'avis et la liste paginée des avis (note, commentaire, date) déposés sur ce produit | UC_B9
 |===
 
 === Interfaces externes
@@ -379,12 +398,14 @@ Les fonctions système (FS) sont dérivées des cas d'utilisation opérationnels
 | FS-S12 | Émettre un lien de réinitialisation de mot de passe temporaire et à usage unique ; ne jamais transmettre le mot de passe en clair | CS-19
 | FS-S13 | Détecter les comportements d'authentification anormaux (tentatives répétées, connexions inhabituelles) à partir des journaux | CS-21
 | FS-S14 | Exposer l'expiration du jeton de session courant (en-tête HTTP `X-Session-Expires-At`) sur chaque réponse authentifiée, afin de permettre au client d'avertir l'utilisateur avant expiration et de déclencher un renouvellement silencieux via une nouvelle requête authentifiée | CS-24
+| FS-S15 | *Fonction planifiée* — première fonction système déclenchée par le temps plutôt que par un acteur : transitionner automatiquement chaque commande au statut `expédiée` vers le statut `livrée` une fois le délai configurable écoulé depuis la date d'expédition (par défaut 10 jours) | CS-26
+| FS-S16 | *Fonction planifiée* — parcourir périodiquement les commandes passées au statut `livrée` depuis le délai configurable écoulé (par défaut 7 jours) et n'ayant pas encore reçu de rappel, déclencher l'envoi au client de l'email de rappel de dépôt d'avis, et marquer la commande comme rappelée pour ne jamais la retraiter | CS-26
 |===
 
 == Relations entre fonctions système
 
 Le diagramme ci-dessous représente les invocations directes entre fonctions système (FS).
-Les fonctions de sécurité transverse *FS-S01 à FS-S14* (validation des entrées, anti-CSRF, journalisation, MFA, gestion des mots de passe compromis, expiration, révocation, détection d'anomalies, exposition d'expiration de session, etc.) s'appliquent à l'ensemble des fonctions et sont représentées par une note globale.
+Les fonctions de sécurité transverse *FS-S01 à FS-S14* (validation des entrées, anti-CSRF, journalisation, MFA, gestion des mots de passe compromis, expiration, révocation, détection d'anomalies, exposition d'expiration de session, etc.) s'appliquent à l'ensemble des fonctions et sont représentées par une note globale. *FS-S15* et *FS-S16* partagent le préfixe `FS-S` par convention de numérotation mais ne sont pas des fonctions de sécurité : ce sont les deux premières fonctions système *planifiées* (déclenchées par un ordonnanceur temporel plutôt que par un acteur ou une requête entrante), introduites par CS-26.
 
 .Dépendances fonctionnelles entre fonctions système (SA)
 [plantuml, sa-fs-relations, svg]
@@ -1552,8 +1573,14 @@ end
   Buyer -> Sys : GET /commandes/{id}/suivi
   Sys --> Buyer : 200 OK — {tracking_number, url_suivi_transporteur} (FS-B08 / CS-05)
 
-  Buyer -> Sys : PUT /commandes/{id}/reception {confirmé: true}
-  Sys --> Vendor : Notification : réception confirmée
+  == Transition automatique et rappel d'avis (planifiés — FS-S15 / FS-S16 / CS-26) ==
+  note over Sys : Aucun webhook transporteur (IFS-05 = lien sortant uniquement) —\nla transition est déclenchée par un job planifié, pas par un événement externe
+  Sys -> Sys : Job planifié quotidien — commandes `expédiée`\ndepuis ≥ app.order-delivery-delay-days (défaut 10 j) (FS-S15)
+  Sys -> Sys : UPDATE commande SET statut = livrée, dateLivraison = maintenant
+
+  Sys -> Sys : Job planifié quotidien — commandes `livrée`\ndepuis ≥ app.review-reminder-delay-days (défaut 7 j)\net dateRappelAvisEnvoyé IS NULL (FS-S16)
+  Sys --> Buyer : Notification : rappel de dépôt d'avis\n(lien vers le détail de la commande)
+  Sys -> Sys : UPDATE expédition SET dateRappelAvisEnvoyé = maintenant
 
   Vendor -> Sys : GET /rapports/ventes
   Sys --> Vendor : 200 OK — statistiques et historique (FS-V07)
@@ -1640,6 +1667,8 @@ class Expédition {
   + statutLivraison : String
   + dateExpédition : DateTime
   + dateLivraisonEstimée : Date
+  + dateLivraison : DateTime
+  + dateRappelAvisEnvoyé : DateTime
 }
 
 class Transporteur {
@@ -1661,6 +1690,14 @@ class AdresseLivraison {
   + estParDefaut : Boolean
 }
 
+class Avis {
+  + id : UUID
+  + note : Integer
+  + commentaire : Text
+  + dateCreation : DateTime
+  + dateModification : DateTime
+}
+
 CompteUtilisateur "1" --> "1..*" AdresseLivraison : carnet
 CompteUtilisateur "1" --> "0..1" Panier : possède
 CompteUtilisateur "1" --> "0..*" Commande : passe
@@ -1673,6 +1710,9 @@ Commande "1" *-- "0..1" Expédition : donne lieu à
 Commande "1" --> "1" AdresseLivraison : livrée à
 Expédition "0..*" --> "1" Transporteur : acheminée par
 Commande "0..*" ..> "0..1" PalierFraisPort : frais calculés via
+Avis "0..*" --> "1" Produit : porte sur
+Avis "0..*" --> "1" CompteUtilisateur : rédigé par
+Avis "0..*" --> "1" Commande : prouvé par
 
 note bottom of Commande
   CS-04 : AdresseLivraison.paysZoneEuro
@@ -1688,6 +1728,11 @@ note bottom of PalierFraisPort
   FS-V21 : paliers non chevauchants,\nordonnés par seuilMinimum croissant ;
   le montant est capturé sur la Commande
   (PalierFraisPort n'est pas référencé par FK)
+end note
+
+note bottom of Avis
+  CS-25 : un seul Avis par couple\n(CompteUtilisateur, Produit) ; la Commande\nréférencée doit contenir ce Produit et être\nau statut livrée. note ∈ [1..5].
+  Une seule modification autorisée après le dépôt\ninitial : dateModification passe de null à la\ndate de cette unique modification, puis l'avis\nest verrouillé (FS-B15).
 end note
 ----
 
@@ -1771,4 +1816,5 @@ La matrice ci-dessous assure la couverture complète de chaque besoin opération
 | UC_V15 | Configurer le taux de TVA | FS-V23, CS-09 | UCSA-20
 | COp-09 | Référencement naturel — indexation individuelle boutique et produits | CS-23, FS-V18, FS-V19, FS-V20 | UCSA-18
 | COp-10 | Avertissement avant expiration de session | CS-24, FS-S14 | —
+| UC_B9 | Laisser un avis sur un produit reçu (BES-ACH-017) | FS-B15, FS-B16, FS-S15, FS-S16, CS-25, CS-26 | —
 |===
