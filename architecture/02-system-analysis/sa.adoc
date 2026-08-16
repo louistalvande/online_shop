@@ -165,6 +165,10 @@ Un compte suspendu ou supprimé ne peut pas s'authentifier. Les messages d'erreu
 | CS-24
 | Avertissement de fin de session (COp-10)
 | Le système doit exposer, sur chaque réponse HTTP authentifiée, l'instant d'expiration du jeton de session courant (en-tête `X-Session-Expires-At`, epoch millis) reflétant la rotation glissante en cours (CS-08). Le client doit pouvoir avertir l'utilisateur avant expiration effective et lui permettre de prolonger sa session sans ressaisir ses identifiants tant que le jeton est encore valide.
+
+| CS-27
+| Validation du format de l'IBAN et du BIC/SWIFT de remboursement
+| L'IBAN saisi par l'acheteur pour un remboursement par virement (annulation avant ou après expédition, US-CAN-01/03/04/06) doit être structurellement valide (code pays sur 2 lettres, 2 chiffres de contrôle, 11 à 30 caractères alphanumériques pour le BBAN) et satisfaire la clé de contrôle mod-97 (ISO 13616). Un BIC/SWIFT (4 lettres de code banque, 2 lettres de code pays, 2 caractères de code localisation, 3 caractères optionnels de code agence — ISO 9362) peut également être saisi ; il est **obligatoire dès que l'IBAN n'est pas français** (code pays ≠ `FR`), le seul cas où l'IBAN seul ne suffit pas nécessairement à acheminer le virement inverse, et facultatif sinon. Une saisie non conforme, ou un BIC manquant alors qu'il est requis, est rejeté avant tout traitement, côté client et côté serveur.
 |===
 
 == Capacités système

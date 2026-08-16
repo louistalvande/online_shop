@@ -540,7 +540,7 @@ a|
 
 == Annulation de commande
 
-_Fonctions ARCADIA : FS-B09, FS-V08, FS-P03 — UCSA-06 — LA : Service Commande / Service Paiement_
+_Fonctions ARCADIA : FS-B09, FS-V08, FS-P03 — UCSA-06 — LA : Service Commande / Service Paiement — CS-27 (validation IBAN)_
 
 [cols="1,3,4,1", options="header"]
 |===
@@ -551,7 +551,8 @@ _Fonctions ARCADIA : FS-B09, FS-V08, FS-P03 — UCSA-06 — LA : Service Command
 a|
 - [x] Bouton d'annulation disponible sur les commandes aux statuts `en_attente` et `en_préparation`
 - [x] Confirmation obligatoire avant annulation
-- [x] Si paiement par virement : champ « IBAN de remboursement » obligatoire dans le formulaire d'annulation, avec validation du format IBAN
+- [x] Si paiement par virement : champ « IBAN de remboursement » obligatoire dans le formulaire d'annulation, avec validation du format IBAN (CS-27)
+- [x] Champ « BIC/SWIFT » affiché et obligatoire dès que l'IBAN saisi n'est pas français ; facultatif pour un IBAN français (CS-27)
 - [x] Si paiement par carte : aucun champ bancaire requis
 - [x] Annulation effective immédiatement ; stock libéré ; vendeur notifié
 | Terminée
