@@ -449,6 +449,36 @@ API --> SPABuyer : 200 OK {tracking_number, carrier_tracking_url}
 note right : Buyer clicks the link\nto track the parcel (IFS-05 — outbound)
 ----
 
+== Traitements planifiés — Transition de livraison et rappel de dépôt d'avis
+
+IFS-05 étant un simple lien sortant vers le site du transporteur (pas de webhook entrant — cf. supra), le système ne peut pas être notifié de la livraison effective d'un colis. Deux jobs Spring `@Scheduled` (composant-avis, FS-S15 / FS-S16 / CS-26) comblent ce manque :
+
+[cols="1,3", options="header"]
+|===
+| Propriété | Description
+
+| `app.order-delivery-delay-days`
+| Nombre de jours après `dateExpédition` au-delà duquel une commande au statut `expédiée` est automatiquement transitionnée vers `livrée` (`dateLivraison` renseignée). Valeur par défaut : `10`. Job exécuté quotidiennement (`@Scheduled(cron = "0 0 3 * * *")`, 03h00 — FS-S15).
+
+| `app.review-reminder-delay-days`
+| Nombre de jours après `dateLivraison` au-delà duquel l'email de rappel de dépôt d'avis est envoyé à l'acheteur, pour les commandes n'ayant pas encore reçu ce rappel (`dateRappelAvisEnvoyé IS NULL`). Valeur par défaut : `7`. Job exécuté quotidiennement (`@Scheduled(cron = "0 30 3 * * *")`, 03h30 — FS-S16), après le job de transition de livraison.
+|===
+
+Le rappel est envoyé une seule fois par commande : le job marque `dateRappelAvisEnvoyé` immédiatement après l'envoi, ce qui empêche tout retraitement lors des exécutions suivantes. Le lien contenu dans l'email pointe vers la page de détail de la commande de l'acheteur déjà existante (`/mon-compte/commandes/{id}`) — aucun mécanisme de lien tokenisé supplémentaire n'est nécessaire, l'acheteur se connectant normalement.
+
+Contenu de l'email, ajouté aux clés existantes de `messages*.properties` (mêmes conventions que la confirmation de commande, l'expédition et l'alerte de remise en stock) :
+
+[cols="1,3", options="header"]
+|===
+| Clé | Description
+
+| `email.review.reminder.subject`
+| Objet de l'email de rappel, ex. « Votre avis compte : donnez votre note sur {0} »
+
+| `email.review.reminder.body.html`
+| Corps HTML de l'email, incluant le nom du produit et le lien vers la page de détail de la commande
+|===
+
 == Diagramme de séquence technique — Création de compte par l'admin et activation
 
 Deux acteurs distincts interviennent : l'administrateur qui crée le compte, et le nouvel utilisateur qui reçoit l'email et définit son mot de passe. Le compte reste en statut `PENDING` jusqu'à l'activation (US-ADM-01 / FS-A01 / CS-07).
@@ -534,6 +564,27 @@ Page de détail d'un produit (FS-B03 / FS-B04 / FS-B14). Affiche le prix, la dis
 
 Lorsque le stock est à zéro et que l'acheteur est authentifié, un bouton **« M'alerter quand disponible »** est affiché sous le bouton « Indisponible » (FS-B14 / BES-ACH-015). Ce bouton appelle `POST /api/profile/stock-subscriptions` et bascule ensuite en **« Alerte activée ✓ »** permettant l'annulation. Un acheteur non connecté est invité à se connecter avant de s'abonner.
 
+Une section « Avis clients » est affichée sous la description du produit (FS-B16), présentant la note moyenne, le nombre total d'avis et la liste paginée des avis (note, commentaire optionnel, auteur, date). Le dépôt et la modification d'un avis se font depuis la page de suivi de la commande correspondante (voir plus bas, section « Suivi de commande »), pas depuis cette fiche produit.
+
+Endpoints REST exposés (Service Avis — FS-B15 / FS-B16 / CS-25) :
+
+[cols="2,4", options="header"]
+|===
+| Méthode + Route | Description
+
+| `GET /api/products/{id}/reviews`
+| Retourne la liste paginée des avis d'un produit (note, commentaire, date de création, date de modification si applicable), triée du plus récent au plus ancien. Accès public.
+
+| `GET /api/products/{id}/reviews/summary`
+| Retourne la note moyenne et le nombre total d'avis du produit (`{ averageRating, reviewCount }`). Accès public.
+
+| `POST /api/reviews`
+| Crée un avis pour l'acheteur authentifié. Corps : `{ orderId, productId, rating, comment? }`. Retourne `409 REVIEW_DUPLICATE` si un avis existe déjà pour ce couple (acheteur, produit) ; `409 REVIEW_NOT_ELIGIBLE` si la commande `orderId` n'appartient pas à l'acheteur, ne contient pas `productId`, ou n'est pas au statut `livrée` ; `400` si `rating` est hors de la plage 1-5 (CS-25).
+
+| `PUT /api/reviews/{id}`
+| Modifie la note et/ou le commentaire d'un avis existant appartenant à l'acheteur authentifié. Autorisé une seule fois : retourne `409 REVIEW_ALREADY_EDITED` si `dateModification` est déjà renseignée (CS-25).
+|===
+
 .Maquette filaire : Portail Acheteur — Détail produit
 [plantuml, ihm-pa-detail-produit, svg]
 ----
@@ -594,10 +645,18 @@ include::diagrams/ihm/ihm-pa-virement-en-attente.puml[]
 
 Accès au numéro de suivi et au lien vers le site du transporteur (FS-B08 / FS-C01 / CS-05). Le lien est une URL sortante — le suivi de l'acheminement s'effectue directement sur le site du transporteur (IFS-05). Un bouton « Demander une annulation » est affiché tant que la commande est en état `expédiée` ; il ouvre le formulaire de demande d'annulation après expédition (FS-B12).
 
+Lorsque la commande est au statut `livrée`, chaque ligne produit affiche un bouton **« Laisser un avis »** (FS-B15), remplacé par **« Modifier mon avis »** dès qu'un avis existe déjà pour ce produit et n'a pas encore été modifié une première fois ; passé cette unique modification, le bouton disparaît et la note/le commentaire déposés sont affichés en lecture seule (CS-25). C'est ici, et non depuis la fiche produit, que l'acheteur dépose ou modifie son avis. Ce même écran est celui vers lequel pointe le lien de l'email de rappel envoyé par FS-S16 (voir « Traitements planifiés — Transition de livraison et rappel de dépôt d'avis »).
+
 .Maquette filaire : Portail Acheteur — Suivi de commande
 [plantuml, ihm-pa-suivi-commande, svg]
 ----
 include::diagrams/ihm/ihm-pa-suivi-commande.puml[]
+----
+
+.Maquette filaire : Portail Acheteur — Suivi de commande (état livrée — CTA avis produit)
+[plantuml, ihm-pa-suivi-commande-livree, svg]
+----
+include::diagrams/ihm/ihm-pa-suivi-commande-livree.puml[]
 ----
 
 ==== Demande d'annulation après expédition
@@ -1198,6 +1257,11 @@ NOTE: L'en-tête `X-Session-Expires-At` est ajouté par `JwtFilter` sur *toute* 
 | composant-seo
 | Conteneur API Spring Boot + React (portail acheteur)
 | Spring Boot / Spring Data JPA — tables `shop_seo` et `product_seo_override` ; endpoints VENDOR `GET/PUT /api/vendor/seo`, `GET/PUT/DELETE /api/vendor/seo/products/{id}` ; endpoints publics `GET /api/public/seo`, `GET /api/public/seo/products/{id}`, `GET /sitemap.xml`, `GET /robots.txt` ; côté frontend : hook `useSeoMeta` (injection DOM native dans `shop-buyer-portal`, sans dépendance externe) pour les méta tags dans le `<head>` de chaque page (CS-23)
+
+| Service Avis
+| composant-avis
+| Conteneur API Spring Boot
+| Spring Boot / Spring Data JPA / Hibernate — entité `Review` ; endpoints `POST /api/reviews`, `PUT /api/reviews/{id}`, `GET /api/products/{id}/reviews`, `GET /api/products/{id}/reviews/summary` ; deux `@Scheduled` jobs (transition `livrée` et rappel d'avis — FS-S15 / FS-S16) délégués respectivement à composant-commande et composant-notification
 
 | Service Sécurité
 | composant-securite

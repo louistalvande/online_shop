@@ -1,0 +1,28 @@
+@startuml ihm-pa-suivi-commande-livree
+salt
+' Composant PA : front-acheteur (Portail Acheteur)
+' Fonctions allouées : Service Avis — FS-B15 (CS-25)
+' Règle avis (FS-B15 / CS-25) : CTA "Laisser un avis" / "Modifier mon avis" par ligne
+' produit, affichée uniquement si Commande.statut = livrée ; disparaît après l'unique
+' modification autorisée (avis alors affiché en lecture seule)
+title Portail Acheteur — Suivi de commande (livrée — CTA avis produit)
+
+{+
+  == Commande CMD-2025-0039
+  Statut    | Livrée le 05/03/2026
+  Transporteur | La Poste — Colissimo
+  --
+  == Détail de la commande
+  {#
+    Produit              | Qté | Prix unit. | Avis
+    Chaussures cuir brun | 1   | 89,00 €    | [Laisser un avis]
+    Veste laine grise    | 1   | 149,00 €   | [Modifier mon avis]
+    Ceinture daim noir   | 2   | 34,00 €    | ★★★★★ (avis verrouillé)
+  }
+  Total TTC : 373,10 €
+  ==
+  {
+    <i>Un problème avec votre commande ? Contactez notre support par email.
+  }
+}
+@enduml
