@@ -329,6 +329,22 @@ NOTE: L'archivage d'un produit est bloqué s'il est référencé dans une comman
 image::screenshots/bov-produit.png[bov-produit, 1200]
 
 
+=== Export CSV
+
+L'export CSV permet de télécharger l'ensemble du catalogue (produits publiés et archivés) dans un fichier réutilisable, par exemple pour le réimporter après modification.
+
+.Procédure
+. Depuis la page *Catalogue*, cliquez sur *Exporter CSV*.
+. Une fenêtre s'ouvre pour choisir les colonnes optionnelles à inclure. Les colonnes `id`, `nom` et `prix` sont toujours présentes.
++
+NOTE: Toutes les colonnes optionnelles sont cochées par défaut. Utilisez *Tout désélectionner* pour repartir de zéro, ou décochez individuellement celles dont vous n'avez pas besoin.
+. Cliquez sur *Exporter* pour télécharger le fichier.
+
+image::screenshots/bov-export-csv.png[bov-export-csv, 900]
+
+TIP: Un export ne contenant que les colonnes `id`, `nom`, `prix` et `categorie` est utile pour une mise à jour rapide des catégories sans risquer d'écraser d'autres champs à la réimportation.
+
+
 === Import CSV
 
 L'import CSV permet d'ajouter ou de mettre à jour plusieurs produits en une seule opération.
