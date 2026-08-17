@@ -149,7 +149,7 @@ NOTE: Les choix technologiques retenus ci-dessous sont des recommandations archi
 
 | Service Paiement
 | Module Spring Boot (Java)
-| Soumission via Stripe Java SDK, réception webhooks signés, journalisation (CS-06 / CPA-07)
+| Soumission via Stripe Java SDK (`PaymentIntent` créé avec une clé d'idempotence égale à l'id de commande — évite un double débit/double déduction de stock en cas de retry réseau) ; réception de webhooks signés sur `POST /api/public/payments/stripe/webhook` (Stripe-Signature vérifiée contre `stripe.webhook-secret`, événements `payment_intent.succeeded`/`payment_intent.payment_failed`) servant de filet de sécurité à la confirmation par le client (CS-28) ; récupération du code de refus Stripe (fonds insuffisants, carte expirée, CVC incorrect…) et de la marque/4 derniers chiffres de la carte utilisée pour affichage acheteur ; journalisation (CS-06 / CPA-07)
 
 | Service Expédition
 | Module Spring Boot (Java)
@@ -181,7 +181,7 @@ NOTE: Les choix technologiques retenus ci-dessous sont des recommandations archi
 
 | Service Journalisation
 | Module Spring AOP (Java) + PostgreSQL
-| Aspect `@Around` Spring AOP intercept les opérations d'authentification, administration et paiement ; persiste les événements dans la table `audit_log` (CPA-13) ; accès restreint aux endpoints `GET /admin/audit` (rôle ADMIN uniquement)
+| Aspect Spring AOP (`@AfterReturning`) intercepte les opérations d'authentification et d'administration ; les événements de paiement (succès, échec, remboursement) sont journalisés par des appels explicites dans le Service Commande, au plus près du contexte métier (montant, commande) plutôt que par interception générique. Persistance dans la table `audit_log` (CPA-13) ; accès restreint aux endpoints `GET /admin/audit` (rôle ADMIN uniquement), filtrable par type d'événement incluant `PAYMENT_SUCCEEDED`/`PAYMENT_FAILED`/`REFUND_ISSUED`
 |===
 
 === Intégrations externes
@@ -643,7 +643,7 @@ include::diagrams/ihm/ihm-pa-virement-en-attente.puml[]
 
 ==== Suivi de commande
 
-Accès au numéro de suivi et au lien vers le site du transporteur (FS-B08 / FS-C01 / CS-05). Le lien est une URL sortante — le suivi de l'acheminement s'effectue directement sur le site du transporteur (IFS-05). Un bouton « Demander une annulation » est affiché tant que la commande est en état `expédiée` ; il ouvre le formulaire de demande d'annulation après expédition (FS-B12).
+Accès au numéro de suivi et au lien vers le site du transporteur (FS-B08 / FS-C01 / CS-05). Le lien est une URL sortante — le suivi de l'acheminement s'effectue directement sur le site du transporteur (IFS-05). Un bouton « Demander une annulation » est affiché tant que la commande est en état `expédiée` ; il ouvre le formulaire de demande d'annulation après expédition (FS-B12). Pour un paiement par carte confirmé, la marque de la carte et ses 4 derniers chiffres (ex. « Visa se terminant par 4242 ») sont affichés à côté du mode de paiement (CS-28).
 
 Lorsque la commande est au statut `livrée`, chaque ligne produit affiche un bouton **« Laisser un avis »** (FS-B15), remplacé par **« Modifier mon avis »** dès qu'un avis existe déjà pour ce produit et n'a pas encore été modifié une première fois ; passé cette unique modification, le bouton disparaît et la note/le commentaire déposés sont affichés en lecture seule (CS-25). C'est ici, et non depuis la fiche produit, que l'acheteur dépose ou modifie son avis. Ce même écran est celui vers lequel pointe le lien de l'email de rappel envoyé par FS-S16 (voir « Traitements planifiés — Transition de livraison et rappel de dépôt d'avis »).
 

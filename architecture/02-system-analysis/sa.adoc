@@ -177,6 +177,10 @@ Un compte suspendu ou supprimé ne peut pas s'authentifier. Les messages d'erreu
 | CS-27
 | Validation du format de l'IBAN et du BIC/SWIFT de remboursement
 | L'IBAN saisi par l'acheteur pour un remboursement par virement (annulation avant ou après expédition, US-CAN-01/03/04/06) doit être structurellement valide (code pays sur 2 lettres, 2 chiffres de contrôle, 11 à 30 caractères alphanumériques pour le BBAN) et satisfaire la clé de contrôle mod-97 (ISO 13616). Un BIC/SWIFT (4 lettres de code banque, 2 lettres de code pays, 2 caractères de code localisation, 3 caractères optionnels de code agence — ISO 9362) peut également être saisi ; il est **obligatoire dès que l'IBAN n'est pas français** (code pays ≠ `FR`), le seul cas où l'IBAN seul ne suffit pas nécessairement à acheminer le virement inverse, et facultatif sinon. Une saisie non conforme, ou un BIC manquant alors qu'il est requis, est rejeté avant tout traitement, côté client et côté serveur.
+
+| CS-28
+| Fiabilisation de la confirmation de paiement carte et annulation d'une commande en attente de paiement (FS-P02, US-CAN-01)
+| FS-P02 (réception de la confirmation ou du refus de la transaction) est satisfaite par deux canaux complémentaires : l'appel explicite du client après confirmation côté prestataire, et un webhook signé reçu directement du prestataire (IFS-04), qui sert de filet de sécurité si le client n'a jamais pu rappeler le système (fermeture du navigateur après une authentification forte réussie, par exemple). Le premier des deux canaux à atteindre le système effectue la transition ; le second est alors un no-op idempotent. Une commande en paiement carte non encore confirmé (panier abandonné ou carte refusée) reste annulable par l'acheteur (US-CAN-01) ; le système ne déclenche un remboursement auprès du prestataire que si la transaction avait réellement abouti — une transaction jamais aboutie n'a rien à rembourser.
 |===
 
 == Capacités système

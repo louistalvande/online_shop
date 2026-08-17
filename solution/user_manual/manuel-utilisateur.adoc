@@ -151,6 +151,12 @@ L'abonnement est accessible aux visiteurs non connectés, qui seront invités à
 
 image::screenshots/pa-detail-produit.png[pa-detail-produit, 1200]
 
+.Avis clients
+La note moyenne et le nombre d'avis reçus par le produit s'affichent en bas de la fiche produit, suivis de la liste des avis (note et commentaire de chaque acheteur).
+S'il n'y a pas encore d'avis, un message l'indique à la place de la liste.
+
+image::screenshots/pa-avis-produit.png[pa-avis-produit, 1200]
+
 
 == Gérer son panier
 
@@ -201,6 +207,8 @@ Deux modes de paiement sont disponibles : carte bancaire et virement bancaire.
 
 WARNING: Les données de carte bancaire sont transmises directement à Stripe et ne transitent jamais en clair sur nos serveurs.
 
+NOTE: Si la banque refuse la transaction, un message précise la raison lorsqu'elle est connue (fonds insuffisants, carte expirée, code de sécurité incorrect…) plutôt qu'un message générique — vous pouvez alors réessayer avec une autre carte.
+
 image::screenshots/pa-tunnel-paiement.png[pa-tunnel-paiement, 1200]
 
 
@@ -220,7 +228,27 @@ image::screenshots/pa-confirmation-commande.png[pa-confirmation-commande, 1200]
 . Cliquez sur une référence de commande pour en voir le détail.
 . Une fois la commande expédiée, le numéro de suivi et un lien vers le site du transporteur apparaissent.
 
+Pour un paiement par carte, la marque de la carte et ses 4 derniers chiffres (ex. « Visa se terminant par 4242 ») s'affichent à côté du mode de paiement, une fois le paiement confirmé.
+
 image::screenshots/pa-suivi-commande.png[pa-suivi-commande, 1200]
+
+image::screenshots/pa-carte-details.png[pa-carte-details, 1200]
+
+
+=== Laisser un avis sur un produit reçu
+
+Une fois une commande livrée, vous pouvez déposer un avis (note de 1 à 5 étoiles, commentaire facultatif) sur chaque produit reçu.
+Vous recevez également un email vous invitant à donner votre avis quelques jours après la livraison.
+
+.Procédure
+. Depuis le détail d'une commande livrée, cliquez sur *Laisser un avis* sous le produit concerné.
+. Sélectionnez une note en cliquant sur le nombre d'étoiles souhaité.
+. Rédigez un commentaire (facultatif).
+. Cliquez sur *Envoyer*.
+
+NOTE: Vous ne pouvez déposer qu'un seul avis par produit acheté. Une seule modification de la note et/ou du commentaire est possible après le dépôt initial ; passé cette modification, l'avis est définitif.
+
+image::screenshots/pa-avis-formulaire.png[pa-avis-formulaire, 1200]
 
 
 === Annulation avant expédition
