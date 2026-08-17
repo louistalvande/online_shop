@@ -420,11 +420,16 @@ a|
 - [x] Sélecteur + saisie hexadécimale pour la couleur de texte (`--text`) ; valeur persistée dans `platform_settings` (clé `shop_text_color`, défaut `#374151`)
 - [x] Bouton « Réinitialiser » individuel pour chaque couleur ; restaure la valeur par défaut
 - [x] Un seul bouton « Enregistrer » sauvegarde les trois couleurs simultanément
-- [x] Avant d'enregistrer, le système sauvegarde le jeu de couleurs actuellement actif comme unique valeur d'historique (`shop_accent_color_previous`, `shop_bg_color_previous`, `shop_text_color_previous` — écrase l'historique précédent s'il existe)
-- [x] Bouton « Annuler la dernière modification » : appelle `POST /api/vendor/shop/theme/undo` (sans corps) qui échange les valeurs courantes et précédentes ; désactivé (ou erreur `409`) si aucun historique n'existe
 - [x] `GET /api/public/theme` retourne `{ logoUrl, bannerUrl, accentColor, bgColor, textColor }` ; le portail acheteur applique les variables CSS `--accent`, `--accent-hover`, `--bg` et `--text` au démarrage
 - [x] Formats non supportés pour les images → message d'erreur ; image courante conservée
 - [x] Toute modification est répercutée immédiatement sans interruption de service
+| Terminée
+
+| *US-VIS-02*
+| En tant que vendeur, je peux annuler la dernière modification de mes couleurs de boutique pour revenir à la configuration précédente.
+a|
+- [x] Avant d'enregistrer de nouvelles couleurs, le système sauvegarde le jeu de couleurs actuellement actif comme unique valeur d'historique (`shop_accent_color_previous`, `shop_bg_color_previous`, `shop_text_color_previous` — écrase l'historique précédent s'il existe)
+- [x] Bouton « Annuler la dernière modification » : appelle `POST /api/vendor/shop/theme/undo` (sans corps) qui échange les valeurs courantes et précédentes ; désactivé (ou erreur `409`) si aucun historique n'existe
 | Terminée
 
 |===
@@ -849,7 +854,7 @@ a|
 | FS-V17 | Composer et envoyer une campagne email promotionnelle | US-MKTG-01
 | FS-V03 | Gérer les stocks et alertes | US-CAT-04, US-CAT-05
 | FS-V14 | Mise à jour en masse des stocks | US-CAT-08
-| FS-V16 | Configurer l'identité visuelle (logo, bannière, couleurs) | US-VIS-01
+| FS-V16 | Configurer l'identité visuelle (logo, bannière, couleurs) | US-VIS-01, US-VIS-02
 | FS-V21 | Configurer les paliers de frais de port progressifs | US-LIV-01, US-LIV-02
 | FS-V23 | Configurer le taux de TVA appliqué aux prix | US-TVA-01, US-TVA-02
 | FS-V04 | Traiter les commandes reçues | US-VND-01
