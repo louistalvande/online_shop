@@ -381,7 +381,9 @@ a|
 a|
 - [x] Données carte transmises directement à Stripe sans transit en clair par le backend (PCI-DSS)
 - [x] Commande confirmée et tous les vendeurs notifiés par email si la transaction est autorisée ; stock réservé
-- [x] Message d'erreur explicite si la transaction est refusée
+- [x] Message d'erreur explicite et spécifique à la cause du refus (fonds insuffisants, carte expirée, CVC incorrect, refus générique) si la transaction est refusée (CS-28)
+- [x] Confirmation également reçue de façon fiable via un webhook signé du prestataire (IFS-04, CS-28), même si le navigateur de l'acheteur ne peut pas rappeler le système
+- [x] Marque de la carte et 4 derniers chiffres affichés dans l'historique de commande une fois le paiement confirmé
 | Terminée
 
 | *US-ORD-04*
@@ -545,7 +547,7 @@ a|
 
 == Annulation de commande
 
-_Fonctions ARCADIA : FS-B09, FS-V08, FS-P03 — UCSA-06 — LA : Service Commande / Service Paiement — CS-27 (validation IBAN)_
+_Fonctions ARCADIA : FS-B09, FS-V08, FS-P02, FS-P03 — UCSA-06 — LA : Service Commande / Service Paiement — CS-27 (validation IBAN), CS-28 (fiabilisation confirmation carte)_
 
 [cols="1,3,4,1", options="header"]
 |===
@@ -560,6 +562,7 @@ a|
 - [x] Champ « BIC/SWIFT » affiché et obligatoire dès que l'IBAN saisi n'est pas français ; facultatif pour un IBAN français (CS-27)
 - [x] Si paiement par carte : aucun champ bancaire requis
 - [x] Annulation effective immédiatement ; stock libéré ; vendeur notifié
+- [x] Un paiement par carte initié mais jamais confirmé (panier abandonné ou carte refusée) reste annulable — le remboursement Stripe n'est déclenché que si le paiement avait réellement abouti (CS-28)
 | Terminée
 
 | *US-CAN-02*
