@@ -89,7 +89,7 @@ NOTE: Les choix technologiques retenus ci-dessous sont des recommandations archi
 
 | CPA-15
 | Authentification multifacteur (CS-17 / SEC-AUTH-007..008)
-| Les comptes Vendeur et Administrateur doivent activer un second facteur d'authentification basé sur TOTP (RFC 6238 — ex. Google Authenticator, Aegis). Le SMS est explicitement exclu comme canal OTP (vulnérabilité SIM-swap). Le secret TOTP est stocké chiffré en base (pgcrypto). L'enrôlement se fait lors de la première connexion post-activation.
+| Les comptes Vendeur et Administrateur doivent activer un second facteur d'authentification basé sur TOTP (RFC 6238 — ex. Google Authenticator, Aegis). Le SMS est explicitement exclu comme canal OTP (vulnérabilité SIM-swap). Le secret TOTP est stocké chiffré en base (pgcrypto). L'enrôlement est aujourd'hui **self-service** : le titulaire du compte l'active depuis l'onglet « Sécurité » de son profil (US-SEC-09) ; une fois activé, le code TOTP est exigé à chaque connexion (US-SEC-10). Rendre cet enrôlement obligatoire dès la première connexion post-activation reste un axe non encore implémenté.
 
 | CPA-16
 | Vérification des mots de passe compromis (CS-18 / SEC-PWD-002)
@@ -1150,6 +1150,14 @@ include::diagrams/ihm/ihm-admin-form-transporteur.puml[]
 === Composant partagé — Avertissement d'expiration de session
 
 Le hook `useSessionWatchdog` et la modale `SessionExpiryModal` sont mutualisés dans `@workspace/theme` et utilisés à l'identique par les trois SPA (portail acheteur, back-office vendeur, console admin), conformément à CS-24 / CPA-18. Aucune maquette filaire dédiée par portail n'est nécessaire : le composant est visuellement neutre et se superpose à l'écran courant sous forme de modale bloquante.
+
+=== Composant partagé — Double authentification (MFA) sur les portails Vendeur et Administrateur
+
+Conformément à CPA-15 / FS-S08, seuls les portails back-office Vendeur et console Administrateur portent cette fonctionnalité (le portail Acheteur n'est pas concerné). Comme pour le composant précédent, aucune maquette filaire dédiée n'est produite : les deux écrans réutilisent la structure existante (`<LoginPage>`, onglet « Sécurité » de `<ProfilePage>`).
+
+**Activation (US-SEC-09)** — Un nouveau bloc « Double authentification » apparaît dans l'onglet « Sécurité » de la page de profil, sous le formulaire de changement de mot de passe. Il affiche le statut courant (`totpEnabled`, exposé par `GET /api/me`). Le bouton « Activer » appelle `POST /api/auth/mfa/setup/init`, qui renvoie le secret Base32 et l'URI `otpauth://` à importer dans une application TOTP (Google Authenticator, Aegis…) ; aucun rendu de QR code côté client dans cette itération, le secret est affiché en texte pour saisie manuelle. La validation du premier code à 6 chiffres via `POST /api/auth/mfa/setup/confirm` active définitivement le second facteur. Il n'existe pas de fonctionnalité de désactivation autonome dans cette itération — une procédure de recouvrement dédiée (hors périmètre) serait nécessaire pour un compte qui perd son second facteur.
+
+**Défi à la connexion (US-SEC-10)** — Lorsque `totpEnabled` est vrai, `POST /api/auth/login` renvoie `requiresMfa: true` et un `mfaToken` de courte durée (5 min, Redis) sans établir de session. `<LoginPage>` affiche alors un second écran demandant le code à 6 chiffres, avant l'écran de connexion habituel — la même séquence que celle déjà en place sur le portail Acheteur (`<LoginModal>`), reprise à l'identique pour homogénéité inter-portails. La soumission appelle `POST /api/auth/mfa/verify` ; un succès établit la session comme une connexion classique. Un code invalide ou un `mfaToken` expiré affiche une erreur et permet de ressaisir sans revenir à la saisie du mot de passe.
 
 Endpoints REST concernés (Service Compte / Service Sécurité — FS-S14) :
 

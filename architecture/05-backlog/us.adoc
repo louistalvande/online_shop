@@ -864,6 +864,26 @@ a|
 - [ ] La console d'administration applique désormais la même validation de session que le back-office vendeur (contrôle 401/403 sur les appels authentifiés côté `authedFetch`, absent auparavant)
 | À faire
 
+| *US-SEC-09*
+| En tant que vendeur ou administrateur, je peux activer la double authentification (TOTP) sur mon compte depuis mes paramètres de sécurité, afin de renforcer sa protection (CPA-15 / FS-S08).
+a|
+- [x] L'onglet « Sécurité » du profil (back-office vendeur et console admin) affiche le statut courant de la double authentification (`totpEnabled`, exposé par `GET /api/me`)
+- [x] Le bouton « Activer » appelle `POST /api/auth/mfa/setup/init` et affiche le secret Base32 ainsi que l'URI `otpauth://` à importer manuellement dans une application TOTP (pas de génération de QR code dans cette itération)
+- [x] La saisie du premier code à 6 chiffres et sa validation via `POST /api/auth/mfa/setup/confirm` activent définitivement le MFA ; un code invalide affiche une erreur sans invalider le secret, permettant une nouvelle tentative
+- [x] Tant que la confirmation n'a pas réussi, le compte reste utilisable normalement sans second facteur
+- [x] Aucune fonctionnalité de désactivation du MFA n'est fournie dans cette itération (nécessiterait une procédure de recouvrement dédiée, hors périmètre)
+- [x] Le portail Acheteur ne propose pas cette fonctionnalité — seuls les rôles Vendeur et Administrateur sont concernés (CPA-15)
+| Terminée
+
+| *US-SEC-10*
+| En tant que vendeur ou administrateur ayant activé le MFA, je dois saisir un code TOTP valide après mon mot de passe pour me connecter (CPA-15 / FS-S08).
+a|
+- [x] Lorsque `totpEnabled` est vrai, `POST /api/auth/login` renvoie `requiresMfa: true` et un `mfaToken` de courte durée (5 min) sans émettre de session
+- [x] Le back-office vendeur et la console d'administration affichent alors un second écran demandant le code à 6 chiffres, avant l'écran habituel — même séquence que celle déjà en place sur le portail Acheteur
+- [x] La soumission appelle `POST /api/auth/mfa/verify` ; un succès établit la session (cookie JWT) comme une connexion classique
+- [x] Un code invalide ou expiré affiche un message d'erreur et permet de ressaisir sans revenir à l'étape mot de passe
+| Terminée
+
 |===
 
 == Matrice de traçabilité FS → User Stories
@@ -922,7 +942,7 @@ a|
 | FS-S06 | En-têtes de sécurité HTTP / TLS | US-SEC-03
 | FS-S07 | Journalisation des événements sécurité | US-SEC-05, US-SEC-06
 | FS-S11 | Révocation en masse des mots de passe | US-SEC-04
-| FS-S08 | MFA Vendeur/Admin (chiffrement secret TOTP) | US-SEC-07
+| FS-S08 | MFA Vendeur/Admin (chiffrement secret TOTP, activation self-service, défi à la connexion) | US-SEC-07, US-SEC-09, US-SEC-10
 | FS-S14 | Exposer l'expiration du jeton de session courant | US-SEC-08
 | FS-S15 | Transition automatique d'une commande vers le statut livrée (planifiée) | US-REV-01
 | FS-S16 | Planifier l'envoi du rappel de dépôt d'avis (planifiée) | US-REV-01, US-REV-02, US-REV-03
