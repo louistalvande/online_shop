@@ -613,7 +613,7 @@ include::diagrams/ihm/ihm-pa-tunnel-adresse.puml[]
 
 ==== Tunnel d'achat — Paiement
 
-Étape 2/3 du tunnel (FS-B07 / CS-02). Le récapitulatif de commande est figé à ce stade. L'acheteur choisit entre carte bancaire (autorisation immédiate via Stripe Java SDK — IFS-04) ou virement bancaire (commande créée en état `paiement_en_attente_virement`). En cas de carte, les données sont transmises directement au SDK Stripe sans transiter en clair par le backend (PCI-DSS).
+Étape 2/3 du tunnel (FS-B07 / CS-02). Le récapitulatif de commande affiche un champ « Code promo » (FS-B17 / CS-29 — voir « Codes promotionnels » ci-dessous) permettant d'appliquer un code avant validation ; la ligne « Réduction » n'apparaît que si un code valide est appliqué. Le reste du récapitulatif est figé à ce stade. L'acheteur choisit entre carte bancaire (autorisation immédiate via Stripe Java SDK — IFS-04) ou virement bancaire (commande créée en état `paiement_en_attente_virement`). En cas de carte, les données sont transmises directement au SDK Stripe sans transiter en clair par le backend (PCI-DSS).
 
 .Maquette filaire : Portail Acheteur — Tunnel d'achat : paiement
 [plantuml, ihm-pa-tunnel-paiement, svg]
@@ -942,6 +942,40 @@ Endpoints REST exposés (Service Compte — FS-V23) :
 [plantuml, ihm-bov-tva, svg]
 ----
 include::diagrams/ihm/ihm-bov-tva.puml[]
+----
+
+==== Codes promotionnels
+
+Gestion des codes promotionnels applicables au tunnel d'achat (FS-V22 / FS-B17 / CS-29 / UCSA-21). La section « Codes promotionnels » du back-office liste les codes existants (code, réduction, date d'expiration). Chaque code porte un type de réduction — pourcentage du sous-total hors taxes (`PERCENTAGE`) ou montant fixe en euros TTC (`FIXED_AMOUNT`) — et une valeur associée ; le formulaire de création/modification adapte le libellé et l'unité du champ « valeur » selon le type sélectionné. Le backend refuse (`400`) une valeur `PERCENTAGE` supérieure à 100 ; aucune borne supérieure n'est imposée à une valeur `FIXED_AMOUNT` à la saisie (CS-29). Le code (comparaison insensible à la casse) doit être unique ; une collision retourne `409`.
+
+Au tunnel d'achat (étape « Paiement », voir wireframe ci-dessus), l'acheteur saisit un code dans le champ « Code promo », qui interroge l'endpoint public `GET /api/public/promo-codes/{code}`. Un code de type `PERCENTAGE` réduit le sous-total hors taxes puis le résultat est converti en TTC selon le taux configuré (FS-V23) ; un code de type `FIXED_AMOUNT` réduit directement le total TTC de sa valeur exacte, sans conversion. Dans les deux cas, le Service Commande plafonne la réduction effectivement appliquée au sous-total TTC de la commande, afin que le total ne puisse jamais devenir négatif (CS-29). Le code et le montant de la réduction sont conservés sur la commande (`promo_code`, `discount_amount_ttc`) et visibles dans le détail de commande de l'acheteur et du vendeur.
+
+Endpoints REST exposés (Service Commande — FS-V22 / FS-B17) :
+
+[cols="2,4", options="header"]
+|===
+| Méthode + Route | Description
+
+| `GET /api/vendor/promo-codes`
+| Retourne la liste des codes, les plus récemment créés en premier. Accès VENDOR.
+
+| `POST /api/vendor/promo-codes`
+| Crée un code. Corps : `{ code, discountType, discountValue, expiresAt }` (`discountType` : `PERCENTAGE` ou `FIXED_AMOUNT`, `expiresAt` nullable). Retourne `400` si `discountType=PERCENTAGE` et `discountValue > 100`, `409` si le code existe déjà.
+
+| `PUT /api/vendor/promo-codes/{id}`
+| Met à jour un code existant. Mêmes règles de validation que la création.
+
+| `DELETE /api/vendor/promo-codes/{id}`
+| Supprime un code.
+
+| `GET /api/public/promo-codes/{code}`
+| Endpoint public (sans authentification), utilisé par le portail acheteur pour prévisualiser la réduction avant application. Retourne `404` si le code n'existe pas, `410` s'il a expiré.
+|===
+
+.Maquette filaire : Back-office Vendeur — Codes promotionnels
+[plantuml, ihm-bov-codes-promo, svg]
+----
+include::diagrams/ihm/ihm-bov-codes-promo.puml[]
 ----
 
 ==== Campagne email promotionnelle
