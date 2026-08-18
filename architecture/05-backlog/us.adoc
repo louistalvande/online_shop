@@ -493,6 +493,39 @@ a|
 
 |===
 
+== Codes promotionnels
+
+_Fonctions ARCADIA : FS-V22, FS-B17, CS-29 — UCSA-21 — LA : Service Commande_
+
+[cols="1,3,4,1", options="header"]
+|===
+| ID | User story | Critères d'acceptation | Statut
+
+| *US-PRM-01*
+| En tant que vendeur, je crée, modifie et supprime des codes promotionnels offrant une réduction en pourcentage du sous-total hors taxes ou en montant fixe en euros, avec une date d'expiration optionnelle.
+a|
+- [x] Section « Codes promotionnels » dans le back-office listant les codes existants (code, réduction, expiration)
+- [x] Création via `POST /api/vendor/promo-codes` : code unique (insensible à la casse), type de réduction (`PERCENTAGE` ou `FIXED_AMOUNT`), valeur, date d'expiration optionnelle
+- [x] Modification via `PUT /api/vendor/promo-codes/{id}` et suppression via `DELETE /api/vendor/promo-codes/{id}`
+- [x] Le système refuse (`409`) la création ou la modification d'un code dont la valeur (insensible à la casse) existe déjà
+- [x] Le système refuse (`400`) une valeur de type `PERCENTAGE` supérieure à 100 (CS-29) ; aucune borne supérieure n'est imposée à une valeur de type `FIXED_AMOUNT`
+- [x] La liste affiche la réduction avec l'unité adaptée au type (`%` ou `€`)
+| Terminée
+
+| *US-PRM-02*
+| En tant qu'acheteur, je saisis un code promotionnel au tunnel d'achat et je vois la réduction correspondante s'appliquer avant de valider ma commande.
+a|
+- [x] Champ « Code promo » à l'étape paiement du tunnel d'achat, avec bouton « Appliquer » appelant `GET /api/public/promo-codes/{code}`
+- [x] Un code inexistant affiche un message d'erreur distinct (« Ce code promo n'existe pas. ») d'un code expiré (« Ce code promo a expiré. »)
+- [x] Un code de type `PERCENTAGE` réduit le sous-total hors taxes du panier puis le résultat est converti en TTC selon le taux de TVA configuré (FS-V23)
+- [x] Un code de type `FIXED_AMOUNT` réduit directement le total TTC de son montant exact, sans conversion de taux de TVA
+- [x] Dans les deux cas, la réduction effectivement appliquée est plafonnée au sous-total TTC de la commande : elle ne peut jamais rendre le total négatif (CS-29)
+- [x] Le code appliqué et le montant de la réduction sont conservés sur la commande confirmée et visibles dans le détail de commande de l'acheteur et du vendeur
+- [x] Un bouton « Retirer » permet d'annuler l'application du code avant confirmation de la commande
+| Terminée
+
+|===
+
 == Gestion des commandes — Vendeur
 
 _Fonctions ARCADIA : FS-V04, FS-V09 — UCSA-07, UCSA-13 — LA : Service Commande / Service Paiement_
@@ -910,6 +943,7 @@ a|
 | FS-B10 | Activer le compte via token | US-REG-02, US-REG-03
 | FS-B15 | Soumettre un avis sur un produit reçu | US-REV-01, US-REV-02
 | FS-B16 | Consulter les avis d'un produit | US-REV-03
+| FS-B17 | Appliquer un code promotionnel au tunnel d'achat | US-PRM-02
 | FS-V01 | Mise à jour du profil vendeur | US-PRF-02
 | FS-V02 | Gérer le catalogue produits | US-CAT-01, US-CAT-02, US-CAT-03
 | FS-V12 | Importer de nouveaux produits depuis un fichier CSV | US-CAT-06
@@ -920,6 +954,7 @@ a|
 | FS-V14 | Mise à jour en masse des stocks | US-CAT-08
 | FS-V16 | Configurer l'identité visuelle (logo, bannière, couleurs) | US-VIS-01, US-VIS-02
 | FS-V21 | Configurer les paliers de frais de port progressifs | US-LIV-01, US-LIV-02
+| FS-V22 | Gérer les codes promotionnels (pourcentage ou montant fixe) | US-PRM-01
 | FS-V23 | Configurer le taux de TVA appliqué aux prix | US-TVA-01, US-TVA-02
 | FS-V04 | Traiter les commandes reçues | US-VND-01
 | FS-V05 | Déclarer l'expédition avec numéro de suivi | US-EXP-01

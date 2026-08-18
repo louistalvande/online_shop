@@ -1,0 +1,25 @@
+@startuml ihm-bov-codes-promo
+' Composant PA : front-vendeur (Back-office Vendeur)
+' Fonctions allouées : FS-V22 (CRUD codes promotionnels, pourcentage ou montant fixe)
+salt
+{+
+  {+
+    == Codes promotionnels
+    Code       | Réduction  | Expiration | Actions
+    SUMMER2026 | 10 %       | Jamais     | [Modifier] [Supprimer]
+    WINTER10   | 10 €       | 2026-12-31 | [Modifier] [Supprimer]
+    --
+    [+ Ajouter un code]
+  }
+  --
+  {+
+    == Ajouter un code
+    Code            | "SUMMER2026    "
+    Type de réduction | ^Pourcentage^
+    Réduction (%, sur le sous-total HT) | "10,00" %
+    Date d'expiration (optionnelle) | "AAAA-MM-JJ"
+    --
+    [Enregistrer]  [Annuler]
+  }
+}
+@enduml
